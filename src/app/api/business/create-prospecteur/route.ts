@@ -1,42 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { checkRateLimit, getClientIp } from '@/lib/middleware/rateLimiter';
-
-// Input sanitization: strip HTML/script tags and trim
-function sanitizeString(value: unknown): string {
-  if (typeof value !== 'string') return '';
-  return value
-    .replace(/<[^>]*>/g, '') // strip HTML tags
-    .replace(/["`;\\]/g, '') // strip SQL-dangerous chars (apostrophe kept — used in names like N'Diaye)
-    .trim()
-    .slice(0, 500); // max length
-}
-
-function sanitizeEmail(value: unknown): string {
-  if (typeof value !== 'string') return '';
-  const trimmed = value.trim().toLowerCase().slice(0, 254);
-  // Basic email format check
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return '';
-  return trimmed;
-}
-
-function sanitizeUUID(value: unknown): string {
-  if (typeof value !== 'string') return '';
-  const trimmed = value.trim();
-  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed)) return '';
-  return trimmed;
-}
-
-function sanitizeNumber(value: unknown, min = 0, max = 100): number {
-  const n = Number(value);
-  if (isNaN(n)) return min;
-  return Math.min(max, Math.max(min, n));
-}
+import { checkRateLimitShared, getClientIp } from '@/lib/middleware/rateLimiter';
+import { sanitizeString, sanitizeEmail, sanitizeUUID, sanitizeNumber } from '@/lib/security/sanitize';
 
 export async function POST(req: NextRequest) {
   // ── Rate limiting: 10 requests per 15 minutes per IP ──────────────────────
   const ip = getClientIp(req);
-  const rl = checkRateLimit(`create-prospecteur:${ip}`, { limit: 10, windowMs: 15 * 60 * 1000 });
+  const rl = await checkRateLimitShared(`create-prospecteur:${ip}`, { limit: 10, windowMs: 15 * 60 * 1000 });
   if (!rl.allowed) {
     return NextResponse.json(
       { error: 'Trop de requêtes. Veuillez réessayer dans quelques minutes.' },
@@ -60,7 +30,6 @@ export async function POST(req: NextRequest) {
     const password = typeof body.password === 'string' ? body.password.trim().slice(0, 128) : '';
     const phone = sanitizeString(body.phone);
     const organizationId = sanitizeUUID(body.organizationId);
-    const organizationName = sanitizeString(body.organizationName);
     const commissionRate = sanitizeNumber(body.commissionRate, 0, 100);
 
     if (!email || !password || !organizationId) {
@@ -186,24 +155,18 @@ export async function POST(req: NextRequest) {
     });
     const code = (prosp as { code: string }).code;
 
-    // 4. Send credentials email via edge function (non-blocking)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-    fetch(`${supabaseUrl}/functions/v1/send-email`, {
+    // 5. Email d'accueil SANS mot de passe (non bloquant). La fonction vérifie elle-même que l'appelant
+    //    est administrateur de l'entreprise et que le destinataire est bien l'un de ses prospecteurs.
+    //    Le mot de passe est communiqué à la main par l'administrateur, jamais par email.
+    fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${anonKey}`,
+        Authorization: `Bearer ${token}`,
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       },
-      body: JSON.stringify({
-        type: 'prospecteur_creation',
-        to: email,
-        prospecteurName: `${firstName} ${lastName}`.trim() || email,
-        prospecteurEmail: email,
-        prospecteurPassword: password,
-        organizationName: organizationName || 'votre entreprise',
-      }),
-    }).catch(err => console.error('[create-prospecteur] email send error:', err));
+      body: JSON.stringify({ type: 'prospecteur_welcome', to: email }),
+    }).catch(err => console.error('[create-prospecteur] email accueil :', err instanceof Error ? err.message : err));
 
     return NextResponse.json({
       success: true,
@@ -212,7 +175,7 @@ export async function POST(req: NextRequest) {
       code,
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Erreur interne';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[create-prospecteur]', err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
   }
 }

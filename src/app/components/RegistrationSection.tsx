@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Building2, Mail, Lock, Phone, Globe, MapPin, Briefcase, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
-import { sendCompanyRegistrationEmail } from '@/lib/services/emailService';
 import { trackRegistration } from '@/lib/analytics';
 import { runOnboarding, savePendingOnboarding } from '@/lib/onboarding';
 import Link from 'next/link';
@@ -78,12 +77,6 @@ export default function RegistrationSection() {
       } else {
         savePendingOnboarding(payload);
       }
-
-      // 4. Send welcome email (non-blocking)
-      sendCompanyRegistrationEmail({
-        to: data.adminEmail,
-        organizationName: data.organizationName,
-      });
 
       // 5. Track GA4 registration event
       trackRegistration({
