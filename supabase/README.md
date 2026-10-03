@@ -4,8 +4,8 @@ Projet Supabase `CRM JDV` (eu-west-1, Postgres 17). Export du 2026-10-01.
 
 | Dossier | Rôle |
 |---|---|
-| `schema/00_baseline_public_schema.sql` | Instantané complet du schéma `public` (77 tables, contraintes, FK, index, RLS, 119 fonctions, 14 vues, triggers, policies). **Source pour recréer la base.** |
-| `migrations/` | Historique exact des 78 migrations appliquées en base (référence). Ne crée pas les tables initiales : ne pas rejouer seul sur une base vide. |
+| `schema/00_baseline_public_schema.sql` | Instantané complet du schéma `public` (77 tables, contraintes, FK, index, RLS, 124 fonctions, 14 vues, triggers, policies). **Source pour recréer la base.** |
+| `migrations/` | Historique exact des 80 migrations appliquées en base (référence). Ne crée pas les tables initiales : ne pas rejouer seul sur une base vide. |
 | `legacy_local_migrations/` | Anciens brouillons du dépôt. **Différents de ce qui est appliqué en base, ne pas exécuter.** Gardés pour mémoire. |
 | `functions/` | Edge Functions (`send-email`). |
 
