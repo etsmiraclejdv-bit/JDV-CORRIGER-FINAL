@@ -1,7 +1,7 @@
 -- JDV CRM - instantané du schéma public (généré depuis Supabase le 2026-10-01)
 -- À appliquer sur une base vide : tables -> contraintes -> FK -> index -> RLS -> fonctions -> vues -> triggers -> policies
 
--- ===== tables (72) =====
+-- ===== tables (73) =====
 
 create table if not exists public.article_categories (
   id uuid default gen_random_uuid() not null,
@@ -1000,6 +1000,12 @@ create table if not exists public.warehouses (
   active boolean default true not null,
   created_at timestamp with time zone default now() not null,
   updated_at timestamp with time zone default now() not null
+);
+
+create table if not exists public.rate_limits (
+  key text primary key,
+  count integer not null default 0,
+  reset_at timestamptz not null
 );
 
 -- ===== constraints_pk_unique_check (224) =====
