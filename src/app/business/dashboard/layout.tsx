@@ -4,7 +4,7 @@ import AppLogo from '@/components/ui/AppLogo';
 import NotificationBell from '@/components/NotificationBell';
 import UserProfilePanel from '@/components/UserProfilePanel';
 import Modal from '@/components/ui/Modal';
-import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
@@ -14,9 +14,13 @@ const navItems = [
   { id: 'prospects', label: 'Prospects', icon: <UserCheck size={18} />, href: '/business/dashboard/prospects', group: 'CRM' },
   { id: 'clients', label: 'Clients', icon: <Users size={18} />, href: '/business/dashboard/clients', group: 'CRM' },
   { id: 'ventes', label: 'Ventes', icon: <ShoppingCart size={18} />, href: '/business/dashboard/ventes', group: 'Commercial' },
+  { id: 'relances', label: 'Relances & impayés', icon: <AlertTriangle size={18} />, href: '/business/dashboard/relances', group: 'Commercial' },
   { id: 'catalogue', label: 'Catalogue', icon: <BookOpen size={18} />, href: '/business/dashboard/catalogue', group: 'Commercial' },
   { id: 'prospecteurs', label: 'Prospecteurs', icon: <UserCheck size={18} />, href: '/business/dashboard/prospecteurs', group: 'Équipe' },
+  { id: 'fournisseurs', label: 'Fournisseurs', icon: <Truck size={18} />, href: '/business/dashboard/fournisseurs', group: 'Logistique' },
+  { id: 'achats', label: 'Achats', icon: <ClipboardList size={18} />, href: '/business/dashboard/achats', group: 'Logistique' },
   { id: 'stock', label: 'Stock', icon: <Package size={18} />, href: '/business/dashboard/stock', group: 'Logistique' },
+  { id: 'finances', label: 'Finances & commissions', icon: <Wallet size={18} />, href: '/business/dashboard/finances', group: 'Analyse' },
   { id: 'rapports', label: 'Rapports', icon: <FileText size={18} />, href: '/business/dashboard/reports', group: 'Analyse' },
   { id: 'audit', label: 'Journal d\'audit', icon: <ClipboardList size={18} />, href: '/business/dashboard/audit', group: 'Analyse' },
   { id: 'guide', label: 'Guide d\'utilisation', icon: <HelpCircle size={18} />, href: '/guide-onboarding', group: 'Système' },

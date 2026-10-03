@@ -4,6 +4,7 @@ import { User, Save, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchProfile, updateProfile } from '@/lib/services/settingsService';
 import { toast } from 'sonner';
+import ChangePasswordForm from '@/components/ChangePasswordForm';
 // Language switcher removed — preferred_language not in profiles schema
 
 interface UserProfilePanelProps {
@@ -107,6 +108,10 @@ export default function UserProfilePanel({ onClose }: UserProfilePanelProps) {
           {saving ? 'Enregistrement...' : 'Enregistrer'}
         </button>
       </form>
+
+      <div className="mt-8 pt-6 border-t border-[#D4AF37]/10">
+        <ChangePasswordForm />
+      </div>
     </div>
   );
 }

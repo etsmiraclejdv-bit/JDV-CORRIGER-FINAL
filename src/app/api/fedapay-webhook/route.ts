@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { checkRateLimit, getClientIp } from '@/lib/middleware/rateLimiter';
+import { checkRateLimitShared, getClientIp } from '@/lib/middleware/rateLimiter';
 import { isFedaPayIp } from '@/lib/middleware/ipWhitelist';
 import { fedapayBaseUrl, unwrapFedapay } from '@/lib/fedapay';
 
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const rl = checkRateLimit(`fedapay-webhook:${ip}`, { limit: 120, windowMs: 60 * 1000 });
+  const rl = await checkRateLimitShared(`fedapay-webhook:${ip}`, { limit: 120, windowMs: 60 * 1000 });
   if (!rl.allowed) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
   const webhookSecret = process.env.FEDAPAY_WEBHOOK_SECRET;

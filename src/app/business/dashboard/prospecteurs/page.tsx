@@ -112,7 +112,7 @@ export default function BusinessProspecteursPage() {
         toast.error(json.error ?? 'Création impossible');
         return;
       }
-      toast.success(`Prospecteur créé (${json.code ?? 'code généré'})`);
+      toast.success(`Prospecteur créé (${json.code ?? 'code généré'}). Communiquez-lui son mot de passe de vive voix ou par un canal sûr : il n'est jamais envoyé par email.`, { duration: 9000 });
       setModalOpen(false);
       setForm(emptyForm);
       loadProspecteurs(orgId);

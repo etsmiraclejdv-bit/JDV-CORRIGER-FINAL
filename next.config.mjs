@@ -2,15 +2,18 @@ import { imageHosts } from './image-hosts.config.mjs';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  productionBrowserSourceMaps: true,
+  // Ne jamais publier les cartes sources : elles rendent le code lisible par tout le monde.
+  productionBrowserSourceMaps: false,
   distDir: process.env.DIST_DIR || '.next',
 
+  // Mettre STRICT_BUILD=true (variable d'environnement de build) dès que `npm run type-check`
+  // et `npm run lint` passent sans erreur : les erreurs bloqueront alors le déploiement.
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: process.env.STRICT_BUILD !== 'true',
   },
 
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: process.env.STRICT_BUILD !== 'true',
   },
 
   async redirects() {

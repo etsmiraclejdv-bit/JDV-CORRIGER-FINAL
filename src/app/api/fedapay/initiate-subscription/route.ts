@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { checkRateLimit, getClientIp } from '@/lib/middleware/rateLimiter';
+import { checkRateLimitShared, getClientIp } from '@/lib/middleware/rateLimiter';
 import { fedapayBaseUrl, unwrapFedapay } from '@/lib/fedapay';
 
 /**
@@ -11,7 +11,7 @@ import { fedapayBaseUrl, unwrapFedapay } from '@/lib/fedapay';
  * viennent de la base de données et de la session : rien n'est modifiable côté client.
  */
 export async function POST(req: NextRequest) {
-  const rl = checkRateLimit(`fedapay-initiate:${getClientIp(req)}`, { limit: 20, windowMs: 15 * 60 * 1000 });
+  const rl = await checkRateLimitShared(`fedapay-initiate:${getClientIp(req)}`, { limit: 20, windowMs: 15 * 60 * 1000 });
   if (!rl.allowed) {
     return NextResponse.json({ error: 'Trop de requêtes. Réessayez dans quelques minutes.' }, { status: 429 });
   }
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ paymentUrl, transactionId });
   } catch (err) {
     await markFailed();
-    const message = err instanceof Error ? err.message : 'Erreur interne';
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error('[fedapay/initiate-subscription]', err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: 'Erreur interne. Réessayez dans un instant.' }, { status: 500 });
   }
 }

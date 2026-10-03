@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Building2, Package, Users, Settings, Wrench, LogOut, ChevronLeft, ChevronRight, ClipboardList, User, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Building2, Package, Users, Settings, Wrench, LogOut, ChevronLeft, ChevronRight, ClipboardList, User, HelpCircle, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
@@ -15,6 +15,7 @@ const navItems = [
   { id: 'companies', label: 'Entreprises', icon: <Building2 size={18} />, href: '/hidden-concepteur-gate/dashboard/companies', group: 'Gestion' },
   { id: 'stock', label: 'Stock plateforme', icon: <Package size={18} />, href: '/hidden-concepteur-gate/dashboard/stock', group: 'Gestion' },
   { id: 'prospecteurs', label: 'Prospecteurs', icon: <Users size={18} />, href: '/hidden-concepteur-gate/dashboard/prospecteurs', group: 'Gestion' },
+  { id: 'payments', label: 'Paiements', icon: <CreditCard size={18} />, href: '/hidden-concepteur-gate/dashboard/payments', group: 'Gestion' },
   { id: 'maintenance', label: 'Maintenance', icon: <Wrench size={18} />, href: '/hidden-concepteur-gate/dashboard/maintenance', group: 'Système' },
   { id: 'audit', label: 'Journal d\'audit', icon: <ClipboardList size={18} />, href: '/hidden-concepteur-gate/dashboard/audit', group: 'Système' },
   { id: 'guide', label: 'Guide d\'utilisation', icon: <HelpCircle size={18} />, href: '/guide-onboarding', group: 'Système' },

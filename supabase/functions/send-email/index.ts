@@ -1,130 +1,137 @@
 import { serve } from "https://deno.land/std@0.192.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 declare const Deno: {
-  env: {
-    get(key: string): string | undefined;
-  };
+  env: { get(key: string): string | undefined };
 };
 
+/**
+ * Edge Function `send-email` (sécurisée).
+ *
+ * - À déployer avec la vérification JWT activée (`supabase functions deploy send-email`, option par défaut).
+ * - Un seul type d'email : `prospecteur_welcome`. Aucun mot de passe n'est jamais envoyé.
+ * - L'appelant doit être connecté ET administrateur d'une entreprise ; le destinataire doit être
+ *   l'un des prospecteurs de cette entreprise (vérifié via les règles RLS, avec le jeton de l'appelant).
+ * - Les noms affichés viennent de la base, jamais du corps de la requête ; tout est échappé.
+ * - Pas d'en-têtes CORS : la fonction n'est appelée que par le serveur de l'application.
+ *
+ * Secrets requis : RESEND_API_KEY, SITE_URL. Facultatif : EMAIL_FROM (adresse d'un domaine vérifié chez Resend).
+ */
+
+const ADMIN_ROLES = ["business_admin", "admin"];
+
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 serve(async (req) => {
-  // ✅ CORS preflight
-  if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "*",
-      },
-    });
+  if (req.method !== "POST") return json({ error: "Méthode non autorisée" }, 405);
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  const siteUrl = (Deno.env.get("SITE_URL") ?? "").replace(/\/+$/, "");
+  const from = Deno.env.get("EMAIL_FROM") ?? "JDV CRM <onboarding@resend.dev>";
+  if (!supabaseUrl || !anonKey || !resendKey || !siteUrl) {
+    console.error("[send-email] configuration incomplète");
+    return json({ error: "Service email non configuré" }, 500);
   }
 
+  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "").trim();
+  if (!token) return json({ error: "Authentification requise" }, 401);
+
+  // Client « au nom de l'appelant » : les règles RLS s'appliquent à toutes les lectures ci-dessous.
+  const supabase = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { data: caller, error: callerError } = await supabase.auth.getUser(token);
+  if (callerError || !caller?.user) return json({ error: "Session invalide" }, 401);
+
+  let payload: { type?: unknown; to?: unknown };
   try {
-    const { type, to, organizationName, adminName, prospecteurName, prospecteurEmail, prospecteurPassword } = await req.json();
-
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
-
-    let subject = "";
-    let html = "";
-
-    if (type === "company_registration") {
-      subject = `Bienvenue sur JDV CRM — ${organizationName}`;
-      html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0A1628; color: #E2E8F0; padding: 40px; border-radius: 12px;">
-          <div style="text-align: center; margin-bottom: 32px;">
-            <h1 style="color: #D4AF37; font-size: 28px; margin: 0;">JDV CRM</h1>
-            <p style="color: #718096; font-size: 14px; margin-top: 4px;">Votre partenaire de gestion commerciale</p>
-          </div>
-          <h2 style="color: #FFFFFF; font-size: 20px;">Bienvenue, ${adminName || organizationName} !</h2>
-          <p style="color: #A0AEC0; line-height: 1.6;">
-            Votre espace entreprise <strong style="color: #D4AF37;">${organizationName}</strong> a été créé avec succès sur JDV CRM.
-          </p>
-          <p style="color: #A0AEC0; line-height: 1.6;">
-            Vous bénéficiez d'un essai gratuit de <strong style="color: #FFFFFF;">14 jours</strong> avec accès à toutes les fonctionnalités :
-          </p>
-          <ul style="color: #A0AEC0; line-height: 2;">
-            <li>Gestion de vos prospecteurs et prospects</li>
-            <li>Suivi des ventes et paiements</li>
-            <li>Gestion du stock</li>
-            <li>Rapports et tableaux de bord</li>
-          </ul>
-          <div style="text-align: center; margin: 32px 0;">
-            <a href="https://jdvcrm6791.builtwithrocket.new/business/login"
-               style="background: linear-gradient(135deg, #D4AF37, #B8962E); color: #0A1628; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
-              Accéder à mon tableau de bord
-            </a>
-          </div>
-          <p style="color: #718096; font-size: 12px; text-align: center; margin-top: 32px;">
-            Si vous n'avez pas créé ce compte, ignorez cet email.<br/>
-            © ${new Date().getFullYear()} JDV CRM — Tous droits réservés
-          </p>
-        </div>
-      `;
-    } else if (type === "prospecteur_creation") {
-      subject = `Vos accès JDV CRM — Bienvenue ${prospecteurName}`;
-      html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0A1628; color: #E2E8F0; padding: 40px; border-radius: 12px;">
-          <div style="text-align: center; margin-bottom: 32px;">
-            <h1 style="color: #D4AF37; font-size: 28px; margin: 0;">JDV CRM</h1>
-            <p style="color: #718096; font-size: 14px; margin-top: 4px;">Portail Prospecteur</p>
-          </div>
-          <h2 style="color: #FFFFFF; font-size: 20px;">Bienvenue, ${prospecteurName} !</h2>
-          <p style="color: #A0AEC0; line-height: 1.6;">
-            Un compte prospecteur a été créé pour vous sur <strong style="color: #D4AF37;">JDV CRM</strong> par votre entreprise <strong style="color: #FFFFFF;">${organizationName}</strong>.
-          </p>
-          <div style="background: #0F2347; border: 1px solid rgba(212,175,55,0.3); border-radius: 8px; padding: 20px; margin: 24px 0;">
-            <p style="color: #D4AF37; font-weight: bold; margin: 0 0 12px 0;">Vos identifiants de connexion :</p>
-            <p style="color: #A0AEC0; margin: 4px 0;"><strong style="color: #FFFFFF;">Email :</strong> ${prospecteurEmail}</p>
-            <p style="color: #A0AEC0; margin: 4px 0;"><strong style="color: #FFFFFF;">Mot de passe :</strong> ${prospecteurPassword}</p>
-          </div>
-          <p style="color: #FC8181; font-size: 13px;">
-            ⚠️ Pour votre sécurité, changez votre mot de passe dès votre première connexion.
-          </p>
-          <div style="text-align: center; margin: 32px 0;">
-            <a href="https://jdvcrm6791.builtwithrocket.new/terrain/login"
-               style="background: linear-gradient(135deg, #D4AF37, #B8962E); color: #0A1628; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
-              Se connecter maintenant
-            </a>
-          </div>
-          <p style="color: #718096; font-size: 12px; text-align: center; margin-top: 32px;">
-            © ${new Date().getFullYear()} JDV CRM — Tous droits réservés
-          </p>
-        </div>
-      `;
-    } else {
-      throw new Error("Unknown email type: " + type);
-    }
-
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "onboarding@resend.dev",
-        to: [to],
-        subject,
-        html,
-      }),
-    });
-
-    const result = await res.json();
-    if (!res.ok) throw new Error(result.message || "Resend API error");
-
-    return new Response(JSON.stringify({ success: true, id: result.id }), {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
-      status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-      },
-    });
+    payload = await req.json();
+  } catch {
+    return json({ error: "Requête invalide" }, 400);
   }
+  if (payload.type !== "prospecteur_welcome") return json({ error: "Type d'email non pris en charge" }, 400);
+
+  const to = typeof payload.to === "string" ? payload.to.trim().toLowerCase().slice(0, 254) : "";
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return json({ error: "Destinataire invalide" }, 400);
+
+  // L'appelant est-il administrateur d'une entreprise ?
+  const { data: memberships } = await supabase
+    .from("organization_members")
+    .select("organization_id")
+    .eq("user_id", caller.user.id)
+    .eq("status", "active")
+    .in("role", ADMIN_ROLES);
+  const orgIds = (memberships ?? []).map((m: { organization_id: string }) => m.organization_id);
+  if (orgIds.length === 0) return json({ error: "Accès refusé" }, 403);
+
+  // Le destinataire est-il un prospecteur de l'une de ces entreprises ?
+  const { data: prospecteur } = await supabase
+    .from("prospecteurs")
+    .select("first_name, last_name, organization_id")
+    .eq("email", to)
+    .in("organization_id", orgIds)
+    .limit(1)
+    .maybeSingle();
+  if (!prospecteur) return json({ error: "Destinataire non autorisé" }, 403);
+
+  const { data: org } = await supabase
+    .from("organizations")
+    .select("name")
+    .eq("id", prospecteur.organization_id)
+    .maybeSingle();
+
+  const name = `${prospecteur.first_name ?? ""} ${prospecteur.last_name ?? ""}`.trim() || to;
+  const orgName = org?.name ?? "votre entreprise";
+  const loginUrl = `${siteUrl}/terrain/login`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0A1628; color: #E2E8F0; padding: 40px; border-radius: 12px;">
+      <h1 style="color: #D4AF37; font-size: 28px; margin: 0 0 8px 0; text-align: center;">JDV CRM</h1>
+      <p style="color: #718096; font-size: 14px; text-align: center; margin: 0 0 32px 0;">Portail Prospecteur</p>
+      <h2 style="color: #FFFFFF; font-size: 20px;">Bienvenue, ${escapeHtml(name)} !</h2>
+      <p style="color: #A0AEC0; line-height: 1.6;">
+        Un compte prospecteur a été créé pour vous sur JDV CRM par l'entreprise <strong style="color: #FFFFFF;">${escapeHtml(orgName)}</strong>.
+      </p>
+      <p style="color: #A0AEC0; line-height: 1.6;">
+        Votre identifiant est cette adresse email : <strong style="color: #FFFFFF;">${escapeHtml(to)}</strong>.
+        Votre administrateur vous communiquera votre mot de passe de façon sécurisée. Changez-le dès votre première connexion.
+      </p>
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="${escapeHtml(loginUrl)}" style="background: #D4AF37; color: #0A1628; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold;">Se connecter</a>
+      </div>
+      <p style="color: #718096; font-size: 12px; text-align: center;">© ${new Date().getFullYear()} JDV CRM</p>
+    </div>`;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject: `Bienvenue sur JDV CRM — ${orgName}`.slice(0, 200),
+      html,
+    }),
+  });
+  if (!res.ok) {
+    console.error("[send-email] Resend a refusé l'envoi", res.status);
+    return json({ error: "Envoi impossible" }, 502);
+  }
+  return json({ success: true });
 });

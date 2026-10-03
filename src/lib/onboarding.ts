@@ -49,22 +49,36 @@ export function savePendingOnboarding(p: OnboardingPayload) {
   }
 }
 
+function isPayload(v: unknown): v is OnboardingPayload {
+  if (!v || typeof v !== 'object') return false;
+  const o = v as Record<string, unknown>;
+  return typeof o.companyName === 'string' && typeof o.email === 'string';
+}
+
+async function clearPending() {
+  try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+  try { await supabase.auth.updateUser({ data: { pending_onboarding: null } }); } catch { /* ignore */ }
+}
+
 /** À appeler juste après une connexion réussie. Renvoie true si une entreprise vient d'être créée. */
 export async function completePendingOnboarding(userId: string, email: string): Promise<boolean> {
-  let raw: string | null = null;
+  let p: unknown = null;
   try {
-    raw = localStorage.getItem(KEY);
+    const raw = localStorage.getItem(KEY);
+    p = raw ? JSON.parse(raw) : null;
   } catch {
-    return false;
+    p = null;
   }
-  if (!raw) return false;
-  let p: OnboardingPayload;
-  try {
-    p = JSON.parse(raw) as OnboardingPayload;
-  } catch {
-    return false;
+  if (!isPayload(p)) {
+    // Repli : les informations saisies à l'inscription sont aussi stockées dans le compte lui-même.
+    // Cela permet de terminer la création depuis un autre navigateur, un autre appareil ou une autre adresse du site.
+    const { data } = await supabase.auth.getUser();
+    const meta: unknown = data.user?.user_metadata?.pending_onboarding;
+    p = isPayload(meta) ? meta : null;
   }
-  if (p.email.toLowerCase() !== email.toLowerCase()) return false;
+  if (!isPayload(p)) return false;
+  const payload: OnboardingPayload = p;
+  if (payload.email.toLowerCase() !== email.toLowerCase()) return false;
 
   const { data: existing } = await supabase
     .from('organization_members')
@@ -72,11 +86,11 @@ export async function completePendingOnboarding(userId: string, email: string): 
     .eq('user_id', userId)
     .limit(1);
   if (existing && existing.length > 0) {
-    try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+    await clearPending();
     return false;
   }
-  const { error } = await runOnboarding(userId, p);
+  const { error } = await runOnboarding(userId, payload);
   if (error) return false;
-  try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+  await clearPending();
   return true;
 }

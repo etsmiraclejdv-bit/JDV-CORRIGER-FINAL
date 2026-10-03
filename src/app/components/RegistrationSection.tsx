@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { Building2, Mail, Lock, Phone, Globe, MapPin, Briefcase, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
-import { sendCompanyRegistrationEmail } from '@/lib/services/emailService';
 import { trackRegistration } from '@/lib/analytics';
 import { runOnboarding, savePendingOnboarding } from '@/lib/onboarding';
 import Link from 'next/link';
@@ -53,16 +52,6 @@ export default function RegistrationSection() {
     setLoading(true);
     setError('');
     try {
-      // 1. Créer le compte d'authentification
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: data.adminEmail,
-        password: data.password,
-      });
-      if (signUpError) throw new Error(signUpError.message);
-      if (!authData.user) throw new Error('Erreur lors de la création du compte');
-
-      // 2. Créer l'entreprise, le rôle administrateur et l'abonnement d'essai (fonction SQL sécurisée).
-      //    Sans session (email à confirmer), on garde les infos et on termine à la première connexion.
       const payload = {
         companyName: data.organizationName,
         email: data.adminEmail,
@@ -72,18 +61,25 @@ export default function RegistrationSection() {
         industry: data.sector,
         contactName: data.organizationName,
       };
+
+      // 1. Créer le compte d'authentification. Les infos de l'entreprise sont aussi gardées dans le compte
+      //    lui-même : l'inscription pourra être terminée depuis n'importe quel navigateur ou adresse du site.
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: data.adminEmail,
+        password: data.password,
+        options: { data: { pending_onboarding: payload } },
+      });
+      if (signUpError) throw new Error(signUpError.message);
+      if (!authData.user) throw new Error('Erreur lors de la création du compte');
+
+      // 2. Créer l'entreprise, le rôle administrateur et l'abonnement d'essai (fonction SQL sécurisée).
+      //    Sans session (email à confirmer), on termine à la première connexion.
       if (authData.session) {
         const { error: onboardingError } = await runOnboarding(authData.user.id, payload);
         if (onboardingError) throw new Error(onboardingError.message);
       } else {
         savePendingOnboarding(payload);
       }
-
-      // 4. Send welcome email (non-blocking)
-      sendCompanyRegistrationEmail({
-        to: data.adminEmail,
-        organizationName: data.organizationName,
-      });
 
       // 5. Track GA4 registration event
       trackRegistration({

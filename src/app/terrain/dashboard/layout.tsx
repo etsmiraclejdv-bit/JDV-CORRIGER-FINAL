@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, ShoppingCart, Users, UserCheck, Wallet, User, LogOut, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Users, UserCheck, Wallet, User, LogOut, ChevronLeft, ChevronRight, HelpCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
@@ -14,6 +14,7 @@ const navItems = [
   { id: 'ventes', label: 'Mes ventes', icon: <ShoppingCart size={18} />, href: '/terrain/dashboard/ventes', group: 'Activité' },
   { id: 'prospects', label: 'Mes prospects', icon: <Users size={18} />, href: '/terrain/dashboard/prospects', group: 'Activité' },
   { id: 'clients', label: 'Mes clients', icon: <UserCheck size={18} />, href: '/terrain/dashboard/clients', group: 'Activité' },
+  { id: 'relances', label: 'Mes relances', icon: <AlertTriangle size={18} />, href: '/terrain/dashboard/relances', group: 'Activité' },
   { id: 'commission', label: 'Ma commission', icon: <Wallet size={18} />, href: '/terrain/dashboard/commission', group: 'Activité' },
   { id: 'guide', label: 'Guide d\'utilisation', icon: <HelpCircle size={18} />, href: '/guide-onboarding', group: 'Aide' },
 ];

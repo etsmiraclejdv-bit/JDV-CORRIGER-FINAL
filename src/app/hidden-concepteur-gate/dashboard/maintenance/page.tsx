@@ -58,7 +58,7 @@ export default function SuperAdminMaintenancePage() {
   const services = [
     { name: 'Base de données Supabase', status: supabaseOk, description: 'Connexion PostgreSQL' },
     { name: 'Authentification', status: supabaseOk, description: 'Supabase Auth' },
-    { name: 'Edge Functions', status: true, description: 'send-email déployée' },
+    { name: 'Edge Functions', status: false, description: 'send-email à déployer (secret RESEND_API_KEY requis)' },
     { name: 'Webhook FedaPay', status: true, description: '/api/fedapay-webhook actif' },
   ];
 
@@ -143,7 +143,7 @@ export default function SuperAdminMaintenancePage() {
             { label: 'Authentification', value: 'Supabase Auth (email/password)' },
             { label: 'Paiements', value: 'FedaPay (webhook HMAC-SHA256)' },
             { label: 'Emails transactionnels', value: 'Resend via Edge Function' },
-            { label: 'URL de déploiement', value: 'https://jdvcrm6791.builtwithrocket.new' },
+            { label: 'URL de déploiement', value: process.env.NEXT_PUBLIC_SITE_URL || 'Non configurée (NEXT_PUBLIC_SITE_URL)' },
           ].map((item, i) => (
             <div key={i} className="flex items-center justify-between p-3 bg-[#0A1628] rounded-xl">
               <span className="text-sm text-[#718096]">{item.label}</span>
