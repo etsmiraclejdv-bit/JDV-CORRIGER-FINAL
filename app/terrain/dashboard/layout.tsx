@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Building2, Package, Users, Settings, Wrench, LogOut, ChevronLeft, ChevronRight, ClipboardList, User, HelpCircle, CreditCard } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Users, UserCheck, Wallet, User, LogOut, ChevronLeft, ChevronRight, HelpCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
@@ -8,65 +8,40 @@ import NotificationBell from '@/components/NotificationBell';
 import UserProfilePanel from '@/components/UserProfilePanel';
 import Modal from '@/components/ui/Modal';
 import { supabase } from '@/lib/supabase/client';
-import { checkCurrentSuperAdmin } from '@/lib/auth/super-admin';
 
 const navItems = [
-  { id: 'overview', label: 'Vue d\'ensemble', icon: <LayoutDashboard size={18} />, href: '/hidden-concepteur-gate/dashboard', group: 'Principal' },
-  { id: 'companies', label: 'Entreprises', icon: <Building2 size={18} />, href: '/hidden-concepteur-gate/dashboard/companies', group: 'Gestion' },
-  { id: 'stock', label: 'Stock plateforme', icon: <Package size={18} />, href: '/hidden-concepteur-gate/dashboard/stock', group: 'Gestion' },
-  { id: 'prospecteurs', label: 'Prospecteurs', icon: <Users size={18} />, href: '/hidden-concepteur-gate/dashboard/prospecteurs', group: 'Gestion' },
-  { id: 'payments', label: 'Paiements', icon: <CreditCard size={18} />, href: '/hidden-concepteur-gate/dashboard/payments', group: 'Gestion' },
-  { id: 'maintenance', label: 'Maintenance', icon: <Wrench size={18} />, href: '/hidden-concepteur-gate/dashboard/maintenance', group: 'Système' },
-  { id: 'audit', label: 'Journal d\'audit', icon: <ClipboardList size={18} />, href: '/hidden-concepteur-gate/dashboard/audit', group: 'Système' },
-  { id: 'guide', label: 'Guide d\'utilisation', icon: <HelpCircle size={18} />, href: '/guide-onboarding', group: 'Système' },
-  { id: 'settings', label: 'Paramètres', icon: <Settings size={18} />, href: '/hidden-concepteur-gate/dashboard/settings', group: 'Système' },
+  { id: 'dashboard', label: 'Mon tableau de bord', icon: <LayoutDashboard size={18} />, href: '/terrain/dashboard', group: 'Principal' },
+  { id: 'ventes', label: 'Mes ventes', icon: <ShoppingCart size={18} />, href: '/terrain/dashboard/ventes', group: 'Activité' },
+  { id: 'prospects', label: 'Mes prospects', icon: <Users size={18} />, href: '/terrain/dashboard/prospects', group: 'Activité' },
+  { id: 'clients', label: 'Mes clients', icon: <UserCheck size={18} />, href: '/terrain/dashboard/clients', group: 'Activité' },
+  { id: 'relances', label: 'Mes relances', icon: <AlertTriangle size={18} />, href: '/terrain/dashboard/relances', group: 'Activité' },
+  { id: 'commission', label: 'Ma commission', icon: <Wallet size={18} />, href: '/terrain/dashboard/commission', group: 'Activité' },
+  { id: 'guide', label: 'Guide d\'utilisation', icon: <HelpCircle size={18} />, href: '/guide-onboarding', group: 'Aide' },
 ];
 
-export default function SuperAdminDashboardLayout({ children }: { children: React.ReactNode }) {
+export default function TerrainDashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const groups = Array.from(new Set(navItems.map(i => i.group)));
 
-  useEffect(() => {
-    checkCurrentSuperAdmin().then(result => {
-      if (!result.ok) {
-        router.replace('/hidden-concepteur-gate/login');
-      } else {
-        setAuthChecked(true);
-      }
-    });
-  }, [router]);
-
   async function handleLogout() {
     await supabase.auth.signOut();
-    router.replace('/hidden-concepteur-gate/login');
-  }
-
-  if (!authChecked) {
-    return (
-      <div className="flex h-screen bg-[#0B1B3D] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-[#A0AEC0]">Vérification des droits d&apos;accès...</p>
-        </div>
-      </div>
-    );
+    router.replace('/terrain/login');
   }
 
   return (
     <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
-      <aside className={`h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}>
+      <aside className={`h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-56'}`}>
         <div className={`h-16 flex items-center border-b border-[#D4AF37]/10 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}>
           {!collapsed && (
             <div className="flex items-center gap-2">
-              <AppLogo size={28} />
-              <span className="font-bold text-sm text-white">JDV <span className="text-[#D4AF37]">Admin</span></span>
+              <AppLogo size={26} />
+              <span className="font-bold text-sm text-white">JDV <span className="text-[#D4AF37]">Terrain</span></span>
             </div>
           )}
-          {collapsed && <AppLogo size={28} />}
+          {collapsed && <AppLogo size={26} />}
           {!collapsed && (
             <button onClick={() => setCollapsed(true)} className="p-1.5 rounded-lg text-[#718096] hover:text-white hover:bg-[#0F2347] transition-all">
               <ChevronLeft size={16} />
@@ -81,7 +56,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-[#718096] px-3 mb-2">{group}</p>
               )}
               {navItems.filter(i => i.group === group).map(item => {
-                const isActive = pathname === item.href || (item.href !== '/hidden-concepteur-gate/dashboard' && pathname.startsWith(item.href));
+                const isActive = pathname === item.href || (item.href !== '/terrain/dashboard' && pathname.startsWith(item.href));
                 return (
                   <Link
                     key={item.id}
@@ -131,7 +106,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
-          <h1 className="text-base font-semibold text-white">Super Admin — Supervision Plateforme</h1>
+          <h1 className="text-base font-semibold text-white">Portail Terrain</h1>
           <div className="flex items-center gap-3">
             <NotificationBell />
           </div>
