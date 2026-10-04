@@ -35,6 +35,19 @@ export async function getMyStock(prospecteurId:string,organizationId:string) {
   return { data:data ?? [],error };
 }
 
+export async function getMyStockHoldings(prospecteurId:string,organizationId:string) {
+  const { data,error } = await supabase.from('prospecteur_stock_holdings')
+    .select('id,article_id,warehouse_id,supply_request_id,quantity,remaining_quantity,supplied_at,return_due_at,hard_due_at,sold_at,returned_at,status,notes,articles(id,code,name)')
+    .eq('organization_id',organizationId).eq('prospecteur_id',prospecteurId)
+    .gt('remaining_quantity',0).order('return_due_at',{ascending:true});
+  return { data:data ?? [],error };
+}
+
+export async function returnProspecteurStock(holdingId:string) {
+  const { data,error } = await supabase.rpc('jdvcrm_return_prospecteur_stock_v1',{p_holding_id:holdingId});
+  return { data,error };
+}
+
 export async function getMySupplyRequests(prospecteurId:string,organizationId:string) {
   const { data,error } = await supabase.from('prospecteur_supply_requests')
     .select('id,warehouse_id,status,requested_at,processed_at,notes,prospecteur_supply_request_items(quantity,article_id,articles(code,name))')
