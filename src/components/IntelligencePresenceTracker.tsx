@@ -83,7 +83,7 @@ export default function IntelligencePresenceTracker() {
       if (heartbeat) clearInterval(heartbeat);
       const id = sessionIdRef.current;
       if (id) {
-        void supabase.from('user_activity_sessions').update({ ended_at: new Date().toISOString() }).eq('id', id).eq('user_id', undefined as never);
+        void supabase.from('user_activity_sessions').update({ ended_at: new Date().toISOString() }).eq('id', id) .eq('user_id', (await supabase.auth.getUser()).data.user?.id ?? '');
       }
       if (channelRef.current) {
         void channelRef.current.untrack();
