@@ -35,7 +35,9 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
   }
 
   return (
-    <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
+    <>
+      <IntelligencePresenceTracker />
+      <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
       <aside className={`h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-56'}`}>
         <div className={`h-16 flex items-center border-b border-[#D4AF37]/10 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}>
           {!collapsed && (
@@ -122,6 +124,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
       <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="" size="sm">
         <UserProfilePanel onClose={() => setProfileOpen(false)} />
       </Modal>
-    </div>
+      </div>
+    </>
   );
 }
