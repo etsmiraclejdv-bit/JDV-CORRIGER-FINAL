@@ -44,7 +44,9 @@ export default function BusinessDashboardLayout({ children }: { children: React.
   }
 
   return (
-    <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
+    <>
+      <IntelligencePresenceTracker />
+      <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
       {/* Sidebar */}
       <aside className={`h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}>
         <div className={`h-16 flex items-center border-b border-[#D4AF37]/10 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}>
@@ -134,6 +136,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
       <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="" size="sm">
         <UserProfilePanel onClose={() => setProfileOpen(false)} />
       </Modal>
-    </div>
+      </div>
+    </>
   );
 }
