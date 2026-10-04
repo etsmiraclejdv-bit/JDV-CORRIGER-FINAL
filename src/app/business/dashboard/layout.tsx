@@ -8,9 +8,11 @@ import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogO
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 
 const navItems = [
   { id: 'overview', label: 'Vue d\'ensemble', icon: <LayoutDashboard size={18} />, href: '/business/dashboard', group: 'Principal' },
+  { id: 'intelligence', label: 'Intelligence JDV', icon: <AlertTriangle size={18} />, href: '/business/dashboard/intelligence', group: 'Principal' },
   { id: 'prospects', label: 'Prospects', icon: <UserCheck size={18} />, href: '/business/dashboard/prospects', group: 'CRM' },
   { id: 'clients', label: 'Clients', icon: <Users size={18} />, href: '/business/dashboard/clients', group: 'CRM' },
   { id: 'ventes', label: 'Ventes', icon: <ShoppingCart size={18} />, href: '/business/dashboard/ventes', group: 'Commercial' },
