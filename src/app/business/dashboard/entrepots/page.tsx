@@ -127,10 +127,13 @@ export default function WarehousesPage() {
 
     if (!orgId) return;
 
-    const { error } = await supabase.from('warehouses').insert({
-      organization_id: orgId,
-      ...form,
-      active: true,
+    const { error } = await supabase.rpc('jdvcrm_create_warehouse_v1', {
+      p_organization_id: orgId,
+      p_code: form.code,
+      p_name: form.name,
+      p_address: form.address || null,
+      p_city: form.city,
+      p_country: form.country || 'Bénin',
     });
 
     if (error) {
