@@ -31,6 +31,10 @@ export async function POST(req: NextRequest) {
     const phone = sanitizeString(body.phone);
     const organizationId = sanitizeUUID(body.organizationId);
     const commissionRate = sanitizeNumber(body.commissionRate, 0, 100);
+    const warehouseId = body.warehouseId ? sanitizeUUID(body.warehouseId) : null;
+    const department = sanitizeString(body.department);
+    const workCity = sanitizeString(body.workCity);
+    const workZone = sanitizeString(body.workZone);
 
     if (!email || !password || !organizationId) {
       return NextResponse.json({ error: 'email, password et organizationId sont requis' }, { status: 400 });
@@ -153,6 +157,13 @@ export async function POST(req: NextRequest) {
       owner_type: 'prospecteur',
       name: 'Mon portefeuille clients',
     });
+    if (warehouseId) {
+      const { data: warehouse } = await supabaseAdmin.from('warehouses').select('id').eq('id', warehouseId).eq('organization_id', organizationId).eq('active', true).maybeSingle();
+      if (!warehouse) return rollback('Entrepôt sélectionné introuvable ou inactif');
+      const { error: assignmentError } = await supabaseAdmin.from('prospecteur_warehouse_assignments').insert({ organization_id: organizationId, prospecteur_id: (prosp as { id: string }).id, warehouse_id: warehouseId, department: department || null, city: workCity || null, work_zone: workZone || null, is_primary: true, active: true });
+      if (assignmentError) return rollback(assignmentError.message);
+    }
+
     const code = (prosp as { code: string }).code;
 
     // 5. Email d'accueil SANS mot de passe (non bloquant). La fonction vérifie elle-même que l'appelant
