@@ -28,7 +28,7 @@ export default function TerrainCommissionPage() {
         if (profile.prospecteur_id) {
           const [{ data: salesData }, { data: comms }] = await Promise.all([
             fetchSales(profile.organization_id, { prospecteurId: profile.prospecteur_id }),
-            supabase.from('commissions').select('commission_amount, status').eq('prospecteur_id', profile.prospecteur_id),
+            supabase.from('commissions').select('commission_amount, status').eq('organization_id', profile.organization_id).eq('prospecteur_id', profile.prospecteur_id),
           ]);
           const completed = (salesData ?? [])?.filter(s => s?.status === 'completed');
           setTotalSales(completed?.length);
