@@ -2,37 +2,36 @@ import { supabase } from '@/lib/supabase/client';
 
 export interface OnboardingPayload { [key: string]: unknown; }
 
-const KEY = 'jdv_pending_onboarding';
+const KEY = 'jdv_pending_company_application';
 
-/** À appeler juste après une connexion réussie. Renvoie true si une entreprise vient d'être créée. */
+function isPayload(v: unknown): v is OnboardingPayload {
+  return !!v && typeof v === 'object';
+}
+
+async function clearPending() {
+  try { localStorage.removeItem(KEY); } catch {}
+  try { await supabase.auth.updateUser({ data: { pending_company_application: null } }); } catch {}
+}
+
+/** Soumet le dossier d'entreprise sans créer d'organisation active. */
+export async function runOnboarding(userId: string, payload: OnboardingPayload) {
+  void userId;
+  return await supabase.rpc('jdvcrm_submit_company_application_v1', payload);
+}
+
+/** Après confirmation de l'email, soumet le dossier conservé localement. */
 export async function completePendingOnboarding(userId: string, email: string): Promise<boolean> {
   let p: unknown = null;
   try {
     const raw = localStorage.getItem(KEY);
     p = raw ? JSON.parse(raw) : null;
-  } catch {
-    p = null;
-  }
-  if (!isPayload(p)) {
-    // Repli : les informations saisies à l'inscription sont aussi stockées dans le compte lui-même.
-    // Cela permet de terminer la création depuis un autre navigateur, un autre appareil ou une autre adresse du site.
-    const { data } = await supabase.auth.getUser();
-    const meta: unknown = data.user?.user_metadata?.pending_onboarding;
-    p = isPayload(meta) ? meta : null;
-  }
+  } catch {}
   if (!isPayload(p)) return false;
-  const payload: OnboardingPayload = p;
-  if (payload.email.toLowerCase() !== email.toLowerCase()) return false;
-
-  const { data: existing } = await supabase
-    .from('organization_members')
-    .select('id')
-    .eq('user_id', userId)
-    .limit(1);
-  if (existing && existing.length > 0) {
-    await clearPending();
-    return false;
-  }
+  const payload = p;
+  const professionalEmail = typeof payload.p_representative_email === 'string' ? payload.p_representative_email : '';
+  if (!professionalEmail || professionalEmail.toLowerCase() !== email.toLowerCase()) return false;
+  const { data: existing } = await supabase.from('organization_applications').select('id').eq('applicant_user_id', userId).eq('professional_email', email.toLowerCase()).limit(1);
+  if (existing && existing.length > 0) { await clearPending(); return true; }
   const { error } = await runOnboarding(userId, payload);
   if (error) return false;
   await clearPending();
