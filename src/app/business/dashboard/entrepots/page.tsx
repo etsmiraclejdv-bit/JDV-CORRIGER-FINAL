@@ -152,46 +152,21 @@ export default function WarehousesPage() {
 
   const assign = async (pid: string) => {
     if (!orgId) return;
-
     const v = selected[pid];
-
     if (!v?.warehouse_id) {
       toast.error('Choisissez un entrepôt');
       return;
     }
 
     setSaving(pid);
-
-    const old = await supabase
-      .from('prospecteur_warehouse_assignments')
-      .update({
-        active: false,
-        is_primary: false,
-        unassigned_at: new Date().toISOString(),
-      })
-      .eq('organization_id', orgId)
-      .eq('prospecteur_id', pid)
-      .eq('active', true);
-
-    if (old.error) {
-      setSaving(null);
-      toast.error(old.error.message);
-      return;
-    }
-
-    const { error } = await supabase
-      .from('prospecteur_warehouse_assignments')
-      .insert({
-        organization_id: orgId,
-        prospecteur_id: pid,
-        warehouse_id: v.warehouse_id,
-        department: v.department || null,
-        city: v.city || null,
-        work_zone: v.work_zone || null,
-        is_primary: true,
-        active: true,
-      });
-
+    const { error } = await supabase.rpc('jdvcrm_assign_prospecteur_warehouse_v1', {
+      p_organization_id: orgId,
+      p_prospecteur_id: pid,
+      p_warehouse_id: v.warehouse_id,
+      p_department: v.department || null,
+      p_city: v.city || null,
+      p_work_zone: v.work_zone || null,
+    });
     setSaving(null);
 
     if (error) {
@@ -200,7 +175,7 @@ export default function WarehousesPage() {
     }
 
     toast.success('Affectation enregistrée');
-    load();
+    await load();
   };
 
   return (
