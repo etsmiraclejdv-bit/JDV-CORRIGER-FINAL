@@ -1,156 +1,29 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Building2, Users, ShoppingCart, Wallet, TrendingUp, CheckCircle, XCircle } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+
+import { useEffect, useState } from 'react';
+import { Building2, Users, CreditCard, AlertTriangle, CheckCircle2, RefreshCw, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { saleTotal, toCents } from '@/lib/services/compat';
+import { supabase } from '@/lib/supabase/client';
 
-interface PlatformStats {
-  totalOrgs: number;
-  activeOrgs: number;
-  suspendedOrgs: number;
-  totalProfiles: number;
-  totalSales: number;
-  totalRevenueCents: number;
-}
+type Row={organization_id:string;organization_name:string;organization_status:string;subscription_status:string;plan_name:string|null;expires_at:string|null;days_remaining:number|null;last_payment_status:string|null;auto_renew:boolean};
 
-interface OrgRow {
-  id: string;
-  name: string;
-  city: string | null;
-  status: string;
-  created_at: string;
-}
-
-export default function SuperAdminDashboardPage() {
-  const [stats, setStats] = useState<PlatformStats>({
-    totalOrgs: 0, activeOrgs: 0, suspendedOrgs: 0,
-    totalProfiles: 0, totalSales: 0, totalRevenueCents: 0,
-  });
-  const [recentOrgs, setRecentOrgs] = useState<OrgRow[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      const [orgsRes, profilesRes, salesRes] = await Promise.all([
-        supabase.from('organizations').select('id, name, city, status, created_at').order('created_at', { ascending: false }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('sales').select('sale_type, cash_price, credit_price, fixed_price, quantity'),
-      ]);
-
-      const orgs: OrgRow[] = orgsRes.data ?? [];
-      const totalRevenueCents = ((salesRes.data ?? []) as Record<string, unknown>[]).reduce((sum, s) => sum + toCents(saleTotal(s as never)), 0);
-
-      setStats({
-        totalOrgs: orgs.length,
-        activeOrgs: orgs.filter(o => o.status === 'active').length,
-        suspendedOrgs: orgs.filter(o => o.status !== 'active').length,
-        totalProfiles: profilesRes.count ?? 0,
-        totalSales: (salesRes.data ?? []).length,
-        totalRevenueCents,
-      });
-      setRecentOrgs(orgs.slice(0, 5));
-      setLoading(false);
-    }
-    load();
-  }, []);
-
-  const formatAmount = (cents: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(cents / 100);
-
-  const kpis = [
-    { label: 'Entreprises actives', value: loading ? '—' : stats.activeOrgs, icon: <Building2 size={20} />, color: 'text-[#D4AF37]', bg: 'bg-[#D4AF37]/10' },
-    { label: 'Utilisateurs inscrits', value: loading ? '—' : stats.totalProfiles, icon: <Users size={20} />, color: 'text-blue-400', bg: 'bg-blue-400/10' },
-    { label: 'Ventes totales', value: loading ? '—' : stats.totalSales, icon: <ShoppingCart size={20} />, color: 'text-green-400', bg: 'bg-green-400/10' },
-    { label: 'Chiffre d\'affaires', value: loading ? '—' : formatAmount(stats.totalRevenueCents), icon: <Wallet size={20} />, color: 'text-purple-400', bg: 'bg-purple-400/10' },
-  ];
-
-  return (
-    <div className="p-6 lg:p-8 space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Vue d&apos;ensemble Plateforme</h1>
-        <p className="text-sm text-[#A0AEC0] mt-1">Supervision globale de JDV CRM</p>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map((kpi, i) => (
-          <div key={i} className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-5">
-            <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center mb-3 ${kpi.color}`}>
-              {kpi.icon}
-            </div>
-            <p className="text-2xl font-bold text-white">{kpi.value}</p>
-            <p className="text-xs text-[#718096] mt-1">{kpi.label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Platform health */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-white">Statut des entreprises</h2>
-            <Link href="/hidden-concepteur-gate/dashboard/companies" className="text-xs text-[#D4AF37] hover:underline">
-              Voir tout →
-            </Link>
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-[#0A1628] rounded-xl">
-              <div className="flex items-center gap-2">
-                <CheckCircle size={16} className="text-green-400" />
-                <span className="text-sm text-[#A0AEC0]">Actives</span>
-              </div>
-              <span className="text-sm font-bold text-white">{loading ? '—' : stats.activeOrgs}</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-[#0A1628] rounded-xl">
-              <div className="flex items-center gap-2">
-                <XCircle size={16} className="text-red-400" />
-                <span className="text-sm text-[#A0AEC0]">Suspendues</span>
-              </div>
-              <span className="text-sm font-bold text-white">{loading ? '—' : stats.suspendedOrgs}</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-[#0A1628] rounded-xl">
-              <div className="flex items-center gap-2">
-                <TrendingUp size={16} className="text-[#D4AF37]" />
-                <span className="text-sm text-[#A0AEC0]">Total</span>
-              </div>
-              <span className="text-sm font-bold text-white">{loading ? '—' : stats.totalOrgs}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold text-white">Entreprises récentes</h2>
-            <Link href="/hidden-concepteur-gate/dashboard/companies" className="text-xs text-[#D4AF37] hover:underline">
-              Gérer →
-            </Link>
-          </div>
-          {loading ? (
-            <div className="space-y-2">
-              {[1,2,3].map(i => <div key={i} className="h-10 bg-[#0A1628] rounded-xl animate-pulse" />)}
-            </div>
-          ) : recentOrgs.length === 0 ? (
-            <p className="text-sm text-[#718096] text-center py-4">Aucune entreprise enregistrée</p>
-          ) : (
-            <div className="space-y-2">
-              {recentOrgs.map(org => (
-                <div key={org.id} className="flex items-center justify-between p-3 bg-[#0A1628] rounded-xl">
-                  <div>
-                    <p className="text-sm font-medium text-white">{org.name}</p>
-                    <p className="text-xs text-[#718096]">{org.city ?? '—'}</p>
-                  </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-lg ${
-                    org.status === 'active' ?'bg-green-500/20 text-green-400 border border-green-500/30' :'bg-red-500/20 text-red-400 border border-red-500/30'
-                  }`}>
-                    {org.status === 'active' ? 'Active' : 'Suspendue'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+export default function SuperAdminDashboardPage(){
+ const [rows,setRows]=useState<Row[]>([]);const [loading,setLoading]=useState(true);
+ async function load(){setLoading(true);const {data}=await supabase.rpc('jdvcrm_get_platform_companies_v1');setRows((data??[]) as Row[]);setLoading(false)}
+ useEffect(()=>{load()},[]);
+ const active=rows.filter(r=>['active','trial'].includes(r.subscription_status)).length;
+ const unpaid=rows.filter(r=>['past_due','expired','cancelled'].includes(r.subscription_status)||r.last_payment_status==='failed').length;
+ const suspended=rows.filter(r=>r.organization_status==='suspended').length;
+ const auto=rows.filter(r=>r.auto_renew).length;
+ return <div className="p-6 lg:p-8 space-y-8">
+  <div className="flex items-center justify-between"><div><h1 className="text-2xl font-bold text-white">Gestion de la plateforme</h1><p className="text-sm text-[#A0AEC0] mt-1">Contrôle global des entreprises et des abonnements JDV CRM.</p></div><button onClick={load} className="p-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white"><RefreshCw size={16}/></button></div>
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+   {[['Entreprises',rows.length,Building2,'text-[#D4AF37]'],['Abonnements actifs',active,CreditCard,'text-green-400'],['Impayées / expirées',unpaid,AlertTriangle,'text-red-400'],['Renouvellement auto',auto,CheckCircle2,'text-blue-400']].map(([l,v,I,c])=>{const Icon=I as typeof Building2;return <div key={l as string} className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-5"><Icon size={20} className={c as string}/><p className="text-2xl font-bold text-white mt-3">{loading?'—':v as number}</p><p className="text-xs text-[#718096] mt-1">{l as string}</p></div>})}
+  </div>
+  <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-6">
+   <div className="flex items-center justify-between mb-5"><div><h2 className="text-base font-semibold text-white">État des entreprises</h2><p className="text-xs text-[#718096] mt-1">Les échéances expirées sont automatiquement marquées comme expirées/suspendues lors du contrôle.</p></div><Link href="/hidden-concepteur-gate/dashboard/companies" className="flex items-center gap-1 text-xs text-[#D4AF37]">Gestion détaillée <ArrowRight size={13}/></Link></div>
+   {suspended>0&&<div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-300">{suspended} entreprise(s) actuellement suspendue(s).</div>}
+   <div className="overflow-x-auto"><table className="w-full"><thead><tr className="border-b border-[#D4AF37]/10">{['Entreprise','Abonnement','Échéance','Paiement','État'].map(h=><th key={h} className="text-left text-xs text-[#718096] uppercase px-4 py-3">{h}</th>)}</tr></thead><tbody className="divide-y divide-[#D4AF37]/5">{rows.slice(0,10).map(r=><tr key={r.organization_id}><td className="px-4 py-3 text-sm text-white">{r.organization_name}</td><td className="px-4 py-3 text-sm text-[#A0AEC0]">{r.plan_name||'—'}</td><td className="px-4 py-3 text-sm text-[#A0AEC0]">{r.expires_at?new Date(r.expires_at).toLocaleDateString('fr-FR'):'—'}</td><td className="px-4 py-3 text-sm text-[#A0AEC0]">{r.last_payment_status||'Aucun'}</td><td className="px-4 py-3"><span className={(r.organization_status==='suspended'||r.subscription_status==='expired')?'text-red-400':'text-green-400'}>{r.organization_status==='suspended'||r.subscription_status==='expired'?'Suspendue':'Active'}</span></td></tr>)}</tbody></table></div>
+  </div>
+ </div>
 }
