@@ -13,10 +13,12 @@ export default function IntelligencePresenceTracker() {
   useEffect(() => {
     let cancelled = false;
     let heartbeat: ReturnType<typeof setInterval> | null = null;
+    let currentUserId: string | null = null;
 
     const start = async () => {
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user || cancelled) return;
+      currentUserId = auth.user.id;
 
       const { data: profile } = await fetchOrgProfile();
       if (!profile?.organization_id || cancelled) return;
@@ -83,7 +85,11 @@ export default function IntelligencePresenceTracker() {
       if (heartbeat) clearInterval(heartbeat);
       const id = sessionIdRef.current;
       if (id) {
-        void supabase.from('user_activity_sessions').update({ ended_at: new Date().toISOString() }).eq('id', id) .eq('user_id', (await supabase.auth.getUser()).data.user?.id ?? '');
+        void supabase
+          .from('user_activity_sessions')
+          .update({ ended_at: new Date().toISOString() })
+          .eq('id', id)
+          .eq('user_id', currentUserId ?? '');
       }
       if (channelRef.current) {
         void channelRef.current.untrack();
