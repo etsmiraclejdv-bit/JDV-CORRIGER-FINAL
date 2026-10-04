@@ -75,6 +75,7 @@ function NewSaleForm() {
 
   const total = unitPrice * quantity;
   const remaining = saleType === 'cash' ? 0 : Math.max(total - amountPaid, 0);
+  useEffect(() => { if (frequency === 'four_installments' && remaining > 0) setInstallment(Math.ceil(remaining / 4)); }, [frequency, remaining]);
   const fmt = (n: number) =>
     new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(n);
 
@@ -200,7 +201,7 @@ function NewSaleForm() {
               </div>
               <div>
                 <label className={labelCls}>Montant de chaque versement (XOF)</label>
-                <input type="number" min={0} value={installment} onChange={(e) => setInstallment(Math.max(0, parseInt(e.target.value) || 0))} className={inputCls} />
+                <input type="number" min={0} value={installment} disabled={frequency === 'four_installments'} onChange={(e) => setInstallment(Math.max(0, parseInt(e.target.value) || 0))} className={inputCls} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -210,7 +211,7 @@ function NewSaleForm() {
                   <option value="daily">Journalière</option>
                   <option value="weekly">Hebdomadaire</option>
                   <option value="biweekly">Toutes les 2 semaines</option>
-                  <option value="monthly">Mensuelle</option>
+                  <option value="monthly">Mensuelle</option>\n                  <option value="four_installments">Crédit en 4 échéances (hebdomadaires)</option>
                 </select>
               </div>
               <div>
