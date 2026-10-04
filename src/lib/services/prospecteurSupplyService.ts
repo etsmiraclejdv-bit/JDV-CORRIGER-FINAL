@@ -55,20 +55,23 @@ export async function getMySupplyRequests(prospecteurId:string,organizationId:st
   return { data:data ?? [],error };
 }
 
-export async function requestSupply(organizationId:string,prospecteurId:string,warehouseId:string,items:{article_id:string;quantity:number}[]) {
+export async function requestSupply(
+  organizationId:string,
+  _prospecteurId:string,
+  warehouseId:string,
+  items:{article_id:string;quantity:number}[]
+) {
   if (!items.length) return { data:null,error:new Error('Sélectionnez au moins un article') };
-  const { data:request,error } = await supabase.from('prospecteur_supply_requests')
-    .insert({organization_id:organizationId,prospecteur_id:prospecteurId,warehouse_id:warehouseId,status:'pending'})
-    .select('id').single();
-  if (error || !request) return { data:null,error:error ?? new Error('Demande non créée') };
-  const { error:itemError } = await supabase.from('prospecteur_supply_request_items').insert(
-    items.map(i=>({organization_id:organizationId,request_id:request.id,article_id:i.article_id,quantity:i.quantity}))
-  );
-  if (itemError) {
-    await supabase.from('prospecteur_supply_requests').delete().eq('id',request.id);
-    return { data:null,error:itemError };
-  }
-  return { data:request,error:null };
+
+  // Le prospecteur ne demande plus une validation à l'administrateur.
+  // Le réapprovisionnement est exécuté atomiquement depuis son entrepôt
+  // principal affecté par la fonction SQL sécurisée.
+  const { data,error } = await supabase.rpc('jdvcrm_request_prospecteur_supply_v1',{
+    p_warehouse_id: warehouseId,
+    p_items: items,
+  });
+
+  return { data,error };
 }
 
 export async function getMySales(organizationId:string,prospecteurId:string) {
