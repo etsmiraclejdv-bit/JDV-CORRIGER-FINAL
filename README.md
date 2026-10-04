@@ -89,3 +89,5 @@ You can check out the [Next.js GitHub repository](https://github.com/vercel/next
 - Styled with Tailwind CSS
 
 Built with ❤️ on Rocket.new
+
+<!-- JDV CRM deployment sync 2026-10-04 -->
