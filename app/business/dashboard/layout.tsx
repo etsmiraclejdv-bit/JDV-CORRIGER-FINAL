@@ -4,7 +4,7 @@ import AppLogo from '@/components/ui/AppLogo';
 import NotificationBell from '@/components/NotificationBell';
 import UserProfilePanel from '@/components/UserProfilePanel';
 import Modal from '@/components/ui/Modal';
-import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
@@ -14,6 +14,7 @@ const navItems = [
   { id: 'prospects', label: 'Prospects', icon: <UserCheck size={18} />, href: '/business/dashboard/prospects', group: 'CRM' },
   { id: 'clients', label: 'Clients', icon: <Users size={18} />, href: '/business/dashboard/clients', group: 'CRM' },
   { id: 'ventes', label: 'Ventes', icon: <ShoppingCart size={18} />, href: '/business/dashboard/ventes', group: 'Commercial' },
+  { id: 'visites', label: 'Visites terrain', icon: <MapPin size={18} />, href: '/business/dashboard/visites', group: 'Commercial' },
   { id: 'relances', label: 'Relances & impayés', icon: <AlertTriangle size={18} />, href: '/business/dashboard/relances', group: 'Commercial' },
   { id: 'catalogue', label: 'Catalogue', icon: <BookOpen size={18} />, href: '/business/dashboard/catalogue', group: 'Commercial' },
   { id: 'prospecteurs', label: 'Prospecteurs', icon: <UserCheck size={18} />, href: '/business/dashboard/prospecteurs', group: 'Équipe' },
