@@ -4,7 +4,7 @@ import AppLogo from '@/components/ui/AppLogo';
 import NotificationBell from '@/components/NotificationBell';
 import UserProfilePanel from '@/components/UserProfilePanel';
 import Modal from '@/components/ui/Modal';
-import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent, Warehouse } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
@@ -22,6 +22,7 @@ const navItems = [
   { id: 'fournisseurs', label: 'Fournisseurs', icon: <Truck size={18} />, href: '/business/dashboard/fournisseurs', group: 'Logistique' },
   { id: 'achats', label: 'Achats', icon: <ClipboardList size={18} />, href: '/business/dashboard/achats', group: 'Logistique' },
   { id: 'stock', label: 'Stock', icon: <Package size={18} />, href: '/business/dashboard/stock', group: 'Logistique' },
+  { id: 'entrepots', label: 'Entrepôts & zones', icon: <Warehouse size={18} />, href: '/business/dashboard/entrepots', group: 'Logistique' },
   { id: 'finances', label: 'Finances & commissions', icon: <Wallet size={18} />, href: '/business/dashboard/finances', group: 'Analyse' },
   { id: 'commissions', label: 'Règles de commissions', icon: <Percent size={18} />, href: '/business/dashboard/commissions', group: 'Analyse' },
   { id: 'rapports', label: 'Rapports', icon: <FileText size={18} />, href: '/business/dashboard/reports', group: 'Analyse' },
