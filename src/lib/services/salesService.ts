@@ -111,6 +111,26 @@ export async function createSale(sale: Partial<Sale> & Record<string, unknown>) 
       amountCents: typeof amount_cents === 'number' ? amount_cents : toCents(saleTotal(data as never)),
       portal: 'business',
     });
+
+    // Le trigger SQL calcule la commission et crée la file de payout.
+    // On déclenche ensuite le versement FedaPay automatiquement côté serveur.
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (accessToken) {
+        await fetch('/api/commissions/payout', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ saleId: data.id }),
+        });
+      }
+    } catch (payoutError) {
+      console.error('[commission-payout]', payoutError);
+      // La commission reste en file d'attente/échec et pourra être relancée.
+    }
   }
   return { data, error };
 }
