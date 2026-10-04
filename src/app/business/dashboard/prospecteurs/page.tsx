@@ -19,6 +19,7 @@ interface ProspecteurRow {
 
 export default function BusinessProspecteursPage() {
   const [prospecteurs, setProspecteurs] = useState<ProspecteurRow[]>([]);
+  const [warehouses, setWarehouses] = useState<{id:string;name:string;code:string;city:string|null}[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [orgId, setOrgId] = useState<string | null>(null);
@@ -26,7 +27,7 @@ export default function BusinessProspecteursPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const emptyForm = { firstName: '', lastName: '', email: '', phone: '', password: '', commissionRate: 10 };
+  const emptyForm = { firstName: '', lastName: '', email: '', phone: '', password: '', commissionRate: 10, warehouseId: '', department: '', workCity: '', workZone: '' };
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function BusinessProspecteursPage() {
       if (profile?.organization_id) {
         setOrgId(profile.organization_id);
         loadProspecteurs(profile.organization_id);
+        supabase.from('warehouses').select('id,name,code,city').eq('organization_id', profile.organization_id).eq('active', true).order('name').then(({ data }) => setWarehouses((data ?? []) as {id:string;name:string;code:string;city:string|null}[]));
         supabase.from('organizations').select('name').eq('id', profile.organization_id).maybeSingle().then(({ data: o }) => {
           setOrgName(((o as { name?: string } | null)?.name) ?? '');
         });
@@ -242,6 +244,18 @@ export default function BusinessProspecteursPage() {
               <input type="number" min={0} max={100} step="0.5" value={form.commissionRate}
                 onChange={e => setForm(f => ({ ...f, commissionRate: Math.min(100, Math.max(0, Number(e.target.value) || 0)) }))}
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
+            </div>
+          </div>
+          <div className="space-y-3 rounded-xl border border-[#D4AF37]/10 p-4">
+            <p className="text-xs font-semibold text-[#D4AF37]">Affectation terrain (définie par l’administrateur)</p>
+            <select value={form.warehouseId} onChange={e => setForm(f => ({ ...f, warehouseId: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm">
+              <option value="">Aucun entrepôt pour le moment</option>
+              {warehouses.map(w => <option key={w.id} value={w.id}>{w.name} — {w.code}{w.city ? ` — ${w.city}` : ''}</option>)}
+            </select>
+            <div className="grid grid-cols-3 gap-3">
+              <input placeholder="Département" value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm" />
+              <input placeholder="Ville de travail" value={form.workCity} onChange={e => setForm(f => ({ ...f, workCity: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm" />
+              <input placeholder="Zone / secteur" value={form.workZone} onChange={e => setForm(f => ({ ...f, workZone: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm" />
             </div>
           </div>
           <div>
