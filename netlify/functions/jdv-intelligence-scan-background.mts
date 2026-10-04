@@ -1,5 +1,3 @@
-import type { Config } from '@netlify/functions';
-
 export default async () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -26,6 +24,6 @@ export default async () => {
   console.log('JDV intelligence scan:', await response.text());
 };
 
-export const config: Config = {
+export const config = {
   schedule: '*/15 * * * *',
 };
