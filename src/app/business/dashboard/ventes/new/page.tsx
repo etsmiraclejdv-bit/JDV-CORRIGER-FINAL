@@ -211,7 +211,8 @@ function NewSaleForm() {
                   <option value="daily">Journalière</option>
                   <option value="weekly">Hebdomadaire</option>
                   <option value="biweekly">Toutes les 2 semaines</option>
-                  <option value="monthly">Mensuelle</option>\n                  <option value="four_installments">Crédit en 4 échéances (hebdomadaires)</option>
+                  <option value="monthly">Mensuelle</option>
+                  <option value="four_installments">Crédit en 4 échéances (hebdomadaires)</option>
                 </select>
               </div>
               <div>
