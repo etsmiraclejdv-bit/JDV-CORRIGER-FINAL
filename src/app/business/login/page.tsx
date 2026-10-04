@@ -46,7 +46,7 @@ export default function BusinessLoginPage() {
         return;
       }
       const { data: sessionData } = await supabase.auth.getUser();
-      if (sessionData.user) await completePendingOnboarding(sessionData.user.id, email);
+      if (sessionData.user) { const completed = await completePendingOnboarding(sessionData.user.id, email); if (completed) { router.replace('/business/onboarding'); return; } }
       const result = await checkCurrentBusinessAdmin();
       if (!result.ok) {
         await supabase.auth.signOut();
