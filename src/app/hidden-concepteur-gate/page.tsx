@@ -32,7 +32,7 @@ export default async function ConcepteurGatePage() {
     {
       title: 'CONCEPTEUR / CONTRÔLE',
       description: 'Piloter la plateforme, les entreprises, utilisateurs, abonnements, plans, audit, maintenance et configuration globale.',
-      href: '/hidden-concepteur-gate',
+      href: '/hidden-concepteur-gate/dashboard',
       icon: ShieldCheck,
     },
   ];
