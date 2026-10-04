@@ -1,6 +1,6 @@
 export default async () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = Netlify.env.get('NEXT_PUBLIC_SUPABASE_URL');
+  const key = Netlify.env.get('SUPABASE_SERVICE_ROLE_KEY');
   if (!url || !key) {
     console.error('JDV intelligence scan: Supabase environment variables are missing');
     return;
