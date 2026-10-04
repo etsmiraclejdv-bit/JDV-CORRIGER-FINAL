@@ -68,7 +68,7 @@ export default function LogisticsControlPage() {
       <div className="flex flex-wrap justify-between gap-4">
         <div>
           <div className="flex items-center gap-2"><Warehouse className="text-[#D4AF37]" /><h1 className="text-2xl font-bold text-white">Centre de contrôle logistique</h1></div>
-          <p className="mt-1 text-sm text-[#A0AEC0]">Entreprise → entrepôts → zones → prospecteurs → stocks → retours.</p>
+          <p className="mt-1 text-sm text-[#A0AEC0]">Entreprise → entrepôts → zones → prospecteurs → stocks → retours. L’entreprise alimente les entrepôts ; chaque prospecteur se réapprovisionne exclusivement dans son entrepôt affecté.</p>
         </div>
         <button onClick={load} className="rounded-xl border border-[#D4AF37]/20 px-3 py-2 text-sm text-white"><RefreshCw size={15} className="inline mr-1" />Actualiser</button>
       </div>
@@ -81,7 +81,7 @@ export default function LogisticsControlPage() {
         <div className={card}><Boxes size={18} className="text-[#D4AF37]" /><p className="mt-2 text-2xl font-bold text-white">{inventory.length}</p><p className="text-xs text-[#A0AEC0]">Lignes stock entrepôt</p></div>
         <div className={card}><AlertTriangle size={18} className="text-red-300" /><p className="mt-2 text-2xl font-bold text-white">{metrics.low}</p><p className="text-xs text-[#A0AEC0]">Stocks faibles</p></div>
         <div className={card}><Clock3 size={18} className="text-orange-300" /><p className="mt-2 text-2xl font-bold text-white">{metrics.overdue}</p><p className="text-xs text-[#A0AEC0]">Retours J+10</p></div>
-        <div className={card}><Truck size={18} className="text-[#D4AF37]" /><p className="mt-2 text-2xl font-bold text-white">{metrics.requests}</p><p className="text-xs text-[#A0AEC0]">Demandes en attente</p></div>
+        <div className={card}><Truck size={18} className="text-[#D4AF37]" /><p className="mt-2 text-2xl font-bold text-white">{metrics.requests}</p><p className="text-xs text-[#A0AEC0]">Demandes d’approvisionnement</p></div>
       </div>
 
       <section className={card}>
@@ -116,8 +116,8 @@ export default function LogisticsControlPage() {
       </section>
 
       <section className={card}>
-        <h2 className="font-semibold text-white mb-4">Demandes d’approvisionnement en attente</h2>
-        {requests.length === 0 ? <p className="text-sm text-[#718096]">Aucune demande en attente.</p> : <div className="space-y-2">{requests.map(r => <div key={r.id} className="flex justify-between rounded-xl bg-[#0A1628] p-3"><span className="text-sm text-white">{r.prospecteurs?.first_name} {r.prospecteurs?.last_name} → {r.warehouses?.name}</span><span className="text-xs text-[#A0AEC0]">{new Date(r.requested_at).toLocaleString('fr-FR')}</span></div>)}</div>}
+        <h2 className="font-semibold text-white mb-4">Flux d’approvisionnement</h2>
+        {requests.length === 0 ? <p className="text-sm text-[#718096]">Aucun approvisionnement en attente.</p> : <div className="space-y-2">{requests.map(r => <div key={r.id} className="flex justify-between rounded-xl bg-[#0A1628] p-3"><span className="text-sm text-white">{r.prospecteurs?.first_name} {r.prospecteurs?.last_name} → {r.warehouses?.name}</span><span className="text-xs text-[#A0AEC0]">{new Date(r.requested_at).toLocaleString('fr-FR')}</span></div>)}</div>}
       </section>
 
       <section className={card}>
