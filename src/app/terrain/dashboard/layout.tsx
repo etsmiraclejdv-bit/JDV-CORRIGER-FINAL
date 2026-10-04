@@ -8,9 +8,11 @@ import NotificationBell from '@/components/NotificationBell';
 import UserProfilePanel from '@/components/UserProfilePanel';
 import Modal from '@/components/ui/Modal';
 import { supabase } from '@/lib/supabase/client';
+import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 
 const navItems = [
   { id: 'dashboard', label: 'Mon tableau de bord', icon: <LayoutDashboard size={18} />, href: '/terrain/dashboard', group: 'Principal' },
+  { id: 'intelligence', label: 'Mon assistant IA', icon: <AlertTriangle size={18} />, href: '/terrain/dashboard/intelligence', group: 'Principal' },
   { id: 'approvisionnement', label: 'Mon approvisionnement', icon: <Warehouse size={18} />, href: '/terrain/dashboard/approvisionnement', group: 'Stock' },
   { id: 'ventes', label: 'Mes ventes', icon: <ShoppingCart size={18} />, href: '/terrain/dashboard/ventes', group: 'Activité' },
   { id: 'prospects', label: 'Mes prospects', icon: <Users size={18} />, href: '/terrain/dashboard/prospects', group: 'Activité' },
