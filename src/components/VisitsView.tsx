@@ -237,4 +237,128 @@ export default function VisitsView({ mode }: VisitsViewProps) {
             </button>
           )}
         </div>
+      </div> 
+      {error && (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+          {error}
+        </div>
+      )}
+
+      <div className={`grid grid-cols-1 sm:grid-cols-2 ${isTerrain ? 'xl:grid-cols-4' : 'xl:grid-cols-3'} gap-4`}>
+        <MetricCard title="Visites ce mois" value={String(summary.thisMonth)} subtitle={`${summary.total} au total`} icon={<MapPin size={18} />} variant="gold" />
+        <MetricCard title="7 derniers jours" value={String(summary.last7Days)} subtitle="visites récentes" icon={<Calendar size={18} />} variant="default" />
+        <MetricCard title="Personnes visitées" value={String(summary.distinctProspects)} subtitle="prospects différents" icon={<Users size={18} />} variant="default" />
+        {isTerrain && (
+          <MetricCard title="À relancer" value={String(due.length)} subtitle="relances échues" icon={<Clock size={18} />} variant={due.length > 0 ? 'warning' : 'success'} />
+        )}
       </div>
+
+      {isTerrain && (
+        <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-[#D4AF37]/10 flex items-center gap-2">
+            <Clock size={16} className="text-[#D4AF37]" />
+            <h2 className="text-sm font-semibold text-white">Prospects à relancer</h2>
+            <span className="text-xs text-[#718096]">({due.length})</span>
+          </div>
+          {due.length === 0 ? (
+            <div className="py-8 text-center px-6">
+              <CheckCircle size={26} className="mx-auto mb-2 text-[#68D391] opacity-70" />
+              <p className="text-sm text-[#A0AEC0]">Aucune relance en retard.</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-[#D4AF37]/5">
+              {due.slice(0, 8).map((p) => {
+                const tel = toTelHref(p.phone);
+                return (
+                  <li key={p.id} className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm text-white">{p.name}</p>
+                      <p className="text-xs text-[#718096]">
+                        Relance prévue le {formatDateTimeFr(p.next_follow_up_at)}
+                        {p.city ? ` · ${p.city}` : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {tel && (
+                        <a href={tel} aria-label={`Appeler ${p.name}`} className="p-2 rounded-lg bg-[#0B1B3D] border border-[#D4AF37]/20 text-[#D4AF37] hover:bg-[#D4AF37]/10">
+                          <Phone size={14} />
+                        </a>
+                      )}
+                      <button onClick={() => openCreate(p.id)} className="px-3 py-2 rounded-lg text-xs font-semibold bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/20">
+                        Enregistrer une visite
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-col lg:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher un nom, un numéro, un lieu ou une note…"
+            aria-label="Rechercher une visite"
+            className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
+          />
+        </div>
+        <select value={resultFilter} onChange={(e) => setResultFilter(e.target.value)} aria-label="Filtrer par résultat" className={`${inputClass} lg:w-56`}>
+          <option value="">Tous les résultats</option>
+          {VISIT_RESULTS.map((r) => (
+            <option key={r.value} value={r.value}>{r.label}</option>
+          ))}
+        </select>
+        {!isTerrain && (
+          <select value={prospecteurFilter} onChange={(e) => setProspecteurFilter(e.target.value)} aria-label="Filtrer par prospecteur" className={`${inputClass} lg:w-56`}>
+            <option value="">Tous les prospecteurs</option>
+            {prospecteurIds.map((id) => (
+              <option key={id} value={id}>{names[id] || 'Prospecteur'}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
+        {visible.length === 0 ? (
+          <div className="py-16 text-center px-6">
+            <MapPin size={32} className="mx-auto mb-3 text-[#D4AF37] opacity-60" />
+            <p className="text-white text-sm font-semibold mb-1">{visits.length === 0 ? 'Aucune visite enregistrée' : 'Aucun résultat'}</p>
+            <p className="text-[#A0AEC0] text-sm">
+              {visits.length === 0
+                ? isTerrain
+                  ? 'Enregistrez votre première visite avec « Nouvelle visite ».'
+                  : "Les visites saisies par vos prospecteurs apparaîtront ici."
+                : 'Modifiez la recherche ou les filtres.'}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#D4AF37]/10">
+                  {['Date', 'Contact', ...(isTerrain ? [] : ['Prospecteur']), 'Résultat', 'Notes', 'Prochaine relance', 'Lieu'].map((h) => (
+                    <th key={h} className={TH}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((v) => {
+                  const map = mapsUrl(v.latitude, v.longitude);
+                  const tel = toTelHref(v.contact_phone);
+                  return (
+                    <tr key={v.id} className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50">
+                      <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{formatDateTimeFr(v.visit_date)}</td>
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-medium text-white">{v.contact_name}</p>
+                        {v.contact_phone && (tel ? (
+                          <a href={tel} className="text-xs text-[#D4AF37] hover:underline">{v.contact_phone}</a>
+                        ) : (
+                          <p className="text-xs text-[#718096]">{v.contact_phone}</p>
+                        ))}
+                      </td>
