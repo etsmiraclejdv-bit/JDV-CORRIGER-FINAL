@@ -361,4 +361,100 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                         ) : (
                           <p className="text-xs text-[#718096]">{v.contact_phone}</p>
                         ))}
+                      </td>                      {!isTerrain && <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{names[v.prospecteur_id] || '—'}</td>}
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${RESULT_CLASSES[v.result ?? 'other'] ?? RESULT_CLASSES.other}`}>
+                          {visitResultLabel(v.result)}
+                        </span>
                       </td>
+                      <td className="px-4 py-3 text-xs text-[#A0AEC0] max-w-xs break-words">{v.notes || '—'}</td>
+                      <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{v.next_follow_up_at ? formatDateTimeFr(v.next_follow_up_at) : '—'}</td>
+                      <td className="px-4 py-3 text-sm whitespace-nowrap">
+                        {map ? (
+                          <a href={map} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#D4AF37] hover:underline">
+                            <MapPin size={12} /> Carte
+                          </a>
+                        ) : (
+                          <span className="text-[#A0AEC0]">{v.address || '—'}</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {isTerrain && (
+        <Modal open={open} onClose={() => !saving && setOpen(false)} title="Nouvelle visite" size="xl">
+          <div className="space-y-4">
+            {formError && (
+              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">{formError}</div>
+            )}
+            {prospects.length === 0 && (
+              <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
+                Vous n&apos;avez aucun prospect. Ajoutez-en un dans « Mes prospects » avant d&apos;enregistrer une visite.
+              </div>
+            )}
+            <div>
+              <label className={labelClass} htmlFor="v-prospect">Prospect visité *</label>
+              <select id="v-prospect" value={form.prospect_id} onChange={(e) => setForm((f) => ({ ...f, prospect_id: e.target.value }))} className={inputClass}>
+                <option value="">Choisir…</option>
+                {prospects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.phone ? `${p.name} — ${p.phone}` : p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass} htmlFor="v-date">Date et heure *</label>
+                <input id="v-date" type="datetime-local" value={form.visit_date} onChange={(e) => setForm((f) => ({ ...f, visit_date: e.target.value }))} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass} htmlFor="v-result">Résultat *</label>
+                <select id="v-result" value={form.result} onChange={(e) => setForm((f) => ({ ...f, result: e.target.value }))} className={inputClass}>
+                  <option value="">Choisir…</option>
+                  {VISIT_RESULTS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className={labelClass} htmlFor="v-notes">Notes</label>
+              <textarea id="v-notes" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} maxLength={2000} rows={3} className={inputClass} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass} htmlFor="v-next">Prochaine relance</label>
+                <input id="v-next" type="datetime-local" value={form.next_follow_up_at} onChange={(e) => setForm((f) => ({ ...f, next_follow_up_at: e.target.value }))} className={inputClass} />
+              </div>
+              <div>
+                <label className={labelClass} htmlFor="v-address">Lieu de la visite</label>
+                <input id="v-address" value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} maxLength={300} className={inputClass} />
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <button type="button" onClick={locate} disabled={locating} className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 disabled:opacity-50">
+                <MapPin size={14} /> {locating ? 'Localisation…' : 'Enregistrer ma position'}
+              </button>
+              {form.latitude !== null && form.longitude !== null && (
+                <span className="text-xs text-[#A0AEC0]">
+                  Position : {form.latitude}, {form.longitude}{' '}
+                  <button type="button" onClick={() => setForm((f) => ({ ...f, latitude: null, longitude: null }))} className="underline ml-1">Retirer</button>
+                </span>
+              )}
+              <span className="text-xs text-[#718096]">Facultatif : votre navigateur vous demandera l&apos;autorisation.</span>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setOpen(false)} disabled={saving} className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white disabled:opacity-50">Annuler</button>
+              <button onClick={() => void handleSave()} disabled={saving || prospects.length === 0} className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50">
+                {saving ? 'Enregistrement…' : 'Enregistrer la visite'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
