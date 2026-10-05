@@ -118,3 +118,123 @@ export default function VisitsView({ mode }: VisitsViewProps) {
       setVisits(v.data);
       setNames(n);
     }
+    setLoading(false);
+  }, [isTerrain]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const now = useMemo(() => new Date(), [visits, prospects]); // eslint-disable-line react-hooks/exhaustive-deps
+  const summary = useMemo(() => summarizeVisits(visits, now), [visits, now]);
+  const due = useMemo(() => prospectsDueForFollowUp(prospects, now), [prospects, now]);
+
+  const visible = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const qDigits = q.replace(/\D/g, '');
+    return visits.filter((v) => {
+      if (resultFilter && (v.result ?? 'other') !== resultFilter) return false;
+      if (prospecteurFilter && v.prospecteur_id !== prospecteurFilter) return false;
+      if (!q) return true;
+      return (
+        v.contact_name.toLowerCase().includes(q) ||
+        (v.notes ?? '').toLowerCase().includes(q) ||
+        (v.address ?? '').toLowerCase().includes(q) ||
+        (qDigits.length >= 3 && (v.contact_phone ?? '').replace(/\D/g, '').includes(qDigits))
+      );
+    });
+  }, [visits, search, resultFilter, prospecteurFilter]);
+
+  function openCreate(prospectId = '') {
+    setForm(emptyForm(prospectId));
+    setFormError('');
+    setOpen(true);
+  }
+
+  function locate() {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      setFormError("La géolocalisation n'est pas disponible sur cet appareil.");
+      return;
+    }
+    setLocating(true);
+    setFormError('');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm((f) => ({
+          ...f,
+          latitude: Math.round(pos.coords.latitude * 1e6) / 1e6,
+          longitude: Math.round(pos.coords.longitude * 1e6) / 1e6,
+        }));
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+        setFormError("Position introuvable. Autorisez la localisation dans votre navigateur, ou laissez ce champ vide.");
+      },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 }
+    );
+  }
+
+  async function handleSave() {
+    if (!orgId || !prospecteurId || saving) return;
+    const input = {
+      prospect_id: form.prospect_id,
+      visit_date: fromDatetimeLocal(form.visit_date),
+      result: form.result,
+      notes: form.notes,
+      next_follow_up_at: fromDatetimeLocal(form.next_follow_up_at),
+      address: form.address,
+      latitude: form.latitude,
+      longitude: form.longitude,
+    };
+    const problem = validateVisit(input, new Date());
+    if (problem) {
+      setFormError(problem);
+      return;
+    }
+    setSaving(true);
+    const { error: err } = await createVisit(orgId, prospecteurId, input);
+    setSaving(false);
+    if (err) {
+      setFormError(err);
+      return;
+    }
+    toast.success('Visite enregistrée. La fiche du prospect a été mise à jour.');
+    setOpen(false);
+    void load();
+  }
+
+  if (loading && visits.length === 0 && !error) return <LoadingState message="Chargement des visites…" />;
+  if (error && visits.length === 0 && prospects.length === 0 && !orgId) {
+    return <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />;
+  }
+
+  const prospecteurIds = Array.from(new Set(visits.map((v) => v.prospecteur_id)));
+
+  return (
+    <div className="p-6 lg:p-8 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-white">{isTerrain ? 'Mes visites' : 'Visites terrain'}</h1>
+          <p className="text-sm text-[#A0AEC0] mt-1">
+            {isTerrain ? 'Enregistrez vos visites chez les prospects et suivez vos relances' : 'Activité de visite de vos prospecteurs'}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => void load()}
+            disabled={loading}
+            aria-label="Actualiser la liste"
+            className="flex items-center gap-2 btn-outline-gold px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            Actualiser
+          </button>
+          {isTerrain && (
+            <button onClick={() => openCreate()} className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold">
+              <Plus size={14} />
+              Nouvelle visite
+            </button>
+          )}
+        </div>
+      </div>
