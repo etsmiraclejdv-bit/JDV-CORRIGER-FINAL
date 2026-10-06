@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     });
 
     // Seul l'admin de cette entreprise (ou le concepteur) peut créer un prospecteur.
-    const [{ data: sa }, { data: member }] = await Promise.all([
+    const [{ data: sa }, { data: member }, { data: organization }] = await Promise.all([
       supabaseAdmin.from('super_admins').select('id, status, actif').eq('user_id', caller.user.id).maybeSingle(),
       supabaseAdmin
         .from('organization_members')
@@ -79,10 +79,29 @@ export async function POST(req: NextRequest) {
         .eq('user_id', caller.user.id)
         .eq('status', 'active')
         .maybeSingle(),
+      supabaseAdmin
+        .from('organizations')
+        .select('id, owner_user_id, status')
+        .eq('id', organizationId)
+        .maybeSingle(),
     ]);
-    const isSuper = !!sa && (sa as { status?: string }).status === 'active' && (sa as { actif?: boolean | null }).actif !== false;
-    const isAdmin = !!member && ['business_admin', 'admin'].includes(String((member as { role: string }).role).toLowerCase());
-    if (!isSuper && !isAdmin) {
+
+    const isSuper =
+      !!sa &&
+      (sa as { status?: string }).status === 'active' &&
+      (sa as { actif?: boolean | null }).actif !== false;
+
+    const memberRole = String((member as { role?: string } | null)?.role ?? '').toLowerCase();
+    const isAdmin = ['business_admin', 'admin'].includes(memberRole);
+
+    // The auth context already treats an organization owner as its business admin.
+    // Keep the API authorization aligned with that rule.
+    const isOwner =
+      !!organization &&
+      (organization as { owner_user_id?: string | null }).owner_user_id === caller.user.id &&
+      (organization as { status?: string | null }).status !== 'suspended';
+
+    if (!isSuper && !isAdmin && !isOwner) {
       return NextResponse.json({ error: 'Accès refusé pour cette entreprise' }, { status: 403 });
     }
 
