@@ -67,7 +67,14 @@ export default function RegistrationSection() {
       }
       setSubmitted(true);
       toast.success(authData.session?'Dossier envoyé au Concepteur.':'Compte créé. Confirmez votre email puis connectez-vous pour finaliser le dossier.');
-    }catch(e){const m=e instanceof Error?e.message:'Une erreur est survenue';setError(m);toast.error(m);}
+    }catch(e){
+      const err = e as { message?: string; error_description?: string; code?: string; details?: string; hint?: string } | null;
+      const rawMessage = err?.message || err?.error_description || '';
+      const m = rawMessage || (err?.code ? 'Erreur ' + err.code : 'Une erreur est survenue');
+      console.error('[registration] erreur inscription dossier entreprise', { code: err?.code, message: rawMessage, details: err?.details, hint: err?.hint });
+      setError(m);
+      toast.error(m);
+    }
     finally{setLoading(false);}
   }
 
