@@ -4,10 +4,8 @@ import {
   ArrowRight,
   Banknote,
   Building2,
-  CheckCircle2,
   CreditCard,
   MapPin,
-  Package,
   Users,
 } from 'lucide-react';
 
