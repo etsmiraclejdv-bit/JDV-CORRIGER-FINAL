@@ -57,8 +57,17 @@ export default function RegistrationSection() {
       // Si l'utilisateur est déjà connecté, ne recrée jamais son compte Auth.
       const {data:{session:currentSession}}=await supabase.auth.getSession();
       if(currentSession){
-        const {error:submitError}=await supabase.rpc('jdvcrm_submit_company_application_v1',payload);
+        const {data:applicationId,error:submitError}=await supabase.rpc('jdvcrm_submit_company_application_v1',payload);
         if(submitError)throw submitError;
+        if(applicationId){
+          const {data:{session}}=await supabase.auth.getSession();
+          if(session){
+            const {error:emailError}=await supabase.functions.invoke('send-email',{
+              body:{type:'company_received',application_id:applicationId}
+            });
+            if(emailError) console.warn('[registration] email de réception non envoyé',emailError);
+          }
+        }
         localStorage.removeItem('jdv_pending_company_application');
         setSubmitted(true);
         toast.success('Dossier envoyé au Concepteur.');
@@ -86,8 +95,14 @@ export default function RegistrationSection() {
 
       localStorage.setItem('jdv_pending_company_application',JSON.stringify(payload));
       if(authData.session){
-        const {error:submitError}=await supabase.rpc('jdvcrm_submit_company_application_v1',payload);
+        const {data:applicationId,error:submitError}=await supabase.rpc('jdvcrm_submit_company_application_v1',payload);
         if(submitError)throw submitError;
+        if(applicationId){
+          const {error:emailError}=await supabase.functions.invoke('send-email',{
+            body:{type:'company_received',application_id:applicationId}
+          });
+          if(emailError) console.warn('[registration] email de réception non envoyé',emailError);
+        }
         localStorage.removeItem('jdv_pending_company_application');
       }
       setSubmitted(true);
