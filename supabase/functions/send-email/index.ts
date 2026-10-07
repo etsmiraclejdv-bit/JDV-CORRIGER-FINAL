@@ -11,14 +11,21 @@ function escapeHtml(value: unknown): string {
     .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...CORS_HEADERS },
   });
 }
 
 serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { status: 200, headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "Méthode non autorisée" }, 405);
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -77,7 +84,6 @@ serve(async (req) => {
 
     const redirectTo = `${siteUrl}/business/finalize-account?application_id=${encodeURIComponent(applicationId)}`;
     let finalizationUrl: string | null = null;
-    let fallbackSent = false;
 
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
@@ -127,7 +133,7 @@ serve(async (req) => {
       }
     }
 
-    if ((!resendKey || !finalizationUrl) && !fallbackSent) {
+    if (!resendKey) {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         application.professional_email,
         { redirectTo },
