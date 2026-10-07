@@ -41,12 +41,6 @@ export default function RegistrationSection() {
   async function onSubmit(d:FormData){
     setLoading(true);setError('');
     try{
-      const {data:authData,error:authError}=await supabase.auth.signUp({
-        email:d.professionalEmail,password:d.password,
-        options:{data:{pending_company_application:true,professional_email:d.professionalEmail}}
-      });
-      if(authError)throw authError;
-      if(!authData.user)throw new Error('Impossible de créer le compte.');
       const payload={
         p_company_name:d.organizationName,p_legal_name:d.legalName,p_legal_form:d.legalForm,p_company_nature:d.companyNature,
         p_legal_status:d.legalStatus,p_primary_sector_id:d.primarySectorId,p_secondary_sector_ids:[],
@@ -59,10 +53,41 @@ export default function RegistrationSection() {
         p_associate_count:Number(d.associateCount)||null,p_manager_count:Number(d.managerCount)||null,
         p_people_count:Number(d.peopleCount)||null,p_company_size:d.companySize
       };
+
+      // Si l'utilisateur est déjà connecté, ne recrée jamais son compte Auth.
+      const {data:{session:currentSession}}=await supabase.auth.getSession();
+      if(currentSession){
+        const {error:submitError}=await supabase.rpc('jdvcrm_submit_company_application_v1',payload);
+        if(submitError)throw submitError;
+        localStorage.removeItem('jdv_pending_company_application');
+        setSubmitted(true);
+        toast.success('Dossier envoyé au Concepteur.');
+        return;
+      }
+
+      let {data:authData,error:authError}=await supabase.auth.signUp({
+        email:d.professionalEmail,password:d.password,
+        options:{data:{pending_company_application:true,professional_email:d.professionalEmail}}
+      });
+
+      // L'adresse existe déjà : utiliser uniquement le mot de passe fourni pour
+      // ouvrir la session existante, sans créer de doublon dans auth.users.
+      if(authError && /already registered|already exists|user exists/i.test(authError.message||'')){
+        const {data:loginData,error:loginError}=await supabase.auth.signInWithPassword({
+          email:d.professionalEmail,password:d.password
+        });
+        if(loginError) throw new Error('Cette adresse est déjà enregistrée. Connectez-vous avec le mot de passe de ce compte, ou utilisez une autre adresse email.');
+        authData={user:loginData.user,session:loginData.session};
+        authError=null;
+      }
+
+      if(authError)throw authError;
+      if(!authData.user)throw new Error('Impossible de créer ou récupérer le compte.');
+
       localStorage.setItem('jdv_pending_company_application',JSON.stringify(payload));
       if(authData.session){
-        const {error}=await supabase.rpc('jdvcrm_submit_company_application_v1',payload);
-        if(error)throw error;
+        const {error:submitError}=await supabase.rpc('jdvcrm_submit_company_application_v1',payload);
+        if(submitError)throw submitError;
         localStorage.removeItem('jdv_pending_company_application');
       }
       setSubmitted(true);
