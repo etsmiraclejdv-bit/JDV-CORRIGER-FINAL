@@ -126,7 +126,7 @@ serve(async (req) => {
       }
     }
 
-    return json({ success: true, type, email: application.professional_email });
+    if (!resendKey || !finalizationUrl) {\n      const { error: resetError } = await supabase.auth.resetPasswordForEmail(\n        application.professional_email,\n        { redirectTo },\n      );\n      if (resetError) {\n        console.error("[send-email] envoi Auth de secours échoué", resetError.message);\n        return json({ error: "Impossible d'envoyer le lien de finalisation" }, 502);\n      }\n    }\n\n    return json({ success: true, type, email: application.professional_email });
   }
 
   const to = typeof payload.to === "string" ? payload.to.trim().toLowerCase().slice(0, 254) : "";
