@@ -4,7 +4,7 @@ import { Users, Search, RefreshCw, ShoppingCart, Plus, Eye, EyeOff } from 'lucid
 import { toast } from 'sonner';
 import Modal from '@/components/ui/Modal';
 import { supabase } from '@/lib/supabase/client';
-import { fetchOrgProfile } from '@/lib/auth/context';
+import { getAuthContext } from '@/lib/auth/context';
 import { personName, saleTotal, toCents } from '@/lib/services/compat';
 
 interface ProspecteurRow {
@@ -33,14 +33,18 @@ export default function BusinessProspecteursPage() {
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
-      const { data: profile } = await fetchOrgProfile();
-      if (profile?.organization_id) {
-        setOrgId(profile.organization_id);
-        loadProspecteurs(profile.organization_id);
-        supabase.from('warehouses').select('id,name,code,city').eq('organization_id', profile.organization_id).eq('active', true).order('name').then(({ data }) => setWarehouses((data ?? []) as {id:string;name:string;code:string;city:string|null}[]));
-        supabase.from('organizations').select('name').eq('id', profile.organization_id).maybeSingle().then(({ data: o }) => {
+      const ctx = await getAuthContext();
+      const resolvedOrgId = ctx?.organizationId ?? null;
+      if (resolvedOrgId) {
+        setOrgId(resolvedOrgId);
+        loadProspecteurs(resolvedOrgId);
+        supabase.from('warehouses').select('id,name,code,city').eq('organization_id', resolvedOrgId).eq('active', true).order('name').then(({ data }) => setWarehouses((data ?? []) as {id:string;name:string;code:string;city:string|null}[]));
+        supabase.from('organizations').select('name').eq('id', resolvedOrgId).maybeSingle().then(({ data: o }) => {
           setOrgName(((o as { name?: string } | null)?.name) ?? '');
         });
+      } else {
+        setLoading(false);
+      }
       }
     });
   }, []);
