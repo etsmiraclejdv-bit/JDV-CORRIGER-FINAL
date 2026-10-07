@@ -12,9 +12,9 @@ const steps = [
 ];
 
 const slides = [
-  { image: '/assets/images/crm-loading-01.jpg', title: 'Prospectez partout avec JDV CRM', alt: 'Commercial terrain enregistrant un prospect dans JDV CRM' },
-  { image: '/assets/images/crm-loading-02.jpg', title: 'Transformez vos opportunités en ventes', alt: 'Commercial présentant JDV CRM à son client' },
-  { image: '/assets/images/crm-loading-03.jpg', title: 'Pilotez votre croissance avec votre équipe', alt: 'Équipe commerciale utilisant le tableau de bord JDV CRM' },
+  { image: '/assets/images/crm-loading-01.png', title: 'Prospectez partout avec JDV CRM', alt: 'Commercial terrain enregistrant un prospect dans JDV CRM' },
+  { image: '/assets/images/crm-loading-02.png', title: 'Transformez vos opportunités en ventes', alt: 'Commercial présentant JDV CRM à son client' },
+  { image: '/assets/images/crm-loading-03.png', title: 'Pilotez votre croissance avec votre équipe', alt: 'Équipe commerciale utilisant le tableau de bord JDV CRM' },
 ];
 
 export default function Loading() {
