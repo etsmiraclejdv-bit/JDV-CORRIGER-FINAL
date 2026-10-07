@@ -25,13 +25,16 @@ const natures = [
 const legalForms = ['Entreprise individuelle','SARL','SA','SAS','SASU','GIE','Coopérative','Association','ONG','Établissement public','Autre'];
 
 export default function RegistrationSection() {
-  const [sectors,setSectors]=useState<{id:string;name:string;icon:string|null}[]>([]);
+  const defaultSectors = [
+    ['3000fa16-cca6-4ccc-bda3-31ff9c23949c','Industrie & fabrication'],['8b10e093-7a4e-4b18-bfcf-729be2ef6b67','Énergie & électricité'],['a76dd249-f18e-47f5-a9fb-fb640924d49c','BTP & construction'],['267aa018-7372-46e9-aa67-83b8f919330b','Immobilier'],['e4b73b8a-8527-4440-833d-e1f431548bf3','Commerce & distribution'],['d05c0ff6-5df3-4e34-aec5-e77b90ecb40b','Agriculture'],['fa47beed-dd19-4c34-be8f-7f9a43a910da','Élevage'],['3c26bc8d-a56a-4812-a546-02fa826ffd88','Pêche & aquaculture'],['1e26ce68-aaab-4de3-9e04-a9f8c13da91c','Informatique & technologies'],['2bbfce77-f579-4254-bb27-81d1f054d806','Télécommunications'],['dfde2b22-7a4a-4714-8179-becababe7c7a','Banque, finance & assurance'],['fd676883-a9f8-4277-be09-672bcf3bcda1','Santé & pharmacie'],['330ef158-fe73-4aa1-81a8-8fa3e1afe96d','Éducation & formation'],['492f4084-9018-4d6e-8039-b4b55f5d907e','Hôtellerie & restauration'],['2bd6d734-0314-4be1-b0b5-ebc22fbeab35','Tourisme & voyages'],['f80e93f5-9c74-4087-8d99-5dee5c2de428','Mode & textile'],['aea7bbc6-f38c-4160-aea7-3a108f51567a','Beauté & cosmétique'],['2586cb52-983a-480c-becf-a4f11d456e13','Agroalimentaire'],['ca9815fc-4f2d-49c6-a755-7ceb74a634b2','Environnement'],['ba764ad4-f643-455b-bf7e-8acda05234b0','Énergies renouvelables'],['b2f461f6-7f47-4403-ad0e-134ad3cdffdc','Chimie & laboratoire'],['53fc0a2a-520a-4f48-8ae6-2ebde03356f4','Mines & carrières'],['219205d4-caf9-4261-a6bb-16c74d1ed35e','Services juridiques'],['9c921735-35a0-4ac9-ab53-4fc00e693131','Conseil & services professionnels'],['50ad3f64-741f-42f9-b0f3-e6cd663143da','Communication & marketing'],['72fdeb02-8c83-47ad-83f9-20c3749805df','Arts, culture & création'],['aedc0392-2cb7-41f6-9d42-0d35781816d1','Médias & divertissement'],['eb6fe343-0513-4e4c-ade7-c3a379219d01','Administration & secteur public'],['50d1e87e-a607-4887-ac8e-d2a29ecc5c09','ONG, associations & organisations'],['060cbc06-38ea-45c2-a57c-fb22430b5e73','Recherche & développement'],['d6fb3488-50df-4f11-b16d-e9d4b0e53707','Services aux entreprises et particuliers'],['cb5f1442-d9ef-4c4f-98dd-28ac039bb09f','E-commerce'],['90641afd-dbcb-4d0c-8736-492a5416e117','Maintenance & réparation'],['3e2fe2a8-b555-4e84-a031-8da594b34ee8','Eau & assainissement'],['af752e70-dc83-456d-8ee0-9ccde4acf828','Autre secteur']
+  ].map(([id,name])=>({id,name,icon:null}));
+  const [sectors,setSectors]=useState<{id:string;name:string;icon:string|null}[]>(defaultSectors);
   const [showPassword,setShowPassword]=useState(false),[showConfirm,setShowConfirm]=useState(false);
   const [loading,setLoading]=useState(false),[submitted,setSubmitted]=useState(false),[error,setError]=useState('');
   const {register,handleSubmit,watch,formState:{errors}}=useForm<FormData>();
   const password=watch('password');
 
-  useEffect(()=>{supabase.from('company_sectors').select('id,name,icon').eq('active',true).order('sort_order').then(({data})=>setSectors((data??[]) as typeof sectors));},[]);
+  useEffect(()=>{supabase.from('company_sectors').select('id,name,icon').eq('active',true).order('sort_order').then(({data,error})=>{if(error){console.warn('company_sectors indisponible, secteurs de secours utilisés.',error);return;}if(data?.length)setSectors(data as typeof sectors);});},[]);
 
   const sectorOptions=useMemo(()=>sectors.map(s=><option key={s.id} value={s.id}>{s.name}</option>),[sectors]);
 
