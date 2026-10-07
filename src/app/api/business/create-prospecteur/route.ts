@@ -175,13 +175,13 @@ export async function POST(req: NextRequest) {
     };
 
     // 2. Rattachement à l'entreprise (nécessaire pour passer le contrôle d'abonnement)
-    const { error: memberError } = await supabaseAdmin.from('organization_members').insert({
+    const { error: createMemberError } = await supabaseAdmin.from('organization_members').insert({
       organization_id: organizationId,
       user_id: userId,
       role: 'prospecteur',
       status: 'active',
     });
-    if (memberError) return rollback(memberError.message);
+    if (createMemberError) return rollback(createMemberError.message);
 
     // 3. Fiche prospecteur (le code est généré par la base)
     const { data: prosp, error: prospError } = await supabaseAdmin
