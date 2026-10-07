@@ -76,7 +76,8 @@ serve(async (req) => {
     }
 
     const redirectTo = `${siteUrl}/business/finalize-account?application_id=${encodeURIComponent(applicationId)}`;
-    let finalizationUrl: string | null = null;\n    let fallbackSent = false;
+    let finalizationUrl: string | null = null;
+    let fallbackSent = false;
 
     const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
