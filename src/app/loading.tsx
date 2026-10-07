@@ -62,12 +62,19 @@ export default function Loading() {
           })}
         </div>
 
-        <div className="jdv-loading__visual">
-          <div className="jdv-loading__warehouse"><Package size={24} /><span>Stock maîtrisé</span></div>
-          <div className="jdv-loading__path"><i /><i /><i /><i /><i /></div>
-          <div className="jdv-loading__sale"><CreditCard size={26} /><span>Vente à crédit</span><em><CheckCircle2 size={15} /> suivie</em></div>
-          <div className="jdv-loading__path jdv-loading__path--reverse"><i /><i /><i /><i /></div>
-          <div className="jdv-loading__money"><Banknote size={24} /><span>Paiements sécurisés</span></div>
+        <div className="jdv-loading__visual" aria-label="Équipe JDV CRM en réunion">
+          <div className="jdv-loading__hero">
+            <img
+              src="/assets/images/jdv-crm-loading-hero.jpg"
+              alt="Équipe JDV CRM utilisant le tableau de bord terrain"
+              className="jdv-loading__hero-image"
+            />
+            <div className="jdv-loading__hero-overlay" />
+            <div className="jdv-loading__hero-caption">
+              <span>JDV CRM</span>
+              <strong>La technologie au service de votre croissance</strong>
+            </div>
+          </div>
         </div>
 
         <div className="jdv-loading__progress">
