@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Eye, EyeOff, Lock, Mail, Building2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { checkCurrentBusinessAdmin } from '@/lib/auth/business-admin';
 import { completePendingOnboarding } from '@/lib/onboarding';
 import AppLogo from '@/components/ui/AppLogo';
 import Link from 'next/link';
