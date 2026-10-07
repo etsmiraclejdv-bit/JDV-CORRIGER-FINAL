@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, BriefcaseBusiness, GraduationCap, Lightbulb, Target } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BriefcaseBusiness, Lightbulb, Target } from 'lucide-react';
 
 export default function AboutConcepteurPage() {
   return (
@@ -14,9 +14,18 @@ export default function AboutConcepteurPage() {
 
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
             <div className="flex justify-center lg:justify-start">
-              <div className="relative flex h-56 w-56 items-center justify-center rounded-[2rem] border border-[#D4AF37]/40 bg-white/5 shadow-2xl shadow-black/30">
-                <div className="absolute inset-4 rounded-[1.5rem] border border-[#D4AF37]/20" />
-                <span className="text-6xl font-black tracking-tight text-[#D4AF37]">RA</span>
+              <div className="relative h-72 w-64 overflow-hidden rounded-[2rem] border border-[#D4AF37]/50 bg-[#0b1b3d] shadow-2xl shadow-black/40 sm:h-80 sm:w-72">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#07142d]/80 via-transparent to-transparent z-10" />
+                <div className="absolute inset-3 rounded-[1.5rem] border border-[#D4AF37]/30 z-20 pointer-events-none" />
+                <img
+                  src="/assets/images/Portrait de PDG dans un bureau moderne.png"
+                  alt="Portrait professionnel de Romaric A. B. ADEDEDJI, concepteur et fondateur de JDV CRM"
+                  className="h-full w-full object-cover object-center"
+                />
+                <div className="absolute bottom-5 left-5 right-5 z-30">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#D4AF37]">JDV CRM</p>
+                  <p className="mt-1 text-sm font-bold text-white">Concepteur &amp; Fondateur</p>
+                </div>
               </div>
             </div>
 
