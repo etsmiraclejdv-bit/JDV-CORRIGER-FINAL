@@ -80,32 +80,19 @@ export async function POST(req: NextRequest) {
       Array.isArray(workspaceBranches) &&
       workspaceBranches.some((row: { branch_code?: string }) => row?.branch_code === 'concepteur');
 
-    // Fallback serveur : vérification directe avec la clé service-role.
-    // Les erreurs sont conservées séparément pour ne jamais transformer
-    // un problème d'infrastructure en faux "Accès refusé".
-    const [{ data: saRows, error: saError }, { data: member, error: memberError }, { data: organization, error: organizationError }] = await Promise.all([
-      supabaseAdmin.from('super_admins').select('id, status, actif').eq('user_id', caller.user.id).order('id', { ascending: true }).limit(1),
-      supabaseAdmin
-        .from('organization_members')
-        .select('role')
-        .eq('organization_id', organizationId)
-        .eq('user_id', caller.user.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: true })
-        .limit(1)
-        .maybeSingle(),
-      supabaseAdmin
-        .from('organizations')
-        .select('id, owner_user_id, status')
-        .eq('id', organizationId)
-        .maybeSingle(),
-    ]);
+    // Vérification serveur du Super Admin en premier.
+    // Un concepteur autorisé ne doit pas être bloqué par une lecture secondaire
+    // de organization_members/organizations.
+    const { data: saRows, error: saError } = await supabaseAdmin
+      .from('super_admins')
+      .select('id, status, actif')
+      .eq('user_id', caller.user.id)
+      .order('id', { ascending: true })
+      .limit(1);
 
-    if (saError || memberError || organizationError) {
-      console.error('[create-prospecteur] erreur vérification autorisation', {
-        saError: saError?.message,
-        memberError: memberError?.message,
-        organizationError: organizationError?.message,
+    if (saError) {
+      console.error('[create-prospecteur] erreur vérification super admin', {
+        saError: saError.message,
         workspaceError: workspaceError?.message,
         callerUserId: caller.user.id,
       });
@@ -122,15 +109,53 @@ export async function POST(req: NextRequest) {
       sa.actif !== false;
     const isSuper = isSuperFromWorkspace || isSuperFromTable;
 
-    const memberRole = String((member as { role?: string } | null)?.role ?? '').toLowerCase();
+    let member: { role?: string } | null = null;
+    let organization: { id?: string; owner_user_id?: string | null; status?: string | null } | null = null;
+
+    // Si ce n'est pas le concepteur, on vérifie alors l'appartenance/admin de l'entreprise.
+    if (!isSuper) {
+      const [{ data: memberRow, error: memberError }, { data: organizationRow, error: organizationError }] = await Promise.all([
+        supabaseAdmin
+          .from('organization_members')
+          .select('role')
+          .eq('organization_id', organizationId)
+          .eq('user_id', caller.user.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle(),
+        supabaseAdmin
+          .from('organizations')
+          .select('id, owner_user_id, status')
+          .eq('id', organizationId)
+          .maybeSingle(),
+      ]);
+
+      if (memberError || organizationError) {
+        console.error('[create-prospecteur] erreur vérification entreprise', {
+          memberError: memberError?.message,
+          organizationError: organizationError?.message,
+          workspaceError: workspaceError?.message,
+          callerUserId: caller.user.id,
+          organizationId,
+        });
+        return NextResponse.json(
+          { error: 'Vérification des droits temporairement indisponible. Veuillez réessayer.' },
+          { status: 500 }
+        );
+      }
+
+      member = memberRow as { role?: string } | null;
+      organization = organizationRow as { id?: string; owner_user_id?: string | null; status?: string | null } | null;
+    }
+
+    const memberRole = String(member?.role ?? '').toLowerCase();
     const isAdmin = ['business_admin', 'admin'].includes(memberRole);
 
-    // The auth context already treats an organization owner as its business admin.
-    // Keep the API authorization aligned with that rule.
     const isOwner =
       !!organization &&
-      (organization as { owner_user_id?: string | null }).owner_user_id === caller.user.id &&
-      (organization as { status?: string | null }).status !== 'suspended';
+      organization.owner_user_id === caller.user.id &&
+      organization.status !== 'suspended';
 
     if (!isSuper && !isAdmin && !isOwner) {
       return NextResponse.json({ error: 'Accès refusé pour cette entreprise' }, { status: 403 });
