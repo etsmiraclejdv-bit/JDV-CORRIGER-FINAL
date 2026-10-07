@@ -4,23 +4,22 @@ import { checkRateLimitShared, getClientIp } from '@/lib/middleware/rateLimiter'
 import { sanitizeString, sanitizeEmail, sanitizeUUID, sanitizeNumber } from '@/lib/security/sanitize';
 
 export async function POST(req: NextRequest) {
-  // ── Rate limiting: 10 requests per 15 minutes per IP ──────────────────────
-  const ip = getClientIp(req);
-  const rl = await checkRateLimitShared(`create-prospecteur:${ip}`, { limit: 10, windowMs: 15 * 60 * 1000 });
-  if (!rl.allowed) {
-    return NextResponse.json(
-      { error: 'Trop de requêtes. Veuillez réessayer dans quelques minutes.' },
-      {
-        status: 429,
-        headers: {
-          'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
-          'X-RateLimit-Remaining': '0',
-        },
-      }
-    );
-  }
-
   try {
+    // ── Rate limiting: 10 requests per 15 minutes per IP ────────────────────
+    const ip = getClientIp(req);
+    const rl = await checkRateLimitShared(`create-prospecteur:${ip}`, { limit: 10, windowMs: 15 * 60 * 1000 });
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Trop de requêtes. Veuillez réessayer dans quelques minutes.' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': String(Math.ceil((rl.resetAt - Date.now()) / 1000)),
+            'X-RateLimit-Remaining': '0',
+          },
+        }
+      );
+    }
     const body = await req.json();
 
     // ── Input sanitization ─────────────────────────────────────────────────
@@ -53,9 +52,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Authentification requise' }, { status: 401 });
     }
 
-    const supabaseUrl0 = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseUrl0 = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseAdminKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl0 || !supabaseAnonKey || !supabaseAdminKey) {
+      console.error('[create-prospecteur] configuration Supabase serveur incomplète', {
+        hasUrl: Boolean(supabaseUrl0),
+        hasAnonKey: Boolean(supabaseAnonKey),
+        hasAdminKey: Boolean(supabaseAdminKey),
+      });
+      return NextResponse.json(
+        { error: 'Configuration serveur Supabase incomplète. Contactez l’administrateur.' },
+        { status: 500 }
+      );
+    }
+
     // Client « au nom de l'utilisateur » : les règles de sécurité de la base s'appliquent.
-    const supabaseUser = createClient(supabaseUrl0, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    const supabaseUser = createClient(supabaseUrl0, supabaseAnonKey, {
       global: { headers: { Authorization: `Bearer ${token}` } },
       auth: { autoRefreshToken: false, persistSession: false },
     });
@@ -65,7 +79,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Use service role key — never exposed to browser
-    const supabaseAdmin = createClient(supabaseUrl0, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+    const supabaseAdmin = createClient(supabaseUrl0, supabaseAdminKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
@@ -161,20 +175,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Accès refusé pour cette entreprise' }, { status: 403 });
     }
 
-    // Limite du plan d'abonnement (calculée par la base, au nom de l'appelant).
-    const { data: limit, error: limitError } = await supabaseUser.rpc('jdvcrm_check_subscription_limit_v1', {
-      p_organization_id: organizationId,
-      p_resource_code: 'prospecteurs',
-    });
-    if (limitError) {
-      return NextResponse.json({ error: limitError.message }, { status: 400 });
-    }
-    const limitRow = Array.isArray(limit) ? limit[0] : limit;
-    if (limitRow && limitRow.allowed === false) {
-      return NextResponse.json(
-        { error: 'Limite de prospecteurs atteinte pour votre abonnement. Passez à un plan supérieur.' },
-        { status: 403 }
-      );
+    // Les concepteurs/Super Admins disposent de leur espace interne sans abonnement.
+    // Pour les entreprises classiques, la limite du plan reste contrôlée par la base.
+    if (!isSuper) {
+      const { data: limit, error: limitError } = await supabaseUser.rpc('jdvcrm_check_subscription_limit_v1', {
+        p_organization_id: organizationId,
+        p_resource_code: 'prospecteurs',
+      });
+      if (limitError) {
+        return NextResponse.json({ error: limitError.message }, { status: 400 });
+      }
+      const limitRow = Array.isArray(limit) ? limit[0] : limit;
+      if (limitRow && limitRow.allowed === false) {
+        return NextResponse.json(
+          { error: 'Limite de prospecteurs atteinte pour votre abonnement. Passez à un plan supérieur.' },
+          { status: 403 }
+        );
+      }
     }
 
     // 1. Compte d'authentification (le profil est créé automatiquement par la base)
