@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { Suspense } from 'react';
 import '../styles/tailwind.css';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import JdvLoadingScreen from '@/app/components/JdvLoadingScreen';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -35,6 +36,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <GoogleAnalytics />
         </Suspense>
+        <JdvLoadingScreen />
         {children}
         <Toaster
           position="bottom-right"
