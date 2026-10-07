@@ -54,12 +54,63 @@ serve(async (req) => {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  let payload: { type?: unknown; to?: unknown; application_id?: unknown };
+  let payload: { type?: unknown; to?: unknown; application_id?: unknown; company_name?: unknown; professional_email?: unknown };
   try { payload = await req.json(); } catch { return json({ error: "Requête invalide" }, 400); }
 
   const type = String(payload.type ?? "");
-  if (!["prospecteur_welcome", "company_approval"].includes(type)) {
+  if (!["prospecteur_welcome", "company_approval", "company_received"].includes(type)) {
     return json({ error: "Type d'email non pris en charge" }, 400);
+  }
+
+  if (type === "company_received") {
+    const applicationId = typeof payload.application_id === "string" ? payload.application_id : "";
+    if (!/^[0-9a-f-]{36}$/i.test(applicationId)) return json({ error: "Application invalide" }, 400);
+
+    const { data: application, error: appError } = await supabaseAdmin
+      .from("organization_applications")
+      .select("id,applicant_user_id,professional_email,company_name,representative_first_name,status")
+      .eq("id", applicationId).maybeSingle();
+
+    if (appError || !application) return json({ error: "Demande introuvable" }, 404);
+    if (application.applicant_user_id !== caller.user.id) return json({ error: "Accès refusé" }, 403);
+    if (!["pending","submitted","under_review"].includes(String(application.status))) {
+      return json({ error: "Statut de demande invalide" }, 409);
+    }
+
+    const recipient = application.professional_email;
+    const name = application.representative_first_name || "Responsable";
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;background:#0A1628;color:#E2E8F0;padding:40px;border-radius:14px">
+        <h1 style="color:#D4AF37;text-align:center;margin:0 0 8px">JDV CRM</h1>
+        <p style="color:#718096;text-align:center;margin:0 0 28px">Bienvenue sur la plateforme JDV CRM</p>
+        <h2 style="color:#fff">Bienvenue ${escapeHtml(name)} !</h2>
+        <p style="color:#A0AEC0;line-height:1.7">Nous avons bien reçu votre demande de création de compte d'entreprise pour <strong style="color:#fff">${escapeHtml(application.company_name)}</strong>.</p>
+        <p style="color:#A0AEC0;line-height:1.7">Votre dossier va maintenant être examiné par le Concepteur JDV CRM.</p>
+        <p style="color:#A0AEC0;line-height:1.7"><strong style="color:#fff">Vous recevrez prochainement un message de confirmation</strong> contenant les instructions pour terminer la création de votre entreprise et activer votre espace.</p>
+        <div style="margin:28px 0;padding:18px;border:1px solid #D4AF37;border-radius:10px;color:#A0AEC0">
+          <strong style="color:#D4AF37">Ne créez pas un nouveau dossier.</strong><br/>
+          Conservez simplement cet email et attendez le message de confirmation JDV CRM.
+        </div>
+        <p style="color:#718096;font-size:12px;text-align:center;margin-top:28px">© ${new Date().getFullYear()} JDV CRM</p>
+      </div>`;
+
+    if (!resendKey) return json({ error: "Service email non configuré" }, 500);
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from,
+        to: [recipient],
+        subject: "Bienvenue sur JDV CRM — Votre demande a bien été reçue",
+        html,
+      }),
+    });
+    if (!res.ok) {
+      const details = await res.text();
+      console.error("[send-email] réception entreprise refusée", res.status, details);
+      return json({ error: "Envoi impossible" }, 502);
+    }
+    return json({ success: true, type, email: recipient });
   }
 
   if (type === "company_approval") {
