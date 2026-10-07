@@ -2,7 +2,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Eye, EyeOff, Lock, Mail, Building2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
-import { checkCurrentBusinessAdmin } from '@/lib/auth/business-admin';
 import { completePendingOnboarding } from '@/lib/onboarding';
 import AppLogo from '@/components/ui/AppLogo';
 import Link from 'next/link';
@@ -16,19 +15,6 @@ export default function BusinessLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  useEffect(() => {
-    const timeout = setTimeout(async () => {
-      if (redirected.current) return;
-      const result = await checkCurrentBusinessAdmin();
-      if (result.ok && !redirected.current) {
-        redirected.current = true;
-        router.replace('/business/dashboard');
-      }
-    }, 300);
-    const maxTimeout = setTimeout(() => clearTimeout(timeout), 7000);
-    return () => { clearTimeout(timeout); clearTimeout(maxTimeout); };
-  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
