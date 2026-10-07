@@ -127,7 +127,18 @@ serve(async (req) => {
       }
     }
 
-    if ((!resendKey || !finalizationUrl) && !fallbackSent) {\n      const { error: resetError } = await supabase.auth.resetPasswordForEmail(\n        application.professional_email,\n        { redirectTo },\n      );\n      if (resetError) {\n        console.error("[send-email] envoi Auth de secours échoué", resetError.message);\n        return json({ error: "Impossible d'envoyer le lien de finalisation" }, 502);\n      }\n    }\n\n    return json({ success: true, type, email: application.professional_email });
+    if ((!resendKey || !finalizationUrl) && !fallbackSent) {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        application.professional_email,
+        { redirectTo },
+      );
+      if (resetError) {
+        console.error("[send-email] envoi Auth de secours échoué", resetError.message);
+        return json({ error: "Impossible d'envoyer le lien de finalisation" }, 502);
+      }
+    }
+
+    return json({ success: true, type, email: application.professional_email });
   }
 
   const to = typeof payload.to === "string" ? payload.to.trim().toLowerCase().slice(0, 254) : "";
