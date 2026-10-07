@@ -69,15 +69,30 @@ export async function POST(req: NextRequest) {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Seul l'admin de cette entreprise (ou le concepteur) peut créer un prospecteur.
-    const [{ data: sa }, { data: member }, { data: organization }] = await Promise.all([
-      supabaseAdmin.from('super_admins').select('id, status, actif').eq('user_id', caller.user.id).maybeSingle(),
+    // Autorisation concepteur : utiliser la même RPC SECURITY DEFINER que
+    // le portail concepteur. Ainsi le compte concepteur unique reste reconnu
+    // même si une lecture directe de super_admins côté API/session diverge.
+    const { data: workspaceBranches, error: workspaceError } = await supabaseUser.rpc(
+      'jdvcrm_get_concepteur_workspace_v1'
+    );
+    const isSuperFromWorkspace =
+      !workspaceError &&
+      Array.isArray(workspaceBranches) &&
+      workspaceBranches.some((row: { branch_code?: string }) => row?.branch_code === 'concepteur');
+
+    // Fallback serveur : vérification directe avec la clé service-role.
+    // Les erreurs sont conservées séparément pour ne jamais transformer
+    // un problème d'infrastructure en faux "Accès refusé".
+    const [{ data: saRows, error: saError }, { data: member, error: memberError }, { data: organization, error: organizationError }] = await Promise.all([
+      supabaseAdmin.from('super_admins').select('id, status, actif').eq('user_id', caller.user.id).order('id', { ascending: true }).limit(1),
       supabaseAdmin
         .from('organization_members')
         .select('role')
         .eq('organization_id', organizationId)
         .eq('user_id', caller.user.id)
         .eq('status', 'active')
+        .order('created_at', { ascending: true })
+        .limit(1)
         .maybeSingle(),
       supabaseAdmin
         .from('organizations')
@@ -86,10 +101,26 @@ export async function POST(req: NextRequest) {
         .maybeSingle(),
     ]);
 
-    const isSuper =
+    if (saError || memberError || organizationError) {
+      console.error('[create-prospecteur] erreur vérification autorisation', {
+        saError: saError?.message,
+        memberError: memberError?.message,
+        organizationError: organizationError?.message,
+        workspaceError: workspaceError?.message,
+        callerUserId: caller.user.id,
+      });
+      return NextResponse.json(
+        { error: 'Vérification des droits temporairement indisponible. Veuillez réessayer.' },
+        { status: 500 }
+      );
+    }
+
+    const sa = (saRows ?? [])[0] as { status?: string; actif?: boolean | null } | undefined;
+    const isSuperFromTable =
       !!sa &&
-      (sa as { status?: string }).status === 'active' &&
-      (sa as { actif?: boolean | null }).actif !== false;
+      sa.status === 'active' &&
+      sa.actif !== false;
+    const isSuper = isSuperFromWorkspace || isSuperFromTable;
 
     const memberRole = String((member as { role?: string } | null)?.role ?? '').toLowerCase();
     const isAdmin = ['business_admin', 'admin'].includes(memberRole);
