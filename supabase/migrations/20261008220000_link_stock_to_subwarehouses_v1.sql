@@ -6,7 +6,7 @@ alter table public.stock_movements
   add column if not exists source_subwarehouse_id uuid references public.warehouse_subwarehouses(id) on delete restrict,
   add column if not exists destination_subwarehouse_id uuid references public.warehouse_subwarehouses(id) on delete restrict;
 
-drop index if exists public.warehouse_inventory_warehouse_id_article_id_key;
+alter table public.warehouse_inventory drop constraint if exists warehouse_inventory_warehouse_id_article_id_key;
 create unique index if not exists uq_warehouse_inventory_central
   on public.warehouse_inventory(warehouse_id, article_id)
   where subwarehouse_id is null;
