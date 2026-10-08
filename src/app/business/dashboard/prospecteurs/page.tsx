@@ -45,7 +45,6 @@ export default function BusinessProspecteursPage() {
       } else {
         setLoading(false);
       }
-      }
     });
   }, []);
 
