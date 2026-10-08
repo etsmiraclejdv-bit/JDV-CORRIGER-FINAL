@@ -36,6 +36,7 @@ export default function SousEntrepotsPage() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [subwarehouses, setSubwarehouses] = useState<Subwarehouse[]>([]);
   const [managers, setManagers] = useState<Manager[]>([]);
+  const [managerDirectory, setManagerDirectory] = useState<Manager[]>([]);
   const [selectedParent, setSelectedParent] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -81,6 +82,14 @@ export default function SousEntrepotsPage() {
     const nextWarehouses = (warehouseRes.data ?? []) as Warehouse[];
     setWarehouses(nextWarehouses);
     setSubwarehouses((subwarehouseRes.data ?? []) as Subwarehouse[]);
+
+    const { data: directoryData } = await supabase
+      .from('warehouse_managers')
+      .select('user_id,display_name,phone')
+      .eq('organization_id', orgId)
+      .eq('status', 'active')
+      .order('display_name');
+    setManagerDirectory((directoryData ?? []) as Manager[]);
 
     if (!selectedParent && nextWarehouses.length) {
       setSelectedParent(nextWarehouses[0].id);
