@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 
-// Netlify sync checkpoint\nexport default function SousBranchesPage() {
+// Netlify sync checkpoint
+export default function SousBranchesPage() {
   return (
     <div className="p-6 text-white space-y-6">
       <div>
