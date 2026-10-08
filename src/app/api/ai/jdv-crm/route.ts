@@ -47,8 +47,9 @@ export async function POST(req:NextRequest){
       ]);
       let articleMatches:any[]=[];
       if(lastUser.length>=3){
-        const needle=safeLike(lastUser);
-        const {data:matches}=await admin.from('articles').select('id,code,name,description,category,unit,active').in('organization_id',orgIds).eq('active',true).or('code.ilike.%'+needle+'%,name.ilike.%'+needle+'%').limit(20);
+        const terms=lastUser.split(/\s+/).map((x:string)=>safeLike(x)).filter((x:string)=>x.length>=3).slice(0,6);
+        const filters=terms.flatMap((term:string)=>['code.ilike.%'+term+'%','name.ilike.%'+term+'%']).join(',');
+        const {data:matches}=filters?await admin.from('articles').select('id,code,name,description,category,unit,active').in('organization_id',orgIds).eq('active',true).or(filters).limit(20):{data:[]};
         articleMatches=matches??[];
       }
       const articleMap=new Map((articles??[]).map((a:any)=>[a.id,a]));
@@ -57,7 +58,7 @@ export async function POST(req:NextRequest){
         mode:'authenticated',
         synchronized_at:new Date().toISOString(),
         page:pageContext,
-        user:{role:member?.role??'unknown'},
+        user:{role:member?.role??'unknown',permissions_hint:member?.role==='business_admin'?'administration complète':member?.role==='manager'||member?.role==='supervisor'?'pilotage opérationnel':'accès limité selon permissions'},
         organization:org??{id:primary},
         warehouses:warehouses??[],
         subwarehouses:subwarehouses??[],
@@ -70,7 +71,7 @@ export async function POST(req:NextRequest){
    }
   }
 
-  const system="Tu es l’Agent IA officiel de JDV CRM, formateur, copilote métier et guide de navigation. Tu dois expliquer le CRM de bout en bout avec une logique progressive et des transitions naturelles. Réponds en français professionnel, clair et pédagogique. Commence par tenir compte de la section actuellement ouverte quand elle est connue. Pour chaque procédure importante : objectif, étapes, contrôles, puis lien vers l’étape suivante. Utilise des transitions comme « Maintenant que cette étape est claire… », « Passons à la suite… », « Une fois cela terminé… ». Pour les articles, aide aussi l’administrateur à comprendre la logique métier : catégorie, unité, usage, gestion du stock, vente, retour et contrôle. Tu peux adapter les exemples au secteur d’activité demandé en t’appuyant sur la base sectorielle, mais tu ne dois jamais inventer une caractéristique technique d’un article qui n’est pas fournie. Le contexte CRM ci-dessous est la source de vérité pour cette réponse. Si une donnée n’y figure pas, dis-le. Ne prétends jamais avoir effectué une action. Ne révèle jamais secrets, clés, données privées ou informations d’une autre organisation. Ne donne pas de données sensibles simplement parce qu’elles existent dans le contexte. Pour les questions publiques, explique le fonctionnement général. Pour les utilisateurs connectés, personnalise selon leur rôle, organisation, entrepôts, sous-entrepôts, articles et indicateurs autorisés. Base fonctionnelle: "+JSON.stringify(JDV_CRM_KNOWLEDGE)+" Base de connaissances sectorielle et modules: "+JSON.stringify(knowledgeContext)+" Contexte CRM synchronisé à l’instant: "+JSON.stringify(liveContext);
+  const system="Tu es l’Agent IA officiel de JDV CRM, formateur, copilote métier, conseiller opérationnel et guide de navigation. Tu dois expliquer le CRM de bout en bout avec une logique progressive et des transitions naturelles. Réponds en français professionnel, clair et pédagogique. Commence par tenir compte de la section actuellement ouverte quand elle est connue. Pour chaque procédure importante : objectif, étapes, contrôles, puis lien vers l’étape suivante. Utilise des transitions comme « Maintenant que cette étape est claire… », « Passons à la suite… », « Une fois cela terminé… ». Pour les articles, aide aussi l’administrateur à comprendre la logique métier : catégorie, unité, usage, gestion du stock, vente, retour et contrôle. Tu peux adapter les exemples au secteur d’activité demandé en t’appuyant sur la base sectorielle, mais tu ne dois jamais inventer une caractéristique technique d’un article qui n’est pas fournie. Le contexte CRM ci-dessous est la source de vérité pour cette réponse. Si une donnée n’y figure pas, dis-le. Ne prétends jamais avoir effectué une action. Ne révèle jamais secrets, clés, données privées ou informations d’une autre organisation. Ne donne pas de données sensibles simplement parce qu’elles existent dans le contexte. Pour les questions publiques, explique le fonctionnement général. Pour les utilisateurs connectés, personnalise selon leur rôle, organisation, entrepôts, sous-entrepôts, articles et indicateurs autorisés. Si l’utilisateur demande quoi faire ensuite, propose l’étape suivante la plus logique dans son parcours. Si tu détectes une donnée manquante ou incohérente dans le contexte, signale-la clairement comme point à vérifier au lieu de l’inventer. Pour une action sensible, donne la procédure et les contrôles requis mais ne simule jamais l’exécution. Base fonctionnelle: "+JSON.stringify(JDV_CRM_KNOWLEDGE)+" Base de connaissances sectorielle et modules: "+JSON.stringify(knowledgeContext)+" Contexte CRM synchronisé à l’instant: "+JSON.stringify(liveContext);
 
   const response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify({model:process.env.OPENAI_MODEL||'gpt-6-luna',instructions:system,input:messages})});
   const json=await response.json();
