@@ -4,7 +4,7 @@ import AppLogo from '@/components/ui/AppLogo';
 import NotificationBell from '@/components/NotificationBell';
 import UserProfilePanel from '@/components/UserProfilePanel';
 import Modal from '@/components/ui/Modal';
-import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent, Warehouse, Network, MapPin } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent, Warehouse, Network, MapPin, Undo2, ArrowLeftRight, Store } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
@@ -18,13 +18,17 @@ const navItems = [
   { id:'clients',label:'Clients',icon:<Users size={18}/>,href:'/business/dashboard/clients',group:'CRM' },
   { id:'ventes',label:'Ventes',icon:<ShoppingCart size={18}/>,href:'/business/dashboard/ventes',group:'Commercial' },
   { id:'relances',label:'Relances & impayés',icon:<AlertTriangle size={18}/>,href:'/business/dashboard/relances',group:'Commercial' },
+  { id:'retours',label:'Retours de marchandise',icon:<Undo2 size={18}/>,href:'/business/dashboard/retours',group:'Commercial' },
   { id:'catalogue',label:'Catalogue',icon:<BookOpen size={18}/>,href:'/business/dashboard/catalogue',group:'Commercial' },
   { id:'prospecteurs',label:'Prospecteurs',icon:<UserCheck size={18}/>,href:'/business/dashboard/prospecteurs',group:'Équipe' },
   { id:'visites',label:'Visites terrain',icon:<MapPin size={18}/>,href:'/business/dashboard/visites',group:'Équipe' },
+  { id:'suivi-prospecteurs',label:'Suivi prospecteurs',icon:<Users size={18}/>,href:'/business/dashboard/suivi-prospecteurs',group:'Équipe' },
   { id:'fournisseurs',label:'Fournisseurs',icon:<Truck size={18}/>,href:'/business/dashboard/fournisseurs',group:'Logistique' },
   { id:'achats',label:'Achats',icon:<ClipboardList size={18}/>,href:'/business/dashboard/achats',group:'Logistique' },
   { id:'stock',label:'Stock',icon:<Package size={18}/>,href:'/business/dashboard/stock',group:'Logistique' },
   { id:'entrepots',label:'Entrepôts & zones',icon:<Warehouse size={18}/>,href:'/business/dashboard/entrepots',group:'Logistique' },
+  { id:'sous-branches',label:'Sous-branches entrepôt',icon:<Store size={18}/>,href:'/business/dashboard/sous-branches',group:'Logistique' },
+  { id:'mouvements-stock',label:'Mouvements de stock',icon:<ArrowLeftRight size={18}/>,href:'/business/dashboard/mouvements-stock',group:'Logistique' },
   { id:'logistique',label:'Centre de contrôle logistique',icon:<Network size={18}/>,href:'/business/dashboard/logistique',group:'Logistique' },
   { id:'finances',label:'Finances & commissions',icon:<Wallet size={18}/>,href:'/business/dashboard/finances',group:'Analyse' },
   { id:'commissions',label:'Règles de commissions',icon:<Percent size={18}/>,href:'/business/dashboard/commissions',group:'Analyse' },
