@@ -5,6 +5,7 @@ import FeaturesSection from './components/FeaturesSection';
 import PricingSection from './components/PricingSection';
 import RegistrationSection from './components/RegistrationSection';
 import PublicFooter from './components/PublicFooter';
+import PublicAIAssistant from '@/components/PublicAIAssistant';
 import Link from 'next/link';
 import { Building2, MapPin } from 'lucide-react';
 
@@ -30,6 +31,7 @@ export default function PublicSitePage() {
       <PricingSection />
       <RegistrationSection />
       <PublicFooter />
+      <PublicAIAssistant />
     </div>
   );
 }
