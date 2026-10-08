@@ -172,7 +172,7 @@ export default function SousEntrepotsPage() {
         address: form.address.trim() || null,
         city: form.city.trim() || null,
         zone: form.zone.trim() || null,
-        manager_user_id: form.manager_user_id || (form.manager_user_id === '__me__' ? ctx.userId : null),
+        manager_user_id: form.manager_user_id === '__me__' ? ctx.userId : (form.manager_user_id || null),
         created_by: ctx.userId,
         active: true,
       });
