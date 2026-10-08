@@ -38,7 +38,7 @@ export async function POST(req:NextRequest){
       const member=(members??[]).find((m:OrgMember)=>m.organization_id===primary);
       const [{data:org},{data:warehouses},{data:subwarehouses},{data:articles},{count:prospectCount},{count:clientCount},{count:saleCount}]=await Promise.all([
         admin.from('organizations').select('id,name,legal_name,country,currency,timezone,status,subscription_status').eq('id',primary).maybeSingle(),
-        admin.from('warehouses').select('id,code,name,city,active,manager_user_id').in('organization_id',orgIds).order('name').limit(100),
+        admin.from('warehouses').select('id,code,name,city,active,manager_user_id').eq('organization_id',primary).order('name').limit(100),
         admin.from('warehouse_subwarehouses').select('id,code,name,parent_warehouse_id,city,zone,active,manager_user_id').in('organization_id',orgIds).order('name').limit(200),
         admin.from('articles').select('id,code,name,description,category,unit,active').in('organization_id',orgIds).eq('active',true).order('updated_at',{ascending:false}).limit(300),
         admin.from('prospects').select('*',{count:'exact',head:true}).in('organization_id',orgIds),
