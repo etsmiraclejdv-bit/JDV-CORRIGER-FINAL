@@ -6,7 +6,7 @@ import { JDV_CRM_KNOWLEDGE } from '@/lib/ai/jdvCrmKnowledge';
 
 type OrgMember={organization_id:string;role:string};
 type PageContext={pathname?:string;section?:string};
-const safeLike=(value:string)=>value.replace(/[%,()]/g,' ').replace(/'/g,"''").trim().slice(0,120);
+const safeLike=(value:string)=>value.replace(/[%,()]/g,' ').replace(/'/g,"''").trim().slice(0,80);
 
 export async function POST(req:NextRequest){
  const ip=getClientIp(req);const rl=await checkRateLimitShared('jdv-ai:'+ip,{limit:20,windowMs:15*60*1000});
