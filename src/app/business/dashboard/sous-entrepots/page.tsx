@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { getAuthContext, type AuthContextData } from '@/lib/auth/context';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 
 type Warehouse = {
@@ -254,6 +255,7 @@ export default function SousEntrepotsPage() {
         <div className="rounded-xl border border-white/10 bg-[#08152f] px-4 py-3 text-sm">
           <span className="text-slate-400">Organisation</span>
           <div className="font-semibold">{ctx.displayName}</div>
+          <Link href="/business/dashboard/sous-entrepots/stock" className="mt-2 inline-block text-[#D4AF37]">Voir le stock →</Link>
         </div>
       </div>
 
