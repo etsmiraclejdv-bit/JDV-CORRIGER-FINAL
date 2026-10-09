@@ -276,7 +276,7 @@ export default function ClotureStockPage() {
               <div>
                 <h2 className="text-xl font-semibold">Contrôle de la journée</h2>
                 <p className="text-sm text-slate-400">
-                  Après clôture, toute correction doit passer par un mouvement d'ajustement
+                  Après clôture, toute correction doit passer par un mouvement d&apos;ajustement
                   contrôlé.
                 </p>
               </div>
