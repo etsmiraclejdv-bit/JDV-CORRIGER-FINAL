@@ -1,0 +1,51 @@
+
+name: Safe Supabase Migration Preview
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    name: Check database connection and preview only
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.116.0
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          set +x
+          test -n "${SUPABASE_DB_URL:-}" || {
+            echo "::error::SUPABASE_DB_URL is missing or empty."
+            exit 1
+          }
+          test -n "${SUPABASE_DB_PASSWORD:-}" || {
+            echo "::error::SUPABASE_DB_PASSWORD is missing or empty."
+            exit 1
+          }
+          echo "Required secrets are present."
+
+      - name: Preview pending migrations only
+        shell: bash
+        run: |
+          set +x
+          echo "Starting read-only migration preview."
+          supabase db push \
+            --db-url "$SUPABASE_DB_URL" \
+            --password "$SUPABASE_DB_PASSWORD" \
+            --dry-run
