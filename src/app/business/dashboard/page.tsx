@@ -28,7 +28,7 @@ export default function BusinessDashboardPage() {
     ]);
     const clients = clientsRes.data ?? [];
     const sales = salesRes.data ?? [];
-    const revenue = sales.reduce((sum: number, s: Record<string, unknown>) => sum + ((s.amount_cents as number) ?? 0), 0);
+    const revenue = sales.reduce((sum, sale) => sum + sale.amount_cents, 0);
     const overdue = clients.filter((client) => client.payment_status === 'en_retard').length;
     setStats({ clients: clients.length, sales: sales.length, revenue, overdue });
   }
