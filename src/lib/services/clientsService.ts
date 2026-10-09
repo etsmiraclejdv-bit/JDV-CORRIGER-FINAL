@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client';
+import type { Tables, TablesInsert, TablesUpdate } from '@/types/database.types';
 import { personName, saleTotal, toCents, splitName } from '@/lib/services/compat';
 
 export interface Client {
@@ -21,26 +22,25 @@ async function prospecteurMap(organizationId: string): Promise<Map<string, { id:
     .select('id, first_name, last_name, phone')
     .eq('organization_id', organizationId);
   const map = new Map<string, { id: string; full_name: string; phone?: string }>();
-  ((data ?? []) as Row[]).forEach((p) =>
-    map.set(p.id as string, { id: p.id as string, full_name: personName(p as never), phone: (p.phone as string) ?? undefined })
+  (data ?? []).forEach((p) =>
+    map.set(p.id, { id: p.id, full_name: personName(p), phone: p.phone ?? undefined })
   );
   return map;
 }
 
-function mapClient(c: Row, pros: Map<string, { id: string; full_name: string; phone?: string }>, balance: number, late: boolean): Client {
+function mapClient(c: Tables<'clients'>, pros: Map<string, { id: string; full_name: string; phone?: string }>, balance: number, late: boolean): Client {
   const paymentStatus: Client['payment_status'] = late ? 'en_retard' : balance > 0 ? 'a_surveiller' : 'a_jour';
   return {
-    ...c,
-    id: String(c.id ?? ''),
-    organization_id: String(c.organization_id ?? ''),
-    full_name: personName(c as never),
-    phone: typeof c.phone === 'string' ? c.phone : undefined,
-    assigned_to: typeof c.prospecteur_id === 'string' ? c.prospecteur_id : undefined,
+    id: c.id,
+    organization_id: c.organization_id,
+    full_name: personName(c),
+    phone: c.phone ?? undefined,
+    assigned_to: c.prospecteur_id ?? undefined,
     payment_status: paymentStatus,
     balance_cents: toCents(balance),
-    created_at: String(c.created_at ?? ''),
-    profiles: typeof c.prospecteur_id === 'string' ? pros.get(c.prospecteur_id) ?? null : null,
-  } as unknown as Client;
+    created_at: c.created_at,
+    profiles: c.prospecteur_id ? pros.get(c.prospecteur_id) ?? null : null,
+  };
 }
 
 /** Solde restant et retards par client pour toute l'organisation. */
@@ -55,14 +55,14 @@ async function balances(organizationId: string): Promise<{ balance: Map<string, 
   ]);
   const balance = new Map<string, number>();
   const saleClient = new Map<string, string>();
-  ((sales ?? []) as Row[]).forEach((s) => {
+  (sales ?? []).forEach((s) => {
     if (!s.client_id) return;
-    saleClient.set(s.id as string, s.client_id as string);
-    balance.set(s.client_id as string, (balance.get(s.client_id as string) ?? 0) + (Number(s.amount_remaining) || 0));
+    saleClient.set(s.id, s.client_id);
+    balance.set(s.client_id, (balance.get(s.client_id) ?? 0) + (Number(s.amount_remaining) || 0));
   });
   const lateClients = new Set<string>();
-  ((late ?? []) as Row[]).forEach((l) => {
-    const c = saleClient.get(l.sale_id as string);
+  (late ?? []).forEach((l) => {
+    const c = saleClient.get(l.sale_id);
     if (c) lateClients.add(c);
   });
   return { balance, late: lateClients };
@@ -84,8 +84,8 @@ export async function fetchClients(
   if (error) return { data: null, error };
 
   const [pros, { balance, late }] = await Promise.all([prospecteurMap(organizationId), balances(organizationId)]);
-  let rows = ((data ?? []) as Row[]).map((c) =>
-    mapClient(c, pros, balance.get(c.id as string) ?? 0, late.has(c.id as string))
+  let rows = (data ?? []).map((c) =>
+    mapClient(c, pros, balance.get(c.id) ?? 0, late.has(c.id))
   );
   if (filters?.paymentStatus) rows = rows.filter((r) => r.payment_status === filters.paymentStatus);
   return { data: rows, error: null };
@@ -94,8 +94,8 @@ export async function fetchClients(
 export async function fetchClientById(clientId: string) {
   const { data, error } = await supabase.from('clients').select('*').eq('id', clientId).single();
   if (error || !data) return { data: null, error };
-  const c = data as Row;
-  const orgId = c.organization_id as string;
+  const c = data;
+  const orgId = c.organization_id;
   const [pros, { balance, late }] = await Promise.all([prospecteurMap(orgId), balances(orgId)]);
   return { data: mapClient(c, pros, balance.get(clientId) ?? 0, late.has(clientId)), error: null };
 }
@@ -104,21 +104,54 @@ export async function createClient(client: Partial<Client> & Record<string, unkn
   if (!client.organization_id) {
     return { data: null, error: new Error('organization_id is required') as unknown as { message: string } };
   }
-  const { full_name, assigned_to, payment_status, balance_cents, profiles, ...rest } = client as Row;
-  void payment_status; void balance_cents; void profiles;
-  const names = typeof full_name === 'string' ? splitName(full_name) : {};
-  const payload: Row = { ...rest, ...names };
-  if (assigned_to) payload.prospecteur_id = assigned_to;
+  const fullName = typeof client.full_name === 'string' ? client.full_name : '';
+  const names = splitName(fullName);
+  const code = typeof client.code === 'string' && client.code.trim()
+    ? client.code.trim()
+    : `CLI-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  const payload: TablesInsert<'clients'> = {
+    organization_id: client.organization_id,
+    code,
+    first_name: typeof client.first_name === 'string' ? client.first_name : names.first_name,
+    last_name: typeof client.last_name === 'string' ? client.last_name : names.last_name,
+  };
+  if (typeof client.phone === 'string' || client.phone === null) payload.phone = client.phone;
+  if (typeof client.email === 'string' || client.email === null) payload.email = client.email;
+  if (typeof client.address === 'string' || client.address === null) payload.address = client.address;
+  if (typeof client.city === 'string' || client.city === null) payload.city = client.city;
+  if (typeof client.country === 'string' || client.country === null) payload.country = client.country;
+  if (typeof client.notes === 'string' || client.notes === null) payload.notes = client.notes;
+  if (typeof client.whatsapp === 'string' || client.whatsapp === null) payload.whatsapp = client.whatsapp;
+  if (typeof client.identity_reference === 'string' || client.identity_reference === null) payload.identity_reference = client.identity_reference;
+  const prospecteurId = typeof client.assigned_to === 'string' ? client.assigned_to : client.prospecteur_id;
+  if (typeof prospecteurId === 'string' || prospecteurId === null) payload.prospecteur_id = prospecteurId;
+  if (typeof client.status === 'string') payload.status = client.status;
+  if (typeof client.temperature === 'string' || client.temperature === null) payload.temperature = client.temperature;
+  if (typeof client.portfolio_id === 'string' || client.portfolio_id === null) payload.portfolio_id = client.portfolio_id;
   const { data, error } = await supabase.from('clients').insert(payload).select().single();
   return { data, error };
 }
 
 export async function updateClient(clientId: string, updates: Partial<Client> & Record<string, unknown>) {
-  const { organization_id, full_name, assigned_to, payment_status, balance_cents, profiles, ...rest } = updates as Row;
-  void organization_id; void payment_status; void balance_cents; void profiles;
-  const payload: Row = { ...rest };
-  if (typeof full_name === 'string') Object.assign(payload, splitName(full_name));
-  if (assigned_to !== undefined) payload.prospecteur_id = assigned_to;
+  const payload: TablesUpdate<'clients'> = {};
+  if (typeof updates.organization_id === 'string') {
+    // L'organisation d'un client ne se change pas via ce formulaire.
+  }
+  if (typeof updates.full_name === 'string') Object.assign(payload, splitName(updates.full_name));
+  if (typeof updates.first_name === 'string') payload.first_name = updates.first_name;
+  if (typeof updates.last_name === 'string' || updates.last_name === null) payload.last_name = updates.last_name;
+  if (typeof updates.phone === 'string' || updates.phone === null) payload.phone = updates.phone;
+  if (typeof updates.email === 'string' || updates.email === null) payload.email = updates.email;
+  if (typeof updates.address === 'string' || updates.address === null) payload.address = updates.address;
+  if (typeof updates.city === 'string' || updates.city === null) payload.city = updates.city;
+  if (typeof updates.country === 'string' || updates.country === null) payload.country = updates.country;
+  if (typeof updates.notes === 'string' || updates.notes === null) payload.notes = updates.notes;
+  if (typeof updates.whatsapp === 'string' || updates.whatsapp === null) payload.whatsapp = updates.whatsapp;
+  if (typeof updates.identity_reference === 'string' || updates.identity_reference === null) payload.identity_reference = updates.identity_reference;
+  if (typeof updates.assigned_to === 'string' || updates.assigned_to === null) payload.prospecteur_id = updates.assigned_to;
+  if (typeof updates.status === 'string') payload.status = updates.status;
+  if (typeof updates.temperature === 'string' || updates.temperature === null) payload.temperature = updates.temperature;
+  if (typeof updates.portfolio_id === 'string' || updates.portfolio_id === null) payload.portfolio_id = updates.portfolio_id;
   const { data, error } = await supabase.from('clients').update(payload).eq('id', clientId).select().single();
   return { data, error };
 }
