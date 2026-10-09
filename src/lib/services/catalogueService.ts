@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client';
+import type { TablesUpdate } from '@/types/database.types';
 import { newArticleCode, toCents } from '@/lib/services/compat';
 
 export interface Product {
@@ -90,13 +91,17 @@ export async function createProduct(product: Partial<Product>) {
     return { data: null, error: new Error('organization_id is required') as unknown as { message: string } };
   }
 
+  if (!product.name?.trim()) {
+    return { data: null, error: new Error('name is required') as unknown as { message: string } };
+  }
+
   const price = Math.round((product.price_cents ?? 0) / 100);
   const { data, error } = await supabase
     .from('articles')
     .insert({
       organization_id: product.organization_id,
       code: (product.sku ?? '').trim() || newArticleCode(),
-      name: product.name,
+      name: product.name.trim(),
       fixed_price: price,
       cash_price: price,
       credit_price: price,
@@ -110,7 +115,7 @@ export async function createProduct(product: Partial<Product>) {
 }
 
 export async function updateProduct(productId: string, updates: Partial<Product>) {
-  const patch: Row = { updated_at: new Date().toISOString() };
+  const patch: TablesUpdate<'articles'> = { updated_at: new Date().toISOString() };
   if (updates.name !== undefined) patch.name = updates.name;
   if (updates.sku !== undefined && updates.sku.trim()) patch.code = updates.sku.trim();
   if (updates.active !== undefined) patch.active = updates.active;
