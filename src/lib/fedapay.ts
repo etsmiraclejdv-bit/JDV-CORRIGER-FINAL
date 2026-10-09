@@ -2,7 +2,9 @@
  * Aides communes aux routes FedaPay (côté serveur uniquement).
  */
 export function fedapayBaseUrl(secretKey: string): string {
-  return secretKey.startsWith('sk_live') ? 'https://api.fedapay.com/v1' : 'https://sandbox-api.fedapay.com/v1';
+  return secretKey.startsWith('sk_live')
+    ? 'https://api.fedapay.com/v1'
+    : 'https://sandbox-api.fedapay.com/v1';
 }
 
 /**
@@ -12,7 +14,12 @@ export function fedapayBaseUrl(secretKey: string): string {
 export function unwrapFedapay<T = Record<string, unknown>>(json: unknown, key: string): T | null {
   if (!json || typeof json !== 'object') return null;
   const obj = json as Record<string, unknown>;
-  const candidates = [obj[`v1/${key}`], (obj.v1 as Record<string, unknown> | undefined)?.[key], obj[key], obj];
+  const candidates = [
+    obj[`v1/${key}`],
+    (obj.v1 as Record<string, unknown> | undefined)?.[key],
+    obj[key],
+    obj,
+  ];
   for (const c of candidates) {
     if (c && typeof c === 'object') return c as T;
   }

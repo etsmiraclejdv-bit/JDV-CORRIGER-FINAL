@@ -13,7 +13,12 @@ let client: SupabaseClient<Database> | null = null;
 export function getSupabaseClient() {
   if (!client) {
     client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' },
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+      },
     });
   }
   return client;

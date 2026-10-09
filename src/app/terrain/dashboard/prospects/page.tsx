@@ -1,6 +1,17 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Search, Phone, UserCheck, MessageCircle, Calendar, ChevronDown, ChevronUp, Filter } from 'lucide-react';
+import {
+  Users,
+  Plus,
+  Search,
+  Phone,
+  UserCheck,
+  MessageCircle,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Filter,
+} from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import Modal from '@/components/ui/Modal';
 import { toast } from 'sonner';
@@ -50,10 +61,22 @@ export default function TerrainProspectsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState({
-    full_name: '', phone: '', phone2: '', address: '', city: '', quartier: '',
-    lieu_rencontre: '', notes: '', desired_product: '', desired_quantity: 1,
-    proposed_price: 0, interest_level: 'medium', temperature: 'cold',
-    next_contact_date: '', appointment_date: '', appointment_time: '',
+    full_name: '',
+    phone: '',
+    phone2: '',
+    address: '',
+    city: '',
+    quartier: '',
+    lieu_rencontre: '',
+    notes: '',
+    desired_product: '',
+    desired_quantity: 1,
+    proposed_price: 0,
+    interest_level: 'medium',
+    temperature: 'cold',
+    next_contact_date: '',
+    appointment_date: '',
+    appointment_time: '',
     appointment_location: '',
   });
   const [submitting, setSubmitting] = useState(false);
@@ -70,7 +93,11 @@ export default function TerrainProspectsPage() {
       if (profile?.organization_id && profile.prospecteur_id) {
         setOrgId(profile.organization_id);
         setProspecteurName(profile.full_name ?? '');
-        const { data: org } = await supabase.from('organizations').select('name').eq('id', profile.organization_id).single();
+        const { data: org } = await supabase
+          .from('organizations')
+          .select('name')
+          .eq('id', profile.organization_id)
+          .single();
         if (org) setOrgName(org.name ?? '');
         loadProspects(profile.organization_id, profile.prospecteur_id);
       }
@@ -87,9 +114,10 @@ export default function TerrainProspectsPage() {
       .not('status', 'in', '(converted,archived)')
       .order('created_at', { ascending: false });
     setProspects(
-      ((data ?? []) as Record<string, unknown>[]).map(r => ({
+      ((data ?? []) as Record<string, unknown>[]).map((r) => ({
         id: r.id as string,
-        full_name: `${(r.first_name as string) ?? ''} ${(r.last_name as string) ?? ''}`.trim() || 'Sans nom',
+        full_name:
+          `${(r.first_name as string) ?? ''} ${(r.last_name as string) ?? ''}`.trim() || 'Sans nom',
         phone: (r.phone as string) ?? undefined,
         city: (r.city as string) ?? undefined,
         address: (r.address as string) ?? undefined,
@@ -97,7 +125,9 @@ export default function TerrainProspectsPage() {
         desired_product: (r.desired_article as string) ?? undefined,
         proposed_price: r.estimated_amount ? Math.round(Number(r.estimated_amount) * 100) : 0,
         temperature: (r.temperature as string) ?? undefined,
-        next_contact_date: r.next_follow_up_at ? String(r.next_follow_up_at).split('T')[0] : undefined,
+        next_contact_date: r.next_follow_up_at
+          ? String(r.next_follow_up_at).split('T')[0]
+          : undefined,
         appointment_date: (r.purchase_date_planned as string) ?? undefined,
         is_prospect: true,
         created_at: r.created_at as string,
@@ -120,7 +150,9 @@ export default function TerrainProspectsPage() {
       form.appointment_time && `RDV à ${form.appointment_time}`,
       form.appointment_location && `RDV à : ${form.appointment_location}`,
       form.notes,
-    ].filter(Boolean).join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
     const pf = await getMyPortfolioId(orgId);
     if (!pf.id) {
       setSubmitting(false);
@@ -139,7 +171,9 @@ export default function TerrainProspectsPage() {
       desired_article: form.desired_product || null,
       estimated_amount: form.proposed_price ? Math.round(form.proposed_price) : null,
       temperature: form.temperature,
-      next_follow_up_at: form.next_contact_date ? new Date(form.next_contact_date).toISOString() : null,
+      next_follow_up_at: form.next_contact_date
+        ? new Date(form.next_contact_date).toISOString()
+        : null,
       purchase_date_planned: form.appointment_date || null,
       notes: details || null,
       status: 'new',
@@ -151,10 +185,22 @@ export default function TerrainProspectsPage() {
       toast.success('Prospect ajouté avec succès');
       setModalOpen(false);
       setForm({
-        full_name: '', phone: '', phone2: '', address: '', city: '', quartier: '',
-        lieu_rencontre: '', notes: '', desired_product: '', desired_quantity: 1,
-        proposed_price: 0, interest_level: 'medium', temperature: 'cold',
-        next_contact_date: '', appointment_date: '', appointment_time: '',
+        full_name: '',
+        phone: '',
+        phone2: '',
+        address: '',
+        city: '',
+        quartier: '',
+        lieu_rencontre: '',
+        notes: '',
+        desired_product: '',
+        desired_quantity: 1,
+        proposed_price: 0,
+        interest_level: 'medium',
+        temperature: 'cold',
+        next_contact_date: '',
+        appointment_date: '',
+        appointment_time: '',
         appointment_location: '',
       });
       if (orgId && userId) loadProspects(orgId, userId);
@@ -188,8 +234,9 @@ export default function TerrainProspectsPage() {
 
   const today = new Date().toISOString().split('T')[0];
 
-  const filtered = prospects.filter(p => {
-    const matchSearch = !search ||
+  const filtered = prospects.filter((p) => {
+    const matchSearch =
+      !search ||
       p.full_name?.toLowerCase().includes(search.toLowerCase()) ||
       p.phone?.includes(search) ||
       p.desired_product?.toLowerCase().includes(search.toLowerCase());
@@ -211,11 +258,31 @@ export default function TerrainProspectsPage() {
 
   const filterButtons: { id: FilterType; label: string; count?: number }[] = [
     { id: 'all', label: 'Tous', count: prospects.length },
-    { id: 'hot', label: '🔥 Chauds', count: prospects.filter(p => p.temperature === 'hot').length },
-    { id: 'warm', label: '🌤 Tièdes', count: prospects.filter(p => p.temperature === 'warm').length },
-    { id: 'cold', label: '❄️ Froids', count: prospects.filter(p => p.temperature === 'cold').length },
-    { id: 'today', label: 'À relancer', count: prospects.filter(p => p.next_contact_date === today).length },
-    { id: 'appointment_today', label: 'RDV aujourd\'hui', count: prospects.filter(p => p.appointment_date === today).length },
+    {
+      id: 'hot',
+      label: '🔥 Chauds',
+      count: prospects.filter((p) => p.temperature === 'hot').length,
+    },
+    {
+      id: 'warm',
+      label: '🌤 Tièdes',
+      count: prospects.filter((p) => p.temperature === 'warm').length,
+    },
+    {
+      id: 'cold',
+      label: '❄️ Froids',
+      count: prospects.filter((p) => p.temperature === 'cold').length,
+    },
+    {
+      id: 'today',
+      label: 'À relancer',
+      count: prospects.filter((p) => p.next_contact_date === today).length,
+    },
+    {
+      id: 'appointment_today',
+      label: "RDV aujourd'hui",
+      count: prospects.filter((p) => p.appointment_date === today).length,
+    },
   ];
 
   return (
@@ -223,9 +290,14 @@ export default function TerrainProspectsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Mes prospects</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">{prospects.length} prospect{prospects.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm text-[#A0AEC0] mt-1">
+            {prospects.length} prospect{prospects.length !== 1 ? 's' : ''}
+          </p>
         </div>
-        <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold">
+        <button
+          onClick={() => setModalOpen(true)}
+          className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
+        >
           <Plus size={14} />
           Nouveau
         </button>
@@ -233,7 +305,7 @@ export default function TerrainProspectsPage() {
 
       {/* Filter chips */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-        {filterButtons.map(btn => (
+        {filterButtons.map((btn) => (
           <button
             key={btn.id}
             onClick={() => setFilter(btn.id)}
@@ -245,7 +317,9 @@ export default function TerrainProspectsPage() {
           >
             {btn.label}
             {btn.count !== undefined && btn.count > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${filter === btn.id ? 'bg-[#0B1B3D]/20' : 'bg-[#D4AF37]/20 text-[#D4AF37]'}`}>
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded-full ${filter === btn.id ? 'bg-[#0B1B3D]/20' : 'bg-[#D4AF37]/20 text-[#D4AF37]'}`}
+              >
                 {btn.count}
               </span>
             )}
@@ -259,7 +333,7 @@ export default function TerrainProspectsPage() {
         <input
           type="text"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher par nom, téléphone, article..."
           className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
         />
@@ -275,8 +349,11 @@ export default function TerrainProspectsPage() {
             <p className="text-[#A0AEC0] text-sm">Aucun prospect</p>
           </div>
         ) : (
-          filtered.map(p => (
-            <div key={p.id} className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl overflow-hidden">
+          filtered.map((p) => (
+            <div
+              key={p.id}
+              className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl overflow-hidden"
+            >
               {/* Card header */}
               <div className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -290,7 +367,9 @@ export default function TerrainProspectsPage() {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {p.temperature && (
-                    <span className={`text-xs px-2 py-0.5 rounded-lg border ${TEMP_COLORS[p.temperature] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-lg border ${TEMP_COLORS[p.temperature] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}
+                    >
                       {TEMP_LABELS[p.temperature] ?? p.temperature}
                     </span>
                   )}
@@ -355,20 +434,29 @@ export default function TerrainProspectsPage() {
                       <div>
                         <span className="text-[#718096]">Prix proposé : </span>
                         <span className="text-[#D4AF37] font-semibold">
-                          {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(p.proposed_price / 100)}
+                          {new Intl.NumberFormat('fr-FR', {
+                            style: 'currency',
+                            currency: 'XOF',
+                            maximumFractionDigits: 0,
+                          }).format(p.proposed_price / 100)}
                         </span>
                       </div>
                     )}
                     {p.interest_level && (
                       <div>
                         <span className="text-[#718096]">Intérêt : </span>
-                        <span className="text-white">{INTEREST_LABELS[p.interest_level] ?? p.interest_level}</span>
+                        <span className="text-white">
+                          {INTEREST_LABELS[p.interest_level] ?? p.interest_level}
+                        </span>
                       </div>
                     )}
                     {p.city && (
                       <div>
                         <span className="text-[#718096]">Ville : </span>
-                        <span className="text-white">{p.city}{p.quartier ? `, ${p.quartier}` : ''}</span>
+                        <span className="text-white">
+                          {p.city}
+                          {p.quartier ? `, ${p.quartier}` : ''}
+                        </span>
                       </div>
                     )}
                     {p.lieu_rencontre && (
@@ -380,9 +468,11 @@ export default function TerrainProspectsPage() {
                     {p.next_contact_date && (
                       <div>
                         <span className="text-[#718096]">Prochain contact : </span>
-                        <span className={`font-medium ${p.next_contact_date === today ? 'text-[#D4AF37]' : 'text-white'}`}>
+                        <span
+                          className={`font-medium ${p.next_contact_date === today ? 'text-[#D4AF37]' : 'text-white'}`}
+                        >
                           {new Date(p.next_contact_date).toLocaleDateString('fr-FR')}
-                          {p.next_contact_date === today && ' (Aujourd\'hui)'}
+                          {p.next_contact_date === today && " (Aujourd'hui)"}
                         </span>
                       </div>
                     )}
@@ -416,39 +506,52 @@ export default function TerrainProspectsPage() {
       </div>
 
       {/* Create Prospect Modal */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nouveau prospect" size="lg">
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Nouveau prospect"
+        size="lg"
+      >
         <form onSubmit={handleCreate} className="space-y-4 p-1 max-h-[70vh] overflow-y-auto">
           {/* Identity */}
           <div>
-            <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-3">Identité</p>
+            <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-3">
+              Identité
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Nom complet *</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  Nom complet *
+                </label>
                 <input
                   type="text"
                   value={form.full_name}
-                  onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
                   required
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                   placeholder="Nom et prénom"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Téléphone principal</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  Téléphone principal
+                </label>
                 <input
                   type="tel"
                   value={form.phone}
-                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                   placeholder="+225 07 00 00 00"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Téléphone 2</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  Téléphone 2
+                </label>
                 <input
                   type="tel"
                   value={form.phone2}
-                  onChange={e => setForm(f => ({ ...f, phone2: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, phone2: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                   placeholder="+225 07 00 00 00"
                 />
@@ -458,7 +561,7 @@ export default function TerrainProspectsPage() {
                 <input
                   type="text"
                   value={form.city}
-                  onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                   placeholder="Abidjan"
                 />
@@ -468,17 +571,19 @@ export default function TerrainProspectsPage() {
                 <input
                   type="text"
                   value={form.quartier}
-                  onChange={e => setForm(f => ({ ...f, quartier: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, quartier: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                   placeholder="Cocody"
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Lieu de rencontre</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  Lieu de rencontre
+                </label>
                 <input
                   type="text"
                   value={form.lieu_rencontre}
-                  onChange={e => setForm(f => ({ ...f, lieu_rencontre: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, lieu_rencontre: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                   placeholder="Marché, boutique, domicile..."
                 />
@@ -488,14 +593,18 @@ export default function TerrainProspectsPage() {
 
           {/* Commercial info */}
           <div>
-            <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-3">Informations commerciales</p>
+            <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-3">
+              Informations commerciales
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Article désiré</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  Article désiré
+                </label>
                 <input
                   type="text"
                   value={form.desired_product}
-                  onChange={e => setForm(f => ({ ...f, desired_product: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, desired_product: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                   placeholder="Nom de l'article"
                 />
@@ -505,27 +614,35 @@ export default function TerrainProspectsPage() {
                 <input
                   type="number"
                   value={form.desired_quantity}
-                  onChange={e => setForm(f => ({ ...f, desired_quantity: parseInt(e.target.value) || 1 }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, desired_quantity: parseInt(e.target.value) || 1 }))
+                  }
                   min={1}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Prix proposé (XOF)</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  Prix proposé (XOF)
+                </label>
                 <input
                   type="number"
                   value={form.proposed_price}
-                  onChange={e => setForm(f => ({ ...f, proposed_price: parseFloat(e.target.value) || 0 }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, proposed_price: parseFloat(e.target.value) || 0 }))
+                  }
                   min={0}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                   placeholder="0"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Niveau d&apos;intérêt</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  Niveau d&apos;intérêt
+                </label>
                 <select
                   value={form.interest_level}
-                  onChange={e => setForm(f => ({ ...f, interest_level: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, interest_level: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                 >
                   <option value="low">Faible</option>
@@ -534,10 +651,12 @@ export default function TerrainProspectsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Température</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  Température
+                </label>
                 <select
                   value={form.temperature}
-                  onChange={e => setForm(f => ({ ...f, temperature: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, temperature: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                 >
                   <option value="cold">❄️ Froid</option>
@@ -546,11 +665,13 @@ export default function TerrainProspectsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Prochain contact</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  Prochain contact
+                </label>
                 <input
                   type="date"
                   value={form.next_contact_date}
-                  onChange={e => setForm(f => ({ ...f, next_contact_date: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, next_contact_date: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                 />
               </div>
@@ -559,14 +680,16 @@ export default function TerrainProspectsPage() {
 
           {/* Appointment */}
           <div>
-            <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-3">Rendez-vous</p>
+            <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-3">
+              Rendez-vous
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Date RDV</label>
                 <input
                   type="date"
                   value={form.appointment_date}
-                  onChange={e => setForm(f => ({ ...f, appointment_date: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, appointment_date: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                 />
               </div>
@@ -575,7 +698,7 @@ export default function TerrainProspectsPage() {
                 <input
                   type="time"
                   value={form.appointment_time}
-                  onChange={e => setForm(f => ({ ...f, appointment_time: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, appointment_time: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                 />
               </div>
@@ -584,7 +707,7 @@ export default function TerrainProspectsPage() {
                 <input
                   type="text"
                   value={form.appointment_location}
-                  onChange={e => setForm(f => ({ ...f, appointment_location: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, appointment_location: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                   placeholder="Lieu du rendez-vous"
                 />
@@ -594,10 +717,12 @@ export default function TerrainProspectsPage() {
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Observations / Besoin du client</label>
+            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              Observations / Besoin du client
+            </label>
             <textarea
               value={form.notes}
-              onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+              onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={3}
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60 resize-none"
               placeholder="Besoin du client, observations, remarques..."
@@ -605,10 +730,18 @@ export default function TerrainProspectsPage() {
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors"
+            >
               Annuler
             </button>
-            <button type="submit" disabled={submitting} className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
+            >
               {submitting ? 'Enregistrement...' : 'Ajouter le prospect'}
             </button>
           </div>

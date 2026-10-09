@@ -33,13 +33,22 @@ export default function BusinessLoginPage() {
         return;
       }
       const { data: sessionData } = await supabase.auth.getUser();
-      if (sessionData.user) { const completed = await completePendingOnboarding(sessionData.user.id, email); if (completed) { router.replace('/business/onboarding'); return; } }
+      if (sessionData.user) {
+        const completed = await completePendingOnboarding(sessionData.user.id, email);
+        if (completed) {
+          router.replace('/business/onboarding');
+          return;
+        }
+      }
       const result = await checkCurrentBusinessAdmin();
       if (!result.ok) {
         await supabase.auth.signOut();
-        if (result.reason === 'profile_not_found') setError('Profil introuvable. Contactez votre administrateur.');
-        else if (result.reason === 'unauthorized') setError('Ce compte n\'est pas autorisé sur le portail Entreprise.');
-        else if (result.reason === 'no_organization') setError('Aucune organisation associée à ce compte.');
+        if (result.reason === 'profile_not_found')
+          setError('Profil introuvable. Contactez votre administrateur.');
+        else if (result.reason === 'unauthorized')
+          setError("Ce compte n'est pas autorisé sur le portail Entreprise.");
+        else if (result.reason === 'no_organization')
+          setError('Aucune organisation associée à ce compte.');
         else setError(result.message);
         setLoading(false);
         return;
@@ -61,7 +70,9 @@ export default function BusinessLoginPage() {
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-3 mb-3">
             <AppLogo size={40} />
-            <span className="text-2xl font-bold text-white">JDV <span className="gold-gradient-text">CRM</span></span>
+            <span className="text-2xl font-bold text-white">
+              JDV <span className="gold-gradient-text">CRM</span>
+            </span>
           </div>
           <div className="flex items-center gap-2 text-sm text-[#A0AEC0]">
             <Building2 size={14} />
@@ -82,13 +93,18 @@ export default function BusinessLoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#A0AEC0] mb-1.5">Adresse email</label>
+              <label className="block text-sm font-medium text-[#A0AEC0] mb-1.5">
+                Adresse email
+              </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]" />
+                <Mail
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]"
+                />
                 <input
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="admin@entreprise.com"
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl pl-10 pr-4 py-3 text-white placeholder-[#718096] text-sm focus:outline-none focus:border-[#D4AF37]/60 transition-colors"
@@ -97,13 +113,18 @@ export default function BusinessLoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#A0AEC0] mb-1.5">Mot de passe</label>
+              <label className="block text-sm font-medium text-[#A0AEC0] mb-1.5">
+                Mot de passe
+              </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]" />
+                <Lock
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]"
+                />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl pl-10 pr-12 py-3 text-white placeholder-[#718096] text-sm focus:outline-none focus:border-[#D4AF37]/60 transition-colors"
@@ -112,7 +133,7 @@ export default function BusinessLoginPage() {
                   type="button"
                   tabIndex={-1}
                   aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-                  onClick={() => setShowPassword(v => !v)}
+                  onClick={() => setShowPassword((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#718096] hover:text-[#A0AEC0] transition-colors"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}

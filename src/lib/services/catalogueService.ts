@@ -64,7 +64,7 @@ export async function fetchProducts(organizationId: string, filters?: { search?:
   }
 
   return {
-    data: ((data ?? []) as Row[]).map(a => {
+    data: ((data ?? []) as Row[]).map((a) => {
       const s = byArticle.get(String(a.id));
       return mapProduct(a, s?.quantity ?? 0, s?.minimum ?? 0);
     }),
@@ -82,13 +82,19 @@ export async function fetchProductById(productId: string) {
     .eq('article_id', productId);
 
   const quantity = ((inventory ?? []) as Row[]).reduce((n, r) => n + Number(r.quantity ?? 0), 0);
-  const minimum = ((inventory ?? []) as Row[]).reduce((n, r) => Math.max(n, Number(r.minimum_quantity ?? 0)), 0);
+  const minimum = ((inventory ?? []) as Row[]).reduce(
+    (n, r) => Math.max(n, Number(r.minimum_quantity ?? 0)),
+    0
+  );
   return { data: mapProduct(data as Row, quantity, minimum), error: null };
 }
 
 export async function createProduct(product: Partial<Product>) {
   if (!product.organization_id) {
-    return { data: null, error: new Error('organization_id is required') as unknown as { message: string } };
+    return {
+      data: null,
+      error: new Error('organization_id is required') as unknown as { message: string },
+    };
   }
 
   if (!product.name?.trim()) {
@@ -126,7 +132,12 @@ export async function updateProduct(productId: string, updates: Partial<Product>
     patch.credit_price = price;
   }
 
-  const { data, error } = await supabase.from('articles').update(patch).eq('id', productId).select().single();
+  const { data, error } = await supabase
+    .from('articles')
+    .update(patch)
+    .eq('id', productId)
+    .select()
+    .single();
   if (error || !data) return { data: null, error };
   return { data: mapProduct(data as Row), error: null };
 }

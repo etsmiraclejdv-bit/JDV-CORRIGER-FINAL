@@ -14,10 +14,14 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'btn-gold rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
-  secondary: 'btn-outline-gold rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed',
-  danger: 'bg-[rgba(252,129,129,0.15)] text-[#FC8181] border border-[rgba(252,129,129,0.3)] rounded-xl font-semibold hover:bg-[rgba(252,129,129,0.25)] transition-all disabled:opacity-50 disabled:cursor-not-allowed',
-  ghost: 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347] rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  primary:
+    'btn-gold rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
+  secondary:
+    'btn-outline-gold rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed',
+  danger:
+    'bg-[rgba(252,129,129,0.15)] text-[#FC8181] border border-[rgba(252,129,129,0.3)] rounded-xl font-semibold hover:bg-[rgba(252,129,129,0.25)] transition-all disabled:opacity-50 disabled:cursor-not-allowed',
+  ghost:
+    'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347] rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

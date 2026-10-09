@@ -14,14 +14,17 @@ export interface AuditLog {
   created_at: string;
 }
 
-export async function fetchAuditLogs(filters?: {
-  organizationId?: string;
-  entityType?: string;
-  action?: string;
-  userId?: string;
-  dateFrom?: string;
-  dateTo?: string;
-}, limit = 50) {
+export async function fetchAuditLogs(
+  filters?: {
+    organizationId?: string;
+    entityType?: string;
+    action?: string;
+    userId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  },
+  limit = 50
+) {
   let query = supabase
     .from('audit_logs')
     .select('*')

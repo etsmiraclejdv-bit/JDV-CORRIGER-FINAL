@@ -19,9 +19,16 @@ export interface OrganizationSettings {
 type Row = Record<string, unknown>;
 
 function isJson(value: unknown): value is Json {
-  if (value === null || typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return true;
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  )
+    return true;
   if (Array.isArray(value)) return value.every(isJson);
-  if (typeof value === 'object') return Object.values(value as Record<string, unknown>).every(isJson);
+  if (typeof value === 'object')
+    return Object.values(value as Record<string, unknown>).every(isJson);
   return false;
 }
 
@@ -37,7 +44,11 @@ function jsonObject(value: unknown): Record<string, Json | undefined> {
 }
 
 export async function fetchOrganization(organizationId: string) {
-  const { data, error } = await supabase.from('organizations').select('*').eq('id', organizationId).single();
+  const { data, error } = await supabase
+    .from('organizations')
+    .select('*')
+    .eq('id', organizationId)
+    .single();
   if (error || !data) return { data: null, error };
   // « org_status » est l'ancien nom de la colonne « status ».
   return { data: { ...(data as Row), org_status: (data as Row).status }, error: null };
@@ -68,14 +79,19 @@ export async function saveOrganizationSettings(organizationId: string, settings:
       .eq('id', (existing as Row).id as string);
     return { error };
   }
-  const { error } = await supabase.from('organization_settings').insert({ organization_id: organizationId, settings: normalizedSettings });
+  const { error } = await supabase
+    .from('organization_settings')
+    .insert({ organization_id: organizationId, settings: normalizedSettings });
   return { error };
 }
 
 export async function updateOrganization(organizationId: string, updates: Record<string, unknown>) {
   // Le statut et l'abonnement ne se modifient que par le concepteur.
   const { status, subscription_status, org_status, owner_user_id, ...safe } = updates;
-  void status; void subscription_status; void org_status; void owner_user_id;
+  void status;
+  void subscription_status;
+  void org_status;
+  void owner_user_id;
   const { data, error } = await supabase
     .from('organizations')
     .update({ ...safe, updated_at: new Date().toISOString() })
@@ -109,6 +125,11 @@ export async function updateProfile(userId: string, updates: Record<string, unkn
   if (typeof full_name === 'string') {
     Object.assign(payload, splitName(full_name), { display_name: full_name.trim() });
   }
-  const { data, error } = await supabase.from('profiles').update(payload).eq('id', userId).select().single();
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(payload)
+    .eq('id', userId)
+    .select()
+    .single();
   return { data, error };
 }

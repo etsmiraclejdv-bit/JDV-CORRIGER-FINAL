@@ -13,7 +13,10 @@ export function Input({ label, error, hint, className = '', id, ...props }: Inpu
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={inputId} className="text-xs font-semibold text-[#A0AEC0] uppercase tracking-wider">
+        <label
+          htmlFor={inputId}
+          className="text-xs font-semibold text-[#A0AEC0] uppercase tracking-wider"
+        >
           {label}
         </label>
       )}
@@ -40,7 +43,10 @@ export function PasswordInput({ label, error, className = '', id, ...props }: Pa
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label htmlFor={inputId} className="text-xs font-semibold text-[#A0AEC0] uppercase tracking-wider">
+        <label
+          htmlFor={inputId}
+          className="text-xs font-semibold text-[#A0AEC0] uppercase tracking-wider"
+        >
           {label}
         </label>
       )}
@@ -55,7 +61,7 @@ export function PasswordInput({ label, error, className = '', id, ...props }: Pa
           type="button"
           tabIndex={-1}
           aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-          onClick={() => setShowPassword(v => !v)}
+          onClick={() => setShowPassword((v) => !v)}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-[#718096] hover:text-[#A0AEC0] transition-colors"
         >
           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}

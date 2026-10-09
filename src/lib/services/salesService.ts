@@ -28,8 +28,14 @@ type Row = Record<string, unknown>;
 
 async function nameMaps(organizationId: string) {
   const [{ data: clients }, { data: pros }, { data: articles }] = await Promise.all([
-    supabase.from('clients').select('id, first_name, last_name, phone').eq('organization_id', organizationId),
-    supabase.from('prospecteurs').select('id, first_name, last_name').eq('organization_id', organizationId),
+    supabase
+      .from('clients')
+      .select('id, first_name, last_name, phone')
+      .eq('organization_id', organizationId),
+    supabase
+      .from('prospecteurs')
+      .select('id, first_name, last_name')
+      .eq('organization_id', organizationId),
     supabase.from('articles').select('id, name, code').eq('organization_id', organizationId),
   ]);
   const c = new Map<string, Row>();
@@ -37,13 +43,24 @@ async function nameMaps(organizationId: string) {
     c.set(x.id as string, { id: x.id, full_name: personName(x as never), phone: x.phone })
   );
   const p = new Map<string, Row>();
-  ((pros ?? []) as Row[]).forEach((x) => p.set(x.id as string, { id: x.id, full_name: personName(x as never) }));
+  ((pros ?? []) as Row[]).forEach((x) =>
+    p.set(x.id as string, { id: x.id, full_name: personName(x as never) })
+  );
   const a = new Map<string, Row>();
-  ((articles ?? []) as Row[]).forEach((x) => a.set(x.id as string, { id: x.id, name: x.name, sku: x.code }));
+  ((articles ?? []) as Row[]).forEach((x) =>
+    a.set(x.id as string, { id: x.id, name: x.name, sku: x.code })
+  );
   return { c, p, a };
 }
 
-export type SaleView = Tables<'sales'> & { amount_cents: number; sold_at: string; product_id?: string; clients: Row | null; profiles: Row | null; products: Row | null };
+export type SaleView = Tables<'sales'> & {
+  amount_cents: number;
+  sold_at: string;
+  product_id?: string;
+  clients: Row | null;
+  profiles: Row | null;
+  products: Row | null;
+};
 
 function mapSale(s: Tables<'sales'>, m: Awaited<ReturnType<typeof nameMaps>>): SaleView {
   return {
@@ -54,9 +71,9 @@ function mapSale(s: Tables<'sales'>, m: Awaited<ReturnType<typeof nameMaps>>): S
     sold_at: s.sale_date,
     product_id: typeof s.article_id === 'string' ? s.article_id : undefined,
     amount_cents: toCents(saleTotal(s)),
-    clients: typeof s.client_id === 'string' ? m.c.get(s.client_id) ?? null : null,
-    profiles: typeof s.prospecteur_id === 'string' ? m.p.get(s.prospecteur_id) ?? null : null,
-    products: typeof s.article_id === 'string' ? m.a.get(s.article_id) ?? null : null,
+    clients: typeof s.client_id === 'string' ? (m.c.get(s.client_id) ?? null) : null,
+    profiles: typeof s.prospecteur_id === 'string' ? (m.p.get(s.prospecteur_id) ?? null) : null,
+    products: typeof s.article_id === 'string' ? (m.a.get(s.article_id) ?? null) : null,
   };
 }
 
@@ -93,7 +110,10 @@ export async function fetchSaleById(saleId: string) {
  */
 export async function createSale(sale: Partial<Sale> & Record<string, unknown>) {
   if (!sale.organization_id) {
-    return { data: null, error: new Error('organization_id is required') as unknown as { message: string } };
+    return {
+      data: null,
+      error: new Error('organization_id is required') as unknown as { message: string },
+    };
   }
   const amountCents = typeof sale.amount_cents === 'number' ? sale.amount_cents : undefined;
   const payload: TablesInsert<'sales'> = {
@@ -102,7 +122,17 @@ export async function createSale(sale: Partial<Sale> & Record<string, unknown>) 
     sale_type: typeof sale.sale_type === 'string' ? sale.sale_type : 'cash',
     quantity: typeof sale.quantity === 'number' && sale.quantity > 0 ? sale.quantity : 1,
   };
-  const stringFields = ['client_id', 'prospecteur_id', 'article_id', 'client_phone', 'client_location', 'payment_frequency', 'deadline_date', 'notes', 'status'] as const;
+  const stringFields = [
+    'client_id',
+    'prospecteur_id',
+    'article_id',
+    'client_phone',
+    'client_location',
+    'payment_frequency',
+    'deadline_date',
+    'notes',
+    'status',
+  ] as const;
   for (const key of stringFields) {
     const value = sale[key];
     if (typeof value === 'string' || value === null) {
@@ -125,7 +155,12 @@ export async function createSale(sale: Partial<Sale> & Record<string, unknown>) 
   if (typeof sale.fixed_price === 'number') payload.fixed_price = sale.fixed_price;
   if (typeof sale.payment_amount === 'number') payload.payment_amount = sale.payment_amount;
   const quantity = payload.quantity ?? 1;
-  if (amountCents !== undefined && !payload.cash_price && !payload.credit_price && !payload.fixed_price) {
+  if (
+    amountCents !== undefined &&
+    !payload.cash_price &&
+    !payload.credit_price &&
+    !payload.fixed_price
+  ) {
     const unit = Math.round(amountCents / 100 / quantity);
     payload.fixed_price = unit;
     payload.cash_price = unit;
@@ -156,14 +191,18 @@ export async function createSale(sale: Partial<Sale> & Record<string, unknown>) 
   return { data, error };
 }
 
-export type PaymentView = Tables<'payments'> & { paid_at: string; amount_cents: number; clients?: Row | null };
+export type PaymentView = Tables<'payments'> & {
+  paid_at: string;
+  amount_cents: number;
+  clients?: Row | null;
+};
 
 function mapPayment(p: Tables<'payments'>, clients?: Map<string, Row>): PaymentView {
   return {
     ...p,
     paid_at: p.payment_date,
     amount_cents: toCents(p.amount),
-    clients: clients && p.client_id ? clients.get(p.client_id as string) ?? null : undefined,
+    clients: clients && p.client_id ? (clients.get(p.client_id as string) ?? null) : undefined,
   };
 }
 
@@ -179,22 +218,35 @@ export async function fetchPaymentsBySale(saleId: string) {
 
 export async function createPayment(payment: Partial<Payment> & Record<string, unknown>) {
   if (!payment.organization_id) {
-    return { data: null, error: new Error('organization_id is required') as unknown as { message: string } };
+    return {
+      data: null,
+      error: new Error('organization_id is required') as unknown as { message: string },
+    };
   }
-  const amount = typeof payment.amount === 'number'
-    ? payment.amount
-    : typeof payment.amount_cents === 'number'
-      ? Math.round(payment.amount_cents / 100)
-      : null;
+  const amount =
+    typeof payment.amount === 'number'
+      ? payment.amount
+      : typeof payment.amount_cents === 'number'
+        ? Math.round(payment.amount_cents / 100)
+        : null;
   if (amount === null || !Number.isFinite(amount) || amount < 0) {
-    return { data: null, error: new Error('amount is required and must be non-negative') as unknown as { message: string } };
+    return {
+      data: null,
+      error: new Error('amount is required and must be non-negative') as unknown as {
+        message: string;
+      },
+    };
   }
   const payload: TablesInsert<'payments'> = { organization_id: payment.organization_id, amount };
-  if (typeof payment.client_id === 'string' || payment.client_id === null) payload.client_id = payment.client_id;
-  if (typeof payment.sale_id === 'string' || payment.sale_id === null) payload.sale_id = payment.sale_id;
-  if (typeof payment.prospecteur_id === 'string' || payment.prospecteur_id === null) payload.prospecteur_id = payment.prospecteur_id;
+  if (typeof payment.client_id === 'string' || payment.client_id === null)
+    payload.client_id = payment.client_id;
+  if (typeof payment.sale_id === 'string' || payment.sale_id === null)
+    payload.sale_id = payment.sale_id;
+  if (typeof payment.prospecteur_id === 'string' || payment.prospecteur_id === null)
+    payload.prospecteur_id = payment.prospecteur_id;
   if (typeof payment.status === 'string') payload.status = payment.status;
-  if (typeof payment.payment_method === 'string' || payment.payment_method === null) payload.payment_method = payment.payment_method;
+  if (typeof payment.payment_method === 'string' || payment.payment_method === null)
+    payload.payment_method = payment.payment_method;
   if (typeof payment.currency === 'string') payload.currency = payment.currency;
   if (typeof payment.notes === 'string' || payment.notes === null) payload.notes = payment.notes;
   if (typeof payment.paid_at === 'string') payload.payment_date = payment.paid_at;

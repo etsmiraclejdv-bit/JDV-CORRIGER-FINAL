@@ -51,9 +51,7 @@ export default function UserProfilePanel({ onClose }: UserProfilePanelProps) {
   }
 
   if (loading) {
-    return (
-      <div className="p-6 text-center text-[#A0AEC0] text-sm">Chargement...</div>
-    );
+    return <div className="p-6 text-center text-[#A0AEC0] text-sm">Chargement...</div>;
   }
 
   return (
@@ -82,7 +80,7 @@ export default function UserProfilePanel({ onClose }: UserProfilePanelProps) {
           <input
             type="text"
             value={form.full_name}
-            onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
             className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
             placeholder="Votre nom complet"
           />
@@ -93,7 +91,7 @@ export default function UserProfilePanel({ onClose }: UserProfilePanelProps) {
           <input
             type="tel"
             value={form.phone}
-            onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
             className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
             placeholder="+225 07 00 00 00"
           />

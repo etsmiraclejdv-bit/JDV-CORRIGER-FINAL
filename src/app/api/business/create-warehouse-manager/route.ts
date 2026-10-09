@@ -90,15 +90,13 @@ export async function POST(req: NextRequest) {
     });
     if (createError) return NextResponse.json({ error: createError.message }, { status: 400 });
     const userId = authData.user.id;
-    const { error: managerError } = await admin
-      .from('warehouse_managers')
-      .insert({
-        warehouse_id: warehouseId,
-        user_id: userId,
-        display_name: (firstName + ' ' + lastName).trim(),
-        phone: phone || null,
-        created_by: caller.user.id,
-      });
+    const { error: managerError } = await admin.from('warehouse_managers').insert({
+      warehouse_id: warehouseId,
+      user_id: userId,
+      display_name: (firstName + ' ' + lastName).trim(),
+      phone: phone || null,
+      created_by: caller.user.id,
+    });
     if (managerError) {
       await admin.auth.admin.deleteUser(userId);
       return NextResponse.json({ error: managerError.message }, { status: 400 });

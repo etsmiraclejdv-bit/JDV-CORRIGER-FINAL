@@ -5,7 +5,6 @@ import { supabase } from '@/lib/supabase/client';
 import { fetchSales } from '@/lib/services/salesService';
 import { fetchOrgProfile } from '@/lib/auth/context';
 
-
 interface Sale {
   id: string;
   amount_cents: number;
@@ -25,14 +24,16 @@ export default function TerrainVentesPage() {
       if (!data.user) return;
       const { data: profile } = await fetchOrgProfile();
       if (profile?.organization_id && profile.prospecteur_id) {
-        const { data: salesData } = await fetchSales(profile.organization_id, { prospecteurId: profile.prospecteur_id });
+        const { data: salesData } = await fetchSales(profile.organization_id, {
+          prospecteurId: profile.prospecteur_id,
+        });
         setSales((salesData as Sale[]) ?? []);
       }
       setLoading(false);
     });
   }, []);
 
-  const filtered = sales.filter(s => {
+  const filtered = sales.filter((s) => {
     if (!search) return true;
     return s.clients?.full_name?.toLowerCase().includes(search.toLowerCase());
   });
@@ -41,7 +42,9 @@ export default function TerrainVentesPage() {
     <div className="p-5 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Mes ventes</h1>
-        <p className="text-sm text-[#A0AEC0] mt-1">{sales.length} vente{sales.length !== 1 ? 's' : ''} au total</p>
+        <p className="text-sm text-[#A0AEC0] mt-1">
+          {sales.length} vente{sales.length !== 1 ? 's' : ''} au total
+        </p>
       </div>
 
       <div className="relative">
@@ -49,7 +52,7 @@ export default function TerrainVentesPage() {
         <input
           type="text"
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher par client..."
           className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
         />
@@ -65,17 +68,30 @@ export default function TerrainVentesPage() {
           </div>
         ) : (
           <div className="divide-y divide-[#D4AF37]/5">
-            {filtered.map(sale => (
-              <div key={sale.id} className="flex items-center justify-between px-4 py-3 hover:bg-[#0A1628]/40 transition-colors">
+            {filtered.map((sale) => (
+              <div
+                key={sale.id}
+                className="flex items-center justify-between px-4 py-3 hover:bg-[#0A1628]/40 transition-colors"
+              >
                 <div>
-                  <p className="text-sm font-medium text-white">{sale.clients?.full_name ?? 'Client inconnu'}</p>
-                  <p className="text-xs text-[#718096]">{new Date(sale.sold_at).toLocaleDateString('fr-FR')}</p>
+                  <p className="text-sm font-medium text-white">
+                    {sale.clients?.full_name ?? 'Client inconnu'}
+                  </p>
+                  <p className="text-xs text-[#718096]">
+                    {new Date(sale.sold_at).toLocaleDateString('fr-FR')}
+                  </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <p className="text-sm font-semibold text-[#D4AF37]">
-                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format((sale.amount_cents ?? 0) / 100)}
+                    {new Intl.NumberFormat('fr-FR', {
+                      style: 'currency',
+                      currency: 'XOF',
+                      maximumFractionDigits: 0,
+                    }).format((sale.amount_cents ?? 0) / 100)}
                   </p>
-                  <span className={`text-xs px-2 py-0.5 rounded-lg ${sale.status === 'completed' || sale.status === 'encaissé' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-lg ${sale.status === 'completed' || sale.status === 'encaissé' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}
+                  >
                     {sale.status}
                   </span>
                 </div>
