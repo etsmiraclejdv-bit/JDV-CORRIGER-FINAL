@@ -148,7 +148,7 @@ export default function CompanyOnboardingPage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Session expirée. Reconnectez-vous.');
-      const safeName = file.name.replace(/[^\w.\-]/g, '_');
+      const safeName = file.name.replace(/[^\w.-]/g, '_');
       const path = user.id + '/' + app.id + '/' + Date.now() + '-' + safeName;
       const { error: storageError } = await supabase.storage
         .from('company-kyb-documents')
