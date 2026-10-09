@@ -68,7 +68,14 @@ export async function updateOrganization(organizationId: string, updates: Record
 export async function fetchProfile(userId: string) {
   const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
   if (error || !data) return { data: null, error };
-  return { data: { ...(data as Row), full_name: (data as Row).display_name || personName(data as never) }, error: null };
+  return {
+    data: {
+      ...(data as Row),
+      full_name: String((data as Row).display_name || personName(data as never)),
+      phone: typeof (data as Row).phone === 'string' ? (data as Row).phone : '',
+    },
+    error: null,
+  };
 }
 
 export async function updateProfile(userId: string, updates: Record<string, unknown>) {

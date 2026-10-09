@@ -23,7 +23,7 @@ export default function ClientDetailPage() {
         fetchClientPayments(clientId),
       ]);
       if (clientRes.error) { setError(clientRes.error.message); setLoading(false); return; }
-      setClient(clientRes.data as Record<string, unknown>);
+      setClient(clientRes.data ? { ...clientRes.data } : null);
       setSales((salesRes.data as Record<string, unknown>[]) ?? []);
       setPayments((paymentsRes.data as Record<string, unknown>[]) ?? []);
       setLoading(false);
