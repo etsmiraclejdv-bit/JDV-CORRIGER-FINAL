@@ -64,10 +64,10 @@ export default function SousEntrepotsStockPage() {
       p_article_id: article,
       p_quantity: Number(quantity),
       p_source_warehouse_id: src.warehouse_id,
-      p_source_subwarehouse_id: src.kind === 'subwarehouse' ? src.id : null,
+      p_source_subwarehouse_id: src.kind === 'subwarehouse' ? src.id : undefined,
       p_destination_warehouse_id: dst.warehouse_id,
-      p_destination_subwarehouse_id: dst.kind === 'subwarehouse' ? dst.id : null,
-      p_notes: notes || null,
+      p_destination_subwarehouse_id: dst.kind === 'subwarehouse' ? dst.id : undefined,
+      p_notes: notes || undefined,
     });
     if (error) setMessage(error.message);
     else {
