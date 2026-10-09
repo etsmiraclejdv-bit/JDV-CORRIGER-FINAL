@@ -1,0 +1,28 @@
+name: Final Prettier normalization
+on:
+  push:
+    branches:
+      - fix/typescript-supabase-client
+permissions:
+  contents: write
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/typescript-supabase-client
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write 'src/app/business/dashboard/intelligence/page.tsx'
+      - name: Commit and remove temporary workflow
+        run: |
+          rm .github/workflows/format-lint-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(lint): normalize final Prettier differences"
+          git push origin HEAD:fix/typescript-supabase-client
