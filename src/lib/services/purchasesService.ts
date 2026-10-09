@@ -268,7 +268,7 @@ export async function createPurchaseOrder(
 ): Promise<{ orderNumber: string | null; orderId: string | null; error: string | null }> {
   const { data, error } = await supabase.rpc('jdvcrm_create_purchase_order_v1', {
     p_supplier_id: supplierId,
-    p_expected_date: expectedDate || undefined,
+    p_expected_date: expectedDate,
     p_notes: notes,
     p_items: items,
   });
