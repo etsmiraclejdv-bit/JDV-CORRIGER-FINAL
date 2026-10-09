@@ -219,7 +219,7 @@ export default function ClotureStockPage() {
           <Card>
             <h2 className="text-xl font-semibold">Inventaire physique</h2>
             <p className="mt-1 text-sm text-slate-400">
-              Comptage physique du sous-entrepôt. L'écart est calculé automatiquement.
+              Comptage physique du sous-entrepôt. L&apos;écart est calculé automatiquement.
             </p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[700px] text-sm">
