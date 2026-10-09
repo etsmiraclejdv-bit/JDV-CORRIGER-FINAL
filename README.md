@@ -39,7 +39,7 @@ Les Edge Functions ont leurs propres secrets Supabase. Configurer notamment `SIT
 
 ## Schéma et migrations Supabase
 
-- Types TypeScript de référence : `src/types/database.types.ts`, générés depuis le schéma live du projet Supabase.
+- Types TypeScript de référence : `src/types/database.types.ts`, générés depuis le schéma live du projet Supabase. Pour les régénérer avec les annotations de nullabilité RPC documentées : `npm run db:types`.
 - Inventaire et limites de reproductibilité : [supabase/schema/README.md](supabase/schema/README.md).
 - Le fichier `supabase/schema/00_baseline_public_schema.sql` est un instantané historique du 1 octobre 2026, pas un export complet du schéma actuel.
 - L'historique live contient 136 versions de migrations et le dépôt ne contient pas les sources SQL de quatre versions. **Ne pas exécuter `supabase db push` ni prétendre qu'une reconstruction depuis zéro est validée** avant d'avoir récupéré ces quatre sources et testé une restauration propre.
