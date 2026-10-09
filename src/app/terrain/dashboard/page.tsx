@@ -30,7 +30,7 @@ export default function TerrainDashboardPage() {
     if (!pid) { setSalesCount(0); setTotalAmount(0); setProspectsCount(0); return; }
     const { data: salesData } = await fetchSales(oid, { prospecteurId: pid });
     const today = new Date()?.toDateString();
-    const todaySales = (salesData ?? [])?.filter(s => new Date(s.sold_at)?.toDateString() === today);
+    const todaySales = (salesData ?? [])?.filter(s => new Date(String(s.sold_at))?.toDateString() === today);
     setSalesCount(todaySales?.length);
     setTotalAmount(todaySales?.reduce((sum, s) => sum + Number(s?.amount_cents ?? 0), 0));
 
