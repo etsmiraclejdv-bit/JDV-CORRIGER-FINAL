@@ -67,7 +67,9 @@ export function WarehouseProvider({ children }: { children: React.ReactNode }) {
     setCurrentIdState(id);
     try {
       window.localStorage.setItem(STORAGE_KEY, id);
-    } catch { /* localStorage may be unavailable in restricted contexts. */ }
+    } catch {
+      /* localStorage may be unavailable in restricted contexts. */
+    }
   }, []);
   const value = useMemo<WarehouseCtx>(
     () => ({
