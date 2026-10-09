@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Plus, Wallet } from 'lucide-react';
 import { toast } from 'sonner';
-import { fetchSaleById, fetchPaymentsBySale, createPayment } from '@/lib/services/salesService';
+import { fetchSaleById, fetchPaymentsBySale, createPayment, type SaleView, type PaymentView } from '@/lib/services/salesService';
 import { saleTotal } from '@/lib/services/compat';
 import Modal from '@/components/ui/Modal';
 
@@ -25,8 +25,8 @@ const fmt = (n: number) =>
 export default function SaleDetailPage() {
   const params = useParams();
   const saleId = params.id as string;
-  const [sale, setSale] = useState<Row | null>(null);
-  const [payments, setPayments] = useState<Row[]>([]);
+  const [sale, setSale] = useState<SaleView | null>(null);
+  const [payments, setPayments] = useState<PaymentView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
@@ -37,8 +37,8 @@ export default function SaleDetailPage() {
   const load = useCallback(async () => {
     const [s, p] = await Promise.all([fetchSaleById(saleId), fetchPaymentsBySale(saleId)]);
     if (s.error || !s.data) setError(s.error?.message ?? 'Vente introuvable');
-    else setSale(s.data as Row);
-    setPayments((p.data ?? []) as Row[]);
+    else setSale(s.data);
+    setPayments(p.data ?? []);
     setLoading(false);
   }, [saleId]);
 
@@ -60,7 +60,7 @@ export default function SaleDetailPage() {
       currency: 'XOF',
       payment_method: method,
       status: 'successful',
-    } as never);
+    });
     setSaving(false);
     if (err) return toast.error(err.message);
     toast.success('Paiement enregistré');
@@ -79,12 +79,12 @@ export default function SaleDetailPage() {
     );
   }
 
-  const total = saleTotal(sale as never);
+  const total = saleTotal(sale);
   const paid = Number(sale.amount_paid) || 0;
   const remaining = Number(sale.amount_remaining) || 0;
-  const client = sale.clients as Row | null;
-  const product = sale.products as Row | null;
-  const seller = sale.profiles as Row | null;
+  const client = sale.clients;
+  const product = sale.products;
+  const seller = sale.profiles;
   const canPay = remaining > 0 && sale.status !== 'cancelled';
 
   return (
