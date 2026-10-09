@@ -6,7 +6,7 @@ Projet de référence : `CRM JDV`, région `eu-west-1`, PostgreSQL 17.
 
 | Chemin | Rôle et limites |
 |---|---|
-| `src/types/database.types.ts` | Types TypeScript générés depuis le schéma live Supabase. Les régénérer après toute modification du schéma. |
+| `src/types/database.types.ts` | Types TypeScript générés depuis le schéma live Supabase. Les régénérer après toute modification du schéma avec `npm run db:types`. |
 | `schema/README.md` | Inventaire du schéma live et état de reproductibilité connu. |
 | `schema/00_baseline_public_schema.sql` | Instantané historique daté du 2026-10-01. **Obsolète comme baseline de restauration** : ne pas l'utiliser seul pour recréer la base actuelle. |
 | `migrations/` | Sources SQL présentes dans le dépôt. Elles ne représentent pas encore l'ensemble des versions appliquées en production. |
@@ -25,7 +25,7 @@ Projet de référence : `CRM JDV`, région `eu-west-1`, PostgreSQL 17.
 Avec le Supabase CLI installé et authentifié :
 
 ```bash
-npx supabase gen types typescript --project-id arxhppptxeeyeexkdyjv --schema public > src/types/database.types.ts
+npm run db:types
 npm run type-check
 ```
 
