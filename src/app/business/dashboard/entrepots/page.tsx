@@ -141,7 +141,7 @@ export default function WarehousesPage() {
       p_organization_id: orgId,
       p_code: form.code,
       p_name: form.name,
-      p_address: form.address || null,
+      p_address: form.address || undefined,
       p_city: form.city,
       p_country: form.country || 'Bénin',
     });
@@ -176,9 +176,9 @@ export default function WarehousesPage() {
       p_organization_id: orgId,
       p_prospecteur_id: pid,
       p_warehouse_id: v.warehouse_id,
-      p_department: v.department || null,
-      p_city: v.city || null,
-      p_work_zone: v.work_zone || null,
+      p_department: v.department || undefined,
+      p_city: v.city || undefined,
+      p_work_zone: v.work_zone || undefined,
     });
     setSaving(null);
 
