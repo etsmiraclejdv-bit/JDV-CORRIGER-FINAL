@@ -304,7 +304,7 @@ export default function WarehousesPage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-xs uppercase tracking-widest text-[#D4AF37]">
-                          Système de l'entrepôt
+                          Système de l&apos;entrepôt
                         </p>
                         <h2 className="text-lg font-bold text-white">{w.name}</h2>
                         <p className="text-xs text-[#A0AEC0]">
