@@ -3,6 +3,17 @@
 Date: 2026-10-09  
 Production project: `arxhppptxeeyeexkdyjv` (`eu-west-1`)
 
+## Static reconciliation result
+
+A fresh read-only comparison of the live Supabase migration history with the reconciliation branch's `supabase/migrations/*.sql` filenames returned:
+
+- **136** migration versions recorded in production.
+- **132** migration SQL files in the repository.
+- **0** repository migration filename versions absent from the production history.
+- **4** production migration versions with no corresponding repository SQL file.
+
+The 11 mismatched filenames have been aligned to the corresponding production version strings on this branch. This resolves the filename/version mismatch found in the initial audit. It does **not** resolve the four missing source bodies or prove that the 11 carried-over SQL bodies match the exact statements deployed.
+
 ## Safety status
 
 - This branch changes GitHub migration filenames and adds reconciliation/evidence documentation; no SQL was executed against production.
@@ -42,16 +53,15 @@ These four versions appear in the live migration history but have no correspondi
 | `20261009011506` | `agency_head_chef_agence_v1` | Recover exact SQL and verify schema, role permissions, and policies. |
 | `20261009012135` | `scope_prospecteur_assignments_to_agency_v1` | Recover exact SQL and verify assignment scoping and RLS behavior. |
 
-Do not fabricate migration bodies from names alone. The deployed schema is evidence for current behavior, but it is not a substitute for the original migration source when reproducing a clean database.
+The exact paths were also checked against GitHub's commit history; no commits for these paths were returned. Do not fabricate migration bodies from names alone. The deployed schema is evidence for current behavior, but it is not a substitute for the original migration source when reproducing a clean database.
 
-## Next steps before merge
+## Verified live-state evidence
 
-1. Recover the four missing SQL files from original artifacts, backups, or exact deployment commits.
-2. Verify all 11 renamed SQL bodies against the actual changes applied in production, especially the sector-knowledge retry and security-sensitive organization/agency migrations.
-3. Add/validate `supabase/config.toml` and run `supabase migration list` against local and remote environments.
-4. Build a disposable clean database and replay the full migration sequence. Validate schema, functions, triggers, RLS, grants, and seed data against production metadata. This gate remains unrun because no paid branch is being created.
-5. Only after clean replay and review succeed, merge the reconciliation branch. Do not apply the reconciled files to production; their versions are already recorded there.
+Read-only definitions of the application validation/document-review functions, triggers and RLS policies, and warehouse/prospecteur assignment policies/RPCs are recorded in [MIGRATION_RECONSTRUCTION_EVIDENCE.md](./MIGRATION_RECONSTRUCTION_EVIDENCE.md). That evidence describes the current live behavior; it does not claim to reconstruct every historical statement or intermediate schema state.
 
-## Current decision
+## Final disposition
 
-The PR remains draft. The current work improves traceability and records verified live-state evidence, but it does not resolve the missing historical source SQL or establish clean-replay success. Do not merge yet.
+- **Completed without cost:** align the 11 migration filenames to live version numbers, perform a fresh static filename/version comparison, inspect the current database definitions for the four missing migrations' areas, and commit the evidence reports to the reconciliation branch.
+- **Still unverified:** exact SQL equivalence for the 11 renamed files, original source bodies for four applied migrations, the full clean replay, and a schema/security diff against a rebuilt database.
+- **Decision:** keep PR #2 in draft and do not merge or deploy it yet. A production migration push is not needed to reconcile these filenames and must not be used as a substitute for clean-replay testing.
+- No Supabase development branch was created, and no production SQL was executed.
