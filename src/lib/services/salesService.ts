@@ -6,10 +6,10 @@ import { newSaleNumber, personName, saleTotal, toCents } from '@/lib/services/co
 export interface Sale {
   id: string;
   organization_id: string;
-  client_id?: string;
-  prospecteur_id?: string;
-  article_id?: string;
-  product_id?: string;
+  client_id?: string | null;
+  prospecteur_id?: string | null;
+  article_id?: string | null;
+  product_id?: string | null;
   amount_cents: number;
   status: string;
   sold_at: string;
@@ -43,7 +43,7 @@ async function nameMaps(organizationId: string) {
   return { c, p, a };
 }
 
-type SaleView = Sale & { clients: Row | null; profiles: Row | null; products: Row | null };
+export type SaleView = Tables<'sales'> & { amount_cents: number; sold_at: string; product_id?: string; clients: Row | null; profiles: Row | null; products: Row | null };
 
 function mapSale(s: Tables<'sales'>, m: Awaited<ReturnType<typeof nameMaps>>): SaleView {
   return {
@@ -53,7 +53,7 @@ function mapSale(s: Tables<'sales'>, m: Awaited<ReturnType<typeof nameMaps>>): S
     status: s.status,
     sold_at: s.sale_date,
     product_id: typeof s.article_id === 'string' ? s.article_id : undefined,
-    amount_cents: toCents(saleTotal(s as never)),
+    amount_cents: toCents(saleTotal(s)),
     clients: typeof s.client_id === 'string' ? m.c.get(s.client_id) ?? null : null,
     profiles: typeof s.prospecteur_id === 'string' ? m.p.get(s.prospecteur_id) ?? null : null,
     products: typeof s.article_id === 'string' ? m.a.get(s.article_id) ?? null : null,
@@ -114,17 +114,19 @@ export async function createSale(sale: Partial<Sale> & Record<string, unknown>) 
       else if (key === 'payment_frequency') payload.payment_frequency = value;
       else if (key === 'deadline_date') payload.deadline_date = value;
       else if (key === 'notes') payload.notes = value;
-      else if (key === 'status') payload.status = value;
+      else if (key === 'status' && typeof value === 'string') payload.status = value;
     }
   }
   const articleId = typeof sale.product_id === 'string' ? sale.product_id : undefined;
   if (articleId && !payload.article_id) payload.article_id = articleId;
   if (typeof sale.sold_at === 'string') payload.sale_date = sale.sold_at;
-  for (const key of ['cash_price', 'credit_price', 'fixed_price', 'payment_amount'] as const) {
-    if (typeof sale[key] === 'number') payload[key] = sale[key] as number;
-  }
+  if (typeof sale.cash_price === 'number') payload.cash_price = sale.cash_price;
+  if (typeof sale.credit_price === 'number') payload.credit_price = sale.credit_price;
+  if (typeof sale.fixed_price === 'number') payload.fixed_price = sale.fixed_price;
+  if (typeof sale.payment_amount === 'number') payload.payment_amount = sale.payment_amount;
+  const quantity = payload.quantity ?? 1;
   if (amountCents !== undefined && !payload.cash_price && !payload.credit_price && !payload.fixed_price) {
-    const unit = Math.round(amountCents / 100 / payload.quantity);
+    const unit = Math.round(amountCents / 100 / quantity);
     payload.fixed_price = unit;
     payload.cash_price = unit;
     payload.credit_price = unit;
@@ -154,7 +156,9 @@ export async function createSale(sale: Partial<Sale> & Record<string, unknown>) 
   return { data, error };
 }
 
-function mapPayment(p: Tables<'payments'>, clients?: Map<string, Row>): Row {
+export type PaymentView = Tables<'payments'> & { paid_at: string; amount_cents: number; clients?: Row | null };
+
+function mapPayment(p: Tables<'payments'>, clients?: Map<string, Row>): PaymentView {
   return {
     ...p,
     paid_at: p.payment_date,
