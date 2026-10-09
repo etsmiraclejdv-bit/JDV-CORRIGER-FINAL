@@ -238,7 +238,7 @@ export default function SousEntrepotsPage() {
       <div className="p-6 text-white">
         <h1 className="text-2xl font-bold">Sous-entrepôts</h1>
         <p className="mt-2 text-slate-400">
-          Aucune organisation active n'est associée à votre compte.
+          Aucune organisation active n&apos;est associée à votre compte.
         </p>
       </div>
     );
@@ -411,7 +411,7 @@ export default function SousEntrepotsPage() {
 
         {!subwarehouses.length ? (
           <div className="rounded-xl border border-dashed border-white/10 p-8 text-center text-slate-500">
-            Aucun sous-entrepôt n'a encore été créé.
+            Aucun sous-entrepôt n&apos;a encore été créé.
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
