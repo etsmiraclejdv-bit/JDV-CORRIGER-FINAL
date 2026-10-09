@@ -215,7 +215,7 @@ const sections: Section[] = [
       },
       {
         num: 10,
-        title: "Journal d&apos;audit",
+        title: 'Journal d&apos;audit',
         icon: <ClipboardList size={16} />,
         desc: "Audit → Journal de toutes les modifications (ventes, paiements, membres, prospects, stock). Filtrez par type d'entité, action, utilisateur et plage de dates. Les changements sont affichés en différentiel lisible.",
         tips: [
@@ -330,7 +330,7 @@ const sections: Section[] = [
       },
       {
         num: 9,
-        title: "Journal d&apos;audit plateforme",
+        title: 'Journal d&apos;audit plateforme',
         icon: <ClipboardList size={16} />,
         desc: "Audit → vue transverse de toutes les organisations. Sélecteur d'entreprise pour filtrer. Utile pour le support et l'investigation en cas de litige.",
         tips: [
@@ -375,7 +375,7 @@ export default function GuideOnboardingPage() {
           <div className="inline-flex items-center gap-2 bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] rounded-full px-4 py-1.5 mb-5">
             <BookOpen size={14} className="text-[#D4AF37]" />
             <span className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider">
-              Guide d'utilisation
+              Guide d&apos;utilisation
             </span>
           </div>
           <h1 className="text-3xl font-bold text-white mb-3">
