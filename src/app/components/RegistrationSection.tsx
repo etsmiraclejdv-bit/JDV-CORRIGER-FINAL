@@ -48,7 +48,7 @@ export default function RegistrationSection() {
         p_registration_number:d.registrationNumber,p_tax_number:d.taxNumber,
         p_representative_first_name:d.representativeFirstName,p_representative_last_name:d.representativeLastName,
         p_representative_role:d.representativeRole,p_representative_phone:d.representativePhone,
-        p_representative_email:d.professionalEmail,p_representative_birth_date:d.representativeBirthDate||'',
+        p_representative_email:d.professionalEmail,p_representative_birth_date:d.representativeBirthDate||null,
         p_representative_nationality:d.representativeNationality,p_ownership_count:Number(d.associateCount)||0,
         p_associate_count:Number(d.associateCount)||0,p_manager_count:Number(d.managerCount)||0,
         p_people_count:Number(d.peopleCount)||0,p_company_size:d.companySize
