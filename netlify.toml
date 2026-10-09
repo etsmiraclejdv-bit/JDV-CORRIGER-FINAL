@@ -1,3 +1,4 @@
 # Keep the production Netlify build aligned with the blocking TypeScript check in CI.
 [build.environment]
+  NODE_VERSION = "22"
   STRICT_BUILD = "true"
