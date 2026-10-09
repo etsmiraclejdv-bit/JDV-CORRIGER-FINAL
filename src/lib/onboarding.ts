@@ -52,10 +52,10 @@ function isPayload(value: unknown): value is OnboardingPayload {
 async function clearPending() {
   try {
     localStorage.removeItem(KEY);
-  } catch {}
+  } catch { /* Best-effort cleanup; browser storage or auth may be unavailable. */ }
   try {
     await supabase.auth.updateUser({ data: { pending_company_application: null } });
-  } catch {}
+  } catch { /* Best-effort cleanup; browser storage or auth may be unavailable. */ }
 }
 
 /** Soumet le dossier d'entreprise sans créer d'organisation active. */
@@ -70,7 +70,7 @@ export async function completePendingOnboarding(userId: string, email: string): 
   try {
     const raw = localStorage.getItem(KEY);
     parsed = raw ? JSON.parse(raw) : null;
-  } catch {}
+  } catch { /* Best-effort cleanup; browser storage or auth may be unavailable. */ }
   if (!isPayload(parsed)) return false;
   const payload = parsed;
   const professionalEmail = payload.p_representative_email;
