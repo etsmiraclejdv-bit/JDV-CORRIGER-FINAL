@@ -174,8 +174,8 @@ export default function IntelligencePage() {
 
       <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#0F2347] p-4 text-xs text-[#A0AEC0]">
         Le moteur applique les règles opérationnelles du CRM (J+14, J+10/J+20, seuils de stock et
-        inactivité). L&apos;IA générative pourra ensuite enrichir ces alertes avec une explication et une
-        recommandation contextualisée.
+        inactivité). L&apos;IA générative pourra ensuite enrichir ces alertes avec une explication
+        et une recommandation contextualisée.
       </div>
     </div>
   );
