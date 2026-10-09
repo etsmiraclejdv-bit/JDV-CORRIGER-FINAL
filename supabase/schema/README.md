@@ -22,7 +22,7 @@ Ne pas inventer leur SQL, ne pas exécuter `supabase db push`, et ne pas traiter
 ## Régénération
 
 ```bash
-npx supabase gen types typescript --project-id arxhppptxeeyeexkdyjv --schema public > src/types/database.types.ts
+npm run db:types
 npm run type-check
 ```
 
