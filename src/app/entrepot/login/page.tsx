@@ -21,7 +21,7 @@ export default function EntrepotLoginPage() {
     const { data, error: rpcError } = await supabase.rpc('jdvcrm_my_warehouses_v1');
     if (rpcError || !data || (data as unknown[]).length === 0) {
       await supabase.auth.signOut(); setLoading(false);
-      setError("Ce compte n'est pas rattaché à aucune agence active. Contactez votre administrateur."); return;
+      setError("Ce compte n'est rattaché à aucune agence active. Contactez votre administrateur."); return;
     }
     router.replace('/entrepot/dashboard');
   }
