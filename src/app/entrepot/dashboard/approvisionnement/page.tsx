@@ -163,9 +163,9 @@ export default function EntrepotApprovisionnementPage() {
       {
         p_warehouse_id: current.warehouse_id,
         p_target: target,
-        p_supplier_id: target === 'supplier' ? supplierId : null,
+        p_supplier_id: target === 'supplier' ? supplierId : undefined,
         p_items: items,
-        p_notes: notes.trim() || null,
+        p_notes: notes.trim() || undefined,
       },
     );
 
@@ -202,7 +202,7 @@ export default function EntrepotApprovisionnementPage() {
       {
         p_request_id: request.id,
         p_action: actionName,
-        p_notes: null,
+        p_notes: undefined,
       },
     );
 
