@@ -60,9 +60,14 @@ export async function fetchSuppliers(organizationId: string): Promise<Result<Sup
   return { data: (data ?? []) as Supplier[], error: null };
 }
 
-export async function fetchSupplierBalances(organizationId: string): Promise<Result<Record<string, number>>> {
+export async function fetchSupplierBalances(
+  organizationId: string
+): Promise<Result<Record<string, number>>> {
   const [orders, payments] = await Promise.all([
-    supabase.from('purchase_orders').select('id, supplier_id, total_amount, status').eq('organization_id', organizationId),
+    supabase
+      .from('purchase_orders')
+      .select('id, supplier_id, total_amount, status')
+      .eq('organization_id', organizationId),
     supabase
       .from('supplier_payments')
       .select('supplier_id, purchase_order_id, amount, status')
@@ -72,8 +77,18 @@ export async function fetchSupplierBalances(organizationId: string): Promise<Res
   if (error) return { data: {}, error };
   return {
     data: balancesBySupplier(
-      (orders.data ?? []) as { id: string; supplier_id: string; total_amount: number; status: string }[],
-      (payments.data ?? []) as { supplier_id: string; purchase_order_id: string | null; amount: number; status: string }[]
+      (orders.data ?? []) as {
+        id: string;
+        supplier_id: string;
+        total_amount: number;
+        status: string;
+      }[],
+      (payments.data ?? []) as {
+        supplier_id: string;
+        purchase_order_id: string | null;
+        amount: number;
+        status: string;
+      }[]
     ),
     error: null,
   };
@@ -91,9 +106,14 @@ export async function saveSupplier(
   }
   // Deux créations simultanées peuvent viser le même code : on recalcule et on réessaie.
   for (let attempt = 0; attempt < 3; attempt++) {
-    const { data: existing } = await supabase.from('suppliers').select('code').eq('organization_id', organizationId);
+    const { data: existing } = await supabase
+      .from('suppliers')
+      .select('code')
+      .eq('organization_id', organizationId);
     const code = nextSupplierCode(((existing ?? []) as { code: string }[]).map((s) => s.code));
-    const { error } = await supabase.from('suppliers').insert({ ...input, organization_id: organizationId, code });
+    const { error } = await supabase
+      .from('suppliers')
+      .insert({ ...input, organization_id: organizationId, code });
     if (!error) return { error: null };
     if (error.code !== '23505') return { error: error.message };
   }
@@ -126,11 +146,15 @@ interface OrderRowRaw {
   suppliers: { company_name: string } | { company_name: string }[] | null;
 }
 
-export async function fetchPurchaseOrders(organizationId: string): Promise<Result<PurchaseOrderRow[]>> {
+export async function fetchPurchaseOrders(
+  organizationId: string
+): Promise<Result<PurchaseOrderRow[]>> {
   const [orders, payments] = await Promise.all([
     supabase
       .from('purchase_orders')
-      .select('id, supplier_id, order_number, order_date, expected_date, total_amount, status, suppliers(company_name)')
+      .select(
+        'id, supplier_id, order_number, order_date, expected_date, total_amount, status, suppliers(company_name)'
+      )
       .eq('organization_id', organizationId)
       .order('created_at', { ascending: false })
       .limit(500),
@@ -143,8 +167,12 @@ export async function fetchPurchaseOrders(organizationId: string): Promise<Resul
   const error = orders.error?.message || payments.error?.message || null;
   if (error) return { data: [], error };
   const paid: Record<string, number> = {};
-  for (const p of (payments.data ?? []) as { purchase_order_id: string | null; amount: number | string }[]) {
-    if (p.purchase_order_id) paid[p.purchase_order_id] = (paid[p.purchase_order_id] ?? 0) + Number(p.amount);
+  for (const p of (payments.data ?? []) as {
+    purchase_order_id: string | null;
+    amount: number | string;
+  }[]) {
+    if (p.purchase_order_id)
+      paid[p.purchase_order_id] = (paid[p.purchase_order_id] ?? 0) + Number(p.amount);
   }
   const rows = (orders.data ?? []) as unknown as OrderRowRaw[];
   return {
@@ -176,9 +204,26 @@ export interface OrderDetail {
   notes: string | null;
   supplier_id: string;
   supplier_name: string;
-  items: (OrderItemRow & { id: string; unit_cost: number; total_amount: number; article_name: string; article_code: string })[];
-  receipts: (ReceiptRow & { id: string; receipt_number: string; receipt_date: string; notes: string | null })[];
-  payments: (PaymentRow & { id: string; payment_date: string; payment_method: string | null; provider_reference: string | null; notes: string | null })[];
+  items: (OrderItemRow & {
+    id: string;
+    unit_cost: number;
+    total_amount: number;
+    article_name: string;
+    article_code: string;
+  })[];
+  receipts: (ReceiptRow & {
+    id: string;
+    receipt_number: string;
+    receipt_date: string;
+    notes: string | null;
+  })[];
+  payments: (PaymentRow & {
+    id: string;
+    payment_date: string;
+    payment_method: string | null;
+    provider_reference: string | null;
+    notes: string | null;
+  })[];
 }
 
 interface DetailRaw {
@@ -214,7 +259,9 @@ export async function fetchOrderDetail(id: string): Promise<Result<OrderDetail |
       .maybeSingle(),
     supabase
       .from('goods_receipts')
-      .select('id, receipt_number, receipt_date, status, notes, goods_receipt_items(article_id, quantity_received)')
+      .select(
+        'id, receipt_number, receipt_date, status, notes, goods_receipt_items(article_id, quantity_received)'
+      )
       .eq('purchase_order_id', id)
       .order('created_at', { ascending: false }),
     supabase
@@ -251,8 +298,8 @@ export async function fetchOrderDetail(id: string): Promise<Result<OrderDetail |
           article_code: a?.code ?? '',
         };
       }),
-      receipts: ((receipts.data ?? []) as unknown as OrderDetail['receipts']),
-      payments: ((payments.data ?? []) as unknown as OrderDetail['payments']),
+      receipts: (receipts.data ?? []) as unknown as OrderDetail['receipts'],
+      payments: (payments.data ?? []) as unknown as OrderDetail['payments'],
     },
     error: null,
   };
@@ -268,7 +315,7 @@ export async function createPurchaseOrder(
 ): Promise<{ orderNumber: string | null; orderId: string | null; error: string | null }> {
   const { data, error } = await supabase.rpc('jdvcrm_create_purchase_order_v1', {
     p_supplier_id: supplierId,
-    p_expected_date: expectedDate || null,
+    p_expected_date: expectedDate,
     p_notes: notes,
     p_items: items,
   });
@@ -289,7 +336,11 @@ export async function receivePurchaseOrder(
   });
   if (error) return { receiptNumber: null, orderStatus: null, error: error.message };
   const r = (data ?? {}) as { receipt_number?: string; order_status?: string };
-  return { receiptNumber: r.receipt_number ?? null, orderStatus: r.order_status ?? null, error: null };
+  return {
+    receiptNumber: r.receipt_number ?? null,
+    orderStatus: r.order_status ?? null,
+    error: null,
+  };
 }
 
 export async function payPurchaseOrder(
@@ -312,6 +363,8 @@ export async function payPurchaseOrder(
 }
 
 export async function cancelPurchaseOrder(orderId: string): Promise<{ error: string | null }> {
-  const { error } = await supabase.rpc('jdvcrm_cancel_purchase_order_v1', { p_purchase_order_id: orderId });
+  const { error } = await supabase.rpc('jdvcrm_cancel_purchase_order_v1', {
+    p_purchase_order_id: orderId,
+  });
   return { error: error ? error.message : null };
 }

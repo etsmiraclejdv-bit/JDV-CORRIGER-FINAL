@@ -6,7 +6,10 @@ export type SuperAdminAuthResult =
 
 export async function checkCurrentSuperAdmin(): Promise<SuperAdminAuthResult> {
   try {
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
     if (userError || !user) {
       return { ok: false, reason: 'not_authenticated', message: "Vous n'êtes pas connecté." };
     }
@@ -18,10 +21,18 @@ export async function checkCurrentSuperAdmin(): Promise<SuperAdminAuthResult> {
     if (error) {
       const message = error.message || '';
       if (/AUTHENTICATION_REQUIRED|JWT|not authenticated/i.test(message)) {
-        return { ok: false, reason: 'not_authenticated', message: "Votre session n'est pas active." };
+        return {
+          ok: false,
+          reason: 'not_authenticated',
+          message: "Votre session n'est pas active.",
+        };
       }
       if (/CONCEPTEUR_ONLY|permission|not authorized|forbidden/i.test(message)) {
-        return { ok: false, reason: 'unauthorized', message: 'Compte non autorisé pour ce portail.' };
+        return {
+          ok: false,
+          reason: 'unauthorized',
+          message: 'Compte non autorisé pour ce portail.',
+        };
       }
       return { ok: false, reason: 'error', message: 'Erreur lors de la vérification des droits.' };
     }

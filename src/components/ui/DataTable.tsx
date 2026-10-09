@@ -45,7 +45,7 @@ export default function DataTable<T>({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-[rgba(212,175,55,0.1)] bg-[#08152f]">
-            {columns.map(col => (
+            {columns.map((col) => (
               <th
                 key={col.key}
                 className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[#A0AEC0] ${col.className ?? ''}`}
@@ -60,20 +60,25 @@ export default function DataTable<T>({
             <TableSkeleton cols={columns.length} />
           ) : data.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-4 py-12 text-center text-sm text-[#718096]">
+              <td
+                colSpan={columns.length}
+                className="px-4 py-12 text-center text-sm text-[#718096]"
+              >
                 {emptyMessage}
               </td>
             </tr>
           ) : (
-            data.map(row => (
+            data.map((row) => (
               <tr
                 key={keyExtractor(row)}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                 className={`bg-[#0F2347]/60 table-row-hover transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
               >
-                {columns.map(col => (
+                {columns.map((col) => (
                   <td key={col.key} className={`px-4 py-3 text-[#F7F9FC] ${col.className ?? ''}`}>
-                    {col.render ? col.render(row) : (row as Record<string, unknown>)[col.key] as React.ReactNode}
+                    {col.render
+                      ? col.render(row)
+                      : ((row as Record<string, unknown>)[col.key] as React.ReactNode)}
                   </td>
                 ))}
               </tr>

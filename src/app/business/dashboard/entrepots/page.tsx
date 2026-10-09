@@ -1,14 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-  Warehouse,
-  Plus,
-  MapPin,
-  RefreshCw,
-  ArrowRightLeft,
-  Save,
-} from 'lucide-react';
+import { Warehouse, Plus, MapPin, RefreshCw, ArrowRightLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
@@ -105,7 +98,7 @@ export default function WarehousesPage() {
       supabase
         .from('prospecteur_warehouse_assignments')
         .select(
-          'id,prospecteur_id,warehouse_id,department,city,work_zone,is_primary,active,prospecteurs(id,first_name,last_name,city,status),warehouses(id,code,name,address,city,country,active)',
+          'id,prospecteur_id,warehouse_id,department,city,work_zone,is_primary,active,prospecteurs(id,first_name,last_name,city,status),warehouses(id,code,name,address,city,country,active)'
         )
         .eq('organization_id', profile.organization_id)
         .eq('active', true)
@@ -114,7 +107,21 @@ export default function WarehousesPage() {
 
     setWarehouses((w.data ?? []) as Wh[]);
     setProspecteurs((p.data ?? []) as P[]);
-    setAssignments((a.data ?? []) as A[]);
+    const normalizedAssignments = (a.data ?? []).map((row) => {
+      const record = row as unknown as Record<string, unknown>;
+      const prospecteursRelation = record.prospecteurs;
+      const warehousesRelation = record.warehouses;
+      return {
+        ...record,
+        prospecteurs: Array.isArray(prospecteursRelation)
+          ? (prospecteursRelation[0] ?? undefined)
+          : prospecteursRelation,
+        warehouses: Array.isArray(warehousesRelation)
+          ? (warehousesRelation[0] ?? undefined)
+          : warehousesRelation,
+      };
+    });
+    setAssignments(normalizedAssignments as unknown as A[]);
     setLoading(false);
   };
 
@@ -131,7 +138,7 @@ export default function WarehousesPage() {
       p_organization_id: orgId,
       p_code: form.code,
       p_name: form.name,
-      p_address: form.address || null,
+      p_address: form.address || undefined,
       p_city: form.city,
       p_country: form.country || 'Bénin',
     });
@@ -166,9 +173,9 @@ export default function WarehousesPage() {
       p_organization_id: orgId,
       p_prospecteur_id: pid,
       p_warehouse_id: v.warehouse_id,
-      p_department: v.department || null,
-      p_city: v.city || null,
-      p_work_zone: v.work_zone || null,
+      p_department: v.department || undefined,
+      p_city: v.city || undefined,
+      p_work_zone: v.work_zone || undefined,
     });
     setSaving(null);
 
@@ -187,13 +194,11 @@ export default function WarehousesPage() {
         <div>
           <div className="flex items-center gap-2">
             <Warehouse className="text-[#D4AF37]" />
-            <h1 className="text-2xl font-bold text-white">
-              Entrepôts & affectation terrain
-            </h1>
+            <h1 className="text-2xl font-bold text-white">Entrepôts & affectation terrain</h1>
           </div>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            L’administrateur décide où chaque prospecteur travaille et de quel
-            entrepôt il s’approvisionne.
+            L’administrateur décide où chaque prospecteur travaille et de quel entrepôt il
+            s’approvisionne.
           </p>
         </div>
 
@@ -281,9 +286,7 @@ export default function WarehousesPage() {
                   <MapPin size={12} className="inline" />{' '}
                   {w.address || w.city || 'Adresse non renseignée'}
                 </p>
-                <p className="text-[11px] text-[#718096] mt-3">
-                  Ouvrir le détail →
-                </p>
+                <p className="text-[11px] text-[#718096] mt-3">Ouvrir le détail →</p>
               </button>
             ))}
           </div>
@@ -292,9 +295,7 @@ export default function WarehousesPage() {
             <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-5 space-y-4">
               {(() => {
                 const w = warehouses.find((x) => x.id === openedWarehouse);
-                const members = assignments.filter(
-                  (x) => x.warehouse_id === openedWarehouse,
-                );
+                const members = assignments.filter((x) => x.warehouse_id === openedWarehouse);
 
                 if (!w) return null;
 
@@ -303,11 +304,9 @@ export default function WarehousesPage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-xs uppercase tracking-widest text-[#D4AF37]">
-                          Système de l'entrepôt
+                          Système de l&apos;entrepôt
                         </p>
-                        <h2 className="text-lg font-bold text-white">
-                          {w.name}
-                        </h2>
+                        <h2 className="text-lg font-bold text-white">{w.name}</h2>
                         <p className="text-xs text-[#A0AEC0]">
                           {w.code} · {w.city || 'Ville non renseignée'} ·{' '}
                           {w.address || 'Adresse non renseignée'}
@@ -341,12 +340,11 @@ export default function WarehousesPage() {
                             >
                               <div>
                                 <p className="text-sm font-semibold text-white">
-                                  {a.prospecteurs?.first_name}{' '}
-                                  {a.prospecteurs?.last_name}
+                                  {a.prospecteurs?.first_name} {a.prospecteurs?.last_name}
                                 </p>
                                 <p className="text-xs text-[#718096]">
-                                  {a.department || 'Département non renseigné'}{' '}
-                                  · {a.city || 'Ville non renseignée'} ·{' '}
+                                  {a.department || 'Département non renseigné'} ·{' '}
+                                  {a.city || 'Ville non renseignée'} ·{' '}
                                   {a.work_zone || 'Zone non renseignée'}
                                 </p>
                               </div>
@@ -366,20 +364,16 @@ export default function WarehousesPage() {
 
           <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-[#D4AF37]/10">
-              <h2 className="font-semibold text-white">
-                Affecter / déplacer un prospecteur
-              </h2>
+              <h2 className="font-semibold text-white">Affecter / déplacer un prospecteur</h2>
               <p className="text-xs text-[#718096] mt-1">
-                Un seul entrepôt principal actif par prospecteur. Une nouvelle
-                affectation désactive automatiquement l’ancienne.
+                Un seul entrepôt principal actif par prospecteur. Une nouvelle affectation désactive
+                automatiquement l’ancienne.
               </p>
             </div>
 
             <div className="divide-y divide-[#D4AF37]/10">
               {prospecteurs.map((p) => {
-                const a = assignments.find(
-                  (x) => x.prospecteur_id === p.id,
-                );
+                const a = assignments.find((x) => x.prospecteur_id === p.id);
                 const v = selected[p.id] ?? {
                   warehouse_id: a?.warehouse_id ?? '',
                   department: a?.department ?? '',
@@ -388,10 +382,7 @@ export default function WarehousesPage() {
                 };
 
                 return (
-                  <div
-                    key={p.id}
-                    className="p-4 grid lg:grid-cols-6 gap-3 items-end"
-                  >
+                  <div key={p.id} className="p-4 grid lg:grid-cols-6 gap-3 items-end">
                     <div>
                       <p className="text-sm font-semibold text-white">
                         {p.first_name} {p.last_name}
@@ -489,10 +480,7 @@ export default function WarehousesPage() {
                         '…'
                       ) : (
                         <>
-                          <ArrowRightLeft
-                            size={15}
-                            className="inline mr-1"
-                          />
+                          <ArrowRightLeft size={15} className="inline mr-1" />
                           Affecter
                         </>
                       )}

@@ -18,7 +18,9 @@ export default function ErrorState({
   className = '',
 }: ErrorStateProps) {
   return (
-    <div className={`flex flex-col items-center justify-center py-16 px-6 text-center ${className}`}>
+    <div
+      className={`flex flex-col items-center justify-center py-16 px-6 text-center ${className}`}
+    >
       <div className="p-4 rounded-2xl bg-[rgba(252,129,129,0.1)] mb-4">
         <AlertTriangle size={28} className="text-[#FC8181]" />
       </div>

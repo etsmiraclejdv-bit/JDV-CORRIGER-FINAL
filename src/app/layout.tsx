@@ -13,15 +13,14 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: 'JDV CRM — Gestion Crédit & Prospecteurs Terrain',
-  description: 'JDV CRM aide les entreprises ouest-africaines à gérer la vente à crédit, les paiements journaliers, les prospecteurs terrain et le recouvrement depuis un seul tableau de bord.',
+  description:
+    'JDV CRM aide les entreprises ouest-africaines à gérer la vente à crédit, les paiements journaliers, les prospecteurs terrain et le recouvrement depuis un seul tableau de bord.',
   icons: {
     icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fr">
       <body>

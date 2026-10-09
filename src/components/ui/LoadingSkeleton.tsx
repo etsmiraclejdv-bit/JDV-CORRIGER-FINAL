@@ -2,10 +2,11 @@ import React from 'react';
 
 interface SkeletonProps {
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export function Skeleton({ className = '' }: SkeletonProps) {
-  return <div className={`animate-pulse bg-secondary rounded-xl ${className}`} />;
+export function Skeleton({ className = '', style }: SkeletonProps) {
+  return <div className={`animate-pulse bg-secondary rounded-xl ${className}`} style={style} />;
 }
 
 export function MetricCardSkeleton() {

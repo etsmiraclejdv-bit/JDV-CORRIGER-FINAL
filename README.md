@@ -1,93 +1,58 @@
-# Next.js
+# JDV CRM
 
-A modern Next.js 15 application built with TypeScript and Tailwind CSS.
+Application CRM multi-organisation construite avec Next.js 15, React 19, TypeScript et Supabase.
 
-## 🚀 Features
+## Prérequis
 
-- **Next.js 15** - Latest version with improved performance and features
-- **React 19** - Latest React version with enhanced capabilities
-- **Tailwind CSS** - Utility-first CSS framework for rapid UI development
+- Node.js **22.x** (référence commune : `.nvmrc`, `package.json`, GitHub Actions et Netlify).
+- npm fourni avec Node.js.
+- Accès aux variables d'environnement de Supabase et, selon les fonctionnalités utilisées, FedaPay, OpenAI, Anthropic et Resend.
 
-## 🛠️ Installation
+## Installation locale reproductible
 
-1. Install dependencies:
-  ```bash
-  npm install
-  # or
-  yarn install
-  ```
-
-2. Start the development server:
-  ```bash
-  npm run dev
-  # or
-  yarn dev
-  ```
-3. Open [http://localhost:4028](http://localhost:4028) with your browser to see the result.
-
-## 📁 Project Structure
-
-```
-nextjs/
-├── public/             # Static assets
-├── src/
-│   ├── app/            # App router components
-│   │   ├── layout.tsx  # Root layout component
-│   │   └── page.tsx    # Main page component
-│   ├── components/     # Reusable UI components
-│   ├── styles/         # Global styles and Tailwind configuration
-├── next.config.mjs     # Next.js configuration
-├── package.json        # Project dependencies and scripts
-├── postcss.config.js   # PostCSS configuration
-└── tailwind.config.js  # Tailwind CSS configuration
-
+```bash
+nvm install
+nvm use
+npm ci
+cp .env.example .env.local
+npm run dev
 ```
 
-## 🧩 Page Editing
+L'application de développement est disponible sur [http://localhost:4028](http://localhost:4028). Renseigner les valeurs nécessaires dans `.env.local` avant de tester les fonctionnalités qui dépendent de services externes. Ne jamais commiter ce fichier.
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+## Contrôles avant intégration
 
-## 🎨 Styling
+```bash
+npm test
+npm run type-check
+npm run lint
+npm run build
+```
 
-This project uses Tailwind CSS for styling with the following features:
-- Utility-first approach for rapid development
-- Custom theme configuration
-- Responsive design utilities
-- PostCSS and Autoprefixer integration
+Le build de CI et le build Netlify utilisent `STRICT_BUILD=true`. Le workflow CI utilise `npm ci` et Node.js 22. Une validation verte est nécessaire avant fusion ; les fonctions Edge Deno doivent aussi être vérifiées avec les outils Supabase/Deno, car elles ne font pas partie du contrôle TypeScript Next.js.
 
-## 📦 Available Scripts
+## Variables d'environnement
 
-- `npm run dev` - Start development server on port 4028
-- `npm run build` - Build the application for production
-- `npm run start` - Start the development server
-- `npm run serve` - Start the production server
-- `npm run lint` - Run ESLint to check code quality
-- `npm run lint:fix` - Fix ESLint issues automatically
-- `npm run format` - Format code with Prettier
+Le fichier [.env.example](.env.example) décrit les variables de l'application web. Les variables publiques préfixées par `NEXT_PUBLIC_` sont embarquées côté navigateur : n'y placer aucun secret. `SUPABASE_SERVICE_ROLE_KEY`, les clés FedaPay, OpenAI, Anthropic et Resend sont des secrets serveur.
 
-## 📱 Deployment
+Les Edge Functions ont leurs propres secrets Supabase. Configurer notamment `SITE_URL=https://joie-de-vivr.netlify.app`, `RESEND_API_KEY` et, si nécessaire, `EMAIL_FROM` pour les emails ; `ANTHROPIC_API_KEY` et `ANTHROPIC_MODEL` pour l'analyse IA des dossiers. Les variables de plateforme `SUPABASE_URL`, `SUPABASE_ANON_KEY` et `SUPABASE_SERVICE_ROLE_KEY` doivent être disponibles côté fonction. Ne pas copier les secrets de production dans un fichier versionné.
 
-Build the application for production:
+## Schéma et migrations Supabase
 
-  ```bash
-  npm run build
-  ```
+- Types TypeScript de référence : `src/types/database.types.ts`, générés depuis le schéma live du projet Supabase. Pour les régénérer avec les annotations de nullabilité RPC documentées : `npm run db:types`.
+- Inventaire et limites de reproductibilité : [supabase/schema/README.md](supabase/schema/README.md).
+- Le fichier `supabase/schema/00_baseline_public_schema.sql` est un instantané historique du 1 octobre 2026, pas un export complet du schéma actuel.
+- L'historique live contient 136 versions de migrations et le dépôt ne contient pas les sources SQL de quatre versions. **Ne pas exécuter `supabase db push` ni prétendre qu'une reconstruction depuis zéro est validée** avant d'avoir récupéré ces quatre sources et testé une restauration propre.
 
-## 📚 Learn More
+## Edge Functions versionnées
 
-To learn more about Next.js, take a look at the following resources:
+Les trois fonctions sont suivies sous `supabase/functions/` :
+- `send-email` — emails d'accueil et validation d'entreprise.
+- `company-ai-review` — analyse des dossiers de création d'entreprise.
+- `resend-service-mail` — diagnostic d'envoi réservé au SUPER ADMIN et limité à la boîte de test Resend.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial
+La configuration versionnée dans `supabase/config.toml` exige un JWT pour les trois fonctions. Les sources présentes dans Git ne sont pas déployées automatiquement sur Supabase ; toute mise en production doit faire l'objet d'une revue et d'un déploiement explicite.
 
-You can check out the [Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Déploiement
 
-## 🙏 Acknowledgments
-
-- Built with [Rocket.new](https://rocket.new)
-- Powered by Next.js and React
-- Styled with Tailwind CSS
-
-Built with ❤️ on Rocket.new
-
-<!-- JDV CRM deployment sync 2026-10-04 -->
+Le site de production est hébergé sur Netlify. Le build utilise Node.js 22 et le mode strict TypeScript. Aucun déploiement de production ni aucune modification de base de données ne doit être déduit d'un simple commit ou d'une PR.

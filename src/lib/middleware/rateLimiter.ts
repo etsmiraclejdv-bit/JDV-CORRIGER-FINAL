@@ -13,7 +13,9 @@ function getAdminClient(): SupabaseClient | null {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return null;
   if (!adminClient) {
-    adminClient = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+    adminClient = createClient(url, key, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
   }
   return adminClient;
 }
@@ -44,7 +46,8 @@ export async function checkRateLimitShared(
       timeout,
     ]);
     const row = Array.isArray(data) ? data[0] : data;
-    if (error || !row || typeof row.allowed !== 'boolean') return checkRateLimit(identifier, options);
+    if (error || !row || typeof row.allowed !== 'boolean')
+      return checkRateLimit(identifier, options);
     return {
       allowed: row.allowed,
       remaining: Number(row.remaining ?? 0),

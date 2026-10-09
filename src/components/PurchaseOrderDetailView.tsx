@@ -117,7 +117,8 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
   function receiveAll() {
     if (!computed) return;
     const inputs: Record<string, string> = {};
-    for (const [id, qty] of Object.entries(computed.remaining)) inputs[id] = qty > 0 ? String(qty) : '';
+    for (const [id, qty] of Object.entries(computed.remaining))
+      inputs[id] = qty > 0 ? String(qty) : '';
     setReceiveInputs(inputs);
   }
 
@@ -164,7 +165,9 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       setModalError(res.error);
       return;
     }
-    toast.success(res.remaining === 0 ? 'Paiement enregistré : la commande est soldée.' : 'Paiement enregistré.');
+    toast.success(
+      res.remaining === 0 ? 'Paiement enregistré : la commande est soldée.' : 'Paiement enregistré.'
+    );
     setPayOpen(false);
     void load();
   }
@@ -185,7 +188,9 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
 
   if (loading && !detail) return <LoadingState message="Chargement de la commande…" />;
   if (error && !detail) {
-    return <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />;
+    return (
+      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+    );
   }
   if (!detail || !computed) return null;
 
@@ -195,7 +200,10 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
-      <Link href="/business/dashboard/achats" className="inline-flex items-center gap-1.5 text-sm text-[#A0AEC0] hover:text-white">
+      <Link
+        href="/business/dashboard/achats"
+        className="inline-flex items-center gap-1.5 text-sm text-[#A0AEC0] hover:text-white"
+      >
         <ArrowLeft size={14} />
         Retour aux achats
       </Link>
@@ -204,35 +212,55 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
         <div>
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-2xl font-bold text-white">{detail.order_number}</h1>
-            <span className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[detail.status] ?? STATUS_CLASSES.closed}`}>
+            <span
+              className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[detail.status] ?? STATUS_CLASSES.closed}`}
+            >
               {orderStatusLabel(detail.status)}
             </span>
           </div>
           <p className="text-sm text-[#A0AEC0] mt-1">
             {detail.supplier_name} · commandée le {formatDateFr(detail.order_date)}
-            {detail.expected_date ? ` · livraison prévue le ${formatDateFr(detail.expected_date)}` : ''}
+            {detail.expected_date
+              ? ` · livraison prévue le ${formatDateFr(detail.expected_date)}`
+              : ''}
           </p>
-          {detail.notes && <p className="text-sm text-[#718096] mt-1 break-words">{detail.notes}</p>}
+          {detail.notes && (
+            <p className="text-sm text-[#718096] mt-1 break-words">{detail.notes}</p>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button onClick={() => void load()} disabled={loading} aria-label="Actualiser" className="p-2.5 rounded-xl btn-outline-gold disabled:opacity-50">
+          <button
+            onClick={() => void load()}
+            disabled={loading}
+            aria-label="Actualiser"
+            className="p-2.5 rounded-xl btn-outline-gold disabled:opacity-50"
+          >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           </button>
           {showReceive && (
-            <button onClick={openReceive} className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold">
+            <button
+              onClick={openReceive}
+              className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
+            >
               <Package size={14} />
               Réceptionner
             </button>
           )}
           {showPay && (
-            <button onClick={openPay} className="flex items-center gap-2 btn-outline-gold px-4 py-2.5 rounded-xl text-sm font-semibold">
+            <button
+              onClick={openPay}
+              className="flex items-center gap-2 btn-outline-gold px-4 py-2.5 rounded-xl text-sm font-semibold"
+            >
               <Wallet size={14} />
               Enregistrer un paiement
             </button>
           )}
           {showCancel && (
             <button
-              onClick={() => { setModalError(''); setCancelOpen(true); }}
+              onClick={() => {
+                setModalError('');
+                setCancelOpen(true);
+              }}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-500/10 text-red-300 border border-red-500/30 hover:bg-red-500/20"
             >
               <XCircle size={14} />
@@ -243,16 +271,43 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+        <div
+          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          role="alert"
+        >
           {error}
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <MetricCard title="Montant de la commande" value={formatXof(detail.total_amount)} subtitle={`${detail.items.length} article(s)`} icon={<Wallet size={18} />} variant="gold" />
-        <MetricCard title="Déjà payé" value={formatXof(computed.paid)} subtitle={PAYMENT_STATE_LABELS[computed.state]} icon={<CheckCircle size={18} />} variant="success" />
-        <MetricCard title="Reste à payer" value={formatXof(computed.toPay)} subtitle={computed.toPay > 0 ? 'à régler au fournisseur' : 'rien à régler'} icon={<Wallet size={18} />} variant={computed.toPay > 0 ? 'warning' : 'success'} />
-        <MetricCard title="Réception" value={`${computed.progress} %`} subtitle="des quantités commandées" icon={<Package size={18} />} variant={computed.progress >= 100 ? 'success' : 'default'} />
+        <MetricCard
+          title="Montant de la commande"
+          value={formatXof(detail.total_amount)}
+          subtitle={`${detail.items.length} article(s)`}
+          icon={<Wallet size={18} />}
+          variant="gold"
+        />
+        <MetricCard
+          title="Déjà payé"
+          value={formatXof(computed.paid)}
+          subtitle={PAYMENT_STATE_LABELS[computed.state]}
+          icon={<CheckCircle size={18} />}
+          variant="success"
+        />
+        <MetricCard
+          title="Reste à payer"
+          value={formatXof(computed.toPay)}
+          subtitle={computed.toPay > 0 ? 'à régler au fournisseur' : 'rien à régler'}
+          icon={<Wallet size={18} />}
+          variant={computed.toPay > 0 ? 'warning' : 'success'}
+        />
+        <MetricCard
+          title="Réception"
+          value={`${computed.progress} %`}
+          subtitle="des quantités commandées"
+          icon={<Package size={18} />}
+          variant={computed.progress >= 100 ? 'success' : 'default'}
+        />
       </div>
 
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
@@ -264,7 +319,12 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
             <thead>
               <tr className="border-b border-[#D4AF37]/10">
                 {['Article', 'Commandé', 'Reçu', 'Reste', 'Coût unit.', 'Total'].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap">{h}</th>
+                  <th
+                    key={h}
+                    className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
+                  >
+                    {h}
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -276,10 +336,18 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
                     {it.article_code && <p className="text-xs text-[#718096]">{it.article_code}</p>}
                   </td>
                   <td className="px-4 py-3 text-sm text-white">{Number(it.quantity)}</td>
-                  <td className="px-4 py-3 text-sm text-[#68D391]">{computed.received[it.article_id] ?? 0}</td>
-                  <td className="px-4 py-3 text-sm text-[#F6AD55]">{computed.remaining[it.article_id] ?? 0}</td>
-                  <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{formatXof(it.unit_cost)}</td>
-                  <td className="px-4 py-3 text-sm text-white whitespace-nowrap">{formatXof(it.total_amount)}</td>
+                  <td className="px-4 py-3 text-sm text-[#68D391]">
+                    {computed.received[it.article_id] ?? 0}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-[#F6AD55]">
+                    {computed.remaining[it.article_id] ?? 0}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                    {formatXof(it.unit_cost)}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-white whitespace-nowrap">
+                    {formatXof(it.total_amount)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -293,21 +361,33 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
             <h2 className="text-sm font-semibold text-white">Réceptions</h2>
           </div>
           {detail.receipts.length === 0 ? (
-            <p className="px-5 py-8 text-sm text-[#A0AEC0] text-center">Aucune réception pour l&apos;instant.</p>
+            <p className="px-5 py-8 text-sm text-[#A0AEC0] text-center">
+              Aucune réception pour l&apos;instant.
+            </p>
           ) : (
             <ul className="divide-y divide-[#D4AF37]/5">
               {detail.receipts.map((r) => (
                 <li key={r.id} className="px-5 py-3">
                   <div className="flex items-center justify-between gap-2">
                     <p className="text-sm font-medium text-white">{r.receipt_number}</p>
-                    <p className="text-xs text-[#718096]">{formatDateFr(r.receipt_date)}{r.status !== 'received' ? ` · ${r.status === 'cancelled' ? 'annulée' : 'brouillon'}` : ''}</p>
+                    <p className="text-xs text-[#718096]">
+                      {formatDateFr(r.receipt_date)}
+                      {r.status !== 'received'
+                        ? ` · ${r.status === 'cancelled' ? 'annulée' : 'brouillon'}`
+                        : ''}
+                    </p>
                   </div>
                   <p className="text-xs text-[#A0AEC0] mt-0.5">
                     {(r.goods_receipt_items ?? [])
-                      .map((i) => `${computed.names[i.article_id.toLowerCase()] ?? 'Article'} × ${Number(i.quantity_received)}`)
+                      .map(
+                        (i) =>
+                          `${computed.names[i.article_id.toLowerCase()] ?? 'Article'} × ${Number(i.quantity_received)}`
+                      )
                       .join(' · ') || '—'}
                   </p>
-                  {r.notes && <p className="text-xs text-[#718096] mt-0.5 break-words">{r.notes}</p>}
+                  {r.notes && (
+                    <p className="text-xs text-[#718096] mt-0.5 break-words">{r.notes}</p>
+                  )}
                 </li>
               ))}
             </ul>
@@ -319,17 +399,27 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
             <h2 className="text-sm font-semibold text-white">Paiements</h2>
           </div>
           {detail.payments.length === 0 ? (
-            <p className="px-5 py-8 text-sm text-[#A0AEC0] text-center">Aucun paiement enregistré.</p>
+            <p className="px-5 py-8 text-sm text-[#A0AEC0] text-center">
+              Aucun paiement enregistré.
+            </p>
           ) : (
             <ul className="divide-y divide-[#D4AF37]/5">
               {detail.payments.map((p) => (
                 <li key={p.id} className="px-5 py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm text-white">{paymentMethodLabel(p.payment_method)}{p.provider_reference ? ` · ${p.provider_reference}` : ''}</p>
-                    <p className="text-xs text-[#718096]">{formatDateFr(p.payment_date)}{p.status !== 'paid' ? ` · ${p.status}` : ''}</p>
+                    <p className="text-sm text-white">
+                      {paymentMethodLabel(p.payment_method)}
+                      {p.provider_reference ? ` · ${p.provider_reference}` : ''}
+                    </p>
+                    <p className="text-xs text-[#718096]">
+                      {formatDateFr(p.payment_date)}
+                      {p.status !== 'paid' ? ` · ${p.status}` : ''}
+                    </p>
                     {p.notes && <p className="text-xs text-[#718096] break-words">{p.notes}</p>}
                   </div>
-                  <p className="text-sm font-semibold text-white whitespace-nowrap">{formatXof(p.amount)}</p>
+                  <p className="text-sm font-semibold text-white whitespace-nowrap">
+                    {formatXof(p.amount)}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -338,10 +428,20 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       </div>
 
       {/* Réception */}
-      <Modal open={receiveOpen} onClose={() => !busy && setReceiveOpen(false)} title="Réceptionner des marchandises" size="xl">
+      <Modal
+        open={receiveOpen}
+        onClose={() => !busy && setReceiveOpen(false)}
+        title="Réceptionner des marchandises"
+        size="xl"
+      >
         <div className="space-y-4">
           {modalError && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">{modalError}</div>
+            <div
+              className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+              role="alert"
+            >
+              {modalError}
+            </div>
           )}
           <p className="text-sm text-[#A0AEC0]">
             Saisissez les quantités effectivement reçues. Le stock sera mis à jour immédiatement.
@@ -356,9 +456,15 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
                     <p className="text-xs text-[#718096]">Reste à recevoir : {rest}</p>
                   </div>
                   <input
-                    type="number" min="0" max={rest} step="any" inputMode="decimal"
+                    type="number"
+                    min="0"
+                    max={rest}
+                    step="any"
+                    inputMode="decimal"
                     value={receiveInputs[it.article_id] ?? ''}
-                    onChange={(e) => setReceiveInputs((prev) => ({ ...prev, [it.article_id]: e.target.value }))}
+                    onChange={(e) =>
+                      setReceiveInputs((prev) => ({ ...prev, [it.article_id]: e.target.value }))
+                    }
                     disabled={rest <= 0}
                     aria-label={`Quantité reçue pour ${it.article_name}`}
                     placeholder="0"
@@ -368,14 +474,31 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
               );
             })}
           </div>
-          <button onClick={receiveAll} className="text-sm text-[#D4AF37] hover:underline">Tout recevoir</button>
+          <button onClick={receiveAll} className="text-sm text-[#D4AF37] hover:underline">
+            Tout recevoir
+          </button>
           <div>
-            <label className={labelClass} htmlFor="rcv-notes">Notes</label>
-            <textarea id="rcv-notes" value={receiveNotes} onChange={(e) => setReceiveNotes(e.target.value)} maxLength={1000} rows={2} className={inputClass} />
+            <label className={labelClass} htmlFor="rcv-notes">
+              Notes
+            </label>
+            <textarea
+              id="rcv-notes"
+              value={receiveNotes}
+              onChange={(e) => setReceiveNotes(e.target.value)}
+              maxLength={1000}
+              rows={2}
+              className={inputClass}
+            />
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <button onClick={() => setReceiveOpen(false)} disabled={busy} className={btnGhost}>Annuler</button>
-            <button onClick={() => void handleReceive()} disabled={busy} className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50">
+            <button onClick={() => setReceiveOpen(false)} disabled={busy} className={btnGhost}>
+              Annuler
+            </button>
+            <button
+              onClick={() => void handleReceive()}
+              disabled={busy}
+              className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
+            >
               {busy ? 'Enregistrement…' : 'Valider la réception'}
             </button>
           </div>
@@ -383,35 +506,91 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       </Modal>
 
       {/* Paiement */}
-      <Modal open={payOpen} onClose={() => !busy && setPayOpen(false)} title="Enregistrer un paiement" size="md">
+      <Modal
+        open={payOpen}
+        onClose={() => !busy && setPayOpen(false)}
+        title="Enregistrer un paiement"
+        size="md"
+      >
         <div className="space-y-4">
           {modalError && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">{modalError}</div>
+            <div
+              className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+              role="alert"
+            >
+              {modalError}
+            </div>
           )}
-          <p className="text-sm text-[#A0AEC0]">Reste à payer : <span className="text-white font-semibold">{formatXof(computed.toPay)}</span></p>
+          <p className="text-sm text-[#A0AEC0]">
+            Reste à payer :{' '}
+            <span className="text-white font-semibold">{formatXof(computed.toPay)}</span>
+          </p>
           <div>
-            <label className={labelClass} htmlFor="pay-amount">Montant (XOF) *</label>
-            <input id="pay-amount" type="number" min="0" step="any" inputMode="decimal" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className={inputClass} />
+            <label className={labelClass} htmlFor="pay-amount">
+              Montant (XOF) *
+            </label>
+            <input
+              id="pay-amount"
+              type="number"
+              min="0"
+              step="any"
+              inputMode="decimal"
+              value={payAmount}
+              onChange={(e) => setPayAmount(e.target.value)}
+              className={inputClass}
+            />
           </div>
           <div>
-            <label className={labelClass} htmlFor="pay-method">Mode de paiement</label>
-            <select id="pay-method" value={payMethod} onChange={(e) => setPayMethod(e.target.value)} className={inputClass}>
+            <label className={labelClass} htmlFor="pay-method">
+              Mode de paiement
+            </label>
+            <select
+              id="pay-method"
+              value={payMethod}
+              onChange={(e) => setPayMethod(e.target.value)}
+              className={inputClass}
+            >
               {PAYMENT_METHODS.map((m) => (
-                <option key={m.value} value={m.value}>{m.label}</option>
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
               ))}
             </select>
           </div>
           <div>
-            <label className={labelClass} htmlFor="pay-ref">Référence (facultatif)</label>
-            <input id="pay-ref" value={payRef} onChange={(e) => setPayRef(e.target.value)} maxLength={120} className={inputClass} />
+            <label className={labelClass} htmlFor="pay-ref">
+              Référence (facultatif)
+            </label>
+            <input
+              id="pay-ref"
+              value={payRef}
+              onChange={(e) => setPayRef(e.target.value)}
+              maxLength={120}
+              className={inputClass}
+            />
           </div>
           <div>
-            <label className={labelClass} htmlFor="pay-notes">Notes</label>
-            <textarea id="pay-notes" value={payNotes} onChange={(e) => setPayNotes(e.target.value)} maxLength={1000} rows={2} className={inputClass} />
+            <label className={labelClass} htmlFor="pay-notes">
+              Notes
+            </label>
+            <textarea
+              id="pay-notes"
+              value={payNotes}
+              onChange={(e) => setPayNotes(e.target.value)}
+              maxLength={1000}
+              rows={2}
+              className={inputClass}
+            />
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <button onClick={() => setPayOpen(false)} disabled={busy} className={btnGhost}>Annuler</button>
-            <button onClick={() => void handlePay()} disabled={busy} className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50">
+            <button onClick={() => setPayOpen(false)} disabled={busy} className={btnGhost}>
+              Annuler
+            </button>
+            <button
+              onClick={() => void handlePay()}
+              disabled={busy}
+              className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
+            >
               {busy ? 'Enregistrement…' : 'Enregistrer'}
             </button>
           </div>
@@ -419,17 +598,30 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       </Modal>
 
       {/* Annulation */}
-      <Modal open={cancelOpen} onClose={() => !busy && setCancelOpen(false)} title="Annuler la commande" size="sm">
+      <Modal
+        open={cancelOpen}
+        onClose={() => !busy && setCancelOpen(false)}
+        title="Annuler la commande"
+        size="sm"
+      >
         <div className="space-y-4">
           {modalError && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">{modalError}</div>
+            <div
+              className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+              role="alert"
+            >
+              {modalError}
+            </div>
           )}
           <p className="text-sm text-[#A0AEC0]">
-            Annuler la commande <span className="text-white font-semibold">{detail.order_number}</span> ? Cette action est impossible
-            si des marchandises ont déjà été reçues ou des paiements enregistrés.
+            Annuler la commande{' '}
+            <span className="text-white font-semibold">{detail.order_number}</span> ? Cette action
+            est impossible si des marchandises ont déjà été reçues ou des paiements enregistrés.
           </p>
           <div className="flex justify-end gap-2 pt-2">
-            <button onClick={() => setCancelOpen(false)} disabled={busy} className={btnGhost}>Conserver</button>
+            <button onClick={() => setCancelOpen(false)} disabled={busy} className={btnGhost}>
+              Conserver
+            </button>
             <button
               onClick={() => void handleCancel()}
               disabled={busy}

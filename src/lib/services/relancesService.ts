@@ -15,7 +15,9 @@ export interface PendingReminder {
 export type ReminderStatus = 'sent' | 'completed' | 'cancelled';
 
 /** Échéances impayées (en retard, partielles ou à venir) visibles par l'utilisateur connecté. */
-export async function fetchFollowups(organizationId: string): Promise<{ data: Followup[]; error: string | null }> {
+export async function fetchFollowups(
+  organizationId: string
+): Promise<{ data: Followup[]; error: string | null }> {
   const { data, error } = await supabase.rpc('jdvcrm_get_payment_followups_v44', {
     p_organization_id: organizationId,
   });
@@ -24,7 +26,9 @@ export async function fetchFollowups(organizationId: string): Promise<{ data: Fo
 }
 
 /** Crée un rappel par client en impayé (au plus un par jour et par client). Réservé aux administrateurs. */
-export async function generateReminders(organizationId: string): Promise<{ created: number; error: string | null }> {
+export async function generateReminders(
+  organizationId: string
+): Promise<{ created: number; error: string | null }> {
   const { data, error } = await supabase.rpc('jdvcrm_create_unpaid_followup_reminders_v1', {
     p_organization_id: organizationId,
   });
@@ -39,7 +43,10 @@ interface ReminderRow {
   status: string;
   message: string | null;
   client_id: string | null;
-  clients: { first_name: string | null; last_name: string | null; phone: string | null } | { first_name: string | null; last_name: string | null; phone: string | null }[] | null;
+  clients:
+    | { first_name: string | null; last_name: string | null; phone: string | null }
+    | { first_name: string | null; last_name: string | null; phone: string | null }[]
+    | null;
 }
 
 export async function fetchPendingReminders(
@@ -47,7 +54,9 @@ export async function fetchPendingReminders(
 ): Promise<{ data: PendingReminder[]; error: string | null }> {
   const { data, error } = await supabase
     .from('follow_up_reminders')
-    .select('id, reminder_at, channel, status, message, client_id, clients(first_name, last_name, phone)')
+    .select(
+      'id, reminder_at, channel, status, message, client_id, clients(first_name, last_name, phone)'
+    )
     .eq('organization_id', organizationId)
     .eq('status', 'pending')
     .order('reminder_at', { ascending: false })
@@ -72,19 +81,28 @@ export async function fetchPendingReminders(
   };
 }
 
-export async function updateReminderStatus(id: string, status: ReminderStatus): Promise<string | null> {
+export async function updateReminderStatus(
+  id: string,
+  status: ReminderStatus
+): Promise<string | null> {
   const { error } = await supabase.from('follow_up_reminders').update({ status }).eq('id', id);
   return error ? error.message : null;
 }
 
 /** Noms des prospecteurs de l'entreprise (vue administrateur). */
-export async function fetchProspecteurNames(organizationId: string): Promise<Record<string, string>> {
+export async function fetchProspecteurNames(
+  organizationId: string
+): Promise<Record<string, string>> {
   const { data } = await supabase
     .from('prospecteurs')
     .select('id, first_name, last_name')
     .eq('organization_id', organizationId);
   const map: Record<string, string> = {};
-  for (const p of (data ?? []) as { id: string; first_name: string | null; last_name: string | null }[]) {
+  for (const p of (data ?? []) as {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+  }[]) {
     map[p.id] = `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim() || 'Prospecteur';
   }
   return map;

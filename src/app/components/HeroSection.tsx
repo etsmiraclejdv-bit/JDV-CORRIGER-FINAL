@@ -2,7 +2,6 @@ import React from 'react';
 import { ChevronRight, Shield, TrendingUp, Users } from 'lucide-react';
 import AppImage from '@/components/ui/AppImage';
 
-
 export default function HeroSection() {
   const stats = [
     { id: 'stat-companies', value: '340+', label: 'Entreprises actives' },
@@ -14,15 +13,17 @@ export default function HeroSection() {
     <section className="relative pt-24 pb-20 overflow-hidden">
       {/* Background glow */}
       <div className="absolute inset-0 hero-glow pointer-events-none" />
-      <div className="absolute top-32 right-0 w-96 h-96 rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(99,179,237,0.06) 0%, transparent 70%)' }} />
+      <div
+        className="absolute top-32 right-0 w-96 h-96 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(99,179,237,0.06) 0%, transparent 70%)' }}
+      />
 
       <div className="max-w-screen-xl mx-auto px-6 lg:px-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           {/* Left — Copy */}
           <div>
             {/* Logo */}
-            <div className="flex items-center gap-3 mb-6">
-            </div>
+            <div className="flex items-center gap-3 mb-6"></div>
 
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full badge-gold text-xs font-semibold ml-[120px] mr-1 -mt-1.5 mb-[26px] pt-2 pb-[11px]">
               <Shield size={12} />
@@ -30,14 +31,14 @@ export default function HeroSection() {
             </div>
 
             <h1 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-foreground leading-tight mb-6">
-              Gérez vos{' '}
-              <span className="gold-gradient-text">ventes à crédit</span>{' '}
-              et vos agents terrain
+              Gérez vos <span className="gold-gradient-text">ventes à crédit</span> et vos agents
+              terrain
             </h1>
 
             <p className="text-lg text-muted-foreground leading-relaxed mb-8 max-w-xl">
-              JDV CRM centralise vos encaissements journaliers, suit vos prospecteurs terrain en temps réel,
-              calcule automatiquement les commissions et vous alerte sur les impayés — tout depuis un seul tableau de bord.
+              JDV CRM centralise vos encaissements journaliers, suit vos prospecteurs terrain en
+              temps réel, calcule automatiquement les commissions et vous alerte sur les impayés —
+              tout depuis un seul tableau de bord.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
@@ -61,7 +62,9 @@ export default function HeroSection() {
             <div className="flex flex-wrap gap-8">
               {stats?.map((stat) => (
                 <div key={stat?.id}>
-                  <p className="text-2xl font-extrabold gold-gradient-text stat-number">{stat?.value}</p>
+                  <p className="text-2xl font-extrabold gold-gradient-text stat-number">
+                    {stat?.value}
+                  </p>
                   <p className="text-xs text-muted-foreground font-medium">{stat?.label}</p>
                 </div>
               ))}

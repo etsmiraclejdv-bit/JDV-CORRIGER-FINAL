@@ -57,9 +57,11 @@ export default function BusinessSettingsPage() {
         slogan: s.slogan ?? cur.slogan,
         email_on_late_payment: s.notifications?.email_on_late_payment ?? cur.email_on_late_payment,
         sms_on_sale: s.notifications?.sms_on_sale ?? cur.sms_on_sale,
-        default_payment_frequency: s.sales?.default_payment_frequency ?? cur.default_payment_frequency,
+        default_payment_frequency:
+          s.sales?.default_payment_frequency ?? cur.default_payment_frequency,
         require_deposit: s.sales?.require_deposit ?? cur.require_deposit,
-        low_stock_alert_threshold_percent: s.stock?.low_stock_alert_threshold_percent ?? cur.low_stock_alert_threshold_percent,
+        low_stock_alert_threshold_percent:
+          s.stock?.low_stock_alert_threshold_percent ?? cur.low_stock_alert_threshold_percent,
       }));
       setLoading(false);
     })();
@@ -134,7 +136,7 @@ export default function BusinessSettingsPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 bg-[#0A1628] rounded-xl p-1 w-fit">
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -156,11 +158,13 @@ export default function BusinessSettingsPage() {
           <h2 className="text-lg font-semibold text-white mb-5">Informations générales</h2>
           <form onSubmit={handleSaveGeneral} className="space-y-4 max-w-lg">
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Nom de l&apos;organisation</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                Nom de l&apos;organisation
+              </label>
               <input
                 type="text"
                 value={(org.name as string) ?? ''}
-                onChange={e => setOrg(o => ({ ...o, name: e.target.value }))}
+                onChange={(e) => setOrg((o) => ({ ...o, name: e.target.value }))}
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
               />
             </div>
@@ -169,7 +173,7 @@ export default function BusinessSettingsPage() {
               <input
                 type="tel"
                 value={(org.phone as string) ?? ''}
-                onChange={e => setOrg(o => ({ ...o, phone: e.target.value }))}
+                onChange={(e) => setOrg((o) => ({ ...o, phone: e.target.value }))}
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
               />
             </div>
@@ -178,7 +182,7 @@ export default function BusinessSettingsPage() {
               <input
                 type="text"
                 value={(org.address as string) ?? ''}
-                onChange={e => setOrg(o => ({ ...o, address: e.target.value }))}
+                onChange={(e) => setOrg((o) => ({ ...o, address: e.target.value }))}
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
               />
             </div>
@@ -188,7 +192,7 @@ export default function BusinessSettingsPage() {
                 <input
                   type="text"
                   value={(org.city as string) ?? ''}
-                  onChange={e => setOrg(o => ({ ...o, city: e.target.value }))}
+                  onChange={(e) => setOrg((o) => ({ ...o, city: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                 />
               </div>
@@ -196,7 +200,7 @@ export default function BusinessSettingsPage() {
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Devise</label>
                 <select
                   value={(org.currency as string) ?? 'XOF'}
-                  onChange={e => setOrg(o => ({ ...o, currency: e.target.value }))}
+                  onChange={(e) => setOrg((o) => ({ ...o, currency: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                 >
                   <option value="XOF">XOF (FCFA)</option>
@@ -207,7 +211,11 @@ export default function BusinessSettingsPage() {
                 </select>
               </div>
             </div>
-            <button type="submit" disabled={saving} className="flex items-center gap-2 btn-gold px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex items-center gap-2 btn-gold px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
+            >
               <Save size={14} />
               {saving ? 'Enregistrement...' : 'Enregistrer'}
             </button>
@@ -219,26 +227,34 @@ export default function BusinessSettingsPage() {
       {activeTab === 'personalization' && (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-5">Personnalisation</h2>
-          <p className="text-sm text-[#A0AEC0]">Configurez les couleurs et l&apos;apparence de votre portail.</p>
+          <p className="text-sm text-[#A0AEC0]">
+            Configurez les couleurs et l&apos;apparence de votre portail.
+          </p>
           <div className="mt-4 space-y-4 max-w-lg">
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Couleur principale</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                Couleur principale
+              </label>
               <div className="flex items-center gap-3">
                 <input
                   type="color"
                   value={(org.primary_color as string) || '#D4AF37'}
-                  onChange={e => setOrg(o => ({ ...o, primary_color: e.target.value }))}
+                  onChange={(e) => setOrg((o) => ({ ...o, primary_color: e.target.value }))}
                   className="w-10 h-10 rounded-lg border border-[#D4AF37]/20 bg-transparent cursor-pointer"
                 />
-                <span className="text-sm text-[#A0AEC0]">{((org.primary_color as string) || '#D4AF37').toUpperCase()}</span>
+                <span className="text-sm text-[#A0AEC0]">
+                  {((org.primary_color as string) || '#D4AF37').toUpperCase()}
+                </span>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Slogan entreprise</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                Slogan entreprise
+              </label>
               <input
                 type="text"
                 value={settings.slogan}
-                onChange={e => setSettings(s => ({ ...s, slogan: e.target.value }))}
+                onChange={(e) => setSettings((s) => ({ ...s, slogan: e.target.value }))}
                 placeholder="Votre slogan..."
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
               />
@@ -269,7 +285,9 @@ export default function BusinessSettingsPage() {
                   <input
                     type="checkbox"
                     checked={settings.email_on_late_payment}
-                    onChange={e => setSettings(s => ({ ...s, email_on_late_payment: e.target.checked }))}
+                    onChange={(e) =>
+                      setSettings((s) => ({ ...s, email_on_late_payment: e.target.checked }))
+                    }
                     className="w-4 h-4 accent-[#D4AF37]"
                   />
                 </label>
@@ -278,7 +296,7 @@ export default function BusinessSettingsPage() {
                   <input
                     type="checkbox"
                     checked={settings.sms_on_sale}
-                    onChange={e => setSettings(s => ({ ...s, sms_on_sale: e.target.checked }))}
+                    onChange={(e) => setSettings((s) => ({ ...s, sms_on_sale: e.target.checked }))}
                     className="w-4 h-4 accent-[#D4AF37]"
                   />
                 </label>
@@ -288,10 +306,14 @@ export default function BusinessSettingsPage() {
               <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">Ventes</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs text-[#A0AEC0] mb-1.5">Fréquence de paiement par défaut</label>
+                  <label className="block text-xs text-[#A0AEC0] mb-1.5">
+                    Fréquence de paiement par défaut
+                  </label>
                   <select
                     value={settings.default_payment_frequency}
-                    onChange={e => setSettings(s => ({ ...s, default_payment_frequency: e.target.value }))}
+                    onChange={(e) =>
+                      setSettings((s) => ({ ...s, default_payment_frequency: e.target.value }))
+                    }
                     className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none"
                   >
                     <option value="daily">Journalier</option>
@@ -304,7 +326,9 @@ export default function BusinessSettingsPage() {
                   <input
                     type="checkbox"
                     checked={settings.require_deposit}
-                    onChange={e => setSettings(s => ({ ...s, require_deposit: e.target.checked }))}
+                    onChange={(e) =>
+                      setSettings((s) => ({ ...s, require_deposit: e.target.checked }))
+                    }
                     className="w-4 h-4 accent-[#D4AF37]"
                   />
                 </label>
@@ -313,11 +337,21 @@ export default function BusinessSettingsPage() {
             <div>
               <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">Stock</h3>
               <div>
-                <label className="block text-xs text-[#A0AEC0] mb-1.5">Seuil d&apos;alerte stock bas (%)</label>
+                <label className="block text-xs text-[#A0AEC0] mb-1.5">
+                  Seuil d&apos;alerte stock bas (%)
+                </label>
                 <input
                   type="number"
                   value={settings.low_stock_alert_threshold_percent}
-                  onChange={e => setSettings(s => ({ ...s, low_stock_alert_threshold_percent: Math.min(100, Math.max(1, parseInt(e.target.value) || 1)) }))}
+                  onChange={(e) =>
+                    setSettings((s) => ({
+                      ...s,
+                      low_stock_alert_threshold_percent: Math.min(
+                        100,
+                        Math.max(1, parseInt(e.target.value) || 1)
+                      ),
+                    }))
+                  }
                   min={1}
                   max={100}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none"
@@ -342,12 +376,15 @@ export default function BusinessSettingsPage() {
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-2">Paiement en ligne (FedaPay)</h2>
           <p className="text-sm text-[#A0AEC0] mb-5">
-            Les clés FedaPay sont gérées par le concepteur de la plateforme. Elles ne sont jamais saisies ni stockées depuis votre navigateur.
+            Les clés FedaPay sont gérées par le concepteur de la plateforme. Elles ne sont jamais
+            saisies ni stockées depuis votre navigateur.
           </p>
           <div className="space-y-3 max-w-lg text-sm">
             <div className="flex items-center justify-between rounded-xl bg-[#0A1628] border border-[#D4AF37]/10 px-4 py-3">
               <span className="text-[#A0AEC0]">Abonnement</span>
-              <span className="font-semibold text-white">{String(org.subscription_status ?? '—')}</span>
+              <span className="font-semibold text-white">
+                {String(org.subscription_status ?? '—')}
+              </span>
             </div>
             <Link
               href="/payment-wall"

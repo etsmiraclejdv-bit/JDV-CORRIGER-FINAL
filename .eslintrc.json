@@ -47,7 +47,8 @@
     "node_modules/",
     ".next/",
     "out/",
-    "public/"
+    "public/",
+    "src/types/database.types.ts"
   ],
   "env": {
     "browser": true,

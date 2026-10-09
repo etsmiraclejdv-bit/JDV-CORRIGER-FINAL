@@ -9,7 +9,9 @@
 export const toCents = (n: unknown): number => Math.round((Number(n) || 0) * 100);
 export const fromCents = (n: unknown): number => Math.round((Number(n) || 0) / 100);
 
-export function personName(p?: { first_name?: string | null; last_name?: string | null } | null): string {
+export function personName(
+  p?: { first_name?: string | null; last_name?: string | null } | null
+): string {
   return `${p?.first_name ?? ''} ${p?.last_name ?? ''}`.trim();
 }
 
@@ -31,7 +33,9 @@ export interface RawSale {
 /** Montant total d'une vente en XOF (même règle que les rapports SQL). */
 export function saleTotal(s: RawSale): number {
   const credit = String(s.sale_type ?? 'cash').toLowerCase() === 'credit';
-  const unit = credit ? Number(s.credit_price) || Number(s.fixed_price) || 0 : Number(s.cash_price) || Number(s.fixed_price) || 0;
+  const unit = credit
+    ? Number(s.credit_price) || Number(s.fixed_price) || 0
+    : Number(s.cash_price) || Number(s.fixed_price) || 0;
   return unit * (Number(s.quantity) || 1);
 }
 

@@ -1,7 +1,20 @@
 'use client';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, Bell, Check, CheckCircle, Clock, MessageCircle, Phone, RefreshCw, Search, Users, Wallet, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  Bell,
+  Check,
+  CheckCircle,
+  Clock,
+  MessageCircle,
+  Phone,
+  RefreshCw,
+  Search,
+  Users,
+  Wallet,
+  X,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { getAuthContext } from '@/lib/auth/context';
 import {
@@ -76,7 +89,11 @@ export default function RelancesView({ mode }: RelancesViewProps) {
     }
     const org = isBusiness ? ctx.organizationId : ctx.prospecteurOrganizationId;
     if (!org) {
-      setError(isBusiness ? 'Aucune entreprise associée à ce compte.' : 'Aucun profil prospecteur actif pour ce compte.');
+      setError(
+        isBusiness
+          ? 'Aucune entreprise associée à ce compte.'
+          : 'Aucun profil prospecteur actif pour ce compte.'
+      );
       setLoading(false);
       return;
     }
@@ -98,7 +115,10 @@ export default function RelancesView({ mode }: RelancesViewProps) {
   }, [load]);
 
   const summary = useMemo(() => summarize(followups), [followups]);
-  const visible = useMemo(() => filterFollowups(followups, { search, filter }), [followups, search, filter]);
+  const visible = useMemo(
+    () => filterFollowups(followups, { search, filter }),
+    [followups, search, filter]
+  );
 
   async function handleGenerate() {
     if (!orgId || generating) return;
@@ -109,7 +129,11 @@ export default function RelancesView({ mode }: RelancesViewProps) {
       toast.error(err);
       return;
     }
-    toast.success(created > 0 ? `${created} rappel(s) créé(s) pour les clients en impayé.` : "Aucun nouveau rappel : tout est déjà à jour pour aujourd'hui.");
+    toast.success(
+      created > 0
+        ? `${created} rappel(s) créé(s) pour les clients en impayé.`
+        : "Aucun nouveau rappel : tout est déjà à jour pour aujourd'hui."
+    );
     void load();
   }
 
@@ -126,7 +150,9 @@ export default function RelancesView({ mode }: RelancesViewProps) {
 
   if (loading) return <LoadingState message="Chargement des impayés…" />;
   if (error && followups.length === 0 && reminders.length === 0) {
-    return <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />;
+    return (
+      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+    );
   }
 
   return (
@@ -134,7 +160,9 @@ export default function RelancesView({ mode }: RelancesViewProps) {
       {/* En-tête */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">{isBusiness ? 'Relances et impayés' : 'Mes relances'}</h1>
+          <h1 className="text-2xl font-bold text-white">
+            {isBusiness ? 'Relances et impayés' : 'Mes relances'}
+          </h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
             {isBusiness
               ? 'Échéances à encaisser et clients à relancer dans votre entreprise'
@@ -155,7 +183,11 @@ export default function RelancesView({ mode }: RelancesViewProps) {
               onClick={() => void handleGenerate()}
               disabled={generating || summary.overdueCount === 0}
               className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-              title={summary.overdueCount === 0 ? 'Aucun impayé à relancer' : 'Crée un rappel par client en impayé'}
+              title={
+                summary.overdueCount === 0
+                  ? 'Aucun impayé à relancer'
+                  : 'Crée un rappel par client en impayé'
+              }
             >
               <Bell size={14} />
               {generating ? 'Création…' : 'Générer les rappels du jour'}
@@ -165,7 +197,10 @@ export default function RelancesView({ mode }: RelancesViewProps) {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+        <div
+          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          role="alert"
+        >
           {error}
         </div>
       )}
@@ -196,9 +231,15 @@ export default function RelancesView({ mode }: RelancesViewProps) {
         <MetricCard
           title="Plus gros retard"
           value={summary.maxDaysLate > 0 ? `${summary.maxDaysLate} jour(s)` : 'Aucun'}
-          subtitle={summary.maxDaysLate > 0 ? 'depuis la date d\u2019échéance' : 'tous les paiements sont à jour'}
+          subtitle={
+            summary.maxDaysLate > 0
+              ? 'depuis la date d\u2019échéance'
+              : 'tous les paiements sont à jour'
+          }
           icon={<Clock size={18} />}
-          variant={summary.maxDaysLate > 30 ? 'danger' : summary.maxDaysLate > 0 ? 'warning' : 'success'}
+          variant={
+            summary.maxDaysLate > 30 ? 'danger' : summary.maxDaysLate > 0 ? 'warning' : 'success'
+          }
         />
       </div>
 
@@ -252,8 +293,18 @@ export default function RelancesView({ mode }: RelancesViewProps) {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  {['Client', 'Échéance', 'Reste à payer', 'Statut', ...(isBusiness ? ['Responsable'] : []), 'Actions'].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap">
+                  {[
+                    'Client',
+                    'Échéance',
+                    'Reste à payer',
+                    'Statut',
+                    ...(isBusiness ? ['Responsable'] : []),
+                    'Actions',
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
+                    >
                       {h}
                     </th>
                   ))}
@@ -265,27 +316,43 @@ export default function RelancesView({ mode }: RelancesViewProps) {
                   const tel = toTelHref(f.client_phone);
                   const wa = toWhatsAppHref(f.client_phone, buildReminderMessage(f), PHONE_PREFIX);
                   return (
-                    <tr key={f.schedule_id} className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50 transition-colors">
+                    <tr
+                      key={f.schedule_id}
+                      className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50 transition-colors"
+                    >
                       <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-white">{f.client_name?.trim() || 'Client sans nom'}</p>
-                        <p className="text-xs text-[#718096]">{f.client_phone || 'Téléphone non renseigné'}</p>
+                        <p className="text-sm font-medium text-white">
+                          {f.client_name?.trim() || 'Client sans nom'}
+                        </p>
+                        <p className="text-xs text-[#718096]">
+                          {f.client_phone || 'Téléphone non renseigné'}
+                        </p>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <p className="text-sm text-white">N°{f.installment_number} · {formatDateFr(f.due_date)}</p>
+                        <p className="text-sm text-white">
+                          N°{f.installment_number} · {formatDateFr(f.due_date)}
+                        </p>
                         {isBusiness && (
-                          <Link href={`/business/dashboard/ventes/${f.sale_id}`} className="text-xs text-[#D4AF37] hover:underline">
+                          <Link
+                            href={`/business/dashboard/ventes/${f.sale_id}`}
+                            className="text-xs text-[#D4AF37] hover:underline"
+                          >
                             Voir la vente
                           </Link>
                         )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <p className="text-sm font-semibold text-white">{formatXof(f.remaining_amount)}</p>
+                        <p className="text-sm font-semibold text-white">
+                          {formatXof(f.remaining_amount)}
+                        </p>
                         <p className="text-xs text-[#718096]">
                           {formatXof(f.paid_amount)} payés sur {formatXof(f.expected_amount)}
                         </p>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${BADGE_CLASSES[status]}`}>
+                        <span
+                          className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${BADGE_CLASSES[status]}`}
+                        >
                           {STATUS_LABELS[status]}
                           {status === 'overdue' && ` · ${toNumber(f.days_late)} j`}
                         </span>
@@ -339,12 +406,16 @@ export default function RelancesView({ mode }: RelancesViewProps) {
         {reminders.length === 0 ? (
           <p className="px-5 py-8 text-sm text-[#A0AEC0] text-center">
             Aucun rappel en attente.
-            {isBusiness && ' Utilisez « Générer les rappels du jour » pour en créer à partir des impayés.'}
+            {isBusiness &&
+              ' Utilisez « Générer les rappels du jour » pour en créer à partir des impayés.'}
           </p>
         ) : (
           <ul className="divide-y divide-[#D4AF37]/5">
             {reminders.map((r) => (
-              <li key={r.id} className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <li
+                key={r.id}
+                className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+              >
                 <div className="min-w-0">
                   <p className="text-sm text-white">{r.client_name ?? 'Client'}</p>
                   <p className="text-xs text-[#A0AEC0] break-words">{r.message ?? 'Rappel'}</p>

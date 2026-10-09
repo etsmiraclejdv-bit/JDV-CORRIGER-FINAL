@@ -11,11 +11,18 @@ import { getMyPortfolioId } from '@/lib/services/portfolioService';
 type Row = Record<string, unknown>;
 
 const fmt = (cents: number) =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(cents / 100);
+  new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'XOF',
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
 
 const STATUS: Record<string, { label: string; cls: string }> = {
   a_jour: { label: 'À jour', cls: 'bg-green-500/15 text-green-400 border-green-500/30' },
-  a_surveiller: { label: 'À surveiller', cls: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30' },
+  a_surveiller: {
+    label: 'À surveiller',
+    cls: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+  },
   en_retard: { label: 'En retard', cls: 'bg-red-500/15 text-red-400 border-red-500/30' },
 };
 
@@ -34,7 +41,7 @@ export default function TerrainClientsPage() {
 
   const load = useCallback(async (oid: string, prospecteurId: string) => {
     const { data } = await fetchClients(oid, { assignedTo: prospecteurId });
-    setClients((data ?? []) as Row[]);
+    setClients((data ?? []).map((client) => ({ ...client })));
     setLoading(false);
   }, []);
 
@@ -81,8 +88,9 @@ export default function TerrainClientsPage() {
 
   const filtered = clients.filter(
     (c) =>
-      String(c.full_name ?? '').toLowerCase().includes(search.toLowerCase()) ||
-      String(c.phone ?? '').includes(search)
+      String(c.full_name ?? '')
+        .toLowerCase()
+        .includes(search.toLowerCase()) || String(c.phone ?? '').includes(search)
   );
 
   return (
@@ -90,9 +98,14 @@ export default function TerrainClientsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Mes clients</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">{clients.length} client{clients.length !== 1 ? 's' : ''} dans votre portefeuille</p>
+          <p className="text-sm text-[#A0AEC0] mt-1">
+            {clients.length} client{clients.length !== 1 ? 's' : ''} dans votre portefeuille
+          </p>
         </div>
-        <button onClick={() => setOpen(true)} className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold">
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
+        >
           <Plus size={14} />
           Nouveau client
         </button>
@@ -111,13 +124,19 @@ export default function TerrainClientsPage() {
       {loading ? (
         <div className="py-16 text-center text-[#A0AEC0] text-sm">Chargement...</div>
       ) : !pid ? (
-        <div className="py-16 text-center text-red-400 text-sm">Accès réservé aux prospecteurs.</div>
+        <div className="py-16 text-center text-red-400 text-sm">
+          Accès réservé aux prospecteurs.
+        </div>
       ) : filtered.length === 0 ? (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl py-16 text-center">
           <UserCheck size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
           <p className="text-[#A0AEC0] text-sm">Aucun client pour l’instant</p>
           <p className="text-xs text-[#718096] mt-1">
-            Ajoutez un client ou <Link href="/terrain/dashboard/prospects" className="text-[#D4AF37] hover:underline">convertissez un prospect</Link>.
+            Ajoutez un client ou{' '}
+            <Link href="/terrain/dashboard/prospects" className="text-[#D4AF37] hover:underline">
+              convertissez un prospect
+            </Link>
+            .
           </p>
         </div>
       ) : (
@@ -125,20 +144,32 @@ export default function TerrainClientsPage() {
           {filtered.map((c) => {
             const st = STATUS[c.payment_status as string] ?? STATUS.a_jour;
             return (
-              <div key={c.id as string} className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4 space-y-2">
+              <div
+                key={c.id as string}
+                className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4 space-y-2"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-white">{c.full_name as string}</p>
-                    <p className="text-xs text-[#718096]">{[c.city, c.code].filter(Boolean).join(' — ')}</p>
+                    <p className="text-xs text-[#718096]">
+                      {[c.city, c.code].filter(Boolean).join(' — ')}
+                    </p>
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded-lg border ${st.cls}`}>{st.label}</span>
+                  <span className={`text-xs px-2 py-1 rounded-lg border ${st.cls}`}>
+                    {st.label}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-[#A0AEC0]">Reste à payer</span>
-                  <span className="font-bold text-[#D4AF37]">{fmt(Number(c.balance_cents) || 0)}</span>
+                  <span className="font-bold text-[#D4AF37]">
+                    {fmt(Number(c.balance_cents) || 0)}
+                  </span>
                 </div>
                 {c.phone ? (
-                  <a href={`tel:${c.phone as string}`} className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:underline">
+                  <a
+                    href={`tel:${c.phone as string}`}
+                    className="inline-flex items-center gap-1.5 text-xs text-blue-400 hover:underline"
+                  >
                     <Phone size={12} /> {c.phone as string}
                   </a>
                 ) : null}
@@ -152,25 +183,54 @@ export default function TerrainClientsPage() {
         <form onSubmit={handleCreate} className="space-y-4 p-1">
           <div>
             <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Nom complet *</label>
-            <input required value={form.full_name} onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))} className={inputCls} />
+            <input
+              required
+              value={form.full_name}
+              onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
+              className={inputCls}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Téléphone</label>
-              <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} className={inputCls} />
+              <input
+                value={form.phone}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                className={inputCls}
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Ville</label>
-              <input value={form.city} onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))} className={inputCls} />
+              <input
+                value={form.city}
+                onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+                className={inputCls}
+              />
             </div>
           </div>
           <div>
             <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Adresse</label>
-            <input value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} className={inputCls} />
+            <input
+              value={form.address}
+              onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+              className={inputCls}
+            />
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setOpen(false)} className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors">Annuler</button>
-            <button type="submit" disabled={saving} className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60">{saving ? 'Enregistrement...' : 'Enregistrer'}</button>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
+            >
+              {saving ? 'Enregistrement...' : 'Enregistrer'}
+            </button>
           </div>
         </form>
       </Modal>

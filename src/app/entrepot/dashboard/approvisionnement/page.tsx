@@ -58,9 +58,7 @@ export default function EntrepotApprovisionnementPage() {
   const [showForm, setShowForm] = useState(false);
   const [target, setTarget] = useState<'supplier' | 'admin'>('supplier');
   const [supplierId, setSupplierId] = useState('');
-  const [lines, setLines] = useState<Line[]>([
-    { article_id: '', quantity: '1' },
-  ]);
+  const [lines, setLines] = useState<Line[]>([{ article_id: '', quantity: '1' }]);
   const [notes, setNotes] = useState('');
   const [receiving, setReceiving] = useState<string | null>(null);
   const [recvQty, setRecvQty] = useState<Record<string, string>>({});
@@ -75,7 +73,7 @@ export default function EntrepotApprovisionnementPage() {
       supabase
         .from('warehouse_supply_requests')
         .select(
-          'id,reference,target,supplier_id,status,notes,response_notes,requested_at,warehouse_supply_request_items(id,article_id,quantity,received_quantity)',
+          'id,reference,target,supplier_id,status,notes,response_notes,requested_at,warehouse_supply_request_items(id,article_id,quantity,received_quantity)'
         )
         .eq('warehouse_id', id)
         .order('requested_at', { ascending: false })
@@ -88,8 +86,7 @@ export default function EntrepotApprovisionnementPage() {
       }),
     ]);
 
-    const error =
-      requestsResult.error || stockResult.error || suppliersResult.error;
+    const error = requestsResult.error || stockResult.error || suppliersResult.error;
 
     if (error) {
       fail(error.message);
@@ -97,22 +94,26 @@ export default function EntrepotApprovisionnementPage() {
 
     setReqs((requestsResult.data ?? []) as unknown as Req[]);
     setArticles(
-      ((stockResult.data ?? []) as Array<{
-        article_id: string;
-        article_name: string;
-      }>).map((item) => ({
+      (
+        (stockResult.data ?? []) as Array<{
+          article_id: string;
+          article_name: string;
+        }>
+      ).map((item) => ({
         id: item.article_id,
         label: item.article_name,
-      })),
+      }))
     );
     setSuppliers(
-      ((suppliersResult.data ?? []) as Array<{
-        supplier_id: string;
-        name: string;
-      }>).map((item) => ({
+      (
+        (suppliersResult.data ?? []) as Array<{
+          supplier_id: string;
+          name: string;
+        }>
+      ).map((item) => ({
         id: item.supplier_id,
         label: item.name,
-      })),
+      }))
     );
     setLoading(false);
   }, [current, fail]);
@@ -121,8 +122,7 @@ export default function EntrepotApprovisionnementPage() {
     void load();
   }, [load]);
 
-  const aName = (id: string) =>
-    articles.find((article) => article.id === id)?.label ?? 'Produit';
+  const aName = (id: string) => articles.find((article) => article.id === id)?.label ?? 'Produit';
 
   const sName = (id: string | null) =>
     suppliers.find((supplier) => supplier.id === id)?.label ?? '—';
@@ -142,11 +142,7 @@ export default function EntrepotApprovisionnementPage() {
       return;
     }
 
-    if (
-      items.some(
-        (item) => !Number.isInteger(item.quantity) || item.quantity < 1,
-      )
-    ) {
+    if (items.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1)) {
       fail('Quantités invalides.');
       return;
     }
@@ -158,16 +154,13 @@ export default function EntrepotApprovisionnementPage() {
 
     setBusy(true);
 
-    const { data, error } = await supabase.rpc(
-      'jdvcrm_warehouse_request_supply_v1',
-      {
-        p_warehouse_id: current.warehouse_id,
-        p_target: target,
-        p_supplier_id: target === 'supplier' ? supplierId : null,
-        p_items: items,
-        p_notes: notes.trim() || null,
-      },
-    );
+    const { data, error } = await supabase.rpc('jdvcrm_warehouse_request_supply_v1', {
+      p_warehouse_id: current.warehouse_id,
+      p_target: target,
+      p_supplier_id: target === 'supplier' ? supplierId : null,
+      p_items: items,
+      p_notes: notes.trim() || undefined,
+    });
 
     setBusy(false);
 
@@ -184,10 +177,7 @@ export default function EntrepotApprovisionnementPage() {
     void load();
   }
 
-  async function action(
-    request: Req,
-    actionName: 'cancel' | 'mark_ordered',
-  ) {
+  async function action(request: Req, actionName: 'cancel' | 'mark_ordered') {
     if (
       actionName === 'cancel' &&
       !window.confirm('Annuler la demande ' + request.reference + ' ?')
@@ -197,14 +187,11 @@ export default function EntrepotApprovisionnementPage() {
 
     setBusy(true);
 
-    const { error } = await supabase.rpc(
-      'jdvcrm_warehouse_update_supply_v1',
-      {
-        p_request_id: request.id,
-        p_action: actionName,
-        p_notes: null,
-      },
-    );
+    const { error } = await supabase.rpc('jdvcrm_warehouse_update_supply_v1', {
+      p_request_id: request.id,
+      p_action: actionName,
+      p_notes: undefined,
+    });
 
     setBusy(false);
 
@@ -213,11 +200,7 @@ export default function EntrepotApprovisionnementPage() {
       return;
     }
 
-    ok(
-      actionName === 'cancel'
-        ? 'Demande annulée.'
-        : 'Demande marquée comme commandée.',
-    );
+    ok(actionName === 'cancel' ? 'Demande annulée.' : 'Demande marquée comme commandée.');
     void load();
   }
 
@@ -226,8 +209,7 @@ export default function EntrepotApprovisionnementPage() {
       .map((item) => ({
         article_id: item.article_id,
         quantity: Number(
-          recvQty[item.id] ??
-            Number(item.quantity) - Number(item.received_quantity),
+          recvQty[item.id] ?? Number(item.quantity) - Number(item.received_quantity)
         ),
       }))
       .filter((item) => item.quantity > 0);
@@ -244,13 +226,10 @@ export default function EntrepotApprovisionnementPage() {
 
     setBusy(true);
 
-    const { data, error } = await supabase.rpc(
-      'jdvcrm_warehouse_receive_supply_v1',
-      {
-        p_request_id: request.id,
-        p_items: items,
-      },
-    );
+    const { data, error } = await supabase.rpc('jdvcrm_warehouse_receive_supply_v1', {
+      p_request_id: request.id,
+      p_items: items,
+    });
 
     setBusy(false);
 
@@ -268,7 +247,7 @@ export default function EntrepotApprovisionnementPage() {
       num(result.received_units) +
         ' unité(s) ajoutées au stock de l’entrepôt (' +
         (STATUS[result.status] ?? result.status).toLowerCase() +
-        ').',
+        ').'
     );
 
     setReceiving(null);
@@ -282,10 +261,7 @@ export default function EntrepotApprovisionnementPage() {
         title="Approvisionnement"
         subtitle="Demandez du stock directement à votre fournisseur ou à l’administrateur, et enregistrez les réceptions."
       >
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className={btnGold}
-        >
+        <button onClick={() => setShowForm(!showForm)} className={btnGold}>
           <Plus size={14} className="inline mr-1" />
           Nouvelle demande
         </button>
@@ -294,10 +270,7 @@ export default function EntrepotApprovisionnementPage() {
       <Banner state={banner} />
 
       {showForm && (
-        <Card
-          title="Nouvelle demande d’approvisionnement"
-          className="border-[#D4AF37]/40"
-        >
+        <Card title="Nouvelle demande d’approvisionnement" className="border-[#D4AF37]/40">
           <div className="flex flex-wrap gap-4 text-sm mb-4">
             <label>
               <input
@@ -334,10 +307,7 @@ export default function EntrepotApprovisionnementPage() {
 
           <div className="space-y-2">
             {lines.map((line, index) => (
-              <div
-                key={index}
-                className="flex flex-wrap items-center gap-2"
-              >
+              <div key={index} className="flex flex-wrap items-center gap-2">
                 <select
                   className={inputCls + ' max-w-sm'}
                   value={line.article_id}
@@ -349,8 +319,8 @@ export default function EntrepotApprovisionnementPage() {
                               ...item,
                               article_id: event.target.value,
                             }
-                          : item,
-                      ),
+                          : item
+                      )
                     )
                   }
                 >
@@ -375,21 +345,15 @@ export default function EntrepotApprovisionnementPage() {
                               ...item,
                               quantity: event.target.value,
                             }
-                          : item,
-                      ),
+                          : item
+                      )
                     )
                   }
                 />
 
                 {lines.length > 1 && (
                   <button
-                    onClick={() =>
-                      setLines(
-                        lines.filter(
-                          (_, itemIndex) => itemIndex !== index,
-                        ),
-                      )
-                    }
+                    onClick={() => setLines(lines.filter((_, itemIndex) => itemIndex !== index))}
                     className="text-red-400"
                     type="button"
                   >
@@ -401,9 +365,7 @@ export default function EntrepotApprovisionnementPage() {
           </div>
 
           <button
-            onClick={() =>
-              setLines([...lines, { article_id: '', quantity: '1' }])
-            }
+            onClick={() => setLines([...lines, { article_id: '', quantity: '1' }])}
             className="mt-3 text-sm text-[#D4AF37]"
             type="button"
           >
@@ -419,19 +381,10 @@ export default function EntrepotApprovisionnementPage() {
           />
 
           <div className="mt-4 flex gap-2">
-            <button
-              onClick={() => setShowForm(false)}
-              className={btnGhost}
-              type="button"
-            >
+            <button onClick={() => setShowForm(false)} className={btnGhost} type="button">
               Annuler
             </button>
-            <button
-              disabled={busy}
-              onClick={submit}
-              className={btnGold}
-              type="button"
-            >
+            <button disabled={busy} onClick={submit} className={btnGold} type="button">
               Envoyer la demande
             </button>
           </div>
@@ -444,10 +397,7 @@ export default function EntrepotApprovisionnementPage() {
         ) : (
           <div className="space-y-4">
             {reqs.map((request) => (
-              <div
-                key={request.id}
-                className="rounded-xl border border-white/10 p-4 text-sm"
-              >
+              <div key={request.id} className="rounded-xl border border-white/10 p-4 text-sm">
                 <div className="flex justify-between">
                   <span className="font-semibold">{request.reference}</span>
                   <span className="rounded-full bg-[#0F2347] px-3 py-1 text-xs">
@@ -464,9 +414,7 @@ export default function EntrepotApprovisionnementPage() {
 
                 <ul className="mt-3 space-y-2">
                   {request.warehouse_supply_request_items.map((item) => {
-                    const remaining =
-                      Number(item.quantity) -
-                      Number(item.received_quantity);
+                    const remaining = Number(item.quantity) - Number(item.received_quantity);
 
                     return (
                       <li
@@ -493,8 +441,7 @@ export default function EntrepotApprovisionnementPage() {
                           />
                         ) : (
                           <span>
-                            reçu {num(item.received_quantity)} /{' '}
-                            {num(item.quantity)}
+                            reçu {num(item.received_quantity)} / {num(item.quantity)}
                           </span>
                         )}
                       </li>
@@ -503,22 +450,19 @@ export default function EntrepotApprovisionnementPage() {
                 </ul>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {request.target === 'supplier' &&
-                    request.status === 'sent' && (
-                      <button
-                        disabled={busy}
-                        onClick={() => action(request, 'mark_ordered')}
-                        className={btnGhost}
-                        type="button"
-                      >
-                        Marquer commandée
-                      </button>
-                    )}
+                  {request.target === 'supplier' && request.status === 'sent' && (
+                    <button
+                      disabled={busy}
+                      onClick={() => action(request, 'mark_ordered')}
+                      className={btnGhost}
+                      type="button"
+                    >
+                      Marquer commandée
+                    </button>
+                  )}
 
                   {request.target === 'supplier' &&
-                    ['sent', 'ordered', 'partially_received'].includes(
-                      request.status,
-                    ) &&
+                    ['sent', 'ordered', 'partially_received'].includes(request.status) &&
                     (receiving === request.id ? (
                       <>
                         <button
@@ -547,9 +491,7 @@ export default function EntrepotApprovisionnementPage() {
                       </button>
                     ))}
 
-                  {['sent', 'approved', 'ordered'].includes(
-                    request.status,
-                  ) && (
+                  {['sent', 'approved', 'ordered'].includes(request.status) && (
                     <button
                       disabled={busy}
                       onClick={() => action(request, 'cancel')}
@@ -563,11 +505,7 @@ export default function EntrepotApprovisionnementPage() {
               </div>
             ))}
 
-            {!reqs.length && (
-              <p className="text-sm text-slate-500">
-                Aucune demande.
-              </p>
-            )}
+            {!reqs.length && <p className="text-sm text-slate-500">Aucune demande.</p>}
           </div>
         )}
       </Card>
