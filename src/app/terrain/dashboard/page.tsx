@@ -32,7 +32,7 @@ export default function TerrainDashboardPage() {
     const today = new Date()?.toDateString();
     const todaySales = (salesData ?? [])?.filter(s => new Date(s.sold_at)?.toDateString() === today);
     setSalesCount(todaySales?.length);
-    setTotalAmount(todaySales?.reduce((sum, s) => sum + (s?.amount_cents ?? 0), 0));
+    setTotalAmount(todaySales?.reduce((sum, s) => sum + Number(s?.amount_cents ?? 0), 0));
 
     const { count } = await supabase
       .from('prospects')
@@ -58,7 +58,7 @@ export default function TerrainDashboardPage() {
           prospecteurIdRef.current = pid;
           await loadKPIs(oid, pid);
           fetchClients(oid, { assignedTo: pid ?? undefined }).then(r => setClients((r.data ?? []) as Record<string, unknown>[]));
-          fetchProducts(oid).then(r => setArticles(((r.data ?? []) as Record<string, unknown>[]).filter(a => a.active !== false)));
+          fetchProducts(oid).then(r => setArticles((r.data ?? []).map((product) => ({ ...product })).filter(a => a.active !== false)));
 
           const channel = supabase
             .channel(`terrain-kpi-${uid}`)

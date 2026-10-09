@@ -17,11 +17,15 @@ type Row = Record<string, unknown>;
 
 function mapProduct(a: Row, stockQuantity = 0, minimumQuantity = 0): Product {
   return {
-    ...(a as Product),
+    id: String(a.id ?? ''),
+    organization_id: String(a.organization_id ?? ''),
+    name: String(a.name ?? ''),
     sku: String(a.code ?? ''),
     price_cents: toCents(a.cash_price ?? a.fixed_price),
     stock_quantity: Number(stockQuantity),
     minimum_quantity: Number(minimumQuantity),
+    created_at: String(a.created_at ?? ''),
+    active: typeof a.active === 'boolean' ? a.active : undefined,
   };
 }
 
