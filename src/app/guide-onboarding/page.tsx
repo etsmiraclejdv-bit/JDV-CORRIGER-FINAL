@@ -215,7 +215,7 @@ const sections: Section[] = [
       },
       {
         num: 10,
-        title: "Journal d'audit",
+        title: "Journal d&apos;audit",
         icon: <ClipboardList size={16} />,
         desc: "Audit → Journal de toutes les modifications (ventes, paiements, membres, prospects, stock). Filtrez par type d'entité, action, utilisateur et plage de dates. Les changements sont affichés en différentiel lisible.",
         tips: [
@@ -330,7 +330,7 @@ const sections: Section[] = [
       },
       {
         num: 9,
-        title: "Journal d'audit plateforme",
+        title: "Journal d&apos;audit plateforme",
         icon: <ClipboardList size={16} />,
         desc: "Audit → vue transverse de toutes les organisations. Sélecteur d'entreprise pour filtrer. Utile pour le support et l'investigation en cas de litige.",
         tips: [
@@ -379,7 +379,7 @@ export default function GuideOnboardingPage() {
             </span>
           </div>
           <h1 className="text-3xl font-bold text-white mb-3">
-            Guide d'onboarding <span className="gold-gradient-text">JDV CRM</span>
+            Guide d&apos;onboarding <span className="gold-gradient-text">JDV CRM</span>
           </h1>
           <p className="text-[#A0AEC0] text-sm max-w-xl mx-auto">
             Retrouvez ici toutes les instructions pour chaque portail. Sélectionnez votre rôle pour
@@ -592,7 +592,7 @@ export default function GuideOnboardingPage() {
                         href="/hidden-concepteur-gate/dashboard/audit"
                         className="text-xs text-[#FC8181] hover:text-white bg-[rgba(252,129,129,0.1)] border border-[rgba(252,129,129,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Journal d'audit
+                        Journal d&apos;audit
                       </Link>
                       <Link
                         href="/hidden-concepteur-gate/dashboard/settings"
