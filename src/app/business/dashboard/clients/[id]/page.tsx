@@ -2,7 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, User, ShoppingCart, CreditCard, Plus } from 'lucide-react';
 
-import { fetchClientById, fetchClientSales, fetchClientPayments } from '@/lib/services/clientsService';
+import {
+  fetchClientById,
+  fetchClientSales,
+  fetchClientPayments,
+} from '@/lib/services/clientsService';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
@@ -22,7 +26,11 @@ export default function ClientDetailPage() {
         fetchClientSales(clientId),
         fetchClientPayments(clientId),
       ]);
-      if (clientRes.error) { setError(clientRes.error.message); setLoading(false); return; }
+      if (clientRes.error) {
+        setError(clientRes.error.message);
+        setLoading(false);
+        return;
+      }
       setClient(clientRes.data ? { ...clientRes.data } : null);
       setSales((salesRes.data as Record<string, unknown>[]) ?? []);
       setPayments((paymentsRes.data as Record<string, unknown>[]) ?? []);
@@ -45,7 +53,10 @@ export default function ClientDetailPage() {
     <div className="p-6 lg:p-8 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/business/dashboard/clients" className="p-2 rounded-xl text-[#718096] hover:text-white hover:bg-[#0F2347] transition-all">
+        <Link
+          href="/business/dashboard/clients"
+          className="p-2 rounded-xl text-[#718096] hover:text-white hover:bg-[#0F2347] transition-all"
+        >
           <ArrowLeft size={18} />
         </Link>
         <div>
@@ -72,8 +83,14 @@ export default function ClientDetailPage() {
             </div>
             <div>
               <p className="font-semibold text-white">{client.full_name as string}</p>
-              <p className={`text-xs font-medium ${paymentStatusColors[client.payment_status as string] ?? 'text-[#A0AEC0]'}`}>
-                {client.payment_status === 'a_jour' ? 'À jour' : client.payment_status === 'a_surveiller' ? 'À surveiller' : 'En retard'}
+              <p
+                className={`text-xs font-medium ${paymentStatusColors[client.payment_status as string] ?? 'text-[#A0AEC0]'}`}
+              >
+                {client.payment_status === 'a_jour'
+                  ? 'À jour'
+                  : client.payment_status === 'a_surveiller'
+                    ? 'À surveiller'
+                    : 'En retard'}
               </p>
             </div>
           </div>
@@ -87,12 +104,18 @@ export default function ClientDetailPage() {
             <div className="flex justify-between">
               <span className="text-[#718096]">Solde dû</span>
               <span className="text-[#D4AF37] font-semibold">
-                {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(((client.balance_cents as number) ?? 0) / 100)}
+                {new Intl.NumberFormat('fr-FR', {
+                  style: 'currency',
+                  currency: 'XOF',
+                  maximumFractionDigits: 0,
+                }).format(((client.balance_cents as number) ?? 0) / 100)}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#718096]">Membre depuis</span>
-              <span className="text-white">{new Date(client.created_at as string).toLocaleDateString('fr-FR')}</span>
+              <span className="text-white">
+                {new Date(client.created_at as string).toLocaleDateString('fr-FR')}
+              </span>
             </div>
           </div>
         </div>
@@ -107,14 +130,23 @@ export default function ClientDetailPage() {
             <p className="text-[#718096] text-sm text-center py-6">Aucune vente enregistrée</p>
           ) : (
             <div className="space-y-2 max-h-48 overflow-y-auto">
-              {sales.map(sale => (
-                <div key={sale.id as string} className="flex items-center justify-between py-2 border-b border-[#D4AF37]/5">
+              {sales.map((sale) => (
+                <div
+                  key={sale.id as string}
+                  className="flex items-center justify-between py-2 border-b border-[#D4AF37]/5"
+                >
                   <div>
-                    <p className="text-sm text-white">{new Date(sale.sold_at as string).toLocaleDateString('fr-FR')}</p>
+                    <p className="text-sm text-white">
+                      {new Date(sale.sold_at as string).toLocaleDateString('fr-FR')}
+                    </p>
                     <p className="text-xs text-[#718096]">{sale.status as string}</p>
                   </div>
                   <p className="text-sm font-semibold text-[#D4AF37]">
-                    {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(((sale.amount_cents as number) ?? 0) / 100)}
+                    {new Intl.NumberFormat('fr-FR', {
+                      style: 'currency',
+                      currency: 'XOF',
+                      maximumFractionDigits: 0,
+                    }).format(((sale.amount_cents as number) ?? 0) / 100)}
                   </p>
                 </div>
               ))}
@@ -142,11 +174,17 @@ export default function ClientDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                {payments.map(p => (
+                {payments.map((p) => (
                   <tr key={p.id as string} className="border-b border-[#D4AF37]/5">
-                    <td className="px-3 py-2 text-sm text-[#A0AEC0]">{new Date(p.paid_at as string).toLocaleDateString('fr-FR')}</td>
+                    <td className="px-3 py-2 text-sm text-[#A0AEC0]">
+                      {new Date(p.paid_at as string).toLocaleDateString('fr-FR')}
+                    </td>
                     <td className="px-3 py-2 text-sm font-semibold text-green-400">
-                      {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(((p.amount_cents as number) ?? 0) / 100)}
+                      {new Intl.NumberFormat('fr-FR', {
+                        style: 'currency',
+                        currency: 'XOF',
+                        maximumFractionDigits: 0,
+                      }).format(((p.amount_cents as number) ?? 0) / 100)}
                     </td>
                     <td className="px-3 py-2 text-xs text-[#A0AEC0]">{p.status as string}</td>
                   </tr>
