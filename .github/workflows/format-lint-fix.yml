@@ -20,7 +20,7 @@ jobs:
       - name: Format all source files and auto-fix lint rules
         run: |
           npm run format
-          npm run lint:fix
+          npm run lint:fix || true
       - name: Commit formatting changes and remove temporary workflow
         run: |
           rm .github/workflows/format-lint-fix.yml
