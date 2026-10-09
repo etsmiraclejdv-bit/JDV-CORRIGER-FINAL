@@ -8063,7 +8063,7 @@ export type Database = {
       }
       jdvcrm_create_purchase_order_v1: {
         Args: {
-          p_expected_date: string
+          p_expected_date: string | null
           p_items: Json
           p_notes: string
           p_supplier_id: string
@@ -8621,7 +8621,7 @@ export type Database = {
           p_phone: string
           p_primary_sector_id: string
           p_registration_number: string
-          p_representative_birth_date: string
+          p_representative_birth_date: string | null
           p_representative_email: string
           p_representative_first_name: string
           p_representative_last_name: string
@@ -8772,7 +8772,7 @@ export type Database = {
         Args: {
           p_items: Json
           p_notes?: string
-          p_supplier_id: string
+          p_supplier_id: string | null
           p_target: string
           p_warehouse_id: string
         }
