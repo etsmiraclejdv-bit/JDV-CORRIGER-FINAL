@@ -163,7 +163,7 @@ export default function EntrepotApprovisionnementPage() {
       {
         p_warehouse_id: current.warehouse_id,
         p_target: target,
-        p_supplier_id: target === 'supplier' ? supplierId : undefined,
+        p_supplier_id: target === 'supplier' ? supplierId : null,
         p_items: items,
         p_notes: notes.trim() || undefined,
       },
