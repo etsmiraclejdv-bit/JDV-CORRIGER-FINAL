@@ -28,7 +28,7 @@ jobs:
       - name: Vérification des types
         run: npm run type-check
 
-      # Bloquant : le code doit respecter les règles ESLint et Prettier.
+      # Required gate: all ESLint and Prettier errors must be fixed.
       - name: Lint
         run: npm run lint
 
