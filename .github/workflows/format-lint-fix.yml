@@ -1,0 +1,56 @@
+name: One-time lint formatting repair
+
+on:
+  push:
+    branches:
+      - fix/typescript-supabase-client
+
+permissions:
+  contents: write
+
+jobs:
+  format-and-commit:
+    if: contains(github.event.head_commit.message, 'chore(lint): run Prettier formatting pass') == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/typescript-supabase-client
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format files reported by lint
+        run: |
+          npx prettier --write \
+            'src/app/a-propos-concepteur/page.tsx' \
+            'src/app/api/ai/jdv-crm/route.ts' \
+            'src/app/api/business/create-prospecteur/route.ts' \
+            'src/app/api/business/create-warehouse-manager/route.ts' \
+            'src/app/api/commissions/payout/route.ts' \
+            'src/app/api/fedapay/initiate-subscription/route.ts' \
+            'src/app/api/fedapay-webhook/route.ts' \
+            'src/app/business/dashboard/catalogue/page.tsx' \
+            'src/app/business/dashboard/clients/[id]/page.tsx' \
+            'src/app/business/dashboard/clients/page.tsx'
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/app/business/dashboard/catalogue/page.tsx')
+          s = p.read_text()
+          s = s.replace("Nom de l'article</label>", "Nom de l’article</label>")
+          p.write_text(s)
+          PY
+      - name: Commit formatted files and remove temporary workflow
+        run: |
+          rm .github/workflows/format-lint-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/app/a-propos-concepteur/page.tsx src/app/api/ai/jdv-crm/route.ts src/app/api/business/create-prospecteur/route.ts src/app/api/business/create-warehouse-manager/route.ts src/app/api/commissions/payout/route.ts src/app/api/fedapay/initiate-subscription/route.ts src/app/api/fedapay-webhook/route.ts src/app/business/dashboard/catalogue/page.tsx 'src/app/business/dashboard/clients/[id]/page.tsx' src/app/business/dashboard/clients/page.tsx .github/workflows/format-lint-fix.yml
+          if git diff --cached --quiet; then
+            echo "No formatting changes required."
+            exit 0
+          fi
+          git commit -m "chore(lint): run Prettier formatting pass"
+          git push origin HEAD:fix/typescript-supabase-client
