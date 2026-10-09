@@ -84,7 +84,8 @@ export async function POST(req: NextRequest) {
           .from('organization_members')
           .select('organization_id,role')
           .eq('user_id', user.id)
-          .eq('status', 'active');
+          .eq('status', 'active')
+          .order('created_at', { ascending: true });
         if (memberError) throw memberError;
 
         // Ne charger que l’organisation principale pour éviter tout mélange entre organisations.
