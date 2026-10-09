@@ -40,7 +40,17 @@ export default function BusinessStockPage(){
     setArticles((a.data??[]) as Article[]);
     setWarehouses((w.data??[]) as Wh[]);
     setCentral((c.data??[]) as Central[]);
-    setInventory((i.data??[]) as Inventory[]);
+    const normalizedInventory = (i.data ?? []).map((row) => {
+      const record = row as unknown as Record<string, unknown>;
+      const warehousesRelation = record.warehouses;
+      const articlesRelation = record.articles;
+      return {
+        ...record,
+        warehouses: Array.isArray(warehousesRelation) ? warehousesRelation[0] ?? undefined : warehousesRelation,
+        articles: Array.isArray(articlesRelation) ? articlesRelation[0] ?? undefined : articlesRelation,
+      };
+    });
+    setInventory(normalizedInventory as unknown as Inventory[]);
     setLoading(false);
   }
 

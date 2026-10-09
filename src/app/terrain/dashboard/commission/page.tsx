@@ -32,7 +32,7 @@ export default function TerrainCommissionPage() {
           ]);
           const completed = (salesData ?? [])?.filter(s => s?.status === 'completed');
           setTotalSales(completed?.length);
-          setTotalAmount(completed?.reduce((sum, s) => sum + (s?.amount_cents ?? 0), 0));
+          setTotalAmount(completed?.reduce((sum, s) => sum + Number(s?.amount_cents ?? 0), 0));
           const rows = (comms ?? []) as { commission_amount: number | null; status: string }[];
           setCommissionPending(rows.filter(c => c.status !== 'paid').reduce((sum, c) => sum + (Number(c.commission_amount) || 0) * 100, 0));
           setCommissionPaid(rows.filter(c => c.status === 'paid').reduce((sum, c) => sum + (Number(c.commission_amount) || 0) * 100, 0));

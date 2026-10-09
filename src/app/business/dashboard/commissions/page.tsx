@@ -36,7 +36,17 @@ export default function CommissionsPage() {
     if(t.error||a.error||r.error){setMessage(t.error?.message||a.error?.message||r.error?.message||'Erreur de chargement.');}
     setTypes((t.data||[]) as Type[]);
     setArticles((a.data||[]) as Article[]);
-    setRules((r.data||[]) as Rule[]);
+    const normalizedRules = (r.data ?? []).map((row) => {
+      const record = row as unknown as Record<string, unknown>;
+      const commissionTypes = record.commission_types;
+      const articlesRelation = record.articles;
+      return {
+        ...record,
+        commission_types: Array.isArray(commissionTypes) ? commissionTypes[0] ?? null : commissionTypes ?? null,
+        articles: Array.isArray(articlesRelation) ? articlesRelation[0] ?? null : articlesRelation ?? null,
+      };
+    });
+    setRules(normalizedRules as unknown as Rule[]);
     if(!ruleForm.commission_type_id && t.data && t.data[0]) setRuleForm(function(x){return {...x,commission_type_id:t.data![0].id};});
     setLoading(false);
   }

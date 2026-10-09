@@ -143,7 +143,10 @@ export default function PaymentWallContent() {
 
       if (!member) return;
 
-      const org = member.organizations as { name: string; status: string; subscription_status: string } | null;
+      const organizationRelation = member.organizations;
+      const org = (Array.isArray(organizationRelation) ? organizationRelation[0] : organizationRelation) as
+        | { name: string; status: string; subscription_status: string }
+        | null;
 
       const { data: sub } = await supabase
         .from('organization_subscriptions')
@@ -159,13 +162,16 @@ export default function PaymentWallContent() {
         daysRemaining = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
       }
 
+      const planRelation = sub?.subscription_plans;
+      const plan = Array.isArray(planRelation) ? planRelation[0] : planRelation;
+
       setTrialStatus({
         status: (sub?.status ?? org?.subscription_status ?? 'trial') as TrialStatus['status'],
         daysRemaining,
         organizationId: member.organization_id,
         organizationName: org?.name ?? '',
         subscriptionId: sub?.id,
-        planName: (sub?.subscription_plans as { name: string } | null)?.name,
+        planName: (plan as { name: string } | null | undefined)?.name,
         expiresAt: sub?.expires_at,
       });
     } catch {

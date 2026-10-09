@@ -55,7 +55,7 @@ function NewSaleForm() {
       ]);
       if (cancelled) return;
       setClients((c.data ?? []) as Row[]);
-      setArticles(((a.data ?? []) as Row[]).filter((x) => x.active !== false));
+      setArticles((a.data ?? []).map((product) => ({ ...product, code: product.sku })).filter((x) => x.active !== false));
       setProspecteurs((p.data ?? []) as Row[]);
       setLoading(false);
     })();

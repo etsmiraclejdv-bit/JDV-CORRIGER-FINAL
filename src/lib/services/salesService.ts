@@ -42,16 +42,19 @@ async function nameMaps(organizationId: string) {
   return { c, p, a };
 }
 
-function mapSale(s: Row, m: Awaited<ReturnType<typeof nameMaps>>): Row {
+function mapSale(s: Row, m: Awaited<ReturnType<typeof nameMaps>>): Sale & Row {
   return {
     ...s,
-    sold_at: s.sale_date,
-    product_id: s.article_id,
+    id: String(s.id ?? ''),
+    organization_id: String(s.organization_id ?? ''),
+    status: String(s.status ?? ''),
+    sold_at: String(s.sale_date ?? s.sold_at ?? ''),
+    product_id: typeof s.article_id === 'string' ? s.article_id : undefined,
     amount_cents: toCents(saleTotal(s as never)),
-    clients: s.client_id ? m.c.get(s.client_id as string) ?? null : null,
-    profiles: s.prospecteur_id ? m.p.get(s.prospecteur_id as string) ?? null : null,
-    products: s.article_id ? m.a.get(s.article_id as string) ?? null : null,
-  };
+    clients: typeof s.client_id === 'string' ? m.c.get(s.client_id) ?? null : null,
+    profiles: typeof s.prospecteur_id === 'string' ? m.p.get(s.prospecteur_id) ?? null : null,
+    products: typeof s.article_id === 'string' ? m.a.get(s.article_id) ?? null : null,
+  } as Sale & Row;
 }
 
 export async function fetchSales(

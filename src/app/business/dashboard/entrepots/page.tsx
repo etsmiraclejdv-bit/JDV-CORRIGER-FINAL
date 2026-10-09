@@ -114,7 +114,17 @@ export default function WarehousesPage() {
 
     setWarehouses((w.data ?? []) as Wh[]);
     setProspecteurs((p.data ?? []) as P[]);
-    setAssignments((a.data ?? []) as A[]);
+    const normalizedAssignments = (a.data ?? []).map((row) => {
+      const record = row as unknown as Record<string, unknown>;
+      const prospecteursRelation = record.prospecteurs;
+      const warehousesRelation = record.warehouses;
+      return {
+        ...record,
+        prospecteurs: Array.isArray(prospecteursRelation) ? prospecteursRelation[0] ?? undefined : prospecteursRelation,
+        warehouses: Array.isArray(warehousesRelation) ? warehousesRelation[0] ?? undefined : warehousesRelation,
+      };
+    });
+    setAssignments(normalizedAssignments as unknown as A[]);
     setLoading(false);
   };
 
