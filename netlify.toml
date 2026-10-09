@@ -1,0 +1,3 @@
+# Keep the production Netlify build aligned with the blocking TypeScript check in CI.
+[build.environment]
+  STRICT_BUILD = "true"
