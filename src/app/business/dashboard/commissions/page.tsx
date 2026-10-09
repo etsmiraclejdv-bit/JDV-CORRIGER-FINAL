@@ -324,7 +324,7 @@ export default function CommissionsPage() {
                 value={ruleForm.article_id}
                 onChange={(e) => setRuleForm({ ...ruleForm, article_id: e.target.value })}
               >
-                <option value="">Choisir l'article</option>
+                <option value="">Choisir l&apos;article</option>
                 {articles.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.code} — {a.name}
