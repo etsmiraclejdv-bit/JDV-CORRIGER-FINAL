@@ -27,8 +27,8 @@ export default function UserProfilePanel({ onClose }: UserProfilePanelProps) {
         const { data: profile } = await fetchProfile(data.user.id);
         if (profile) {
           setForm({
-            full_name: profile.full_name ?? '',
-            phone: profile.phone ?? '',
+            full_name: typeof profile.full_name === 'string' ? profile.full_name : '',
+            phone: typeof profile.phone === 'string' ? profile.phone : '',
           });
         }
         setLoading(false);
