@@ -54,7 +54,7 @@ function NewSaleForm() {
         supabase.from('prospecteurs').select('id, first_name, last_name').eq('organization_id', oid).eq('status', 'active'),
       ]);
       if (cancelled) return;
-      setClients((c.data ?? []) as Row[]);
+      setClients((c.data ?? []).map((client) => ({ ...client })));
       setArticles((a.data ?? []).map((product) => ({ ...product, code: product.sku })).filter((x) => x.active !== false));
       setProspecteurs((p.data ?? []) as Row[]);
       setLoading(false);

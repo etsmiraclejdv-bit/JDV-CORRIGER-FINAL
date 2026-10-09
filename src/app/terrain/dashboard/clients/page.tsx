@@ -34,7 +34,7 @@ export default function TerrainClientsPage() {
 
   const load = useCallback(async (oid: string, prospecteurId: string) => {
     const { data } = await fetchClients(oid, { assignedTo: prospecteurId });
-    setClients((data ?? []) as Row[]);
+    setClients((data ?? []).map((client) => ({ ...client })));
     setLoading(false);
   }, []);
 

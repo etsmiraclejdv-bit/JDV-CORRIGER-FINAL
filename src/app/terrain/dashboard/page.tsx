@@ -57,7 +57,7 @@ export default function TerrainDashboardPage() {
           const pid = profile.prospecteur_id;
           prospecteurIdRef.current = pid;
           await loadKPIs(oid, pid);
-          fetchClients(oid, { assignedTo: pid ?? undefined }).then(r => setClients((r.data ?? []) as Record<string, unknown>[]));
+          fetchClients(oid, { assignedTo: pid ?? undefined }).then(r => setClients((r.data ?? []).map((client) => ({ ...client }))));
           fetchProducts(oid).then(r => setArticles((r.data ?? []).map((product) => ({ ...product })).filter(a => a.active !== false)));
 
           const channel = supabase
