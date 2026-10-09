@@ -59,7 +59,7 @@ export default function BusinessStockPage(){
   async function centralEntry(e:React.FormEvent){
     e.preventDefault(); if(!orgId||!entry.article_id||entry.quantity<=0)return;
     setSaving(true);
-    const {error}=await supabase.rpc('jdvcrm_admin_stock_entry_v1',{p_organization_id:orgId,p_article_id:entry.article_id,p_quantity:entry.quantity,p_minimum_quantity:entry.minimum_quantity,p_notes:entry.notes||null});
+    const {error}=await supabase.rpc('jdvcrm_admin_stock_entry_v1',{p_organization_id:orgId,p_article_id:entry.article_id,p_quantity:entry.quantity,p_minimum_quantity:entry.minimum_quantity,p_notes:entry.notes||undefined});
     if(error)toast.error(error.message); else {toast.success('Entrée stock central enregistrée');setEntry({article_id:'',quantity:1,minimum_quantity:0,notes:''});await load();}
     setSaving(false);
   }
@@ -67,7 +67,7 @@ export default function BusinessStockPage(){
   async function warehouseSupply(e:React.FormEvent){
     e.preventDefault(); if(!orgId||!supply.article_id||!supply.warehouse_id||supply.quantity<=0)return;
     setSaving(true);
-    const {error}=await supabase.rpc('jdvcrm_admin_supply_warehouse_v1',{p_organization_id:orgId,p_warehouse_id:supply.warehouse_id,p_article_id:supply.article_id,p_quantity:supply.quantity,p_minimum_quantity:supply.minimum_quantity,p_notes:supply.notes||null});
+    const {error}=await supabase.rpc('jdvcrm_admin_supply_warehouse_v1',{p_organization_id:orgId,p_warehouse_id:supply.warehouse_id,p_article_id:supply.article_id,p_quantity:supply.quantity,p_minimum_quantity:supply.minimum_quantity,p_notes:supply.notes||undefined});
     if(error)toast.error(error.message); else {toast.success('Entrepôt approvisionné depuis le stock central');setSupply({article_id:'',warehouse_id:'',quantity:1,minimum_quantity:0,notes:''});await load();}
     setSaving(false);
   }
