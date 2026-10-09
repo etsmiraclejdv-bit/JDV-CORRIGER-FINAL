@@ -1,3 +1,4 @@
+# CI quality gate: tests, TypeScript, lint and strict build must be checked on the latest tree.
 name: CI
 
 on:
