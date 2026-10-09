@@ -1,0 +1,31 @@
+name: One-time uploaded-file formatting
+on:
+  push:
+    branches:
+      - fix/typescript-supabase-client
+permissions:
+  contents: write
+jobs:
+  format-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/typescript-supabase-client
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format and apply safe lint fixes
+        run: |
+          npm run format
+          npm run lint:fix
+      - name: Commit formatted sources and remove temporary workflow
+        run: |
+          rm .github/workflows/format-uploaded-files.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(lint): format uploaded warehouse and AI files"
+          git push origin HEAD:fix/typescript-supabase-client
