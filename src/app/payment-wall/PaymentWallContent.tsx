@@ -315,7 +315,7 @@ export default function PaymentWallContent() {
         </h1>
         <p className="text-[#A0AEC0] text-base max-w-xl mx-auto">
           Gérez vos ventes à crédit, vos prospecteurs terrain et votre recouvrement avec une
-          solution pensée pour l'Afrique de l'Ouest.
+          solution pensée pour l&apos;Afrique de l&apos;Ouest.
         </p>
       </div>
 
