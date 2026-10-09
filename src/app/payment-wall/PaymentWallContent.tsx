@@ -172,7 +172,7 @@ export default function PaymentWallContent() {
         organizationName: org?.name ?? '',
         subscriptionId: sub?.id,
         planName: (plan as { name: string } | null | undefined)?.name,
-        expiresAt: sub?.expires_at,
+        expiresAt: sub?.expires_at ?? undefined,
       });
     } catch {
       // silently fail — show plans anyway
