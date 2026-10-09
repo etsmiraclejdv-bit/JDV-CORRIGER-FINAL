@@ -24,20 +24,18 @@ jobs:
       - name: Tests
         run: npm test
 
-      # Consultatifs tant que le projet n'est pas propre : retirer `continue-on-error`
-      # une fois ces deux commandes au vert, puis activer STRICT_BUILD=true au déploiement.
+      # Bloquant : aucune erreur TypeScript ne doit passer.
       - name: Vérification des types
         run: npm run type-check
-        continue-on-error: true
 
       - name: Lint
         run: npm run lint
         continue-on-error: true
 
-      - name: Build
+      - name: Build strict
         run: npm run build
-        continue-on-error: true
         env:
+          STRICT_BUILD: 'true'
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder
           NEXT_PUBLIC_SITE_URL: https://example.com
