@@ -25,7 +25,7 @@ type TranslationDict = typeof frTranslations;
 const translations: Partial<Record<Language, TranslationDict>> = { fr: frTranslations, en: enTranslations };
 
 export function getTranslations(language: Language = 'fr'): TranslationDict {
-  return translations[language] ?? translations.en ?? translations.fr;
+  return translations[language] ?? frTranslations;
 }
 
 export function detectLanguage(preferredLanguage?: string | null, orgLanguage?: string | null): Language {

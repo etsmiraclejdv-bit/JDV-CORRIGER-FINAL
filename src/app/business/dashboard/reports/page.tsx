@@ -34,19 +34,19 @@ export default function BusinessReportsPage() {
       const sales = salesRes.data ?? [];
       const clients = clientsRes.data ?? [];
 
-      const totalRevenue = sales.reduce((sum, s) => sum + (s.amount_cents ?? 0), 0);
+      const totalRevenue = sales.reduce((sum, s) => sum + Number(s.amount_cents ?? 0), 0);
       const completedSales = sales.filter(s => s.status === 'completed' || s.status === 'encaissé').length;
       const pendingSales = sales.filter(s => s.status === 'pending').length;
       const overdueClients = (clients as { payment_status: string }[]).filter(c => c.payment_status === 'en_retard').length;
-      const totalBalance = (clients as { balance_cents: number }[]).reduce((sum, c) => sum + (c.balance_cents ?? 0), 0);
+      const totalBalance = (clients as { balance_cents: number }[]).reduce((sum, c) => sum + Number(c.balance_cents ?? 0), 0);
 
       // Monthly breakdown
       const monthMap: Record<string, { amount: number; count: number }> = {};
       sales.forEach(s => {
-        const d = new Date(s.sold_at);
+        const d = new Date(String(s.sold_at));
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         if (!monthMap[key]) monthMap[key] = { amount: 0, count: 0 };
-        monthMap[key].amount += s.amount_cents ?? 0;
+        monthMap[key].amount += Number(s.amount_cents ?? 0);
         monthMap[key].count += 1;
       });
 

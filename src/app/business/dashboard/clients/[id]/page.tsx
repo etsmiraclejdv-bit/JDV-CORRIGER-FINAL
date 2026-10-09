@@ -78,7 +78,7 @@ export default function ClientDetailPage() {
             </div>
           </div>
           <div className="space-y-2 text-sm">
-            {client.phone && (
+            {typeof client.phone === 'string' && client.phone.length > 0 && (
               <div className="flex justify-between">
                 <span className="text-[#718096]">Téléphone</span>
                 <span className="text-white">{client.phone as string}</span>

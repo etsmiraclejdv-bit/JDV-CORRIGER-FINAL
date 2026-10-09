@@ -27,16 +27,20 @@ async function prospecteurMap(organizationId: string): Promise<Map<string, { id:
   return map;
 }
 
-function mapClient(c: Row, pros: Map<string, { id: string; full_name: string; phone?: string }>, balance: number, late: boolean): Row {
-  const paymentStatus = late ? 'en_retard' : balance > 0 ? 'a_surveiller' : 'a_jour';
+function mapClient(c: Row, pros: Map<string, { id: string; full_name: string; phone?: string }>, balance: number, late: boolean): Client {
+  const paymentStatus: Client['payment_status'] = late ? 'en_retard' : balance > 0 ? 'a_surveiller' : 'a_jour';
   return {
     ...c,
+    id: String(c.id ?? ''),
+    organization_id: String(c.organization_id ?? ''),
     full_name: personName(c as never),
-    assigned_to: (c.prospecteur_id as string) ?? undefined,
+    phone: typeof c.phone === 'string' ? c.phone : undefined,
+    assigned_to: typeof c.prospecteur_id === 'string' ? c.prospecteur_id : undefined,
     payment_status: paymentStatus,
     balance_cents: toCents(balance),
-    profiles: c.prospecteur_id ? pros.get(c.prospecteur_id as string) ?? null : null,
-  };
+    created_at: String(c.created_at ?? ''),
+    profiles: typeof c.prospecteur_id === 'string' ? pros.get(c.prospecteur_id) ?? null : null,
+  } as unknown as Client;
 }
 
 /** Solde restant et retards par client pour toute l'organisation. */
