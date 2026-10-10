@@ -2,6 +2,7 @@ import React from 'react';
 import PublicNavbar from '@/components/PublicNavbar';
 import PublicExperience from './components/PublicExperience';
 import FeaturesSection from './components/FeaturesSection';
+import JourneySection from './components/JourneySection';
 import PricingSection from './components/PricingSection';
 import RegistrationSection from './components/RegistrationSection';
 import PublicFooter from './components/PublicFooter';
@@ -28,6 +29,7 @@ export default function PublicSitePage() {
       </div>
       <PublicExperience />
       <FeaturesSection />
+      <JourneySection />
       <PricingSection />
       <RegistrationSection />
       <PublicFooter />
