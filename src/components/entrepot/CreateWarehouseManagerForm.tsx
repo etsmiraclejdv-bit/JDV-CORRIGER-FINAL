@@ -212,7 +212,8 @@ export default function CreateWarehouseManagerForm({
           <div className="md:col-span-2">
             {availableWarehouses.length === 0 && (
               <p className="mb-3 text-sm text-amber-200">
-                Tous les entrepôts actifs ont déjà un chef affecté, ou aucun entrepôt actif\n                n’existe.
+                Tous les entrepôts actifs ont déjà un chef affecté, ou aucun entrepôt actif
+                n’existe.
               </p>
             )}
             <button
