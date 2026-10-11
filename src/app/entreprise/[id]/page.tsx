@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Building2, Globe, Mail, MapPin, Phone } from 'lucide-react';
+import { ArrowLeft, Building2, Globe, MapPin } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import PublicBusinessReviews from '@/app/components/PublicBusinessReviews';
 
@@ -11,17 +11,11 @@ type PublicBusinessProfile = {
   id: string;
   name: string;
   legal_name: string | null;
-  email: string | null;
-  phone: string | null;
-  whatsapp: string | null;
   country: string;
   language: string;
-  address: string | null;
   city: string | null;
   logo_url: string | null;
   website: string | null;
-  primary_color: string | null;
-  secondary_color: string | null;
 };
 
 const db = supabase as any;
@@ -39,7 +33,7 @@ export default function PublicBusinessStorefrontPage() {
       setLoading(true);
       const { data, error } = await db
         .from('public_business_profiles')
-        .select('id,name,legal_name,email,phone,whatsapp,country,language,address,city,logo_url,website,primary_color,secondary_color')
+        .select('id,name,legal_name,country,language,city,logo_url,website')
         .eq('id', organizationId)
         .maybeSingle();
       if (!active) return;
@@ -73,8 +67,9 @@ export default function PublicBusinessStorefrontPage() {
     );
   }
 
-  const brand = business.primary_color || '#D4AF37';
-  const location = [business.address, business.city, business.country].filter(Boolean).join(', ');
+  const brand = '#D4AF37';
+  const location = [business.city, business.country].filter(Boolean).join(', ');
+  const websiteUrl = business.website && /^https?:\/\//i.test(business.website) ? business.website : null;
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -96,11 +91,9 @@ export default function PublicBusinessStorefrontPage() {
               {location && <p className="mt-3 flex items-start gap-2 text-sm text-slate-300"><MapPin className="mt-0.5 shrink-0" size={16} />{location}</p>}
             </div>
           </div>
-          <div className="grid gap-px bg-white/10 sm:grid-cols-3">
-            {business.phone && <a href={'tel:' + business.phone} className="flex items-center gap-3 bg-slate-900/90 p-5 text-sm hover:bg-slate-800"><Phone size={18} style={{ color: brand }} /> Appeler l’entreprise</a>}
-            {business.email && <a href={'mailto:' + business.email} className="flex items-center gap-3 bg-slate-900/90 p-5 text-sm hover:bg-slate-800"><Mail size={18} style={{ color: brand }} /> Envoyer un e-mail</a>}
-            {business.website && <a href={business.website} target="_blank" rel="noreferrer" className="flex items-center gap-3 bg-slate-900/90 p-5 text-sm hover:bg-slate-800"><Globe size={18} style={{ color: brand }} /> Site officiel</a>}
-          </div>
+          {websiteUrl && <div className="border-t border-white/10">
+            <a href={websiteUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-slate-900/90 p-5 text-sm hover:bg-slate-800"><Globe size={18} style={{ color: brand }} /> Site officiel <span className="sr-only"> (ouvre un nouvel onglet)</span></a>
+          </div>}
         </section>
         <PublicBusinessReviews organizationId={business.id} />
         <p className="text-center text-xs text-slate-500">Les avis affichés sont ceux publiés par l’entreprise dans JDV CRM.</p>
