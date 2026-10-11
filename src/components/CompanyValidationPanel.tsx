@@ -139,7 +139,7 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
       const { data: auth } = await supabase.auth.getUser();
       const user = auth.user;
       if (!user) throw new Error('Session expirée. Reconnectez-vous.');
-      const safe = file.name.replace(/[^\w.\-]/g, '_');
+      const safe = file.name.replace(/[^\w.-]/g, '_');
       const path = `${user.id}/${applicationId}/${Date.now()}-${safe}`;
       const up = await supabase.storage.from('company-kyb-documents').upload(path, file, { contentType: file.type, upsert: false });
       if (up.error) throw up.error;
