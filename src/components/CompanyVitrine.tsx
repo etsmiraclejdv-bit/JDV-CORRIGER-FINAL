@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
-import { ExternalLink, Globe, MapPin, MessageSquareQuote, Newspaper, Phone, Search, Star, X } from 'lucide-react';
+import { ExternalLink, Globe, MapPin, MessageSquareQuote, Newspaper, Phone, Search, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 
 type Review = {
