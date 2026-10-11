@@ -29,7 +29,6 @@ import {
   Undo2,
   ArrowLeftRight,
   Store,
-  Palette,
   FilePlus2,
   Sparkles,
   Globe,
@@ -39,7 +38,6 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
-import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
 import OrganizationAmbience from '@/components/OrganizationAmbience';
 
 const navItems = [
@@ -205,12 +203,6 @@ const navItems = [
     group: 'Système',
   },
   {
-    id: 'personnalisation',
-    label: 'Personnalisation',
-    icon: <Palette size={18} />,
-    href: '/business/dashboard/personnalisation',
-    group: 'Système',
-  },
   {
     id: 'formulaires',
     label: 'Formulaires',
@@ -230,7 +222,7 @@ const navItems = [
     label: 'Google & actualités',
     icon: <Globe size={18} />,
     href: '/business/dashboard/veille',
-    group: 'Système',
+    group: 'Principal',
   },
   {
     id: 'avis-clients',
