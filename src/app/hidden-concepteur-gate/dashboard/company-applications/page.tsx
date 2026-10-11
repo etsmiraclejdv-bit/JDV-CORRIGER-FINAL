@@ -31,7 +31,7 @@ export default function CompanyApplicationsPage(){
   const reason=(reasons[d.document_id]??'').trim();
   if(decision==='rejected'&&!reason){setMessage('Indiquez le motif du refus : il sera montré au candidat.');return;}
   setBusy(d.document_id);setMessage('');
-  const {error}=await supabase.rpc('jdvcrm_review_application_document_v1',{p_document_id:d.document_id,p_decision:decision,p_reason:decision==='rejected'?reason:null});
+  const {error}=await supabase.rpc('jdvcrm_review_application_document_v1',{p_document_id:d.document_id,p_decision:decision,p_reason:decision==='rejected'?reason:undefined});
   if(error)setMessage(error.message);
   else setMessage(decision==='verified'?'Document validé.':'Document refusé : le candidat voit le motif et peut le renvoyer.');
   setBusy(null);await load();
