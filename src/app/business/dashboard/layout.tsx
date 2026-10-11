@@ -4,6 +4,33 @@ import AppLogo from '@/components/ui/AppLogo';
 import NotificationBell from '@/components/NotificationBell';
 import UserProfilePanel from '@/components/UserProfilePanel';
 import Modal from '@/components/ui/Modal';
+ix/typescript-supabase-client
+import {
+  LayoutDashboard,
+  Users,
+  ShoppingCart,
+  Package,
+  FileText,
+  Settings,
+  LogOut,
+  ChevronLeft,
+  ChevronRight,
+  UserCheck,
+  BookOpen,
+  ClipboardList,
+  User,
+  HelpCircle,
+  AlertTriangle,
+  Wallet,
+  Truck,
+  Percent,
+  Warehouse,
+  Network,
+  MapPin,
+  Undo2,
+  ArrowLeftRight,
+  Store,
+} from 'lucide-react';
 import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent, Warehouse, Network, MapPin, Undo2, ArrowLeftRight, Store, Palette, FilePlus2, Sparkles, Globe, MessageSquareQuote } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
