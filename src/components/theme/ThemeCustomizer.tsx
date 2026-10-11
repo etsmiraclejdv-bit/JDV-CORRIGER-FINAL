@@ -53,11 +53,11 @@ function resolveTheme(theme: ThemeChoice): 'light' | 'dark' | 'contrast' {
 
 function applyElementStyles(design: Partial<DesignConfig> | null) {
   const styles = design?.elementStyles ?? {};
-  const properties: Record<keyof DesignElementStyle, keyof CSSStyleDeclaration> = {
-    color: 'color', backgroundColor: 'backgroundColor', fontFamily: 'fontFamily',
-    fontSize: 'fontSize', fontWeight: 'fontWeight', borderColor: 'borderColor',
-    borderWidth: 'borderWidth', borderStyle: 'borderStyle', borderRadius: 'borderRadius',
-    shadow: 'boxShadow', padding: 'padding',
+  const properties: Record<keyof DesignElementStyle, string> = {
+    color: 'color', backgroundColor: 'background-color', fontFamily: 'font-family',
+    fontSize: 'font-size', fontWeight: 'font-weight', borderColor: 'border-color',
+    borderWidth: 'border-width', borderStyle: 'border-style', borderRadius: 'border-radius',
+    shadow: 'box-shadow', padding: 'padding',
   };
   document.querySelectorAll<HTMLElement>('[data-jdv-design]').forEach((element) => {
     const id = element.dataset.jdvDesign;
@@ -67,11 +67,11 @@ function applyElementStyles(design: Partial<DesignConfig> | null) {
       const cssProperty = properties[property];
       const value = selected?.[property];
       if (value === undefined || value === null || value === '') {
-        element.style[cssProperty] = '';
+        element.style.removeProperty(cssProperty);
       } else {
         const cssValue = typeof value === 'number' && ['fontSize', 'borderWidth', 'borderRadius', 'padding'].includes(property)
           ? String(value) + 'px' : String(value);
-        element.style[cssProperty] = cssValue;
+        element.style.setProperty(cssProperty, cssValue);
       }
     }
   });
