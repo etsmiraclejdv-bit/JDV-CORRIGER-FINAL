@@ -4,12 +4,13 @@ import AppLogo from '@/components/ui/AppLogo';
 import NotificationBell from '@/components/NotificationBell';
 import UserProfilePanel from '@/components/UserProfilePanel';
 import Modal from '@/components/ui/Modal';
-import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent, Warehouse, Network, MapPin, Undo2, ArrowLeftRight, Store, Palette, FilePlus2 } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent, Warehouse, Network, MapPin, Undo2, ArrowLeftRight, Store, Palette, FilePlus2, Sparkles, Globe, MessageSquareQuote } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
 import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
+import OrganizationAmbience from '@/components/OrganizationAmbience';
 
 const navItems = [
   { id:'overview',label:'Vue d\'ensemble',icon:<LayoutDashboard size={18}/>,href:'/business/dashboard',group:'Principal' },
@@ -37,6 +38,9 @@ const navItems = [
   { id:'guide',label:'Guide d\'utilisation',icon:<HelpCircle size={18}/>,href:'/guide-onboarding',group:'Système' },
   { id:'personnalisation',label:'Personnalisation',icon:<Palette size={18}/>,href:'/business/dashboard/personnalisation',group:'Système' },
   { id:'formulaires',label:'Formulaires',icon:<FilePlus2 size={18}/>,href:'/business/dashboard/formulaires',group:'Système' },
+  { id:'ambiance',label:'Ambiance & fonds',icon:<Sparkles size={18}/>,href:'/business/dashboard/ambiance',group:'Système' },
+  { id:'veille',label:'Google & actualités',icon:<Globe size={18}/>,href:'/business/dashboard/veille',group:'Système' },
+  { id:'avis-clients',label:'Avis clients',icon:<MessageSquareQuote size={18}/>,href:'/business/dashboard/avis-clients',group:'CRM' },
   { id:'settings',label:'Paramètres',icon:<Settings size={18}/>,href:'/business/dashboard/settings',group:'Système' },
 ];
 
@@ -60,7 +64,7 @@ export default function BusinessDashboardLayout({ children }:{children:React.Rea
         <button onClick={handleLogout} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-red-400 transition-all text-sm ${collapsed?'justify-center w-full':''}`} title="Déconnexion"><LogOut size={16}/>{!collapsed&&<span>Quitter</span>}</button>
       </div>{collapsed&&<button onClick={()=>setCollapsed(false)} className="w-full flex justify-center p-2 mt-1 text-[#718096] hover:text-white hover:bg-[#0F2347] rounded-xl transition-all"><ChevronRight size={14}/></button>}</div>
     </aside>
-    <div className="flex-1 flex flex-col overflow-hidden"><ConcepteurBranchBar/><div className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0"><h1 className="text-base font-semibold text-white">Portail Entreprise</h1><div className="flex items-center gap-3"><NotificationBell/></div></div><main className="flex-1 overflow-y-auto">{children}</main></div>
+    <div className="flex-1 flex flex-col overflow-hidden"><ConcepteurBranchBar/><div className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0"><h1 className="text-base font-semibold text-white">Portail Entreprise</h1><div className="flex items-center gap-3"><NotificationBell/></div></div><main className="relative flex-1 overflow-y-auto"><OrganizationAmbience/><div className="relative z-10">{children}</div></main></div>
     <Modal open={profileOpen} onClose={()=>setProfileOpen(false)} title="" size="sm"><UserProfilePanel onClose={()=>setProfileOpen(false)}/></Modal>
   </div></>;
 }
