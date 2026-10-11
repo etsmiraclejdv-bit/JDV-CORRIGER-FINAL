@@ -22,6 +22,17 @@ The original SQL bodies for these applied versions were not found in the checked
 
 The live database proves that related objects currently exist, but it does not reveal which exact DDL statements or intermediate states were in each original migration. Do not label a newly authored SQL file as the recovered original.
 
+## Additional live-state evidence: team rights and member management (2026-10-11)
+
+The production migration registry contains `20261011065602_team_rights_and_member_management_v1`, but its original SQL file was not found in the checked GitHub branches. A read-only catalog inspection confirms the current presence of:
+
+- `public.organization_teams` and `public.organization_team_members`, including organization-scoped foreign keys, active/inactive status checks, unique team-name and team/member constraints, and indexes.
+- RLS policies that let organization admins manage teams/members and limit reads to super-admins, organization admins, relevant members, and team supervisors.
+- Member-management RPCs including `jdvcrm_list_org_members_v1`, `jdvcrm_set_member_status_v1`, and `jdvcrm_update_member_role_v1`, which enforce organization access, protect the owner and last administrator, and synchronize selected role/status changes with related records.
+- Existing `permissions`, `role_permissions`, `user_permissions`, and `user_settings` tables with RLS policies.
+
+This is a snapshot of the live catalog, not a recovered migration body. Function definitions, grants, triggers, seeds, and the order in which objects were introduced still need exact source/artifact comparison. The known missing-source count is now at least five. Do not label reconstructed SQL as original or place it in the executable migrations directory until reviewed and replay-tested.
+
 ## Verified live objects: application identity validation
 
 Read-only inspection of `pg_proc`, `pg_trigger`, and `pg_policies` confirmed:
