@@ -33,6 +33,7 @@ export default function BusinessLoginPage() {
         return;
       }
       const { data: sessionData } = await supabase.auth.getUser();
+fix/typescript-supabase-client
       if (sessionData.user) {
         const completed = await completePendingOnboarding(sessionData.user.id, email);
         if (completed) {
@@ -40,8 +41,16 @@ export default function BusinessLoginPage() {
           return;
         }
       }
+=======
+      if (sessionData.user) { const completed = await completePendingOnboarding(sessionData.user.id, email); if (completed) { router.replace('/business/validation'); return; } }
+ main
       const result = await checkCurrentBusinessAdmin();
       if (!result.ok) {
+        // Dossier d'entreprise en cours de validation : on envoie le candidat vers sa page de validation
+        if (sessionData.user && (result.reason === 'no_organization' || result.reason === 'unauthorized')) {
+          const { data: pending } = await supabase.from('organization_applications').select('id').eq('applicant_user_id', sessionData.user.id).neq('status', 'activated').limit(1);
+          if (pending && pending.length > 0) { router.replace('/business/validation'); return; }
+        }
         await supabase.auth.signOut();
         if (result.reason === 'profile_not_found')
           setError('Profil introuvable. Contactez votre administrateur.');

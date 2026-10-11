@@ -3,6 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
+ fix/typescript-supabase-client
 import {
   Banner,
   Card,
@@ -12,6 +13,9 @@ import {
   inputCls,
   useBanner,
 } from '@/components/entrepot/common';
+=======
+import { Banner, Card, PageTitle, btnGhost, btnGold, inputCls, useBanner } from '@/components/entrepot/common';
+ main
 
 type Sub = {
   id: string;
@@ -77,11 +81,15 @@ export default function SousEntrepotsChefAgencePage() {
     });
     setSaving(false);
     if (error) {
+ fix/typescript-supabase-client
       fail(
         error.code === '23505'
           ? 'Ce code de sous-entrepôt existe déjà. Choisissez-en un autre.'
           : error.message
       );
+=======
+      fail(error.code === '23505' ? 'Ce code de sous-entrepôt existe déjà. Choisissez-en un autre.' : error.message);
+ main
       return;
     }
     setForm(EMPTY);
@@ -91,10 +99,14 @@ export default function SousEntrepotsChefAgencePage() {
 
   async function toggle(s: Sub) {
     clear();
+ fix/typescript-supabase-client
     const { error } = await supabase
       .from('warehouse_subwarehouses')
       .update({ active: !s.active })
       .eq('id', s.id);
+=======
+    const { error } = await supabase.from('warehouse_subwarehouses').update({ active: !s.active }).eq('id', s.id);
+ main
     if (error) {
       fail(error.message);
       return;
@@ -131,6 +143,7 @@ export default function SousEntrepotsChefAgencePage() {
         <form onSubmit={create} className="grid gap-3 md:grid-cols-2">
           <label className="text-sm">
             Nom *
+ fix/typescript-supabase-client
             <input
               className={`${inputCls} mt-1`}
               value={form.name}
@@ -178,6 +191,29 @@ export default function SousEntrepotsChefAgencePage() {
               value={form.manager}
               onChange={(e) => setForm({ ...form, manager: e.target.value })}
             >
+=======
+            <input className={`${inputCls} mt-1`} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="AKASSATO-NORD" />
+          </label>
+          <label className="text-sm">
+            Code unique *
+            <input className={`${inputCls} mt-1`} value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="AK-NORD" />
+          </label>
+          <label className="text-sm">
+            Ville
+            <input className={`${inputCls} mt-1`} value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+          </label>
+          <label className="text-sm">
+            Zone / secteur
+            <input className={`${inputCls} mt-1`} value={form.zone} onChange={(e) => setForm({ ...form, zone: e.target.value })} />
+          </label>
+          <label className="text-sm md:col-span-2">
+            Adresse
+            <input className={`${inputCls} mt-1`} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+          </label>
+          <label className="text-sm">
+            Responsable
+            <select className={`${inputCls} mt-1`} value={form.manager} onChange={(e) => setForm({ ...form, manager: e.target.value })}>
+ main
               <option value="">Aucun pour le moment</option>
               <option value="me">Moi (chef d’agence)</option>
             </select>
@@ -201,6 +237,7 @@ export default function SousEntrepotsChefAgencePage() {
               <article key={s.id} className="rounded-xl border border-white/10 bg-[#0F2347] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
+ fix/typescript-supabase-client
                     <div className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37]">
                       {s.code}
                     </div>
@@ -209,10 +246,17 @@ export default function SousEntrepotsChefAgencePage() {
                   <span
                     className={`rounded-full px-2 py-1 text-xs ${s.active ? 'bg-emerald-500/10 text-emerald-300' : 'bg-slate-500/10 text-slate-400'}`}
                   >
+=======
+                    <div className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37]">{s.code}</div>
+                    <h3 className="mt-1 font-semibold">{s.name}</h3>
+                  </div>
+                  <span className={`rounded-full px-2 py-1 text-xs ${s.active ? 'bg-emerald-500/10 text-emerald-300' : 'bg-slate-500/10 text-slate-400'}`}>
+ main
                     {s.active ? 'Actif' : 'Inactif'}
                   </span>
                 </div>
                 <div className="mt-3 space-y-1 text-sm text-slate-300">
+ fix/typescript-supabase-client
                   {s.city && (
                     <div>
                       <span className="text-slate-500">Ville :</span> {s.city}
@@ -235,6 +279,14 @@ export default function SousEntrepotsChefAgencePage() {
                         ? 'Vous (chef d’agence)'
                         : 'Assigné'
                       : 'Aucun'}
+=======
+                  {s.city && <div><span className="text-slate-500">Ville :</span> {s.city}</div>}
+                  {s.zone && <div><span className="text-slate-500">Zone :</span> {s.zone}</div>}
+                  {s.address && <div><span className="text-slate-500">Adresse :</span> {s.address}</div>}
+                  <div>
+                    <span className="text-slate-500">Responsable :</span>{' '}
+                    {s.manager_user_id ? (s.manager_user_id === userId ? 'Vous (chef d’agence)' : 'Assigné') : 'Aucun'}
+ main
                   </div>
                 </div>
                 <div className="mt-4 flex gap-2">
@@ -242,6 +294,7 @@ export default function SousEntrepotsChefAgencePage() {
                     {s.active ? 'Désactiver' : 'Réactiver'}
                   </button>
                   {s.manager_user_id === userId ? (
+ fix/typescript-supabase-client
                     <button type="button" onClick={() => setManager(s, false)} className={btnGhost}>
                       Me retirer
                     </button>
@@ -249,6 +302,11 @@ export default function SousEntrepotsChefAgencePage() {
                     <button type="button" onClick={() => setManager(s, true)} className={btnGhost}>
                       Je le prends
                     </button>
+=======
+                    <button type="button" onClick={() => setManager(s, false)} className={btnGhost}>Me retirer</button>
+                  ) : !s.manager_user_id ? (
+                    <button type="button" onClick={() => setManager(s, true)} className={btnGhost}>Je le prends</button>
+ main
                   ) : null}
                 </div>
               </article>
@@ -258,4 +316,8 @@ export default function SousEntrepotsChefAgencePage() {
       </Card>
     </div>
   );
+ fix/typescript-supabase-client
 }
+=======
+}
+ main

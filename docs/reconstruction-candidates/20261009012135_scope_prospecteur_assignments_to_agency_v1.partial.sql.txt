@@ -1,0 +1,63 @@
+-- RECONSTRUCTED FROM LIVE STATE — NOT ORIGINAL SOURCE.
+-- PARTIAL FORENSIC EVIDENCE ONLY. DO NOT EXECUTE OR MOVE TO supabase/migrations.
+-- Captured with read-only pg_get_functiondef on 2026-10-11.
+-- The live body below is evidence of current behavior. It is not proof that this
+-- function was introduced by migration 20261009012135, nor a full migration.
+
+CREATE OR REPLACE FUNCTION public.jdvcrm_assign_prospecteur_warehouse_v1(
+  p_organization_id uuid,
+  p_prospecteur_id uuid,
+  p_warehouse_id uuid,
+  p_department text DEFAULT NULL::text,
+  p_city text DEFAULT NULL::text,
+  p_work_zone text DEFAULT NULL::text
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'private'
+AS $function$
+declare v_uid uuid:=auth.uid(); v_porg uuid; v_worg uuid; v_id uuid;
+begin
+  if v_uid is null then raise exception 'AUTHENTICATION_REQUIRED'; end if;
+  if not private.is_super_admin() and not private.is_org_admin(p_organization_id) then raise exception 'ACCESS_DENIED'; end if;
+  select organization_id into v_porg from public.prospecteurs where id=p_prospecteur_id and status='active';
+  if v_porg is null or v_porg<>p_organization_id then raise exception 'PROSPECTEUR_NOT_IN_ORGANIZATION'; end if;
+  select organization_id into v_worg from public.warehouses where id=p_warehouse_id and active=true;
+  if v_worg is null or v_worg<>p_organization_id then raise exception 'WAREHOUSE_NOT_IN_ORGANIZATION'; end if;
+
+  update public.prospecteur_warehouse_assignments
+  set active=false,is_primary=false,unassigned_at=now()
+  where organization_id=p_organization_id and prospecteur_id=p_prospecteur_id and active=true;
+
+  insert into public.prospecteur_warehouse_assignments(
+    organization_id,prospecteur_id,warehouse_id,department,city,work_zone,is_primary,active
+  ) values (
+    p_organization_id,p_prospecteur_id,p_warehouse_id,p_department,p_city,p_work_zone,true,true
+  ) returning id into v_id;
+
+  return jsonb_build_object('assignment_id',v_id,'prospecteur_id',p_prospecteur_id,'warehouse_id',p_warehouse_id);
+end $function$;
+
+CREATE OR REPLACE FUNCTION public.jdvcrm_sync_warehouse_head_v1()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+begin
+  if tg_op = 'DELETE' then
+    update public.warehouses set manager_user_id = null where id = OLD.warehouse_id and manager_user_id = OLD.user_id;
+    return OLD;
+  end if;
+  if NEW.status = 'active' then
+    update public.warehouses set manager_user_id = NEW.user_id where id = NEW.warehouse_id;
+  else
+    update public.warehouses set manager_user_id = null where id = NEW.warehouse_id and manager_user_id = NEW.user_id;
+  end if;
+  return NEW;
+end $function$;
+
+-- The actual trigger attachment for jdvcrm_sync_warehouse_head_v1, complete
+-- table DDL, foreign keys, unique constraints, RLS policies, indexes, grants,
+-- and any additional RPCs are not included in this partial evidence artifact.

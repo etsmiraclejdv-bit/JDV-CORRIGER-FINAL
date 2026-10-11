@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
+import { SITE } from '@/lib/siteConfig';
 
 export default function PublicFooter() {
   return (
@@ -15,8 +16,12 @@ export default function PublicFooter() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
+fix/typescript-supabase-client
               La plateforme CRM conçue pour la vente à crédit avec paiements journaliers et agents
               terrain en Afrique de l&apos;Ouest.
+=======
+              {SITE.tagline}.
+main
             </p>
           </div>
 
@@ -29,7 +34,9 @@ export default function PublicFooter() {
             </p>
             <ul className="space-y-2">
               {[
+                { label: 'Services', href: '/#services' },
                 { label: 'Fonctionnalités', href: '/#features' },
+                { label: 'Avantages', href: '/#avantages' },
                 { label: 'Tarifs', href: '/#pricing' },
                 { label: 'Essai gratuit', href: '/#register' },
               ].map((item) => (
@@ -54,7 +61,12 @@ export default function PublicFooter() {
             </p>
             <ul className="space-y-2">
               {[
+fix/typescript-supabase-client
                 { label: "Guide d'utilisation", href: '/guide-onboarding' },
+=======
+                { label: 'Contact', href: '/#contact' },
+                { label: 'Guide d\'utilisation', href: '/guide-onboarding' },
+main
                 { label: 'Espace entreprise', href: '/business/login' },
                 { label: 'Espace prospecteur', href: '/terrain/login' },
               ].map((item) => (

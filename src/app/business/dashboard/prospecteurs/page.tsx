@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Users, Search, RefreshCw, ShoppingCart, Plus, Eye, EyeOff } from 'lucide-react';
+import { Users, Search, RefreshCw, ShoppingCart, Plus, Eye, EyeOff, FileText, UserX, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import Modal from '@/components/ui/Modal';
 import { supabase } from '@/lib/supabase/client';
@@ -13,9 +13,21 @@ interface ProspecteurRow {
   phone: string | null;
   city: string | null;
   created_at: string;
+  status: string;
+  email: string | null;
+  code: string | null;
+  address: string | null;
+  commission_rate: number | null;
   sales_count?: number;
   sales_amount?: number;
 }
+
+const STATUS_LABEL: Record<string, string> = { active: 'Actif', suspended: 'Suspendu', blocked: 'Bloqué', inactive: 'Inactif' };
+const ERRORS: [string, string][] = [
+  ['ACCESS_DENIED', 'Action réservée aux administrateurs et gestionnaires.'],
+  ['PROTECTED_COLUMNS', 'Seul un administrateur peut modifier la commission.'],
+];
+const frError = (msg: string) => ERRORS.find(([k]) => msg.includes(k))?.[1] ?? msg;
 
 export default function BusinessProspecteursPage() {
   const [prospecteurs, setProspecteurs] = useState<ProspecteurRow[]>([]);
@@ -24,11 +36,13 @@ export default function BusinessProspecteursPage() {
   >([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
   const [orgId, setOrgId] = useState<string | null>(null);
   const [orgName, setOrgName] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+ fix/typescript-supabase-client
   const emptyForm = {
     firstName: '',
     lastName: '',
@@ -41,6 +55,13 @@ export default function BusinessProspecteursPage() {
     workCity: '',
     workZone: '',
   };
+=======
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [selected, setSelected] = useState<ProspecteurRow | null>(null);
+  const [fiche, setFiche] = useState({ phone: '', city: '', address: '', commission: '' });
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const emptyForm = { firstName: '', lastName: '', email: '', phone: '', password: '', commissionRate: 10, warehouseId: '', department: '', workCity: '', workZone: '' };
+main
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
@@ -51,6 +72,7 @@ export default function BusinessProspecteursPage() {
       if (resolvedOrgId) {
         setOrgId(resolvedOrgId);
         loadProspecteurs(resolvedOrgId);
+fix/typescript-supabase-client
         supabase
           .from('warehouses')
           .select('id,name,code,city')
@@ -70,6 +92,13 @@ export default function BusinessProspecteursPage() {
           .then(({ data: o }) => {
             setOrgName((o as { name?: string } | null)?.name ?? '');
           });
+=======
+        supabase.rpc('jdvcrm_is_org_admin_v1', { p_organization_id: resolvedOrgId }).then(({ data: ok }) => setIsAdmin(ok === true));
+        supabase.from('warehouses').select('id,name,code,city').eq('organization_id', resolvedOrgId).eq('active', true).order('name').then(({ data }) => setWarehouses((data ?? []) as {id:string;name:string;code:string;city:string|null}[]));
+        supabase.from('organizations').select('name').eq('id', resolvedOrgId).maybeSingle().then(({ data: o }) => {
+          setOrgName(((o as { name?: string } | null)?.name) ?? '');
+        });
+ main
       } else {
         setLoading(false);
       }
@@ -80,7 +109,7 @@ export default function BusinessProspecteursPage() {
     setLoading(true);
     const { data: rows } = await supabase
       .from('prospecteurs')
-      .select('id, first_name, last_name, phone, city, created_at')
+      .select('id, first_name, last_name, phone, city, created_at, status, email, code, address, commission_rate')
       .eq('organization_id', oid)
       .order('created_at', { ascending: false });
 
@@ -96,6 +125,11 @@ export default function BusinessProspecteursPage() {
       phone: (r.phone as string) ?? null,
       city: (r.city as string) ?? null,
       created_at: r.created_at as string,
+      status: (r.status as string) ?? 'active',
+      email: (r.email as string) ?? null,
+      code: (r.code as string) ?? null,
+      address: (r.address as string) ?? null,
+      commission_rate: r.commission_rate === null || r.commission_rate === undefined ? null : Number(r.commission_rate),
     }));
     const ids = profiles.map((p) => p.id);
 
@@ -159,11 +193,48 @@ export default function BusinessProspecteursPage() {
     }
   }
 
+fix/typescript-supabase-client
   const filtered = prospecteurs.filter(
     (p) =>
       !search ||
       p.full_name.toLowerCase().includes(search.toLowerCase()) ||
       (p.phone ?? '').includes(search)
+=======
+  async function setStatus(p: ProspecteurRow, status: 'active' | 'suspended') {
+    if (status === 'suspended' && !window.confirm(`Suspendre ${p.full_name} ? Il ne pourra plus se connecter ni enregistrer de ventes.`)) return;
+    setBusyId(p.id);
+    const { error } = await supabase.rpc('jdvcrm_set_prospecteur_status_v1', { p_prospecteur_id: p.id, p_status: status });
+    setBusyId(null);
+    if (error) { toast.error(frError(error.message)); return; }
+    toast.success(status === 'active' ? 'Prospecteur réactivé.' : 'Prospecteur suspendu.');
+    setSelected(null);
+    if (orgId) loadProspecteurs(orgId);
+  }
+
+  function openFiche(p: ProspecteurRow) {
+    setSelected(p);
+    setFiche({ phone: p.phone ?? '', city: p.city ?? '', address: p.address ?? '', commission: p.commission_rate === null ? '' : String(p.commission_rate) });
+  }
+
+  async function saveFiche() {
+    if (!selected) return;
+    const patch: Record<string, unknown> = { phone: fiche.phone.trim() || null, city: fiche.city.trim() || null, address: fiche.address.trim() || null };
+    if (isAdmin && fiche.commission !== '') patch.commission_rate = Math.min(100, Math.max(0, Number(fiche.commission) || 0));
+    setBusyId(selected.id);
+    const { error } = await supabase.from('prospecteurs').update(patch).eq('id', selected.id);
+    setBusyId(null);
+    if (error) { toast.error(frError(error.message)); return; }
+    toast.success('Fiche enregistrée.');
+    setSelected(null);
+    if (orgId) loadProspecteurs(orgId);
+  }
+
+  const filtered = prospecteurs.filter(p =>
+    (statusFilter === 'all' || (statusFilter === 'active' ? p.status === 'active' : p.status !== 'active')) &&
+    (!search ||
+      p.full_name.toLowerCase().includes(search.toLowerCase()) ||
+      (p.phone ?? '').includes(search))
+ main
   );
 
   const fmt = (cents: number) =>
@@ -200,6 +271,7 @@ export default function BusinessProspecteursPage() {
         </div>
       </div>
 
+fix/typescript-supabase-client
       <div className="relative max-w-sm">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]" />
         <input
@@ -209,6 +281,24 @@ export default function BusinessProspecteursPage() {
           placeholder="Rechercher un prospecteur..."
           className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
         />
+=======
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative w-full max-w-sm">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Rechercher un prospecteur..."
+            className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
+          />
+        </div>
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as 'all' | 'active' | 'suspended')} className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm">
+          <option value="all">Tous les statuts</option>
+          <option value="active">Actifs</option>
+          <option value="suspended">Suspendus ou bloqués</option>
+        </select>
+main
       </div>
 
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
@@ -227,6 +317,7 @@ export default function BusinessProspecteursPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
+fix/typescript-supabase-client
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
                     Prospecteur
                   </th>
@@ -239,6 +330,14 @@ export default function BusinessProspecteursPage() {
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
                     CA généré
                   </th>
+=======
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">Prospecteur</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">Téléphone</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">Statut</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">Ventes</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">CA généré</th>
+                  <th className="px-4 py-3" />
+main
                 </tr>
               </thead>
               <tbody>
@@ -260,6 +359,9 @@ export default function BusinessProspecteursPage() {
                     </td>
                     <td className="px-4 py-3 text-sm text-[#A0AEC0]">{p.phone ?? '—'}</td>
                     <td className="px-4 py-3">
+                      <span className={`rounded-full px-2 py-0.5 text-[11px] ${p.status === 'active' ? 'badge-success' : 'badge-danger'}`}>{STATUS_LABEL[p.status] ?? p.status}</span>
+                    </td>
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
                         <ShoppingCart size={12} className="text-[#D4AF37]" />
                         <span className="text-sm font-semibold text-white">
@@ -270,6 +372,16 @@ export default function BusinessProspecteursPage() {
                     <td className="px-4 py-3 text-sm font-semibold text-[#D4AF37]">
                       {fmt(p.sales_amount ?? 0)}
                     </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => openFiche(p)} className="inline-flex items-center gap-1 rounded-lg border border-[#D4AF37]/20 px-3 py-1.5 text-xs text-[#A0AEC0] hover:text-white"><FileText size={12} />Fiche</button>
+                        {p.status === 'active' ? (
+                          <button disabled={busyId === p.id} onClick={() => setStatus(p, 'suspended')} className="inline-flex items-center gap-1 rounded-lg border border-red-500/30 px-3 py-1.5 text-xs text-red-400 disabled:opacity-50"><UserX size={12} />Suspendre</button>
+                        ) : (
+                          <button disabled={busyId === p.id} onClick={() => setStatus(p, 'active')} className="inline-flex items-center gap-1 rounded-lg border border-green-500/30 px-3 py-1.5 text-xs text-green-400 disabled:opacity-50"><UserCheck size={12} />Réactiver</button>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -278,12 +390,49 @@ export default function BusinessProspecteursPage() {
         )}
       </div>
 
+fix/typescript-supabase-client
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         title="Nouveau prospecteur"
         size="md"
       >
+=======
+      <Modal open={!!selected} onClose={() => setSelected(null)} title={selected ? `Fiche : ${selected.full_name}` : ''} size="md">
+        {selected && (
+          <div className="space-y-4 p-1">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div><p className="text-xs text-[#718096]">Code</p><p className="font-semibold text-white">{selected.code ?? '—'}</p></div>
+              <div><p className="text-xs text-[#718096]">Statut</p><p className="font-semibold text-white">{STATUS_LABEL[selected.status] ?? selected.status}</p></div>
+              <div><p className="text-xs text-[#718096]">E-mail de connexion</p><p className="break-all font-semibold text-white">{selected.email ?? '—'}</p></div>
+              <div><p className="text-xs text-[#718096]">Créé le</p><p className="font-semibold text-white">{new Date(selected.created_at).toLocaleDateString('fr-FR')}</p></div>
+              <div><p className="text-xs text-[#718096]">Ventes</p><p className="font-semibold text-white">{selected.sales_count ?? 0}</p></div>
+              <div><p className="text-xs text-[#718096]">Chiffre d’affaires</p><p className="font-semibold text-[#D4AF37]">{fmt(selected.sales_amount ?? 0)}</p></div>
+            </div>
+            <div className="space-y-3 rounded-xl border border-[#D4AF37]/10 p-4">
+              <p className="text-xs font-semibold text-[#D4AF37]">Modifier la fiche</p>
+              <div className="grid grid-cols-2 gap-3">
+                <input placeholder="Téléphone" value={fiche.phone} onChange={e => setFiche(f => ({ ...f, phone: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm" />
+                <input placeholder="Ville" value={fiche.city} onChange={e => setFiche(f => ({ ...f, city: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm" />
+              </div>
+              <input placeholder="Adresse" value={fiche.address} onChange={e => setFiche(f => ({ ...f, address: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm" />
+              {isAdmin && (
+                <div>
+                  <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Commission (%)</label>
+                  <input type="number" min={0} max={100} step="0.5" value={fiche.commission} onChange={e => setFiche(f => ({ ...f, commission: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm" />
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 pt-1">
+              <button type="button" onClick={() => setSelected(null)} className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm">Fermer</button>
+              <button type="button" onClick={saveFiche} disabled={busyId === selected.id} className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60">Enregistrer</button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nouveau prospecteur" size="md">
+main
         <form onSubmit={handleCreate} className="space-y-4 p-1">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -404,9 +553,13 @@ export default function BusinessProspecteursPage() {
                 {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
+fix/typescript-supabase-client
             <p className="text-xs text-[#718096] mt-1">
               Les identifiants sont envoyés par email au prospecteur.
             </p>
+=======
+            <p className="text-xs text-[#718096] mt-1">Aucun e-mail n’est envoyé : transmettez vous-même le mot de passe au prospecteur.</p>
+main
           </div>
           <div className="flex gap-3 pt-2">
             <button
