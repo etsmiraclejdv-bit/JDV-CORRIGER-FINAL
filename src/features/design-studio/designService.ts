@@ -104,7 +104,6 @@ export async function saveCustomForm(input: {
       description: input.description || null,
       updated_at: new Date().toISOString(),
     };
-    if (input.publish) updates.status = 'published';
     const { error } = await supabase.from('custom_form_definitions').update(updates).eq('id', formId).eq('organization_id', input.organizationId);
     if (error) return { data: null, error };
   } else {
@@ -113,22 +112,47 @@ export async function saveCustomForm(input: {
       form_key: input.formKey,
       name: input.name,
       description: input.description || null,
-      status: input.publish ? 'published' : 'draft',
+      status: 'draft',
       created_by: userData.user.id,
     }).select('id').single();
     if (error) return { data: null, error };
     formId = String((data as DbRow).id);
   }
-  const { data: previous, error: previousError } = await supabase.from('custom_form_versions').select('version_no').eq('form_id', formId).order('version_no', { ascending: false }).limit(1).maybeSingle();
+
+  const { data: previous, error: previousError } = await supabase
+    .from('custom_form_versions').select('version_no').eq('form_id', formId)
+    .order('version_no', { ascending: false }).limit(1).maybeSingle();
   if (previousError) return { data: null, error: previousError };
   const versionNo = Number((previous as DbRow | null)?.version_no ?? 0) + 1;
-  const { error: versionError } = await supabase.from('custom_form_versions').insert({
+  const { data: insertedVersion, error: versionError } = await supabase.from('custom_form_versions').insert({
     form_id: formId,
     version_no: versionNo,
     schema_json: input.schema,
     status: input.publish ? 'published' : 'draft',
     created_by: userData.user.id,
     published_at: input.publish ? new Date().toISOString() : null,
-  });
-  return { data: { id: formId, versionNo }, error: versionError };
+  }).select('id').single();
+  if (versionError) return { data: null, error: versionError };
+
+  if (input.publish) {
+    // Keep the new published version safe before archiving previous publications.
+    const { error: archiveError } = await supabase.from('custom_form_versions')
+      .update({ status: 'archived' })
+      .eq('form_id', formId)
+      .eq('status', 'published')
+      .neq('id', String((insertedVersion as DbRow).id));
+    if (archiveError) {
+      return {
+        data: { id: formId, versionNo },
+        error: new Error('Nouvelle version créée, mais les anciennes versions publiées n’ont pas toutes été archivées. Vérifiez l’historique du formulaire.'),
+      };
+    }
+    const { error: publishError } = await supabase.from('custom_form_definitions')
+      .update({ status: 'published', updated_at: new Date().toISOString() })
+      .eq('id', formId).eq('organization_id', input.organizationId);
+    if (publishError) {
+      return { data: { id: formId, versionNo }, error: publishError };
+    }
+  }
+  return { data: { id: formId, versionNo }, error: null };
 }
