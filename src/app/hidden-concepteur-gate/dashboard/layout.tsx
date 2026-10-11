@@ -59,7 +59,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
 
   return (
     <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
-      <aside className={`h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}>
+      <aside data-jdv-design="sidebar" className={`h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}>
         <div className={`h-16 flex items-center border-b border-[#D4AF37]/10 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}>
           {!collapsed && (
             <div className="flex items-center gap-2">
@@ -75,14 +75,14 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-3 px-2">
+        <nav data-jdv-design="sidebar" className="flex-1 overflow-y-auto py-3 px-2">
           {groups.map((group) => (
             <div key={group} className="mb-4">
               {!collapsed && <p className="text-[10px] font-semibold uppercase tracking-widest text-[#718096] px-3 mb-2">{group}</p>}
               {navItems.filter((item) => item.group === group).map((item) => {
                 const isActive = pathname === item.href || (item.href !== '/hidden-concepteur-gate/dashboard' && pathname.startsWith(item.href));
                 return (
-                  <Link key={item.id} href={item.href} title={collapsed ? item.label : undefined} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}>
+                  <Link data-jdv-design="sidebar" key={item.id} href={item.href} title={collapsed ? item.label : undefined} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}>
                     <span className="flex-shrink-0">{item.icon}</span>
                     {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
                   </Link>
@@ -108,7 +108,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
       <div className="flex-1 flex flex-col overflow-hidden">
         <ConcepteurBranchBar />
         <div className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
-          <h1 className="text-base font-semibold text-white">Super Admin — Supervision Plateforme</h1>
+          <h1 data-jdv-design="page-title" className="text-base font-semibold text-white">Super Admin — Supervision Plateforme</h1>
           <div className="flex items-center gap-3"><NotificationBell /></div>
         </div>
         <main className="flex-1 overflow-y-auto">{children}</main>
