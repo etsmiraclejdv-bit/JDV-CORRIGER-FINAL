@@ -174,7 +174,7 @@ export default function BusinessProspecteursPage() {
 
   async function saveFiche() {
     if (!selected) return;
-    const patch: Record<string, unknown> = { phone: fiche.phone.trim() || null, city: fiche.city.trim() || null, address: fiche.address.trim() || null };
+    const patch: { phone: string | null; city: string | null; address: string | null; commission_rate?: number } = { phone: fiche.phone.trim() || null, city: fiche.city.trim() || null, address: fiche.address.trim() || null };
     if (isAdmin && fiche.commission !== '') patch.commission_rate = Math.min(100, Math.max(0, Number(fiche.commission) || 0));
     setBusyId(selected.id);
     const { error } = await supabase.from('prospecteurs').update(patch).eq('id', selected.id);
