@@ -188,7 +188,7 @@ export default function ThemeCustomizer() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const set = useCallback(<K extends keyof Prefs>(key: K, value: Prefs[K]) => setPrefs((p) => ({ ...p, [key]: value })), []);
+  const set = useCallback(<K extends keyof Prefs>(key: K, value: Prefs[K]) => setPrefs((p) => ({ ...p, [key]: value, ...(key === 'theme' ? { themeOverride: true } : {}) })), []);
 
   const section = 'text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2';
   const chip = (active: boolean) =>
