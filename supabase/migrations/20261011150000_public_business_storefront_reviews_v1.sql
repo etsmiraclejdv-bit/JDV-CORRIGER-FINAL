@@ -1,5 +1,7 @@
--- JDV CRM: safe public storefront profile and published customer reviews.
--- This migration is staged in GitHub only. Do not apply to production until schema reconciliation is approved.
+-- JDV CRM: minimal public storefront profile and published customer reviews.
+-- Staged in GitHub only. Do not apply to production until schema reconciliation is approved.
+-- Only non-sensitive display fields are exposed. Contact details are deliberately excluded
+-- until organizations have an explicit public-contact opt-in setting.
 
 create or replace view public.public_business_profiles
 with (security_barrier = true)
@@ -8,24 +10,18 @@ select
   id,
   name,
   legal_name,
-  email,
-  phone,
-  whatsapp,
   country,
   language,
-  address,
   city,
   logo_url,
-  website,
-  primary_color,
-  secondary_color
+  website
 from public.organizations
 where status = 'active';
 
 revoke all on public.public_business_profiles from public, anon, authenticated;
 grant select on public.public_business_profiles to anon, authenticated;
 
--- The public role may read only safe display fields, and only rows explicitly published.
+-- Anonymous visitors can read only reviews that an organization has explicitly published.
 drop policy if exists client_reviews_public_published_select on public.client_reviews;
 create policy client_reviews_public_published_select
   on public.client_reviews
