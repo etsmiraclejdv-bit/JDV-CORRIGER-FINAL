@@ -173,7 +173,7 @@ export default function BusinessDashboardPage() {
           },
           {
             label: 'Voir ma vitrine publique',
-            href: orgId ? `/vitrine/${orgId}` : '/business/dashboard/settings',
+            href: orgId ? `/vitrine/${orgId}` : '/business/dashboard',
             icon: <Globe size={16} />,
             desc: 'Partager votre vitrine, les avis et les actualités',
           },
