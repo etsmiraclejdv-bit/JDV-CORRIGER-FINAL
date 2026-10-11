@@ -7,7 +7,6 @@ import FeaturesSection from './components/FeaturesSection';
 import JourneySection from './components/JourneySection';
 import AdvantagesSection from './components/AdvantagesSection';
 import PricingSection from './components/PricingSection';
-import TestimonialsSection from './components/TestimonialsSection';
 import RegistrationSection from './components/RegistrationSection';
 import ContactSection from './components/ContactSection';
 import PublicFooter from './components/PublicFooter';
@@ -45,7 +44,6 @@ export default function PublicSitePage() {
       <JourneySection />
       <AdvantagesSection />
       <PricingSection />
-      <TestimonialsSection />
       <RegistrationSection />
       <ContactSection />
       <PublicFooter />
