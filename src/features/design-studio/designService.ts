@@ -77,12 +77,13 @@ export async function saveCustomForm(input: {
   if (!userData.user) return { data: null, error: new Error('Connexion requise') };
   let formId = input.formId;
   if (formId) {
-    const { error } = await supabase.from('custom_form_definitions').update({
+    const updates: DbRow = {
       name: input.name,
       description: input.description || null,
-      status: input.publish ? 'published' : 'draft',
       updated_at: new Date().toISOString(),
-    }).eq('id', formId).eq('organization_id', input.organizationId);
+    };
+    if (input.publish) updates.status = 'published';
+    const { error } = await supabase.from('custom_form_definitions').update(updates).eq('id', formId).eq('organization_id', input.organizationId);
     if (error) return { data: null, error };
   } else {
     const { data, error } = await supabase.from('custom_form_definitions').insert({
