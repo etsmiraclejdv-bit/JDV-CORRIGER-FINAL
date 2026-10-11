@@ -169,7 +169,8 @@ export default function TerrainProspectsPage() {
           : undefined,
         appointment_date:
           getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.date ??
-          ((r.purchase_date_planned as string) ?? undefined),
+          (r.purchase_date_planned as string) ??
+          undefined,
         appointment_time:
           getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.time || undefined,
         appointment_location:
@@ -685,7 +686,7 @@ export default function TerrainProspectsPage() {
               value={appointmentForm.reason}
               onChange={(e) => setAppointmentForm((v) => ({ ...v, reason: e.target.value }))}
               rows={2}
-              placeholder="Ex. : le client n&apos;est pas disponible à la date prévue"
+              placeholder="Ex. : le client n'est pas disponible à la date prévue"
               className="w-full resize-none rounded-xl border border-[#D4AF37]/20 bg-[#0A1628] px-3 py-2.5 text-sm text-white focus:border-[#D4AF37]/60 focus:outline-none"
             />
           </div>
