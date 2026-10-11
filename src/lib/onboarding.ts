@@ -1,93 +1,95 @@
 import { supabase } from '@/lib/supabase/client';
+import type { Database } from '@/types/database.types';
 
-export interface OnboardingPayload {
-  companyName: string;
-  email: string;
-  phone: string;
-  country: string;
-  city: string;
-  industry: string;
-  contactName: string;
-}
+export type OnboardingPayload =
+  Database['public']['Functions']['jdvcrm_submit_company_application_v1']['Args'];
 
-const KEY = 'jdv_pending_onboarding';
+const KEY = 'jdv_pending_company_application';
 
-function split(full: string) {
-  const parts = full.trim().split(/\s+/);
-  const first = parts.shift() ?? '';
-  return { first, last: parts.join(' ') };
-}
-
-/** Crée l'entreprise, le rattachement admin et l'abonnement d'essai (fonction SQL sécurisée). */
-export async function runOnboarding(userId: string, p: OnboardingPayload) {
-  const { first, last } = split(p.contactName || p.companyName);
-  const { data, error } = await supabase.rpc('create_company_onboarding', {
-    p_user_id: userId,
-    p_company_name: p.companyName,
-    p_legal_name: p.companyName,
-    p_email: p.email,
-    p_phone: p.phone,
-    p_country: p.country,
-    p_city: p.city,
-    p_address: '',
-    p_website: '',
-    p_industry: p.industry,
-    p_team_size: '',
-    p_plan_code: 'TRIAL',
-    p_first_name: first,
-    p_last_name: last,
-  });
-  return { data, error };
-}
-
-/** Si l'email n'est pas encore confirmé, on garde les infos et on termine à la première connexion. */
-export function savePendingOnboarding(p: OnboardingPayload) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(p));
-  } catch {
-    /* stockage indisponible : l'inscription devra être refaite */
-  }
-}
-
-function isPayload(v: unknown): v is OnboardingPayload {
-  if (!v || typeof v !== 'object') return false;
-  const o = v as Record<string, unknown>;
-  return typeof o.companyName === 'string' && typeof o.email === 'string';
+function isPayload(value: unknown): value is OnboardingPayload {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const payload = value as Record<string, unknown>;
+  const requiredStrings = [
+    'p_address',
+    'p_city',
+    'p_company_name',
+    'p_company_nature',
+    'p_company_size',
+    'p_country',
+    'p_legal_form',
+    'p_legal_name',
+    'p_legal_status',
+    'p_phone',
+    'p_primary_sector_id',
+    'p_registration_number',
+    'p_representative_email',
+    'p_representative_first_name',
+    'p_representative_last_name',
+    'p_representative_nationality',
+    'p_representative_phone',
+    'p_representative_role',
+    'p_tax_number',
+    'p_website',
+  ];
+  const requiredNumbers = [
+    'p_associate_count',
+    'p_manager_count',
+    'p_ownership_count',
+    'p_people_count',
+  ];
+  return (
+    requiredStrings.every((key) => typeof payload[key] === 'string') &&
+    (payload.p_representative_birth_date === null ||
+      typeof payload.p_representative_birth_date === 'string') &&
+    requiredNumbers.every(
+      (key) => typeof payload[key] === 'number' && Number.isFinite(payload[key])
+    ) &&
+    Array.isArray(payload.p_secondary_sector_ids) &&
+    payload.p_secondary_sector_ids.every((id) => typeof id === 'string')
+  );
 }
 
 async function clearPending() {
-  try { localStorage.removeItem(KEY); } catch { /* ignore */ }
-  try { await supabase.auth.updateUser({ data: { pending_onboarding: null } }); } catch { /* ignore */ }
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    /* Best-effort cleanup; browser storage or auth may be unavailable. */
+  }
+  try {
+    await supabase.auth.updateUser({ data: { pending_company_application: null } });
+  } catch {
+    /* Best-effort cleanup; browser storage or auth may be unavailable. */
+  }
 }
 
-/** À appeler juste après une connexion réussie. Renvoie true si une entreprise vient d'être créée. */
+/** Soumet le dossier d'entreprise sans créer d'organisation active. */
+export async function runOnboarding(userId: string, payload: OnboardingPayload) {
+  void userId;
+  return await supabase.rpc('jdvcrm_submit_company_application_v1', payload);
+}
+
+/** Après confirmation de l'email, soumet le dossier conservé localement. */
 export async function completePendingOnboarding(userId: string, email: string): Promise<boolean> {
-  let p: unknown = null;
+  let parsed: unknown = null;
   try {
     const raw = localStorage.getItem(KEY);
-    p = raw ? JSON.parse(raw) : null;
+    parsed = raw ? JSON.parse(raw) : null;
   } catch {
-    p = null;
+    /* Best-effort cleanup; browser storage or auth may be unavailable. */
   }
-  if (!isPayload(p)) {
-    // Repli : les informations saisies à l'inscription sont aussi stockées dans le compte lui-même.
-    // Cela permet de terminer la création depuis un autre navigateur, un autre appareil ou une autre adresse du site.
-    const { data } = await supabase.auth.getUser();
-    const meta: unknown = data.user?.user_metadata?.pending_onboarding;
-    p = isPayload(meta) ? meta : null;
-  }
-  if (!isPayload(p)) return false;
-  const payload: OnboardingPayload = p;
-  if (payload.email.toLowerCase() !== email.toLowerCase()) return false;
-
+  if (!isPayload(parsed)) return false;
+  const payload = parsed;
+  const professionalEmail = payload.p_representative_email;
+  if (!professionalEmail || professionalEmail.toLowerCase() !== email.toLowerCase()) return false;
   const { data: existing } = await supabase
-    .from('organization_members')
+    .from('organization_applications')
     .select('id')
-    .eq('user_id', userId)
+    .eq('applicant_user_id', userId)
+    .eq('professional_email', email.toLowerCase())
     .limit(1);
   if (existing && existing.length > 0) {
     await clearPending();
-    return false;
+    return true;
   }
   const { error } = await runOnboarding(userId, payload);
   if (error) return false;

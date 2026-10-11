@@ -59,21 +59,27 @@ export default function BusinessProspectsPage() {
       supabase.from('prospecteurs').select('id, first_name, last_name').eq('organization_id', oid),
     ]);
     const names = new Map<string, string>();
-    ((pros ?? []) as Record<string, unknown>[]).forEach(x => names.set(x.id as string, personName(x as never)));
+    ((pros ?? []) as Record<string, unknown>[]).forEach((x) =>
+      names.set(x.id as string, personName(x as never))
+    );
     setProspects(
-      ((data ?? []) as Record<string, unknown>[]).map(r => ({
+      ((data ?? []) as Record<string, unknown>[]).map((r) => ({
         id: r.id as string,
         full_name: personName(r as never) || 'Sans nom',
         phone: (r.phone as string) ?? undefined,
         temperature: (r.temperature as string) ?? undefined,
         desired_product: (r.desired_article as string) ?? undefined,
-        next_contact_date: r.next_follow_up_at ? String(r.next_follow_up_at).split('T')[0] : undefined,
+        next_contact_date: r.next_follow_up_at
+          ? String(r.next_follow_up_at).split('T')[0]
+          : undefined,
         appointment_date: (r.purchase_date_planned as string) ?? undefined,
         city: (r.city as string) ?? undefined,
         notes: (r.notes as string) ?? undefined,
         is_prospect: true,
         created_at: r.created_at as string,
-        assigned_profile: r.prospecteur_id ? { full_name: names.get(r.prospecteur_id as string) ?? '' } : null,
+        assigned_profile: r.prospecteur_id
+          ? { full_name: names.get(r.prospecteur_id as string) ?? '' }
+          : null,
       }))
     );
     setLoading(false);
@@ -81,8 +87,9 @@ export default function BusinessProspectsPage() {
 
   const today = new Date().toISOString().split('T')[0];
 
-  const filtered = prospects.filter(p => {
-    const matchSearch = !search ||
+  const filtered = prospects.filter((p) => {
+    const matchSearch =
+      !search ||
       p.full_name?.toLowerCase().includes(search.toLowerCase()) ||
       p.phone?.includes(search) ||
       p.desired_product?.toLowerCase().includes(search.toLowerCase());
@@ -92,10 +99,10 @@ export default function BusinessProspectsPage() {
 
   const stats = {
     total: prospects.length,
-    hot: prospects.filter(p => p.temperature === 'hot').length,
-    warm: prospects.filter(p => p.temperature === 'warm').length,
-    cold: prospects.filter(p => p.temperature === 'cold').length,
-    todayContact: prospects.filter(p => p.next_contact_date === today).length,
+    hot: prospects.filter((p) => p.temperature === 'hot').length,
+    warm: prospects.filter((p) => p.temperature === 'warm').length,
+    cold: prospects.filter((p) => p.temperature === 'cold').length,
+    todayContact: prospects.filter((p) => p.next_contact_date === today).length,
   };
 
   return (
@@ -114,7 +121,10 @@ export default function BusinessProspectsPage() {
           { label: '❄️ Froids', value: stats.cold, color: 'text-[#63B3ED]' },
           { label: 'À relancer', value: stats.todayContact, color: 'text-[#D4AF37]' },
         ].map((s, i) => (
-          <div key={i} className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl p-3 text-center">
+          <div
+            key={i}
+            className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl p-3 text-center"
+          >
             <p className={`text-xl font-bold ${s.color}`}>{loading ? '—' : s.value}</p>
             <p className="text-xs text-[#718096] mt-0.5">{s.label}</p>
           </div>
@@ -128,14 +138,14 @@ export default function BusinessProspectsPage() {
           <input
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher par nom, téléphone, article..."
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
         <select
           value={tempFilter}
-          onChange={e => setTempFilter(e.target.value)}
+          onChange={(e) => setTempFilter(e.target.value)}
           className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#D4AF37]/60"
         >
           <option value="">Toutes températures</option>
@@ -153,11 +163,18 @@ export default function BusinessProspectsPage() {
           <div className="py-16 text-center">
             <UserCheck size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
             <p className="text-[#A0AEC0] text-sm">Aucun prospect visible</p>
-            <p className="text-xs text-[#718096] mt-2 max-w-md mx-auto">Les clients et prospects sont privés : chaque prospecteur gère son propre portefeuille depuis son espace terrain. Vous suivez ici les ventes, les paiements et les résultats de l’équipe.</p>
+            <p className="text-xs text-[#718096] mt-2 max-w-md mx-auto">
+              Les clients et prospects sont privés : chaque prospecteur gère son propre portefeuille
+              depuis son espace terrain. Vous suivez ici les ventes, les paiements et les résultats
+              de l’équipe.
+            </p>
           </div>
         ) : (
-          filtered.map(p => (
-            <div key={p.id} className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl overflow-hidden">
+          filtered.map((p) => (
+            <div
+              key={p.id}
+              className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl overflow-hidden"
+            >
               <div className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="w-9 h-9 rounded-full bg-[#0A1628] border border-[#D4AF37]/20 flex items-center justify-center text-sm font-bold text-[#D4AF37] flex-shrink-0">
@@ -168,14 +185,18 @@ export default function BusinessProspectsPage() {
                     <p className="text-xs text-[#718096]">
                       {p.phone ?? '—'}
                       {p.assigned_profile?.full_name && (
-                        <span className="ml-2 text-[#D4AF37]/70">• {p.assigned_profile.full_name}</span>
+                        <span className="ml-2 text-[#D4AF37]/70">
+                          • {p.assigned_profile.full_name}
+                        </span>
                       )}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {p.temperature && (
-                    <span className={`text-xs px-2 py-0.5 rounded-lg border ${TEMP_COLORS[p.temperature] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-lg border ${TEMP_COLORS[p.temperature] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}
+                    >
                       {TEMP_LABELS[p.temperature] ?? p.temperature}
                     </span>
                   )}
@@ -192,21 +213,38 @@ export default function BusinessProspectsPage() {
                 <div className="border-t border-[#D4AF37]/10 px-4 py-3 space-y-2">
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {p.desired_product && (
-                      <div><span className="text-[#718096]">Article : </span><span className="text-white">{p.desired_product}</span></div>
+                      <div>
+                        <span className="text-[#718096]">Article : </span>
+                        <span className="text-white">{p.desired_product}</span>
+                      </div>
                     )}
                     {p.city && (
-                      <div><span className="text-[#718096]">Ville : </span><span className="text-white">{p.city}</span></div>
+                      <div>
+                        <span className="text-[#718096]">Ville : </span>
+                        <span className="text-white">{p.city}</span>
+                      </div>
                     )}
                     {p.next_contact_date && (
                       <div>
                         <span className="text-[#718096]">Prochain contact : </span>
-                        <span className={p.next_contact_date === today ? 'text-[#D4AF37] font-medium' : 'text-white'}>
+                        <span
+                          className={
+                            p.next_contact_date === today
+                              ? 'text-[#D4AF37] font-medium'
+                              : 'text-white'
+                          }
+                        >
                           {new Date(p.next_contact_date).toLocaleDateString('fr-FR')}
                         </span>
                       </div>
                     )}
                     {p.appointment_date && (
-                      <div><span className="text-[#718096]">RDV : </span><span className="text-white">{new Date(p.appointment_date).toLocaleDateString('fr-FR')}</span></div>
+                      <div>
+                        <span className="text-[#718096]">RDV : </span>
+                        <span className="text-white">
+                          {new Date(p.appointment_date).toLocaleDateString('fr-FR')}
+                        </span>
+                      </div>
                     )}
                   </div>
                   {p.notes && (

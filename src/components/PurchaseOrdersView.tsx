@@ -85,7 +85,11 @@ export default function PurchaseOrdersView() {
       setLoading(false);
       return;
     }
-    const [o, s, a] = await Promise.all([fetchPurchaseOrders(org), fetchSuppliers(org), fetchArticles(org)]);
+    const [o, s, a] = await Promise.all([
+      fetchPurchaseOrders(org),
+      fetchSuppliers(org),
+      fetchArticles(org),
+    ]);
     if (o.error || s.error || a.error) setError(o.error || s.error || a.error || '');
     setOrders(o.data);
     setSuppliers(s.data);
@@ -97,7 +101,10 @@ export default function PurchaseOrdersView() {
     void load();
   }, [load]);
 
-  const activeSuppliers = useMemo(() => suppliers.filter((s) => s.status === 'active'), [suppliers]);
+  const activeSuppliers = useMemo(
+    () => suppliers.filter((s) => s.status === 'active'),
+    [suppliers]
+  );
 
   const stats = useMemo(() => {
     const live = orders.filter((o) => o.status !== 'cancelled');
@@ -114,7 +121,9 @@ export default function PurchaseOrdersView() {
       if (filter === 'open' && !OPEN_STATUSES.includes(o.status)) return false;
       if (filter === 'received' && o.status !== 'received') return false;
       if (filter === 'cancelled' && o.status !== 'cancelled') return false;
-      return !q || o.order_number.toLowerCase().includes(q) || o.supplier_name.toLowerCase().includes(q);
+      return (
+        !q || o.order_number.toLowerCase().includes(q) || o.supplier_name.toLowerCase().includes(q)
+      );
     });
   }, [orders, search, filter]);
 
@@ -147,7 +156,11 @@ export default function PurchaseOrdersView() {
       return;
     }
     setSaving(true);
-    const { orderId, orderNumber, error: err } = await createPurchaseOrder(supplierId, expected || null, notes, toOrderItemsPayload(lines));
+    const {
+      orderId,
+      orderNumber,
+      error: err,
+    } = await createPurchaseOrder(supplierId, expected || null, notes, toOrderItemsPayload(lines));
     setSaving(false);
     if (err) {
       setFormError(err);
@@ -159,9 +172,12 @@ export default function PurchaseOrdersView() {
     else void load();
   }
 
-  if (loading && orders.length === 0 && !error) return <LoadingState message="Chargement des commandes…" />;
+  if (loading && orders.length === 0 && !error)
+    return <LoadingState message="Chargement des commandes…" />;
   if (error && orders.length === 0 && suppliers.length === 0) {
-    return <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />;
+    return (
+      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+    );
   }
 
   const noPrerequisite = activeSuppliers.length === 0 || articles.length === 0;
@@ -171,7 +187,9 @@ export default function PurchaseOrdersView() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white">Achats</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">Commandes auprès de vos fournisseurs, réceptions et paiements</p>
+          <p className="text-sm text-[#A0AEC0] mt-1">
+            Commandes auprès de vos fournisseurs, réceptions et paiements
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -183,7 +201,10 @@ export default function PurchaseOrdersView() {
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             Actualiser
           </button>
-          <button onClick={openCreate} className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold">
+          <button
+            onClick={openCreate}
+            className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
+          >
             <Plus size={14} />
             Nouvelle commande
           </button>
@@ -191,15 +212,36 @@ export default function PurchaseOrdersView() {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+        <div
+          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          role="alert"
+        >
           {error}
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <MetricCard title="Commandes en cours" value={String(stats.open)} subtitle="à réceptionner ou à solder" icon={<ClipboardList size={18} />} variant="default" />
-        <MetricCard title="Reste à payer" value={formatXof(stats.toPay)} subtitle="sur les commandes non annulées" icon={<Wallet size={18} />} variant={stats.toPay > 0 ? 'warning' : 'success'} />
-        <MetricCard title="Total commandé" value={formatXof(stats.ordered)} subtitle="commandes non annulées" icon={<ClipboardList size={18} />} variant="gold" />
+        <MetricCard
+          title="Commandes en cours"
+          value={String(stats.open)}
+          subtitle="à réceptionner ou à solder"
+          icon={<ClipboardList size={18} />}
+          variant="default"
+        />
+        <MetricCard
+          title="Reste à payer"
+          value={formatXof(stats.toPay)}
+          subtitle="sur les commandes non annulées"
+          icon={<Wallet size={18} />}
+          variant={stats.toPay > 0 ? 'warning' : 'success'}
+        />
+        <MetricCard
+          title="Total commandé"
+          value={formatXof(stats.ordered)}
+          subtitle="commandes non annulées"
+          icon={<ClipboardList size={18} />}
+          variant="gold"
+        />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-3">
@@ -236,9 +278,13 @@ export default function PurchaseOrdersView() {
         {visible.length === 0 ? (
           <div className="py-16 text-center px-6">
             <ClipboardList size={32} className="mx-auto mb-3 text-[#D4AF37] opacity-60" />
-            <p className="text-white text-sm font-semibold mb-1">{orders.length === 0 ? 'Aucune commande' : 'Aucun résultat'}</p>
+            <p className="text-white text-sm font-semibold mb-1">
+              {orders.length === 0 ? 'Aucune commande' : 'Aucun résultat'}
+            </p>
             <p className="text-[#A0AEC0] text-sm">
-              {orders.length === 0 ? 'Créez votre première commande fournisseur.' : 'Modifiez la recherche ou le filtre.'}
+              {orders.length === 0
+                ? 'Créez votre première commande fournisseur.'
+                : 'Modifiez la recherche ou le filtre.'}
             </p>
           </div>
         ) : (
@@ -246,8 +292,20 @@ export default function PurchaseOrdersView() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  {['Commande', 'Fournisseur', 'Date', 'Livraison prévue', 'Total', 'Reste à payer', 'Statut', ''].map((h, i) => (
-                    <th key={i} className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap">
+                  {[
+                    'Commande',
+                    'Fournisseur',
+                    'Date',
+                    'Livraison prévue',
+                    'Total',
+                    'Reste à payer',
+                    'Statut',
+                    '',
+                  ].map((h, i) => (
+                    <th
+                      key={i}
+                      className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
+                    >
                       {h}
                     </th>
                   ))}
@@ -258,27 +316,42 @@ export default function PurchaseOrdersView() {
                   const remaining = Math.max(0, o.total_amount - o.paid_amount);
                   return (
                     <tr key={o.id} className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50">
-                      <td className="px-4 py-3 text-sm font-medium text-white whitespace-nowrap">{o.order_number}</td>
+                      <td className="px-4 py-3 text-sm font-medium text-white whitespace-nowrap">
+                        {o.order_number}
+                      </td>
                       <td className="px-4 py-3 text-sm text-[#A0AEC0]">{o.supplier_name}</td>
-                      <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{formatDateFr(o.order_date)}</td>
-                      <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{formatDateFr(o.expected_date)}</td>
-                      <td className="px-4 py-3 text-sm text-white whitespace-nowrap">{formatXof(o.total_amount)}</td>
+                      <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                        {formatDateFr(o.order_date)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                        {formatDateFr(o.expected_date)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-white whitespace-nowrap">
+                        {formatXof(o.total_amount)}
+                      </td>
                       <td className="px-4 py-3 text-sm whitespace-nowrap">
                         {o.status === 'cancelled' ? (
                           <span className="text-[#718096]">—</span>
                         ) : remaining > 0 ? (
-                          <span className="font-semibold text-[#F6AD55]">{formatXof(remaining)}</span>
+                          <span className="font-semibold text-[#F6AD55]">
+                            {formatXof(remaining)}
+                          </span>
                         ) : (
                           <span className="text-[#68D391]">Soldée</span>
                         )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[o.status] ?? STATUS_CLASSES.closed}`}>
+                        <span
+                          className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[o.status] ?? STATUS_CLASSES.closed}`}
+                        >
                           {orderStatusLabel(o.status)}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <Link href={`/business/dashboard/achats/${o.id}`} className="text-sm text-[#D4AF37] hover:underline whitespace-nowrap">
+                        <Link
+                          href={`/business/dashboard/achats/${o.id}`}
+                          className="text-sm text-[#D4AF37] hover:underline whitespace-nowrap"
+                        >
                           Ouvrir
                         </Link>
                       </td>
@@ -291,42 +364,74 @@ export default function PurchaseOrdersView() {
         )}
       </div>
 
-      <Modal open={open} onClose={() => !saving && setOpen(false)} title="Nouvelle commande fournisseur" size="xl">
+      <Modal
+        open={open}
+        onClose={() => !saving && setOpen(false)}
+        title="Nouvelle commande fournisseur"
+        size="xl"
+      >
         <div className="space-y-4">
           {noPrerequisite && (
             <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
               {activeSuppliers.length === 0 && (
                 <p>
                   Aucun fournisseur actif.{' '}
-                  <Link href="/business/dashboard/fournisseurs" className="underline">Ajoutez-en un</Link>.
+                  <Link href="/business/dashboard/fournisseurs" className="underline">
+                    Ajoutez-en un
+                  </Link>
+                  .
                 </p>
               )}
               {articles.length === 0 && (
                 <p>
                   Aucun article actif.{' '}
-                  <Link href="/business/dashboard/catalogue" className="underline">Créez-en dans le catalogue</Link>.
+                  <Link href="/business/dashboard/catalogue" className="underline">
+                    Créez-en dans le catalogue
+                  </Link>
+                  .
                 </p>
               )}
             </div>
           )}
           {formError && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+            <div
+              className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+              role="alert"
+            >
               {formError}
             </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass} htmlFor="po-supplier">Fournisseur *</label>
-              <select id="po-supplier" value={supplierId} onChange={(e) => setSupplierId(e.target.value)} className={inputClass}>
+              <label className={labelClass} htmlFor="po-supplier">
+                Fournisseur *
+              </label>
+              <select
+                id="po-supplier"
+                value={supplierId}
+                onChange={(e) => setSupplierId(e.target.value)}
+                className={inputClass}
+              >
                 <option value="">Choisir…</option>
                 {activeSuppliers.map((s) => (
-                  <option key={s.id} value={s.id}>{s.company_name}</option>
+                  <option key={s.id} value={s.id}>
+                    {s.company_name}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className={labelClass} htmlFor="po-expected">Livraison prévue</label>
-              <input id="po-expected" type="date" min={today()} value={expected} onChange={(e) => setExpected(e.target.value)} className={inputClass} />
+              <label className={labelClass} htmlFor="po-expected">
+                Livraison prévue
+              </label>
+              <input
+                id="po-expected"
+                type="date"
+                min={today()}
+                value={expected}
+                onChange={(e) => setExpected(e.target.value)}
+                className={inputClass}
+              />
             </div>
           </div>
 
@@ -343,26 +448,42 @@ export default function PurchaseOrdersView() {
                   >
                     <option value="">Article…</option>
                     {articles.map((a) => (
-                      <option key={a.id} value={a.id}>{a.code ? `${a.code} — ${a.name}` : a.name}</option>
+                      <option key={a.id} value={a.id}>
+                        {a.code ? `${a.code} — ${a.name}` : a.name}
+                      </option>
                     ))}
                   </select>
                   <input
-                    type="number" min="0" step="any" inputMode="decimal"
+                    type="number"
+                    min="0"
+                    step="any"
+                    inputMode="decimal"
                     value={l.quantity}
                     onChange={(e) => updateLine(l.key, { quantity: e.target.value })}
-                    aria-label="Quantité" placeholder="Qté"
+                    aria-label="Quantité"
+                    placeholder="Qté"
                     className={`${inputClass} col-span-5 sm:col-span-2`}
                   />
                   <input
-                    type="number" min="0" step="any" inputMode="decimal"
+                    type="number"
+                    min="0"
+                    step="any"
+                    inputMode="decimal"
                     value={l.unit_cost}
                     onChange={(e) => updateLine(l.key, { unit_cost: e.target.value })}
-                    aria-label="Coût unitaire" placeholder="Coût unit."
+                    aria-label="Coût unitaire"
+                    placeholder="Coût unit."
                     className={`${inputClass} col-span-5 sm:col-span-2`}
                   />
-                  <p className="sm:col-span-3 text-xs text-right text-[#A0AEC0] hidden sm:block">{formatXof(lineTotal(l))}</p>
+                  <p className="sm:col-span-3 text-xs text-right text-[#A0AEC0] hidden sm:block">
+                    {formatXof(lineTotal(l))}
+                  </p>
                   <button
-                    onClick={() => setLines((prev) => (prev.length > 1 ? prev.filter((x) => x.key !== l.key) : prev))}
+                    onClick={() =>
+                      setLines((prev) =>
+                        prev.length > 1 ? prev.filter((x) => x.key !== l.key) : prev
+                      )
+                    }
                     disabled={lines.length === 1}
                     aria-label="Retirer cette ligne"
                     className="col-span-2 sm:col-span-1 p-2 rounded-lg bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white disabled:opacity-40 flex justify-center"
@@ -375,7 +496,10 @@ export default function PurchaseOrdersView() {
             <div className="flex items-center justify-between mt-3">
               <button
                 onClick={() => {
-                  setLines((prev) => [...prev, { key: nextKey, article_id: '', quantity: '1', unit_cost: '' }]);
+                  setLines((prev) => [
+                    ...prev,
+                    { key: nextKey, article_id: '', quantity: '1', unit_cost: '' },
+                  ]);
                   setNextKey((k) => k + 1);
                 }}
                 disabled={lines.length >= 200}
@@ -384,13 +508,24 @@ export default function PurchaseOrdersView() {
                 <Plus size={14} />
                 Ajouter un article
               </button>
-              <p className="text-sm text-white font-semibold">Total : {formatXof(orderTotal(lines))}</p>
+              <p className="text-sm text-white font-semibold">
+                Total : {formatXof(orderTotal(lines))}
+              </p>
             </div>
           </div>
 
           <div>
-            <label className={labelClass} htmlFor="po-notes">Notes</label>
-            <textarea id="po-notes" value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={1000} rows={2} className={inputClass} />
+            <label className={labelClass} htmlFor="po-notes">
+              Notes
+            </label>
+            <textarea
+              id="po-notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              maxLength={1000}
+              rows={2}
+              className={inputClass}
+            />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

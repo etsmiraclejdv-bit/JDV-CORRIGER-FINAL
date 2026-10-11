@@ -3,7 +3,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Edit2, Plus, RefreshCw, Search, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 import { getAdminOrganization } from '@/lib/auth/admin-org';
-import { fetchSupplierBalances, fetchSuppliers, saveSupplier, type Supplier, type SupplierInput } from '@/lib/services/purchasesService';
+import {
+  fetchSupplierBalances,
+  fetchSuppliers,
+  saveSupplier,
+  type Supplier,
+  type SupplierInput,
+} from '@/lib/services/purchasesService';
 import { SUPPLIER_STATUS_LABELS } from '@/lib/purchases/helpers';
 import { formatXof } from '@/lib/relances/helpers';
 import { inputClass, labelClass } from '@/lib/ui/forms';
@@ -136,8 +142,10 @@ export default function SuppliersView() {
     setOpen(true);
   }
 
-  const set = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
-    setForm((prev) => ({ ...prev, [key]: e.target.value }));
+  const set =
+    (key: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   async function handleSave() {
     if (!orgId || saving) return;
@@ -161,9 +169,12 @@ export default function SuppliersView() {
     void load();
   }
 
-  if (loading && suppliers.length === 0 && !error) return <LoadingState message="Chargement des fournisseurs…" />;
+  if (loading && suppliers.length === 0 && !error)
+    return <LoadingState message="Chargement des fournisseurs…" />;
   if (error && suppliers.length === 0) {
-    return <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />;
+    return (
+      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+    );
   }
 
   return (
@@ -171,7 +182,9 @@ export default function SuppliersView() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white">Fournisseurs</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">{suppliers.length} fournisseur(s) enregistré(s)</p>
+          <p className="text-sm text-[#A0AEC0] mt-1">
+            {suppliers.length} fournisseur(s) enregistré(s)
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -183,7 +196,10 @@ export default function SuppliersView() {
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             Actualiser
           </button>
-          <button onClick={openCreate} className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold">
+          <button
+            onClick={openCreate}
+            className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
+          >
             <Plus size={14} />
             Nouveau fournisseur
           </button>
@@ -191,7 +207,10 @@ export default function SuppliersView() {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+        <div
+          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          role="alert"
+        >
           {error}
         </div>
       )}
@@ -226,11 +245,16 @@ export default function SuppliersView() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  {['Code', 'Fournisseur', 'Téléphone', 'Ville', 'Solde dû', 'Statut', ''].map((h, i) => (
-                    <th key={i} className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
+                  {['Code', 'Fournisseur', 'Téléphone', 'Ville', 'Solde dû', 'Statut', ''].map(
+                    (h, i) => (
+                      <th
+                        key={i}
+                        className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
+                      >
+                        {h}
+                      </th>
+                    )
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -241,17 +265,25 @@ export default function SuppliersView() {
                       <p className="text-sm font-medium text-white">{s.company_name}</p>
                       {s.contact_name && <p className="text-xs text-[#718096]">{s.contact_name}</p>}
                     </td>
-                    <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{s.phone || '—'}</td>
-                    <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{s.city || '—'}</td>
+                    <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                      {s.phone || '—'}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                      {s.city || '—'}
+                    </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
                       {(balances[s.id] ?? 0) > 0 ? (
-                        <span className="font-semibold text-[#F6AD55]">{formatXof(balances[s.id])}</span>
+                        <span className="font-semibold text-[#F6AD55]">
+                          {formatXof(balances[s.id])}
+                        </span>
                       ) : (
                         <span className="text-[#718096]">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[s.status] ?? STATUS_CLASSES.inactive}`}>
+                      <span
+                        className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[s.status] ?? STATUS_CLASSES.inactive}`}
+                      >
                         {SUPPLIER_STATUS_LABELS[s.status] ?? s.status}
                       </span>
                     </td>
@@ -272,64 +304,164 @@ export default function SuppliersView() {
         )}
       </div>
 
-      <Modal open={open} onClose={() => !saving && setOpen(false)} title={editing ? `Modifier ${editing.code}` : 'Nouveau fournisseur'} size="xl">
+      <Modal
+        open={open}
+        onClose={() => !saving && setOpen(false)}
+        title={editing ? `Modifier ${editing.code}` : 'Nouveau fournisseur'}
+        size="xl"
+      >
         <div className="space-y-4">
           {formError && (
-            <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+            <div
+              className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+              role="alert"
+            >
               {formError}
             </div>
           )}
           <div>
-            <label className={labelClass} htmlFor="sup-name">Nom du fournisseur *</label>
-            <input id="sup-name" value={form.company_name} onChange={set('company_name')} maxLength={200} className={inputClass} />
+            <label className={labelClass} htmlFor="sup-name">
+              Nom du fournisseur *
+            </label>
+            <input
+              id="sup-name"
+              value={form.company_name}
+              onChange={set('company_name')}
+              maxLength={200}
+              className={inputClass}
+            />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass} htmlFor="sup-contact">Personne à contacter</label>
-              <input id="sup-contact" value={form.contact_name} onChange={set('contact_name')} maxLength={200} className={inputClass} />
+              <label className={labelClass} htmlFor="sup-contact">
+                Personne à contacter
+              </label>
+              <input
+                id="sup-contact"
+                value={form.contact_name}
+                onChange={set('contact_name')}
+                maxLength={200}
+                className={inputClass}
+              />
             </div>
             <div>
-              <label className={labelClass} htmlFor="sup-email">Email</label>
-              <input id="sup-email" type="email" value={form.email} onChange={set('email')} maxLength={254} className={inputClass} />
+              <label className={labelClass} htmlFor="sup-email">
+                Email
+              </label>
+              <input
+                id="sup-email"
+                type="email"
+                value={form.email}
+                onChange={set('email')}
+                maxLength={254}
+                className={inputClass}
+              />
             </div>
             <div>
-              <label className={labelClass} htmlFor="sup-phone">Téléphone</label>
-              <input id="sup-phone" value={form.phone} onChange={set('phone')} maxLength={40} className={inputClass} />
+              <label className={labelClass} htmlFor="sup-phone">
+                Téléphone
+              </label>
+              <input
+                id="sup-phone"
+                value={form.phone}
+                onChange={set('phone')}
+                maxLength={40}
+                className={inputClass}
+              />
             </div>
             <div>
-              <label className={labelClass} htmlFor="sup-wa">WhatsApp</label>
-              <input id="sup-wa" value={form.whatsapp} onChange={set('whatsapp')} maxLength={40} className={inputClass} />
+              <label className={labelClass} htmlFor="sup-wa">
+                WhatsApp
+              </label>
+              <input
+                id="sup-wa"
+                value={form.whatsapp}
+                onChange={set('whatsapp')}
+                maxLength={40}
+                className={inputClass}
+              />
             </div>
             <div>
-              <label className={labelClass} htmlFor="sup-city">Ville</label>
-              <input id="sup-city" value={form.city} onChange={set('city')} maxLength={120} className={inputClass} />
+              <label className={labelClass} htmlFor="sup-city">
+                Ville
+              </label>
+              <input
+                id="sup-city"
+                value={form.city}
+                onChange={set('city')}
+                maxLength={120}
+                className={inputClass}
+              />
             </div>
             <div>
-              <label className={labelClass} htmlFor="sup-country">Pays</label>
-              <input id="sup-country" value={form.country} onChange={set('country')} maxLength={120} className={inputClass} />
+              <label className={labelClass} htmlFor="sup-country">
+                Pays
+              </label>
+              <input
+                id="sup-country"
+                value={form.country}
+                onChange={set('country')}
+                maxLength={120}
+                className={inputClass}
+              />
             </div>
           </div>
           <div>
-            <label className={labelClass} htmlFor="sup-address">Adresse</label>
-            <input id="sup-address" value={form.address} onChange={set('address')} maxLength={300} className={inputClass} />
+            <label className={labelClass} htmlFor="sup-address">
+              Adresse
+            </label>
+            <input
+              id="sup-address"
+              value={form.address}
+              onChange={set('address')}
+              maxLength={300}
+              className={inputClass}
+            />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass} htmlFor="sup-terms">Conditions de paiement</label>
-              <input id="sup-terms" value={form.payment_terms} onChange={set('payment_terms')} maxLength={200} placeholder="ex. 30 jours" className={inputClass} />
+              <label className={labelClass} htmlFor="sup-terms">
+                Conditions de paiement
+              </label>
+              <input
+                id="sup-terms"
+                value={form.payment_terms}
+                onChange={set('payment_terms')}
+                maxLength={200}
+                placeholder="ex. 30 jours"
+                className={inputClass}
+              />
             </div>
             <div>
-              <label className={labelClass} htmlFor="sup-status">Statut</label>
-              <select id="sup-status" value={form.status} onChange={set('status')} className={inputClass}>
+              <label className={labelClass} htmlFor="sup-status">
+                Statut
+              </label>
+              <select
+                id="sup-status"
+                value={form.status}
+                onChange={set('status')}
+                className={inputClass}
+              >
                 {Object.entries(SUPPLIER_STATUS_LABELS).map(([v, l]) => (
-                  <option key={v} value={v}>{l}</option>
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
           <div>
-            <label className={labelClass} htmlFor="sup-notes">Notes</label>
-            <textarea id="sup-notes" value={form.notes} onChange={set('notes')} maxLength={1000} rows={3} className={inputClass} />
+            <label className={labelClass} htmlFor="sup-notes">
+              Notes
+            </label>
+            <textarea
+              id="sup-notes"
+              value={form.notes}
+              onChange={set('notes')}
+              maxLength={1000}
+              rows={3}
+              className={inputClass}
+            />
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button

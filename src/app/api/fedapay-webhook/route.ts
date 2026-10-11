@@ -31,7 +31,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const rl = await checkRateLimitShared(`fedapay-webhook:${ip}`, { limit: 120, windowMs: 60 * 1000 });
+  const rl = await checkRateLimitShared(`fedapay-webhook:${ip}`, {
+    limit: 120,
+    windowMs: 60 * 1000,
+  });
   if (!rl.allowed) return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
 
   const webhookSecret = process.env.FEDAPAY_WEBHOOK_SECRET;
@@ -50,7 +53,10 @@ export async function POST(req: NextRequest) {
     const { Webhook } = await import('fedapay');
     event = Webhook.constructEvent(rawBody, signature, webhookSecret) as Record<string, unknown>;
   } catch (err) {
-    console.warn('[fedapay-webhook] signature invalide :', err instanceof Error ? err.message : err);
+    console.warn(
+      '[fedapay-webhook] signature invalide :',
+      err instanceof Error ? err.message : err
+    );
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -59,7 +65,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true, ignored: eventName });
   }
 
-  const entity = (event.entity ?? (event.data as Record<string, unknown> | undefined)?.object ?? {}) as Record<string, unknown>;
+  const entity = (event.entity ??
+    (event.data as Record<string, unknown> | undefined)?.object ??
+    {}) as Record<string, unknown>;
   const transactionId = entity.id != null ? String(entity.id) : '';
   if (!transactionId) return NextResponse.json({ error: 'Transaction manquante' }, { status: 400 });
 
@@ -72,14 +80,21 @@ export async function POST(req: NextRequest) {
       console.error('[fedapay-webhook] lecture transaction impossible', txRes.status);
       return NextResponse.json({ error: 'Transaction introuvable chez FedaPay' }, { status: 502 });
     }
-    const tx = unwrapFedapay<{ status?: string; amount?: number }>(await txRes.json(), 'transaction');
+    const tx = unwrapFedapay<{ status?: string; amount?: number }>(
+      await txRes.json(),
+      'transaction'
+    );
     if (!tx || tx.status !== 'approved') {
       return NextResponse.json({ received: true, processed: false, reason: 'not_approved' });
     }
 
-    const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
+    const admin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: { autoRefreshToken: false, persistSession: false },
+      }
+    );
 
     const { data: payment } = await admin
       .from('subscription_payments')

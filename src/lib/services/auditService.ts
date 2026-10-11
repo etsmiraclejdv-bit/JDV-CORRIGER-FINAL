@@ -14,26 +14,29 @@ export interface AuditLog {
   created_at: string;
 }
 
-export async function fetchAuditLogs(filters?: {
-  organizationId?: string;
-  entityType?: string;
-  action?: string;
-  userId?: string;
-  dateFrom?: string;
-  dateTo?: string;
-}, limit = 50) {
+export async function fetchAuditLogs(
+  filters?: {
+    organizationId?: string;
+    entityType?: string;
+    action?: string;
+    userId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  },
+  limit = 50
+) {
   let query = supabase
-    .from('audit_logs' as never)
+    .from('audit_logs')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  if (filters?.organizationId) query = (query as ReturnType<typeof supabase.from>).eq('organization_id', filters.organizationId);
-  if (filters?.entityType) query = (query as ReturnType<typeof supabase.from>).eq('entity_type', filters.entityType);
-  if (filters?.action) query = (query as ReturnType<typeof supabase.from>).eq('action', filters.action);
-  if (filters?.userId) query = (query as ReturnType<typeof supabase.from>).eq('user_id', filters.userId);
-  if (filters?.dateFrom) query = (query as ReturnType<typeof supabase.from>).gte('created_at', filters.dateFrom);
-  if (filters?.dateTo) query = (query as ReturnType<typeof supabase.from>).lte('created_at', filters.dateTo);
+  if (filters?.organizationId) query = query.eq('organization_id', filters.organizationId);
+  if (filters?.entityType) query = query.eq('entity_type', filters.entityType);
+  if (filters?.action) query = query.eq('action', filters.action);
+  if (filters?.userId) query = query.eq('user_id', filters.userId);
+  if (filters?.dateFrom) query = query.gte('created_at', filters.dateFrom);
+  if (filters?.dateTo) query = query.lte('created_at', filters.dateTo);
 
   const { data, error } = await query;
   return { data: data as AuditLog[] | null, error };

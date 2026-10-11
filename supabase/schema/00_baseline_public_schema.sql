@@ -1,6 +1,7 @@
--- JDV CRM - instantané du schéma public (généré depuis Supabase le 2026-10-01)
--- À appliquer sur une base vide : tables -> contraintes -> FK -> index -> RLS -> fonctions -> vues -> triggers -> policies
-
+-- HISTORICAL SNAPSHOT ONLY: generated 2026-10-01. This file is not the current
+-- live schema and must NOT be used alone to restore/recreate production.
+-- Current reference and known migration gaps: supabase/schema/README.md
+-- Current TypeScript schema types: src/types/database.types.ts
 -- ===== tables (73) =====
 
 create table if not exists public.article_categories (

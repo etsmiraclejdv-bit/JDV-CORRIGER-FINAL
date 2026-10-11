@@ -98,14 +98,21 @@ export function validateOrderLines(lines: OrderLineInput[]): string | null {
     seen.add(l.article_id);
     const qty = Number(l.quantity);
     const cost = l.unit_cost === '' ? NaN : Number(l.unit_cost);
-    if (!Number.isFinite(qty) || qty <= 0) return `Ligne ${n} : la quantité doit être supérieure à 0.`;
+    if (!Number.isFinite(qty) || qty <= 0)
+      return `Ligne ${n} : la quantité doit être supérieure à 0.`;
     if (!Number.isFinite(cost) || cost < 0) return `Ligne ${n} : le coût unitaire est invalide.`;
   }
   return null;
 }
 
-export function toOrderItemsPayload(lines: OrderLineInput[]): { article_id: string; quantity: number; unit_cost: number }[] {
-  return lines.map((l) => ({ article_id: l.article_id, quantity: Number(l.quantity), unit_cost: Number(l.unit_cost) }));
+export function toOrderItemsPayload(
+  lines: OrderLineInput[]
+): { article_id: string; quantity: number; unit_cost: number }[] {
+  return lines.map((l) => ({
+    article_id: l.article_id,
+    quantity: Number(l.quantity),
+    unit_cost: Number(l.unit_cost),
+  }));
 }
 
 /* ---------- Réceptions ---------- */
@@ -139,11 +146,15 @@ export function orderedByArticle(items: OrderItemRow[]): Record<string, number> 
 }
 
 /** Reste à recevoir par article (jamais négatif). */
-export function remainingByArticle(items: OrderItemRow[], receipts: ReceiptRow[]): Record<string, number> {
+export function remainingByArticle(
+  items: OrderItemRow[],
+  receipts: ReceiptRow[]
+): Record<string, number> {
   const ordered = orderedByArticle(items);
   const received = receivedByArticle(receipts);
   const out: Record<string, number> = {};
-  for (const id of Object.keys(ordered)) out[id] = Math.max(0, round2(ordered[id] - (received[id] ?? 0)));
+  for (const id of Object.keys(ordered))
+    out[id] = Math.max(0, round2(ordered[id] - (received[id] ?? 0)));
   return out;
 }
 
@@ -166,13 +177,17 @@ export interface ReceiptValidation {
 }
 
 /** Les champs vides ou à 0 sont ignorés ; chaque quantité saisie doit tenir dans le reste à recevoir. */
-export function validateReceiptInputs(remaining: Record<string, number>, inputs: Record<string, string>): ReceiptValidation {
+export function validateReceiptInputs(
+  remaining: Record<string, number>,
+  inputs: Record<string, string>
+): ReceiptValidation {
   const items: { article_id: string; quantity_received: number }[] = [];
   for (const [article_id, raw] of Object.entries(inputs)) {
     const text = (raw ?? '').trim();
     if (text === '') continue;
     const qty = Number(text.replace(',', '.'));
-    if (!Number.isFinite(qty) || qty < 0) return { error: 'Une quantité saisie est invalide.', items: [] };
+    if (!Number.isFinite(qty) || qty < 0)
+      return { error: 'Une quantité saisie est invalide.', items: [] };
     if (qty === 0) continue;
     if (qty > (remaining[article_id] ?? 0)) {
       return { error: 'Une quantité dépasse le reste à recevoir pour cet article.', items: [] };
@@ -219,7 +234,8 @@ export interface PaymentValidation {
 
 export function validatePaymentAmount(raw: string, remaining: number): PaymentValidation {
   const amount = Number((raw ?? '').trim().replace(/\s/g, '').replace(',', '.'));
-  if (!Number.isFinite(amount) || amount <= 0) return { error: 'Saisissez un montant supérieur à 0.', amount: 0 };
+  if (!Number.isFinite(amount) || amount <= 0)
+    return { error: 'Saisissez un montant supérieur à 0.', amount: 0 };
   if (amount > remaining) return { error: 'Le montant dépasse le reste à payer.', amount: 0 };
   return { error: null, amount: round2(amount) };
 }
@@ -241,7 +257,10 @@ export interface SupplierPaymentRow {
 }
 
 /** Montant restant dû à chaque fournisseur (commandes annulées exclues, paiements « payés » seulement). */
-export function balancesBySupplier(orders: OrderBalanceRow[], payments: SupplierPaymentRow[]): Record<string, number> {
+export function balancesBySupplier(
+  orders: OrderBalanceRow[],
+  payments: SupplierPaymentRow[]
+): Record<string, number> {
   const live = new Set(orders.filter((o) => o.status !== 'cancelled').map((o) => o.id));
   const due: Record<string, number> = {};
   for (const o of orders) {
@@ -261,8 +280,11 @@ export function balancesBySupplier(orders: OrderBalanceRow[], payments: Supplier
 
 /** Remplace les identifiants d'articles cités par la base par leur nom, pour un message lisible. */
 export function friendlyDbError(message: string, articleNames: Record<string, string>): string {
-  return (message ?? '').replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, (id) => {
-    const name = articleNames[id.toLowerCase()] ?? articleNames[id];
-    return name ? `« ${name} »` : 'cet article';
-  });
+  return (message ?? '').replace(
+    /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+    (id) => {
+      const name = articleNames[id.toLowerCase()] ?? articleNames[id];
+      return name ? `« ${name} »` : 'cet article';
+    }
+  );
 }

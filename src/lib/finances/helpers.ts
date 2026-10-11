@@ -50,7 +50,10 @@ export function isValidPeriod(start: string, end: string): boolean {
     if (!m) return null;
     const t = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
     const back = new Date(t);
-    const ok = back.getUTCFullYear() === Number(m[1]) && back.getUTCMonth() === Number(m[2]) - 1 && back.getUTCDate() === Number(m[3]);
+    const ok =
+      back.getUTCFullYear() === Number(m[1]) &&
+      back.getUTCMonth() === Number(m[2]) - 1 &&
+      back.getUTCDate() === Number(m[3]);
     return ok ? t : null;
   };
   const a = parse(start);
@@ -113,7 +116,15 @@ export interface ProspecteurTotals {
 }
 
 export function totalsByProspecteur(rows: ProspecteurRow[]): ProspecteurTotals {
-  const t: ProspecteurTotals = { salesCount: 0, salesTotal: 0, collected: 0, outstanding: 0, commissionTotal: 0, commissionPaid: 0, commissionUnpaid: 0 };
+  const t: ProspecteurTotals = {
+    salesCount: 0,
+    salesTotal: 0,
+    collected: 0,
+    outstanding: 0,
+    commissionTotal: 0,
+    commissionPaid: 0,
+    commissionUnpaid: 0,
+  };
   for (const r of rows) {
     t.salesCount += num(r.sales_count);
     t.salesTotal += num(r.sales_total);

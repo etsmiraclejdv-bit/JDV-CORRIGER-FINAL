@@ -9,6 +9,9 @@
 export function isFedaPayIp(ip: string): boolean {
   const envWhitelist = process.env.FEDAPAY_IP_WHITELIST;
   if (!envWhitelist) return true;
-  const allowed = envWhitelist.split(',').map(s => s.trim()).filter(Boolean);
+  const allowed = envWhitelist
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   return allowed.includes(ip);
 }

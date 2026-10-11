@@ -11,7 +11,11 @@ export async function checkCurrentBusinessAdmin(): Promise<AuthResult> {
       return { ok: false, reason: 'not_authenticated', message: "Vous n'êtes pas connecté." };
     }
     if (!ctx.organizationId || !ctx.orgRole) {
-      return { ok: false, reason: 'no_organization', message: 'Aucune organisation associée à ce compte.' };
+      return {
+        ok: false,
+        reason: 'no_organization',
+        message: 'Aucune organisation associée à ce compte.',
+      };
     }
     if (!ctx.isOrgAdmin) {
       return { ok: false, reason: 'unauthorized', message: 'Accès non autorisé pour ce rôle.' };

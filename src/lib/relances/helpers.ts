@@ -79,11 +79,21 @@ export function summarize(list: Followup[]): FollowupSummary {
     }
     if (f.client_id) clients.add(f.client_id);
   }
-  return { count: list.length, overdueCount, totalRemaining, overdueRemaining, clients: clients.size, maxDaysLate };
+  return {
+    count: list.length,
+    overdueCount,
+    totalRemaining,
+    overdueRemaining,
+    clients: clients.size,
+    maxDaysLate,
+  };
 }
 
 /** Filtre par statut affiché et par recherche (nom ou téléphone), triés du plus en retard au moins en retard. */
-export function filterFollowups(list: Followup[], opts: { search?: string; filter?: FollowupFilter }): Followup[] {
+export function filterFollowups(
+  list: Followup[],
+  opts: { search?: string; filter?: FollowupFilter }
+): Followup[] {
   const q = (opts.search ?? '').trim().toLowerCase();
   const qDigits = q.replace(/\D/g, '');
   const filter = opts.filter ?? 'all';
@@ -95,7 +105,10 @@ export function filterFollowups(list: Followup[], opts: { search?: string; filte
       const phoneDigits = (f.client_phone ?? '').replace(/\D/g, '');
       return name.includes(q) || (qDigits.length >= 3 && phoneDigits.includes(qDigits));
     })
-    .sort((a, b) => toNumber(b.days_late) - toNumber(a.days_late) || a.due_date.localeCompare(b.due_date));
+    .sort(
+      (a, b) =>
+        toNumber(b.days_late) - toNumber(a.days_late) || a.due_date.localeCompare(b.due_date)
+    );
 }
 
 /** Lien « appeler » ; chaîne vide si le numéro est inutilisable. */
@@ -111,11 +124,16 @@ export function toTelHref(raw: string | null | undefined): string {
  * Un numéro local commençant par 0 reçoit l'indicatif pays fourni (ex. « 229 » pour le Bénin) ;
  * sans indicatif fourni, il est laissé tel quel et WhatsApp peut ne pas le reconnaître.
  */
-export function toWhatsAppHref(raw: string | null | undefined, message: string, defaultCountryPrefix = ''): string {
+export function toWhatsAppHref(
+  raw: string | null | undefined,
+  message: string,
+  defaultCountryPrefix = ''
+): string {
   let digits = (raw ?? '').replace(/\D/g, '');
   if (digits.startsWith('00')) digits = digits.slice(2);
   const prefix = defaultCountryPrefix.replace(/\D/g, '');
-  if (prefix && digits.startsWith('0') && !(raw ?? '').trim().startsWith('+')) digits = prefix + digits.replace(/^0+/, '');
+  if (prefix && digits.startsWith('0') && !(raw ?? '').trim().startsWith('+'))
+    digits = prefix + digits.replace(/^0+/, '');
   if (digits.length < 8) return '';
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 }

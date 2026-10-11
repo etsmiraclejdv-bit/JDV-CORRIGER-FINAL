@@ -42,9 +42,12 @@ export default function BusinessClientsPage() {
       if (!data.user) return;
       const { data: profile } = await fetchOrgProfile();
       if (profile?.organization_id) {
-        const { data: clientsData, error: clientsError } = await fetchClients(profile.organization_id, {
-          paymentStatus: statusFilter || undefined,
-        });
+        const { data: clientsData, error: clientsError } = await fetchClients(
+          profile.organization_id,
+          {
+            paymentStatus: statusFilter || undefined,
+          }
+        );
         if (clientsError) setError(clientsError.message);
         else setClients((clientsData as Client[]) ?? []);
         setLoading(false);
@@ -52,7 +55,7 @@ export default function BusinessClientsPage() {
     });
   }, [statusFilter]);
 
-  const filtered = clients.filter(c => {
+  const filtered = clients.filter((c) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return c.full_name?.toLowerCase().includes(q) || c.phone?.toLowerCase().includes(q);
@@ -63,7 +66,9 @@ export default function BusinessClientsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Clients</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">{clients.length} client{clients.length !== 1 ? 's' : ''} au total</p>
+          <p className="text-sm text-[#A0AEC0] mt-1">
+            {clients.length} client{clients.length !== 1 ? 's' : ''} au total
+          </p>
         </div>
       </div>
 
@@ -75,11 +80,15 @@ export default function BusinessClientsPage() {
         </div>
         <div className="bg-[#0F2347] border border-green-500/20 rounded-2xl p-4">
           <p className="text-xs text-[#A0AEC0] mb-1">À jour</p>
-          <p className="text-2xl font-bold text-green-400">{clients.filter(c => c.payment_status === 'a_jour').length}</p>
+          <p className="text-2xl font-bold text-green-400">
+            {clients.filter((c) => c.payment_status === 'a_jour').length}
+          </p>
         </div>
         <div className="bg-[#0F2347] border border-red-500/20 rounded-2xl p-4">
           <p className="text-xs text-[#A0AEC0] mb-1">En retard</p>
-          <p className="text-2xl font-bold text-red-400">{clients.filter(c => c.payment_status === 'en_retard').length}</p>
+          <p className="text-2xl font-bold text-red-400">
+            {clients.filter((c) => c.payment_status === 'en_retard').length}
+          </p>
         </div>
       </div>
 
@@ -90,14 +99,14 @@ export default function BusinessClientsPage() {
           <input
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher par nom, téléphone..."
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
         <select
           value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
+          onChange={(e) => setStatusFilter(e.target.value)}
           className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#D4AF37]/60"
         >
           <option value="">Tous les statuts</option>
@@ -117,34 +126,59 @@ export default function BusinessClientsPage() {
           <div className="py-16 text-center">
             <Users size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
             <p className="text-[#A0AEC0] text-sm">Aucun client visible</p>
-            <p className="text-xs text-[#718096] mt-2 max-w-md mx-auto">Les clients et prospects sont privés : chaque prospecteur gère son propre portefeuille depuis son espace terrain. Vous suivez ici les ventes, les paiements et les résultats de l’équipe.</p>
+            <p className="text-xs text-[#718096] mt-2 max-w-md mx-auto">
+              Les clients et prospects sont privés : chaque prospecteur gère son propre portefeuille
+              depuis son espace terrain. Vous suivez ici les ventes, les paiements et les résultats
+              de l’équipe.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">Client</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">Téléphone</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">Prospecteur</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">Solde</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">Statut paiement</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
+                    Client
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
+                    Téléphone
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
+                    Prospecteur
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
+                    Solde
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
+                    Statut paiement
+                  </th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(client => (
-                  <tr key={client.id} className="border-b border-[#D4AF37]/5 hover:bg-[#0A1628]/40 transition-colors">
+                {filtered.map((client) => (
+                  <tr
+                    key={client.id}
+                    className="border-b border-[#D4AF37]/5 hover:bg-[#0A1628]/40 transition-colors"
+                  >
                     <td className="px-4 py-3">
                       <p className="text-sm font-medium text-white">{client.full_name}</p>
                     </td>
                     <td className="px-4 py-3 text-sm text-[#A0AEC0]">{client.phone ?? '—'}</td>
-                    <td className="px-4 py-3 text-sm text-[#A0AEC0]">{client.profiles?.full_name ?? '—'}</td>
+                    <td className="px-4 py-3 text-sm text-[#A0AEC0]">
+                      {client.profiles?.full_name ?? '—'}
+                    </td>
                     <td className="px-4 py-3 text-sm font-semibold text-[#D4AF37]">
-                      {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format((client.balance_cents ?? 0) / 100)}
+                      {new Intl.NumberFormat('fr-FR', {
+                        style: 'currency',
+                        currency: 'XOF',
+                        maximumFractionDigits: 0,
+                      }).format((client.balance_cents ?? 0) / 100)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${PAYMENT_STATUS_COLORS[client.payment_status] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${PAYMENT_STATUS_COLORS[client.payment_status] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}
+                      >
                         {PAYMENT_STATUS_LABELS[client.payment_status] ?? client.payment_status}
                       </span>
                     </td>

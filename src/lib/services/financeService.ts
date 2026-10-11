@@ -1,5 +1,10 @@
 import { supabase } from '@/lib/supabase/client';
-import { parseDashboard, type CommissionRow, type FinancialDashboard, type ProspecteurRow } from '@/lib/finances/helpers';
+import {
+  parseDashboard,
+  type CommissionRow,
+  type FinancialDashboard,
+  type ProspecteurRow,
+} from '@/lib/finances/helpers';
 
 /** Indicateurs financiers de la période (administrateur de l'entreprise ou concepteur uniquement). */
 export async function fetchDashboard(
@@ -45,8 +50,12 @@ export async function fetchCommissions(
 }
 
 /** Marque une commission comme payée (action irréversible côté application). */
-export async function settleCommission(commissionId: string): Promise<{ paidAt: string | null; error: string | null }> {
-  const { data, error } = await supabase.rpc('jdvcrm_settle_commission_v1', { p_commission_id: commissionId });
+export async function settleCommission(
+  commissionId: string
+): Promise<{ paidAt: string | null; error: string | null }> {
+  const { data, error } = await supabase.rpc('jdvcrm_settle_commission_v1', {
+    p_commission_id: commissionId,
+  });
   if (error) return { paidAt: null, error: error.message };
   const result = (data ?? {}) as { success?: boolean; paid_at?: string };
   if (result.success !== true) return { paidAt: null, error: 'Le règlement a été refusé.' };

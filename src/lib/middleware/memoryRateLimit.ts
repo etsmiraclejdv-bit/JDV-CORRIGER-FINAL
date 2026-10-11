@@ -23,12 +23,15 @@ export interface RateLimitResult {
 const store = new Map<string, RateLimitEntry>();
 
 if (typeof setInterval !== 'undefined') {
-  const timer = setInterval(() => {
-    const now = Date.now();
-    store.forEach((entry, key) => {
-      if (entry.resetAt < now) store.delete(key);
-    });
-  }, 5 * 60 * 1000);
+  const timer = setInterval(
+    () => {
+      const now = Date.now();
+      store.forEach((entry, key) => {
+        if (entry.resetAt < now) store.delete(key);
+      });
+    },
+    5 * 60 * 1000
+  );
   (timer as unknown as { unref?: () => void }).unref?.();
 }
 

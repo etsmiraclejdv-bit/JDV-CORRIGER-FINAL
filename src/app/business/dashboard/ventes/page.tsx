@@ -60,7 +60,7 @@ export default function BusinessVentesPage() {
     });
   }, [statusFilter]);
 
-  const filtered = sales.filter(s => {
+  const filtered = sales.filter((s) => {
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -98,12 +98,18 @@ export default function BusinessVentesPage() {
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
           <p className="text-xs text-[#A0AEC0] mb-1">Chiffre d&apos;affaires</p>
           <p className="text-2xl font-bold text-[#D4AF37]">
-            {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(totalRevenue / 100)}
+            {new Intl.NumberFormat('fr-FR', {
+              style: 'currency',
+              currency: 'XOF',
+              maximumFractionDigits: 0,
+            }).format(totalRevenue / 100)}
           </p>
         </div>
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
           <p className="text-xs text-[#A0AEC0] mb-1">En attente</p>
-          <p className="text-2xl font-bold text-yellow-400">{sales.filter(s => s.status === 'pending').length}</p>
+          <p className="text-2xl font-bold text-yellow-400">
+            {sales.filter((s) => s.status === 'pending').length}
+          </p>
         </div>
       </div>
 
@@ -114,14 +120,14 @@ export default function BusinessVentesPage() {
           <input
             type="text"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher par client, produit..."
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
         <select
           value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
+          onChange={(e) => setStatusFilter(e.target.value)}
           className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#D4AF37]/60"
         >
           <option value="">Tous les statuts</option>
@@ -148,27 +154,50 @@ export default function BusinessVentesPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">Client</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">Produit</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">Montant</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">Statut</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">Date</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
+                    Client
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
+                    Produit
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
+                    Montant
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
+                    Statut
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
+                    Date
+                  </th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(sale => (
-                  <tr key={sale.id} className="border-b border-[#D4AF37]/5 hover:bg-[#0A1628]/40 transition-colors">
+                {filtered.map((sale) => (
+                  <tr
+                    key={sale.id}
+                    className="border-b border-[#D4AF37]/5 hover:bg-[#0A1628]/40 transition-colors"
+                  >
                     <td className="px-4 py-3">
-                      <p className="text-sm font-medium text-white">{sale.clients?.full_name ?? '—'}</p>
+                      <p className="text-sm font-medium text-white">
+                        {sale.clients?.full_name ?? '—'}
+                      </p>
                       <p className="text-xs text-[#718096]">{sale.clients?.phone ?? ''}</p>
                     </td>
-                    <td className="px-4 py-3 text-sm text-[#A0AEC0]">{sale.products?.name ?? '—'}</td>
+                    <td className="px-4 py-3 text-sm text-[#A0AEC0]">
+                      {sale.products?.name ?? '—'}
+                    </td>
                     <td className="px-4 py-3 text-sm font-semibold text-[#D4AF37]">
-                      {new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format((sale.amount_cents ?? 0) / 100)}
+                      {new Intl.NumberFormat('fr-FR', {
+                        style: 'currency',
+                        currency: 'XOF',
+                        maximumFractionDigits: 0,
+                      }).format((sale.amount_cents ?? 0) / 100)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${STATUS_COLORS[sale.status] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${STATUS_COLORS[sale.status] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}
+                      >
                         {STATUS_LABELS[sale.status] ?? sale.status}
                       </span>
                     </td>

@@ -1,11 +1,27 @@
 'use client';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { AlertTriangle, Calendar, Check, CheckCircle, RefreshCw, ShoppingCart, TrendingUp, Users, Wallet, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  Calendar,
+  Check,
+  CheckCircle,
+  RefreshCw,
+  ShoppingCart,
+  TrendingUp,
+  Users,
+  Wallet,
+  X,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { getAuthContext } from '@/lib/auth/context';
 import { fetchProspecteurNames } from '@/lib/services/relancesService';
-import { fetchByProspecteur, fetchCommissions, fetchDashboard, settleCommission } from '@/lib/services/financeService';
+import {
+  fetchByProspecteur,
+  fetchCommissions,
+  fetchDashboard,
+  settleCommission,
+} from '@/lib/services/financeService';
 import { formatDateFr, formatXof } from '@/lib/relances/helpers';
 import {
   PRESET_LABELS,
@@ -103,7 +119,9 @@ export default function FinancesView() {
 
   function applyCustom() {
     if (!isValidPeriod(start, end)) {
-      toast.error('Période invalide : la date de fin doit suivre la date de début (5 ans maximum).');
+      toast.error(
+        'Période invalide : la date de fin doit suivre la date de début (5 ans maximum).'
+      );
       return;
     }
     setPreset('custom');
@@ -121,7 +139,9 @@ export default function FinancesView() {
       return;
     }
     toast.success('Commission marquée comme payée.');
-    setCommissions((prev) => prev.map((c) => (c.commission_id === id ? { ...c, status: 'paid', paid_at: paidAt } : c)));
+    setCommissions((prev) =>
+      prev.map((c) => (c.commission_id === id ? { ...c, status: 'paid', paid_at: paidAt } : c))
+    );
     void load(orgId, range.start, range.end);
   }
 
@@ -131,11 +151,17 @@ export default function FinancesView() {
     () => (onlyUnpaid ? commissions.filter((c) => canSettle(c.status)) : commissions),
     [commissions, onlyUnpaid]
   );
-  const prospecteurName = (id: string | null) => (id ? names[id] || 'Prospecteur' : 'Sans prospecteur');
+  const prospecteurName = (id: string | null) =>
+    id ? names[id] || 'Prospecteur' : 'Sans prospecteur';
 
   if (loading && !dashboard) return <LoadingState message="Chargement des chiffres…" />;
   if (error && !dashboard) {
-    return <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load(orgId, range.start, range.end) }} />;
+    return (
+      <ErrorState
+        message={error}
+        action={{ label: 'Réessayer', onClick: () => void load(orgId, range.start, range.end) }}
+      />
+    );
   }
 
   return (
@@ -160,7 +186,10 @@ export default function FinancesView() {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+        <div
+          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          role="alert"
+        >
           {error}
         </div>
       )}
@@ -244,7 +273,10 @@ export default function FinancesView() {
             variant={dashboard.overdueSchedules > 0 ? 'danger' : 'success'}
           >
             {dashboard.overdueSchedules > 0 && (
-              <Link href="/business/dashboard/relances" className="text-xs text-[#D4AF37] hover:underline mt-2 inline-block">
+              <Link
+                href="/business/dashboard/relances"
+                className="text-xs text-[#D4AF37] hover:underline mt-2 inline-block"
+              >
                 Voir les relances
               </Link>
             )}
@@ -272,14 +304,28 @@ export default function FinancesView() {
           <h2 className="text-sm font-semibold text-white">Résultats par prospecteur</h2>
         </div>
         {sortedRows.length === 0 ? (
-          <p className="px-5 py-10 text-sm text-[#A0AEC0] text-center">Aucune vente sur cette période.</p>
+          <p className="px-5 py-10 text-sm text-[#A0AEC0] text-center">
+            Aucune vente sur cette période.
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  {['Prospecteur', 'Ventes', 'Total', 'Encaissé', 'Reste', 'Commission', 'Payée', 'À payer'].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap">
+                  {[
+                    'Prospecteur',
+                    'Ventes',
+                    'Total',
+                    'Encaissé',
+                    'Reste',
+                    'Commission',
+                    'Payée',
+                    'À payer',
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
+                    >
                       {h}
                     </th>
                   ))}
@@ -287,33 +333,68 @@ export default function FinancesView() {
               </thead>
               <tbody>
                 {sortedRows.map((r) => (
-                  <tr key={r.prospecteur_id ?? 'aucun'} className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50">
-                    <td className="px-4 py-3 text-sm font-medium text-white whitespace-nowrap">{prospecteurName(r.prospecteur_id)}</td>
+                  <tr
+                    key={r.prospecteur_id ?? 'aucun'}
+                    className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50"
+                  >
+                    <td className="px-4 py-3 text-sm font-medium text-white whitespace-nowrap">
+                      {prospecteurName(r.prospecteur_id)}
+                    </td>
                     <td className="px-4 py-3 text-sm text-[#A0AEC0]">{Number(r.sales_count)}</td>
-                    <td className="px-4 py-3 text-sm text-white whitespace-nowrap">{formatXof(r.sales_total)}</td>
+                    <td className="px-4 py-3 text-sm text-white whitespace-nowrap">
+                      {formatXof(r.sales_total)}
+                    </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <p className="text-sm text-[#68D391]">{formatXof(r.collected)}</p>
-                      <div className="mt-1 h-1.5 w-24 rounded-full bg-[#0B1B3D] overflow-hidden" aria-hidden="true">
-                        <div className="h-full bg-[#68D391]" style={{ width: `${percent(r.collected, r.sales_total)}%` }} />
+                      <div
+                        className="mt-1 h-1.5 w-24 rounded-full bg-[#0B1B3D] overflow-hidden"
+                        aria-hidden="true"
+                      >
+                        <div
+                          className="h-full bg-[#68D391]"
+                          style={{ width: `${percent(r.collected, r.sales_total)}%` }}
+                        />
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-[#F6AD55] whitespace-nowrap">{formatXof(r.outstanding)}</td>
-                    <td className="px-4 py-3 text-sm text-white whitespace-nowrap">{formatXof(r.commission_total)}</td>
-                    <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{formatXof(r.commission_paid)}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-[#D4AF37] whitespace-nowrap">{formatXof(r.commission_unpaid)}</td>
+                    <td className="px-4 py-3 text-sm text-[#F6AD55] whitespace-nowrap">
+                      {formatXof(r.outstanding)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-white whitespace-nowrap">
+                      {formatXof(r.commission_total)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                      {formatXof(r.commission_paid)}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-semibold text-[#D4AF37] whitespace-nowrap">
+                      {formatXof(r.commission_unpaid)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr className="border-t border-[#D4AF37]/20 bg-[#0B1B3D]/40">
                   <td className="px-4 py-3 text-sm font-bold text-white">Total</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-white">{totals.salesCount}</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-white whitespace-nowrap">{formatXof(totals.salesTotal)}</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-[#68D391] whitespace-nowrap">{formatXof(totals.collected)}</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-[#F6AD55] whitespace-nowrap">{formatXof(totals.outstanding)}</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-white whitespace-nowrap">{formatXof(totals.commissionTotal)}</td>
-                  <td className="px-4 py-3 text-sm font-semibold text-[#A0AEC0] whitespace-nowrap">{formatXof(totals.commissionPaid)}</td>
-                  <td className="px-4 py-3 text-sm font-bold text-[#D4AF37] whitespace-nowrap">{formatXof(totals.commissionUnpaid)}</td>
+                  <td className="px-4 py-3 text-sm font-semibold text-white">
+                    {totals.salesCount}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold text-white whitespace-nowrap">
+                    {formatXof(totals.salesTotal)}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold text-[#68D391] whitespace-nowrap">
+                    {formatXof(totals.collected)}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold text-[#F6AD55] whitespace-nowrap">
+                    {formatXof(totals.outstanding)}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold text-white whitespace-nowrap">
+                    {formatXof(totals.commissionTotal)}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold text-[#A0AEC0] whitespace-nowrap">
+                    {formatXof(totals.commissionPaid)}
+                  </td>
+                  <td className="px-4 py-3 text-sm font-bold text-[#D4AF37] whitespace-nowrap">
+                    {formatXof(totals.commissionUnpaid)}
+                  </td>
                 </tr>
               </tfoot>
             </table>
@@ -354,7 +435,9 @@ export default function FinancesView() {
           <div className="py-12 text-center px-6">
             <CheckCircle size={30} className="mx-auto mb-3 text-[#68D391] opacity-70" />
             <p className="text-sm text-[#A0AEC0]">
-              {commissions.length === 0 ? 'Aucune commission sur cette période.' : 'Aucune commission à régler : tout est payé.'}
+              {commissions.length === 0
+                ? 'Aucune commission sur cette période.'
+                : 'Aucune commission à régler : tout est payé.'}
             </p>
           </div>
         ) : (
@@ -362,35 +445,58 @@ export default function FinancesView() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  {['Prospecteur', 'Vente', 'Base', 'Taux', 'Commission', 'Statut', 'Action'].map((h) => (
-                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap">
-                      {h}
-                    </th>
-                  ))}
+                  {['Prospecteur', 'Vente', 'Base', 'Taux', 'Commission', 'Statut', 'Action'].map(
+                    (h) => (
+                      <th
+                        key={h}
+                        className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
+                      >
+                        {h}
+                      </th>
+                    )
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {visibleCommissions.map((c) => (
-                  <tr key={c.commission_id} className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50">
-                    <td className="px-4 py-3 text-sm text-white whitespace-nowrap">{prospecteurName(c.prospecteur_id)}</td>
+                  <tr
+                    key={c.commission_id}
+                    className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50"
+                  >
+                    <td className="px-4 py-3 text-sm text-white whitespace-nowrap">
+                      {prospecteurName(c.prospecteur_id)}
+                    </td>
                     <td className="px-4 py-3 text-sm whitespace-nowrap">
                       {c.sale_id ? (
-                        <Link href={`/business/dashboard/ventes/${c.sale_id}`} className="text-[#D4AF37] hover:underline">
+                        <Link
+                          href={`/business/dashboard/ventes/${c.sale_id}`}
+                          className="text-[#D4AF37] hover:underline"
+                        >
                           Voir la vente
                         </Link>
                       ) : (
                         <span className="text-[#718096]">—</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{formatXof(c.base_amount)}</td>
-                    <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{formatRate(c.rate)}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-white whitespace-nowrap">{formatXof(c.commission_amount)}</td>
+                    <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                      {formatXof(c.base_amount)}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                      {formatRate(c.rate)}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-semibold text-white whitespace-nowrap">
+                      {formatXof(c.commission_amount)}
+                    </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[c.status] ?? 'bg-gray-500/20 text-gray-300 border-gray-500/30'}`}>
+                      <span
+                        className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[c.status] ?? 'bg-gray-500/20 text-gray-300 border-gray-500/30'}`}
+                      >
                         {commissionLabel(c.status)}
                       </span>
                       {c.status === 'paid' && c.paid_at && (
-                        <p className="text-xs text-[#718096] mt-0.5">le {formatDateFr(c.paid_at)}</p>
+                        <p className="text-xs text-[#718096] mt-0.5">
+                          le {formatDateFr(c.paid_at)}
+                        </p>
                       )}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">

@@ -1,0 +1,10 @@
+project_id = "arxhppptxeeyeexkdyjv"
+
+[functions.send-email]
+verify_jwt = true
+
+[functions.company-ai-review]
+verify_jwt = true
+
+[functions.resend-service-mail]
+verify_jwt = true
