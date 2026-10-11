@@ -114,7 +114,7 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
     setError('');
     if (!form.company_name?.trim()) { setError('Le nom commercial est obligatoire.'); return; }
     setBusy('identity');
-    const patch = Object.fromEntries(EDIT_FIELDS.map(([k]) => [k, form[k]?.trim() ? form[k].trim() : null]));
+    const patch = Object.fromEntries(EDIT_FIELDS.map(([k]) => [k, form[k]?.trim() ? form[k].trim() : null])) as { company_name: string | null; legal_name: string | null; registration_number: string | null; tax_number: string | null; representative_first_name: string | null; representative_last_name: string | null; city: string | null; address: string | null };
     const { error: e } = await supabase.from('organization_applications').update(patch).eq('id', applicationId);
     if (e) { setError(e.message); setBusy(null); return; }
     setEditing(false);
