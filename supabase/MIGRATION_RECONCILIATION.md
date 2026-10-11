@@ -42,6 +42,18 @@ The following files were renamed to use the version recorded in Supabase. SQL bo
 
 **Special review required:** the live history labels the sector knowledge migration as a retry. The repository SQL is idempotent in several places, but its equivalence to the exact successful retry has not been proven.
 
+## Additional migration gap found on 2026-10-11
+
+A fresh read-only Supabase migration-history check after the 2026-10-09 audit found one more applied version missing from all checked GitHub branches:
+
+| Applied version | Applied name | Current finding |
+| --- | --- | --- |
+| `20261011065602` | `team_rights_and_member_management_v1` | The history entry exists in production, but no matching SQL file was found in `main`, `feature/jdv-design-studio`, or the checked reconciliation/feature branches. The live database currently contains team tables, member-management RPCs, role/permission tables, and associated RLS policies. |
+
+This raises the known source-file gaps from four to **at least five**. The four earlier gaps listed below remain unresolved. The earlier 136-version/132-file counts are a dated snapshot from 2026-10-09 and must not be presented as the current counts. The exact SQL body for the new gap has not been recovered. Live catalog definitions are evidence for current behavior only, not proof of the original migration body.
+
+Do not apply, mark as applied, or merge a guessed replacement for this migration. A reconstruction candidate, if needed, must be kept outside `supabase/migrations`, labeled as reconstructed from live state, and reviewed/tested separately.
+
 ## Applied in production, source file not found in the repository
 
 These four versions appear in the live migration history but have no corresponding SQL source file in `supabase/migrations`:
