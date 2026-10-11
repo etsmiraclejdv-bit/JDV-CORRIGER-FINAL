@@ -602,6 +602,77 @@ export type Database = {
           },
         ]
       }
+      client_reviews: {
+        Row: {
+          client_id: string | null
+          comment: string
+          created_at: string
+          created_by: string | null
+          customer_name: string
+          id: string
+          organization_id: string
+          rating: number
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          comment: string
+          created_at?: string
+          created_by?: string | null
+          customer_name: string
+          id?: string
+          organization_id: string
+          rating: number
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          comment?: string
+          created_at?: string
+          created_by?: string | null
+          customer_name?: string
+          id?: string
+          organization_id?: string
+          rating?: number
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "jdvcrm_clients_overdue"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "client_reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "jdvcrm_clients_to_reactivate"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_reviews_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -1250,6 +1321,42 @@ export type Database = {
           },
         ]
       }
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          message: string
+          phone: string | null
+          source: string
+          status: string
+          subject: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          message: string
+          phone?: string | null
+          source?: string
+          status?: string
+          subject?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          message?: string
+          phone?: string | null
+          source?: string
+          status?: string
+          subject?: string | null
+        }
+        Relationships: []
+      }
       countries: {
         Row: {
           active: boolean
@@ -1303,6 +1410,91 @@ export type Database = {
           symbol?: string | null
         }
         Relationships: []
+      }
+      custom_form_definitions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          form_key: string
+          id: string
+          name: string
+          organization_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          form_key: string
+          id?: string
+          name: string
+          organization_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          form_key?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_form_definitions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_form_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          form_id: string
+          id: string
+          published_at: string | null
+          schema_json: Json
+          status: string
+          version_no: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          form_id: string
+          id?: string
+          published_at?: string | null
+          schema_json?: Json
+          status?: string
+          version_no: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          form_id?: string
+          id?: string
+          published_at?: string | null
+          schema_json?: Json
+          status?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_form_versions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "custom_form_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_tokens: {
         Row: {
@@ -1405,6 +1597,50 @@ export type Database = {
             columns: ["sale_id"]
             isOneToOne: false
             referencedRelation: "sales"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      design_config_versions: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string | null
+          id: string
+          organization_id: string | null
+          published_at: string | null
+          scope: string
+          status: string
+          version_no: number
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string | null
+          published_at?: string | null
+          scope: string
+          status?: string
+          version_no: number
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          organization_id?: string | null
+          published_at?: string | null
+          scope?: string
+          status?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_config_versions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -2515,6 +2751,10 @@ export type Database = {
           accent_color: string | null
           company_slogan: string | null
           created_at: string
+          dashboard_background_fit: string
+          dashboard_background_motion: boolean
+          dashboard_background_opacity: number
+          dashboard_background_updated_at: string | null
           dashboard_background_url: string | null
           favicon_url: string | null
           id: string
@@ -2529,6 +2769,10 @@ export type Database = {
           accent_color?: string | null
           company_slogan?: string | null
           created_at?: string
+          dashboard_background_fit?: string
+          dashboard_background_motion?: boolean
+          dashboard_background_opacity?: number
+          dashboard_background_updated_at?: string | null
           dashboard_background_url?: string | null
           favicon_url?: string | null
           id?: string
@@ -2543,6 +2787,10 @@ export type Database = {
           accent_color?: string | null
           company_slogan?: string | null
           created_at?: string
+          dashboard_background_fit?: string
+          dashboard_background_motion?: boolean
+          dashboard_background_opacity?: number
+          dashboard_background_updated_at?: string | null
           dashboard_background_url?: string | null
           favicon_url?: string | null
           id?: string
@@ -5575,6 +5823,45 @@ export type Database = {
           },
         ]
       }
+      testimonials: {
+        Row: {
+          approved_at: string | null
+          author_name: string
+          author_role: string | null
+          company_name: string | null
+          created_at: string
+          id: string
+          quote: string
+          rating: number | null
+          sort_order: number
+          status: string
+        }
+        Insert: {
+          approved_at?: string | null
+          author_name: string
+          author_role?: string | null
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          quote: string
+          rating?: number | null
+          sort_order?: number
+          status?: string
+        }
+        Update: {
+          approved_at?: string | null
+          author_name?: string
+          author_role?: string | null
+          company_name?: string | null
+          created_at?: string
+          id?: string
+          quote?: string
+          rating?: number | null
+          sort_order?: number
+          status?: string
+        }
+        Relationships: []
+      }
       user_activity_sessions: {
         Row: {
           action_count: number
@@ -8063,7 +8350,7 @@ export type Database = {
       }
       jdvcrm_create_purchase_order_v1: {
         Args: {
-          p_expected_date: string | null
+          p_expected_date: string
           p_items: Json
           p_notes: string
           p_supplier_id: string
@@ -8279,6 +8566,26 @@ export type Database = {
       jdvcrm_integrity_report: {
         Args: { p_organization_id: string }
         Returns: Json
+      }
+      jdvcrm_is_org_admin_v1: {
+        Args: { p_organization_id: string }
+        Returns: boolean
+      }
+      jdvcrm_is_super_admin_v1: { Args: never; Returns: boolean }
+      jdvcrm_list_org_members_v1: {
+        Args: { p_organization_id: string }
+        Returns: {
+          display_name: string
+          email: string
+          is_me: boolean
+          is_owner: boolean
+          joined_at: string
+          member_id: string
+          phone: string
+          role: string
+          status: string
+          user_id: string
+        }[]
       }
       jdvcrm_mark_commission_payout_result_v1: {
         Args: {
@@ -8554,6 +8861,15 @@ export type Database = {
         Args: { p_decision: string; p_document_id: string; p_reason?: string }
         Returns: boolean
       }
+      jdvcrm_role_permissions_matrix_v1: {
+        Args: never
+        Returns: {
+          code: string
+          module: string
+          name: string
+          role: string
+        }[]
+      }
       jdvcrm_run_daily_automations: { Args: never; Returns: Json }
       jdvcrm_run_intelligence_scan_v1: { Args: never; Returns: Json }
       jdvcrm_run_maintenance: {
@@ -8562,6 +8878,14 @@ export type Database = {
       }
       jdvcrm_send_stock_transfer_v1: {
         Args: { p_transfer_id: string }
+        Returns: boolean
+      }
+      jdvcrm_set_member_status_v1: {
+        Args: { p_member_id: string; p_status: string }
+        Returns: boolean
+      }
+      jdvcrm_set_prospecteur_status_v1: {
+        Args: { p_prospecteur_id: string; p_status: string }
         Returns: boolean
       }
       jdvcrm_set_warehouse_manager_status_v1: {
@@ -8621,7 +8945,7 @@ export type Database = {
           p_phone: string
           p_primary_sector_id: string
           p_registration_number: string
-          p_representative_birth_date: string | null
+          p_representative_birth_date: string
           p_representative_email: string
           p_representative_first_name: string
           p_representative_last_name: string
@@ -8676,6 +9000,10 @@ export type Database = {
           p_source_warehouse_id: string
         }
         Returns: string
+      }
+      jdvcrm_update_member_role_v1: {
+        Args: { p_member_id: string; p_role: string }
+        Returns: boolean
       }
       jdvcrm_validate_my_company_v1: {
         Args: { p_application_id: string }
@@ -8772,7 +9100,7 @@ export type Database = {
         Args: {
           p_items: Json
           p_notes?: string
-          p_supplier_id: string | null
+          p_supplier_id: string
           p_target: string
           p_warehouse_id: string
         }
