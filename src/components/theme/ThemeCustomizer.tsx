@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, Contrast, Moon, Monitor, Palette, RotateCcw, Sun, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
-import type { DesignConfig } from '@/features/design-studio/types';
+import type { DesignConfig, DesignElementStyle } from '@/features/design-studio/types';
 
 export type ThemeChoice = 'light' | 'dark' | 'contrast' | 'system';
 export type Accent = 'gold' | 'blue' | 'green' | 'violet' | 'orange';
@@ -51,6 +51,32 @@ function resolveTheme(theme: ThemeChoice): 'light' | 'dark' | 'contrast' {
   return theme;
 }
 
+function applyElementStyles(design: Partial<DesignConfig> | null) {
+  const styles = design?.elementStyles ?? {};
+  const properties: Record<keyof DesignElementStyle, keyof CSSStyleDeclaration> = {
+    color: 'color', backgroundColor: 'backgroundColor', fontFamily: 'fontFamily',
+    fontSize: 'fontSize', fontWeight: 'fontWeight', borderColor: 'borderColor',
+    borderWidth: 'borderWidth', borderStyle: 'borderStyle', borderRadius: 'borderRadius',
+    shadow: 'boxShadow', padding: 'padding',
+  };
+  document.querySelectorAll<HTMLElement>('[data-jdv-design]').forEach((element) => {
+    const id = element.dataset.jdvDesign;
+    if (!id) return;
+    const selected = styles[id];
+    for (const property of Object.keys(properties) as (keyof DesignElementStyle)[]) {
+      const cssProperty = properties[property];
+      const value = selected?.[property];
+      if (value === undefined || value === null || value === '') {
+        element.style[cssProperty] = '';
+      } else {
+        const cssValue = typeof value === 'number' && ['fontSize', 'borderWidth', 'borderRadius', 'padding'].includes(property)
+          ? String(value) + 'px' : String(value);
+        element.style[cssProperty] = cssValue;
+      }
+    }
+  });
+}
+
 function apply(p: Prefs, design: Partial<DesignConfig> | null = null) {
   const root = document.documentElement;
   root.dataset.theme = resolveTheme(!p.themeOverride && design?.mode ? design.mode : p.theme);
@@ -70,6 +96,8 @@ function apply(p: Prefs, design: Partial<DesignConfig> | null = null) {
   if (design?.density) root.dataset.designDensity = design.density;
   if (design?.radius) root.dataset.designRadius = design.radius;
   if (design?.fontScale) root.dataset.designFontScale = design.fontScale;
+  else delete root.dataset.designFontScale;
+  applyElementStyles(design);
 }
 
 export default function ThemeCustomizer() {
