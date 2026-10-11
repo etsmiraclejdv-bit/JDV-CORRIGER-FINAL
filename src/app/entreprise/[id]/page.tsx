@@ -83,7 +83,7 @@ export default function PublicBusinessStorefrontPage() {
   const brand = '#D4AF37';
   const location = [business.city, business.country].filter(Boolean).join(', ');
   const websiteUrl =
-    business.website && /^https?:\\/\\//i.test(business.website)
+    business.website && /^https?:\/\//i.test(business.website)
       ? business.website
       : null;
 
