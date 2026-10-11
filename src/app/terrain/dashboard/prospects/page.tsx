@@ -146,18 +146,18 @@ export default function TerrainProspectsPage() {
         desired_product: (r.desired_article as string) ?? undefined,
         proposed_price: r.estimated_amount ? Math.round(Number(r.estimated_amount) * 100) : 0,
         temperature: (r.temperature as string) ?? undefined,
- feature/prospecteur-approvisionnement-entrepot
-        next_contact_date: r.next_follow_up_at ? String(r.next_follow_up_at).split('T')[0] : undefined,
-        appointment_date: getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.date ?? ((r.purchase_date_planned as string) ?? undefined),
-        appointment_time: getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.time || undefined,
-        appointment_location: getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.location || undefined,
-        appointment_reason: getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.reason || undefined,
-=======
         next_contact_date: r.next_follow_up_at
           ? String(r.next_follow_up_at).split('T')[0]
           : undefined,
-        appointment_date: (r.purchase_date_planned as string) ?? undefined,
- main
+        appointment_date:
+          getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.date ??
+          ((r.purchase_date_planned as string) ?? undefined),
+        appointment_time:
+          getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.time || undefined,
+        appointment_location:
+          getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.location || undefined,
+        appointment_reason:
+          getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.reason || undefined,
         is_prospect: true,
         created_at: r.created_at as string,
       })) as Prospect[]
