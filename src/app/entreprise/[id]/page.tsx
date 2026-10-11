@@ -115,10 +115,15 @@ export default function PublicBusinessStorefrontPage() {
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold uppercase tracking-[.2em]" style={{ color: brand }}>
+              <p
+                className="text-xs font-bold uppercase tracking-[.2em]"
+                style={{ color: brand }}
+              >
                 Découvrez notre entreprise
               </p>
-              <h1 className="mt-2 break-words text-3xl font-extrabold text-white sm:text-4xl">{business.name}</h1>
+              <h1 className="mt-2 break-words text-3xl font-extrabold text-white sm:text-4xl">
+                {business.name}
+              </h1>
               {business.legal_name &&
                 business.legal_name !== business.name && (
                   <p className="mt-2 text-sm text-slate-300">{business.legal_name}</p>
