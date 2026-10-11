@@ -77,3 +77,17 @@ Read-only definitions of the application validation/document-review functions, t
 - **Still unverified:** exact SQL equivalence for the 11 renamed files, original source bodies for four applied migrations, the full clean replay, and a schema/security diff against a rebuilt database.
 - **Decision:** keep PR #2 in draft and do not merge or deploy it yet. A production migration push is not needed to reconcile these filenames and must not be used as a substitute for clean-replay testing.
 - No Supabase development branch was created, and no production SQL was executed.
+
+
+## Follow-up forensic work on 2026-10-11
+
+A first **partial forensic candidate** has now been committed outside the executable migrations directory:
+
+- `docs/reconstruction-candidates/README.md`
+- `docs/reconstruction-candidates/20261011065602_team_rights_and_member_management_v1.partial.sql.txt`
+
+The candidate records four live function bodies obtained with read-only `pg_get_functiondef`: member listing, member status changes, member role changes, and member audit logging. It is explicitly labeled **RECONSTRUCTED FROM LIVE STATE — NOT ORIGINAL SOURCE** and is a `.sql.txt` evidence artifact, not an executable migration.
+
+Further catalog inspection confirmed the current columns and indexes for `organization_teams` / `organization_team_members`, their four RLS policies, grants on the three RPCs, and three triggers on `organization_members`. The candidate does not yet recreate tables, RLS, indexes, trigger attachments, helper dependencies, seeds, full grants, or historical intermediate states. It is therefore **not a complete replacement** for version `20261011065602`.
+
+No production schema or data was changed. No file was added to `supabase/migrations/`; no migration was applied, marked as applied, merged, or deployed. A clean replay remains untested.
