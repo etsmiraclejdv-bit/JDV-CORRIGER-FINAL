@@ -233,13 +233,13 @@ export default function ThemeCustomizer() {
         onClick={() => setOpen((v) => !v)}
         aria-label="Personnaliser l’apparence"
         aria-expanded={open}
-        className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-card transition-transform hover:scale-105 print:hidden"
+        className="fixed right-4 top-20 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-card transition-all hover:scale-105 hover:shadow-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 print:hidden"
       >
         <Palette size={20} style={{ color: 'var(--brand-text)' }} />
       </button>
 
       {open && (
-        <div role="dialog" aria-label="Personnalisation de l’apparence" className="fixed bottom-20 right-4 z-50 w-[min(92vw,22rem)] rounded-2xl border border-border bg-card p-5 text-foreground shadow-card-hover print:hidden">
+        <div role="dialog" aria-label="Personnalisation de l’apparence" className="fixed right-4 top-[8.25rem] z-50 max-h-[calc(100dvh-9.5rem)] w-[min(92vw,22rem)] overflow-y-auto rounded-2xl border border-border bg-card p-5 text-foreground shadow-card-hover print:hidden">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-base font-bold">Mon apparence</h2>
             <button type="button" onClick={() => setOpen(false)} aria-label="Fermer" className="rounded-lg p-1 hover:bg-muted"><X size={18} /></button>
