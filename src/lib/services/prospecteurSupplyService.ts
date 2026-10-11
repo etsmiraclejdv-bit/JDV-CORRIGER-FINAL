@@ -146,3 +146,4 @@ export async function getMySales(organizationId: string, prospecteurId: string) 
     })),
     error: null,
   };
+}
