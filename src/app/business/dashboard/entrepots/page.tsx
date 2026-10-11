@@ -5,6 +5,7 @@ import { Warehouse, Plus, MapPin, RefreshCw, ArrowRightLeft, Save } from 'lucide
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import CreateWarehouseManagerForm from '@/components/entrepot/CreateWarehouseManagerForm';
 
 type Wh = {
   id: string;
@@ -14,6 +15,7 @@ type Wh = {
   city: string | null;
   country: string | null;
   active: boolean;
+  manager_user_id?: string | null;
 };
 
 type P = {
@@ -84,7 +86,7 @@ export default function WarehousesPage() {
     const [w, p, a] = await Promise.all([
       supabase
         .from('warehouses')
-        .select('id,code,name,address,city,country,active')
+        .select('id,code,name,address,city,country,active,manager_user_id')
         .eq('organization_id', profile.organization_id)
         .order('name'),
 
@@ -221,6 +223,8 @@ export default function WarehousesPage() {
           </button>
         </div>
       </div>
+
+      <CreateWarehouseManagerForm warehouses={warehouses} onCreated={() => void load()} />
 
       {showCreate && (
         <form
