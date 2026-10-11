@@ -1,9 +1,6 @@
 # CI quality gate: tests, TypeScript, lint and strict build must be checked on the latest tree.
 name: CI
 
-permissions:
-  contents: write
-
 on:
   push:
     branches: [main]
@@ -23,55 +20,6 @@ jobs:
       # Bloquant : échoue si package-lock.json n'est pas synchronisé avec package.json
       - name: Installer les dépendances (reproductible)
         run: npm ci
-
-      - name: Normalize legacy formatting before strict lint
-        if: github.head_ref == 'fix/duplicate-lucide-import'
-        run: |
-          git fetch origin fix/duplicate-lucide-import
-          git checkout -B fix/duplicate-lucide-import origin/fix/duplicate-lucide-import
-          npx prettier --write \
-            src/app/a-propos-concepteur/page.tsx \
-            src/app/api/ai/jdv-crm/route.ts \
-            src/app/api/business/create-warehouse-manager/route.ts \
-            src/app/business/dashboard/ambiance/page.tsx \
-            src/app/business/dashboard/avis-clients/page.tsx \
-            src/app/business/dashboard/catalogue/page.tsx \
-            src/app/business/dashboard/commissions/page.tsx \
-            src/app/business/dashboard/intelligence/page.tsx \
-            src/app/business/dashboard/logistique/page.tsx \
-            src/app/business/dashboard/mouvements-stock/page.tsx \
-            src/app/business/dashboard/page.tsx \
-            src/app/business/dashboard/personnalisation/page.tsx \
-            src/app/business/dashboard/prospecteurs/page.tsx \
-            src/app/business/dashboard/prospects/page.tsx \
-            src/app/business/dashboard/settings/page.tsx \
-            src/app/business/dashboard/sous-entrepots/page.tsx \
-            src/app/business/dashboard/sous-entrepots/stock/page.tsx \
-            src/app/business/dashboard/stock/page.tsx \
-            src/app/business/dashboard/suivi-prospecteurs/page.tsx \
-            src/app/business/dashboard/veille/page.tsx \
-            'src/app/business/dashboard/ventes/[id]/page.tsx' \
-            src/app/business/dashboard/ventes/page.tsx \
-            src/app/business/login/page.tsx \
-            src/app/business/onboarding/page.tsx \
-            src/app/business/validation/page.tsx \
-            src/app/components/AdvantagesSection.tsx \
-            src/app/components/BrandSection.tsx \
-            src/app/components/ContactSection.tsx \
-            src/app/components/JdvLoadingScreen.tsx \
-            src/app/components/JourneySection.tsx \
-            src/app/components/PlatformTestimonialsPanel.tsx \
-            src/app/components/TestimonialsSection.tsx \
-            src/app/page.tsx \
-            src/app/hidden-concepteur-gate/dashboard/layout.tsx \
-            src/app/hidden-concepteur-gate/dashboard/testimonials/page.tsx
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [[ -n "$(git status --porcelain -- src/app)" ]]; then
-            git add src/app
-            git commit -m "style: normalize formatting for strict lint"
-            git push origin HEAD:fix/duplicate-lucide-import
-          fi
 
       # Bloquant : tests unitaires (assainissement, IP client, limiteur de débit)
       - name: Tests
