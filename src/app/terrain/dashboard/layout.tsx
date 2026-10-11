@@ -1,4 +1,8 @@
 'use client';
+ feature/prospecteur-approvisionnement-entrepot
+import React, { useState, useEffect } from 'react';
+import { LayoutDashboard, ShoppingCart, Users, UserCheck, Wallet, User, LogOut, ChevronLeft, ChevronRight, HelpCircle, AlertTriangle, Warehouse } from 'lucide-react';
+=======
 import React, { useState } from 'react';
 import {
   LayoutDashboard,
@@ -15,6 +19,7 @@ import {
   Warehouse,
   MapPin,
 } from 'lucide-react';
+ main
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
@@ -26,6 +31,16 @@ import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracke
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
 
 const navItems = [
+ feature/prospecteur-approvisionnement-entrepot
+  { id: 'dashboard', label: 'Mon tableau de bord', icon: <LayoutDashboard size={18} />, href: '/terrain/dashboard', group: 'Principal' },
+  { id: 'approvisionnement', label: 'Mon approvisionnement', icon: <Warehouse size={18} />, href: '/terrain/dashboard/approvisionnement', group: 'Stock' },
+  { id: 'ventes', label: 'Mes ventes', icon: <ShoppingCart size={18} />, href: '/terrain/dashboard/ventes', group: 'Activité' },
+  { id: 'prospects', label: 'Mes prospects', icon: <Users size={18} />, href: '/terrain/dashboard/prospects', group: 'Activité' },
+  { id: 'clients', label: 'Mes clients', icon: <UserCheck size={18} />, href: '/terrain/dashboard/clients', group: 'Activité' },
+  { id: 'relances', label: 'Mes relances', icon: <AlertTriangle size={18} />, href: '/terrain/dashboard/relances', group: 'Activité' },
+  { id: 'commission', label: 'Ma commission', icon: <Wallet size={18} />, href: '/terrain/dashboard/commission', group: 'Activité' },
+  { id: 'guide', label: 'Guide d\'utilisation', icon: <HelpCircle size={18} />, href: '/guide-onboarding', group: 'Aide' },
+=======
   {
     id: 'dashboard',
     label: 'Mon tableau de bord',
@@ -96,6 +111,7 @@ const navItems = [
     href: '/guide-onboarding',
     group: 'Aide',
   },
+ main
 ];
 export default function TerrainDashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
