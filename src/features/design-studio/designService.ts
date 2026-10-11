@@ -33,16 +33,38 @@ export async function createDesignVersion(input: {
   const { data: latest, error: latestError } = await latestQuery.maybeSingle();
   if (latestError) return { data: null, error: latestError };
   const versionNo = Number((latest as DbRow | null)?.version_no ?? 0) + 1;
+  const nextStatus = input.status ?? 'draft';
   const { data, error } = await supabase.from('design_config_versions').insert({
     scope: input.scope,
     organization_id: input.scope === 'organization' ? input.organizationId : null,
     version_no: versionNo,
-    status: input.status ?? 'draft',
+    status: nextStatus,
     config: input.config,
     created_by: userData.user.id,
-    published_at: input.status === 'published' ? new Date().toISOString() : null,
+    published_at: nextStatus === 'published' ? new Date().toISOString() : null,
   }).select('*').single();
-  return { data: (data as unknown as DesignVersion | null), error };
+  if (error || !data) return { data: (data as unknown as DesignVersion | null), error };
+
+  // Publish the new version first, then archive older published versions so a failed
+  // archive can never leave the scope without a published configuration.
+  if (nextStatus === 'published') {
+    let archiveQuery = supabase.from('design_config_versions')
+      .update({ status: 'archived' })
+      .eq('scope', input.scope)
+      .eq('status', 'published')
+      .neq('id', String((data as DbRow).id));
+    archiveQuery = input.scope === 'organization'
+      ? archiveQuery.eq('organization_id', input.organizationId!)
+      : archiveQuery.is('organization_id', null);
+    const { error: archiveError } = await archiveQuery;
+    if (archiveError) {
+      return {
+        data: data as unknown as DesignVersion,
+        error: new Error('Version publiée, mais les anciennes versions n’ont pas toutes été archivées. Rechargez l’historique et vérifiez les statuts.'),
+      };
+    }
+  }
+  return { data: data as unknown as DesignVersion, error: null };
 }
 
 export async function setDesignVersionStatus(id: string, status: 'draft' | 'published' | 'archived') {
