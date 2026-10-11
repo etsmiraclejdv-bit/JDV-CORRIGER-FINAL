@@ -2,7 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, X, Check, CheckCheck } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
-import { fetchNotifications, fetchUnreadCount, markNotificationRead, markAllNotificationsRead, Notification } from '@/lib/services/notificationsService';
+import {
+  fetchNotifications,
+  fetchUnreadCount,
+  markNotificationRead,
+  markAllNotificationsRead,
+  Notification,
+} from '@/lib/services/notificationsService';
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -32,21 +38,23 @@ export default function NotificationBell() {
 
   async function handleMarkRead(id: string) {
     await markNotificationRead(id);
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString() } : n));
-    setUnreadCount(prev => Math.max(0, prev - 1));
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
   }
 
   async function handleMarkAllRead() {
     if (!userId) return;
     await markAllNotificationsRead(userId);
-    setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
+    setNotifications((prev) => prev.map((n) => ({ ...n, read_at: new Date().toISOString() })));
     setUnreadCount(0);
   }
 
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(v => !v)}
+        onClick={() => setOpen((v) => !v)}
         className="relative p-2.5 rounded-xl bg-[#0A1628] border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white transition-all"
         aria-label="Notifications"
       >
@@ -89,7 +97,7 @@ export default function NotificationBell() {
                   Aucune notification
                 </div>
               ) : (
-                notifications.map(n => (
+                notifications.map((n) => (
                   <div
                     key={n.id}
                     className={`px-4 py-3 border-b border-[#D4AF37]/5 hover:bg-[#0A1628]/50 transition-colors cursor-pointer ${!n.read_at ? 'bg-[#D4AF37]/5' : ''}`}
@@ -97,17 +105,27 @@ export default function NotificationBell() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-medium truncate ${!n.read_at ? 'text-white' : 'text-[#A0AEC0]'}`}>
+                        <p
+                          className={`text-sm font-medium truncate ${!n.read_at ? 'text-white' : 'text-[#A0AEC0]'}`}
+                        >
                           {n.title}
                         </p>
                         <p className="text-xs text-[#718096] mt-0.5 line-clamp-2">{n.message}</p>
                         <p className="text-xs text-[#718096] mt-1">
-                          {new Date(n.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                          {new Date(n.created_at).toLocaleDateString('fr-FR', {
+                            day: '2-digit',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </p>
                       </div>
                       {!n.read_at && (
                         <button
-                          onClick={e => { e.stopPropagation(); handleMarkRead(n.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkRead(n.id);
+                          }}
                           className="flex-shrink-0 p-1 rounded-lg text-[#D4AF37] hover:bg-[#D4AF37]/10"
                           title="Marquer comme lu"
                         >

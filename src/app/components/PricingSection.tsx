@@ -10,7 +10,7 @@ const plans = [
     duration: '30 jours',
     popular: false,
     features: [
-      'Jusqu\'à 5 prospecteurs',
+      "Jusqu'à 5 prospecteurs",
       'Gestion clients & prospects',
       'Ventes à crédit illimitées',
       'Rapports de base',
@@ -25,7 +25,7 @@ const plans = [
     duration: '90 jours',
     popular: false,
     features: [
-      'Jusqu\'à 15 prospecteurs',
+      "Jusqu'à 15 prospecteurs",
       'Gestion stock complète',
       'Transferts terrain',
       'Commissions automatiques',
@@ -41,7 +41,7 @@ const plans = [
     duration: '180 jours',
     popular: true,
     features: [
-      'Jusqu\'à 30 prospecteurs',
+      "Jusqu'à 30 prospecteurs",
       'Toutes fonctionnalités',
       'Bons de commande fournisseurs',
       'Recouvrement avancé',
@@ -74,7 +74,10 @@ export default function PricingSection() {
     <section id="pricing" className="py-20">
       <div className="max-w-screen-xl mx-auto px-6 lg:px-10">
         <div className="text-center mb-14">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3" style={{ letterSpacing: '0.12em' }}>
+          <p
+            className="text-xs font-semibold uppercase tracking-widest text-primary mb-3"
+            style={{ letterSpacing: '0.12em' }}
+          >
             Tarifs
           </p>
           <h2 className="text-3xl lg:text-4xl font-extrabold text-foreground mb-4">
@@ -90,8 +93,7 @@ export default function PricingSection() {
             <div
               key={plan?.id}
               className={`rounded-2xl p-6 flex flex-col transition-all duration-250 ${
-                plan?.popular
-                  ? 'pricing-card-popular relative' :'card-navy feature-card-hover'
+                plan?.popular ? 'pricing-card-popular relative' : 'card-navy feature-card-hover'
               }`}
             >
               {plan?.popular && (
@@ -106,15 +108,22 @@ export default function PricingSection() {
               <div className="mb-6">
                 <p className="text-sm font-semibold text-muted-foreground mb-2">{plan?.name}</p>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-foreground stat-number">{plan?.price}</span>
+                  <span className="text-4xl font-extrabold text-foreground stat-number">
+                    {plan?.price}
+                  </span>
                   <span className="text-lg font-bold text-primary">$</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{plan?.duration} · renouvelable</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {plan?.duration} · renouvelable
+                </p>
               </div>
 
               <ul className="flex-1 space-y-3 mb-6">
                 {plan?.features?.map((feature, fi) => (
-                  <li key={`${plan?.id}-feat-${fi}`} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <li
+                    key={`${plan?.id}-feat-${fi}`}
+                    className="flex items-start gap-2 text-sm text-muted-foreground"
+                  >
                     <Check size={14} className="text-success mt-0.5 flex-shrink-0" />
                     {feature}
                   </li>
@@ -124,8 +133,7 @@ export default function PricingSection() {
               <a
                 href="#register"
                 className={`w-full py-3 rounded-xl text-sm font-bold text-center transition-all duration-150 ${
-                  plan?.popular
-                    ? 'btn-gold' :'btn-outline-gold'
+                  plan?.popular ? 'btn-gold' : 'btn-outline-gold'
                 }`}
               >
                 {plan?.popular ? 'Choisir ce plan' : 'Commencer'}

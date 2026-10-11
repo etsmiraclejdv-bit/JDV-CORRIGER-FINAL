@@ -1,11 +1,27 @@
 'use client';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Calendar, CheckCircle, Clock, MapPin, Phone, Plus, RefreshCw, Search, Users } from 'lucide-react';
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  MapPin,
+  Phone,
+  Plus,
+  RefreshCw,
+  Search,
+  Users,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { getAuthContext } from '@/lib/auth/context';
 import { getAdminOrganization } from '@/lib/auth/admin-org';
 import { fetchProspecteurNames } from '@/lib/services/relancesService';
-import { createVisit, fetchProspectOptions, fetchVisits, type ProspectOption, type VisitRecord } from '@/lib/services/visitsService';
+import {
+  createVisit,
+  fetchProspectOptions,
+  fetchVisits,
+  type ProspectOption,
+  type VisitRecord,
+} from '@/lib/services/visitsService';
 import {
   VISIT_RESULTS,
   fromDatetimeLocal,
@@ -38,7 +54,8 @@ const RESULT_CLASSES: Record<string, string> = {
   other: 'bg-gray-500/20 text-gray-300 border-gray-500/30',
 };
 
-const TH = 'text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap';
+const TH =
+  'text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap';
 
 interface FormState {
   prospect_id: string;
@@ -169,7 +186,9 @@ export default function VisitsView({ mode }: VisitsViewProps) {
       },
       () => {
         setLocating(false);
-        setFormError("Position introuvable. Autorisez la localisation dans votre navigateur, ou laissez ce champ vide.");
+        setFormError(
+          'Position introuvable. Autorisez la localisation dans votre navigateur, ou laissez ce champ vide.'
+        );
       },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 }
     );
@@ -204,9 +223,12 @@ export default function VisitsView({ mode }: VisitsViewProps) {
     void load();
   }
 
-  if (loading && visits.length === 0 && !error) return <LoadingState message="Chargement des visites…" />;
+  if (loading && visits.length === 0 && !error)
+    return <LoadingState message="Chargement des visites…" />;
   if (error && visits.length === 0 && prospects.length === 0 && !orgId) {
-    return <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />;
+    return (
+      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+    );
   }
 
   const prospecteurIds = Array.from(new Set(visits.map((v) => v.prospecteur_id)));
@@ -215,9 +237,13 @@ export default function VisitsView({ mode }: VisitsViewProps) {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">{isTerrain ? 'Mes visites' : 'Visites terrain'}</h1>
+          <h1 className="text-2xl font-bold text-white">
+            {isTerrain ? 'Mes visites' : 'Visites terrain'}
+          </h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {isTerrain ? 'Enregistrez vos visites chez les prospects et suivez vos relances' : 'Activité de visite de vos prospecteurs'}
+            {isTerrain
+              ? 'Enregistrez vos visites chez les prospects et suivez vos relances'
+              : 'Activité de visite de vos prospecteurs'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -231,25 +257,57 @@ export default function VisitsView({ mode }: VisitsViewProps) {
             Actualiser
           </button>
           {isTerrain && (
-            <button onClick={() => openCreate()} className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold">
+            <button
+              onClick={() => openCreate()}
+              className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
+            >
               <Plus size={14} />
               Nouvelle visite
             </button>
           )}
         </div>
-      </div> 
+      </div>
       {error && (
-        <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">
+        <div
+          className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          role="alert"
+        >
           {error}
         </div>
       )}
 
-      <div className={`grid grid-cols-1 sm:grid-cols-2 ${isTerrain ? 'xl:grid-cols-4' : 'xl:grid-cols-3'} gap-4`}>
-        <MetricCard title="Visites ce mois" value={String(summary.thisMonth)} subtitle={`${summary.total} au total`} icon={<MapPin size={18} />} variant="gold" />
-        <MetricCard title="7 derniers jours" value={String(summary.last7Days)} subtitle="visites récentes" icon={<Calendar size={18} />} variant="default" />
-        <MetricCard title="Personnes visitées" value={String(summary.distinctProspects)} subtitle="prospects différents" icon={<Users size={18} />} variant="default" />
+      <div
+        className={`grid grid-cols-1 sm:grid-cols-2 ${isTerrain ? 'xl:grid-cols-4' : 'xl:grid-cols-3'} gap-4`}
+      >
+        <MetricCard
+          title="Visites ce mois"
+          value={String(summary.thisMonth)}
+          subtitle={`${summary.total} au total`}
+          icon={<MapPin size={18} />}
+          variant="gold"
+        />
+        <MetricCard
+          title="7 derniers jours"
+          value={String(summary.last7Days)}
+          subtitle="visites récentes"
+          icon={<Calendar size={18} />}
+          variant="default"
+        />
+        <MetricCard
+          title="Personnes visitées"
+          value={String(summary.distinctProspects)}
+          subtitle="prospects différents"
+          icon={<Users size={18} />}
+          variant="default"
+        />
         {isTerrain && (
-          <MetricCard title="À relancer" value={String(due.length)} subtitle="relances échues" icon={<Clock size={18} />} variant={due.length > 0 ? 'warning' : 'success'} />
+          <MetricCard
+            title="À relancer"
+            value={String(due.length)}
+            subtitle="relances échues"
+            icon={<Clock size={18} />}
+            variant={due.length > 0 ? 'warning' : 'success'}
+          />
         )}
       </div>
 
@@ -270,7 +328,10 @@ export default function VisitsView({ mode }: VisitsViewProps) {
               {due.slice(0, 8).map((p) => {
                 const tel = toTelHref(p.phone);
                 return (
-                  <li key={p.id} className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <li
+                    key={p.id}
+                    className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                  >
                     <div>
                       <p className="text-sm text-white">{p.name}</p>
                       <p className="text-xs text-[#718096]">
@@ -280,11 +341,18 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                     </div>
                     <div className="flex items-center gap-2">
                       {tel && (
-                        <a href={tel} aria-label={`Appeler ${p.name}`} className="p-2 rounded-lg bg-[#0B1B3D] border border-[#D4AF37]/20 text-[#D4AF37] hover:bg-[#D4AF37]/10">
+                        <a
+                          href={tel}
+                          aria-label={`Appeler ${p.name}`}
+                          className="p-2 rounded-lg bg-[#0B1B3D] border border-[#D4AF37]/20 text-[#D4AF37] hover:bg-[#D4AF37]/10"
+                        >
                           <Phone size={14} />
                         </a>
                       )}
-                      <button onClick={() => openCreate(p.id)} className="px-3 py-2 rounded-lg text-xs font-semibold bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/20">
+                      <button
+                        onClick={() => openCreate(p.id)}
+                        className="px-3 py-2 rounded-lg text-xs font-semibold bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/20"
+                      >
                         Enregistrer une visite
                       </button>
                     </div>
@@ -308,17 +376,31 @@ export default function VisitsView({ mode }: VisitsViewProps) {
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
-        <select value={resultFilter} onChange={(e) => setResultFilter(e.target.value)} aria-label="Filtrer par résultat" className={`${inputClass} lg:w-56`}>
+        <select
+          value={resultFilter}
+          onChange={(e) => setResultFilter(e.target.value)}
+          aria-label="Filtrer par résultat"
+          className={`${inputClass} lg:w-56`}
+        >
           <option value="">Tous les résultats</option>
           {VISIT_RESULTS.map((r) => (
-            <option key={r.value} value={r.value}>{r.label}</option>
+            <option key={r.value} value={r.value}>
+              {r.label}
+            </option>
           ))}
         </select>
         {!isTerrain && (
-          <select value={prospecteurFilter} onChange={(e) => setProspecteurFilter(e.target.value)} aria-label="Filtrer par prospecteur" className={`${inputClass} lg:w-56`}>
+          <select
+            value={prospecteurFilter}
+            onChange={(e) => setProspecteurFilter(e.target.value)}
+            aria-label="Filtrer par prospecteur"
+            className={`${inputClass} lg:w-56`}
+          >
             <option value="">Tous les prospecteurs</option>
             {prospecteurIds.map((id) => (
-              <option key={id} value={id}>{names[id] || 'Prospecteur'}</option>
+              <option key={id} value={id}>
+                {names[id] || 'Prospecteur'}
+              </option>
             ))}
           </select>
         )}
@@ -328,12 +410,14 @@ export default function VisitsView({ mode }: VisitsViewProps) {
         {visible.length === 0 ? (
           <div className="py-16 text-center px-6">
             <MapPin size={32} className="mx-auto mb-3 text-[#D4AF37] opacity-60" />
-            <p className="text-white text-sm font-semibold mb-1">{visits.length === 0 ? 'Aucune visite enregistrée' : 'Aucun résultat'}</p>
+            <p className="text-white text-sm font-semibold mb-1">
+              {visits.length === 0 ? 'Aucune visite enregistrée' : 'Aucun résultat'}
+            </p>
             <p className="text-[#A0AEC0] text-sm">
               {visits.length === 0
                 ? isTerrain
                   ? 'Enregistrez votre première visite avec « Nouvelle visite ».'
-                  : "Les visites saisies par vos prospecteurs apparaîtront ici."
+                  : 'Les visites saisies par vos prospecteurs apparaîtront ici.'
                 : 'Modifiez la recherche ou les filtres.'}
             </p>
           </div>
@@ -342,8 +426,18 @@ export default function VisitsView({ mode }: VisitsViewProps) {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  {['Date', 'Contact', ...(isTerrain ? [] : ['Prospecteur']), 'Résultat', 'Notes', 'Prochaine relance', 'Lieu'].map((h) => (
-                    <th key={h} className={TH}>{h}</th>
+                  {[
+                    'Date',
+                    'Contact',
+                    ...(isTerrain ? [] : ['Prospecteur']),
+                    'Résultat',
+                    'Notes',
+                    'Prochaine relance',
+                    'Lieu',
+                  ].map((h) => (
+                    <th key={h} className={TH}>
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -353,25 +447,46 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                   const tel = toTelHref(v.contact_phone);
                   return (
                     <tr key={v.id} className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50">
-                      <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{formatDateTimeFr(v.visit_date)}</td>
+                      <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                        {formatDateTimeFr(v.visit_date)}
+                      </td>
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium text-white">{v.contact_name}</p>
-                        {v.contact_phone && (tel ? (
-                          <a href={tel} className="text-xs text-[#D4AF37] hover:underline">{v.contact_phone}</a>
-                        ) : (
-                          <p className="text-xs text-[#718096]">{v.contact_phone}</p>
-                        ))}
-                      </td>                      {!isTerrain && <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{names[v.prospecteur_id] || '—'}</td>}
+                        {v.contact_phone &&
+                          (tel ? (
+                            <a href={tel} className="text-xs text-[#D4AF37] hover:underline">
+                              {v.contact_phone}
+                            </a>
+                          ) : (
+                            <p className="text-xs text-[#718096]">{v.contact_phone}</p>
+                          ))}
+                      </td>{' '}
+                      {!isTerrain && (
+                        <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                          {names[v.prospecteur_id] || '—'}
+                        </td>
+                      )}
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${RESULT_CLASSES[v.result ?? 'other'] ?? RESULT_CLASSES.other}`}>
+                        <span
+                          className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${RESULT_CLASSES[v.result ?? 'other'] ?? RESULT_CLASSES.other}`}
+                        >
                           {visitResultLabel(v.result)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-[#A0AEC0] max-w-xs break-words">{v.notes || '—'}</td>
-                      <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">{v.next_follow_up_at ? formatDateTimeFr(v.next_follow_up_at) : '—'}</td>
+                      <td className="px-4 py-3 text-xs text-[#A0AEC0] max-w-xs break-words">
+                        {v.notes || '—'}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
+                        {v.next_follow_up_at ? formatDateTimeFr(v.next_follow_up_at) : '—'}
+                      </td>
                       <td className="px-4 py-3 text-sm whitespace-nowrap">
                         {map ? (
-                          <a href={map} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[#D4AF37] hover:underline">
+                          <a
+                            href={map}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[#D4AF37] hover:underline"
+                          >
                             <MapPin size={12} /> Carte
                           </a>
                         ) : (
@@ -388,67 +503,154 @@ export default function VisitsView({ mode }: VisitsViewProps) {
       </div>
 
       {isTerrain && (
-        <Modal open={open} onClose={() => !saving && setOpen(false)} title="Nouvelle visite" size="xl">
+        <Modal
+          open={open}
+          onClose={() => !saving && setOpen(false)}
+          title="Nouvelle visite"
+          size="xl"
+        >
           <div className="space-y-4">
             {formError && (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300" role="alert">{formError}</div>
+              <div
+                className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+                role="alert"
+              >
+                {formError}
+              </div>
             )}
             {prospects.length === 0 && (
               <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
-                Vous n&apos;avez aucun prospect. Ajoutez-en un dans « Mes prospects » avant d&apos;enregistrer une visite.
+                Vous n&apos;avez aucun prospect. Ajoutez-en un dans « Mes prospects » avant
+                d&apos;enregistrer une visite.
               </div>
             )}
             <div>
-              <label className={labelClass} htmlFor="v-prospect">Prospect visité *</label>
-              <select id="v-prospect" value={form.prospect_id} onChange={(e) => setForm((f) => ({ ...f, prospect_id: e.target.value }))} className={inputClass}>
+              <label className={labelClass} htmlFor="v-prospect">
+                Prospect visité *
+              </label>
+              <select
+                id="v-prospect"
+                value={form.prospect_id}
+                onChange={(e) => setForm((f) => ({ ...f, prospect_id: e.target.value }))}
+                className={inputClass}
+              >
                 <option value="">Choisir…</option>
                 {prospects.map((p) => (
-                  <option key={p.id} value={p.id}>{p.phone ? `${p.name} — ${p.phone}` : p.name}</option>
+                  <option key={p.id} value={p.id}>
+                    {p.phone ? `${p.name} — ${p.phone}` : p.name}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelClass} htmlFor="v-date">Date et heure *</label>
-                <input id="v-date" type="datetime-local" value={form.visit_date} onChange={(e) => setForm((f) => ({ ...f, visit_date: e.target.value }))} className={inputClass} />
+                <label className={labelClass} htmlFor="v-date">
+                  Date et heure *
+                </label>
+                <input
+                  id="v-date"
+                  type="datetime-local"
+                  value={form.visit_date}
+                  onChange={(e) => setForm((f) => ({ ...f, visit_date: e.target.value }))}
+                  className={inputClass}
+                />
               </div>
               <div>
-                <label className={labelClass} htmlFor="v-result">Résultat *</label>
-                <select id="v-result" value={form.result} onChange={(e) => setForm((f) => ({ ...f, result: e.target.value }))} className={inputClass}>
+                <label className={labelClass} htmlFor="v-result">
+                  Résultat *
+                </label>
+                <select
+                  id="v-result"
+                  value={form.result}
+                  onChange={(e) => setForm((f) => ({ ...f, result: e.target.value }))}
+                  className={inputClass}
+                >
                   <option value="">Choisir…</option>
-                  {VISIT_RESULTS.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+                  {VISIT_RESULTS.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
             <div>
-              <label className={labelClass} htmlFor="v-notes">Notes</label>
-              <textarea id="v-notes" value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} maxLength={2000} rows={3} className={inputClass} />
+              <label className={labelClass} htmlFor="v-notes">
+                Notes
+              </label>
+              <textarea
+                id="v-notes"
+                value={form.notes}
+                onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+                maxLength={2000}
+                rows={3}
+                className={inputClass}
+              />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelClass} htmlFor="v-next">Prochaine relance</label>
-                <input id="v-next" type="datetime-local" value={form.next_follow_up_at} onChange={(e) => setForm((f) => ({ ...f, next_follow_up_at: e.target.value }))} className={inputClass} />
+                <label className={labelClass} htmlFor="v-next">
+                  Prochaine relance
+                </label>
+                <input
+                  id="v-next"
+                  type="datetime-local"
+                  value={form.next_follow_up_at}
+                  onChange={(e) => setForm((f) => ({ ...f, next_follow_up_at: e.target.value }))}
+                  className={inputClass}
+                />
               </div>
               <div>
-                <label className={labelClass} htmlFor="v-address">Lieu de la visite</label>
-                <input id="v-address" value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} maxLength={300} className={inputClass} />
+                <label className={labelClass} htmlFor="v-address">
+                  Lieu de la visite
+                </label>
+                <input
+                  id="v-address"
+                  value={form.address}
+                  onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+                  maxLength={300}
+                  className={inputClass}
+                />
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <button type="button" onClick={locate} disabled={locating} className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 disabled:opacity-50">
+              <button
+                type="button"
+                onClick={locate}
+                disabled={locating}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 disabled:opacity-50"
+              >
                 <MapPin size={14} /> {locating ? 'Localisation…' : 'Enregistrer ma position'}
               </button>
               {form.latitude !== null && form.longitude !== null && (
                 <span className="text-xs text-[#A0AEC0]">
                   Position : {form.latitude}, {form.longitude}{' '}
-                  <button type="button" onClick={() => setForm((f) => ({ ...f, latitude: null, longitude: null }))} className="underline ml-1">Retirer</button>
+                  <button
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, latitude: null, longitude: null }))}
+                    className="underline ml-1"
+                  >
+                    Retirer
+                  </button>
                 </span>
               )}
-              <span className="text-xs text-[#718096]">Facultatif : votre navigateur vous demandera l&apos;autorisation.</span>
+              <span className="text-xs text-[#718096]">
+                Facultatif : votre navigateur vous demandera l&apos;autorisation.
+              </span>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <button onClick={() => setOpen(false)} disabled={saving} className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white disabled:opacity-50">Annuler</button>
-              <button onClick={() => void handleSave()} disabled={saving || prospects.length === 0} className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50">
+              <button
+                onClick={() => setOpen(false)}
+                disabled={saving}
+                className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => void handleSave()}
+                disabled={saving || prospects.length === 0}
+                className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
+              >
                 {saving ? 'Enregistrement…' : 'Enregistrer la visite'}
               </button>
             </div>

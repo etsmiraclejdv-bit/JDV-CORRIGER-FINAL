@@ -19,14 +19,15 @@ export default function SuperAdminMaintenancePage() {
   async function runHealthCheck() {
     setLoading(true);
     try {
-      const [orgsRes, profilesRes, clientsRes, salesRes, paymentsRes, productsRes] = await Promise.all([
-        supabase.from('organizations').select('id', { count: 'exact', head: true }),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('clients').select('id', { count: 'exact', head: true }),
-        supabase.from('sales').select('id', { count: 'exact', head: true }),
-        supabase.from('payments').select('id', { count: 'exact', head: true }),
-        supabase.from('articles').select('id', { count: 'exact', head: true }),
-      ]);
+      const [orgsRes, profilesRes, clientsRes, salesRes, paymentsRes, productsRes] =
+        await Promise.all([
+          supabase.from('organizations').select('id', { count: 'exact', head: true }),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }),
+          supabase.from('clients').select('id', { count: 'exact', head: true }),
+          supabase.from('sales').select('id', { count: 'exact', head: true }),
+          supabase.from('payments').select('id', { count: 'exact', head: true }),
+          supabase.from('articles').select('id', { count: 'exact', head: true }),
+        ]);
 
       setTableCounts({
         organizations: orgsRes.count ?? 0,
@@ -44,21 +45,57 @@ export default function SuperAdminMaintenancePage() {
     setLoading(false);
   }
 
-  useEffect(() => { runHealthCheck(); }, []);
+  useEffect(() => {
+    runHealthCheck();
+  }, []);
 
   const tables: TableStat[] = [
-    { name: 'organizations', label: 'Organisations', count: tableCounts.organizations ?? 0, icon: <Database size={16} className="text-[#D4AF37]" /> },
-    { name: 'profiles', label: 'Profils utilisateurs', count: tableCounts.profiles ?? 0, icon: <Database size={16} className="text-blue-400" /> },
-    { name: 'clients', label: 'Clients', count: tableCounts.clients ?? 0, icon: <Database size={16} className="text-green-400" /> },
-    { name: 'sales', label: 'Ventes', count: tableCounts.sales ?? 0, icon: <Database size={16} className="text-purple-400" /> },
-    { name: 'payments', label: 'Paiements', count: tableCounts.payments ?? 0, icon: <Database size={16} className="text-pink-400" /> },
-    { name: 'products', label: 'Produits', count: tableCounts.products ?? 0, icon: <Database size={16} className="text-orange-400" /> },
+    {
+      name: 'organizations',
+      label: 'Organisations',
+      count: tableCounts.organizations ?? 0,
+      icon: <Database size={16} className="text-[#D4AF37]" />,
+    },
+    {
+      name: 'profiles',
+      label: 'Profils utilisateurs',
+      count: tableCounts.profiles ?? 0,
+      icon: <Database size={16} className="text-blue-400" />,
+    },
+    {
+      name: 'clients',
+      label: 'Clients',
+      count: tableCounts.clients ?? 0,
+      icon: <Database size={16} className="text-green-400" />,
+    },
+    {
+      name: 'sales',
+      label: 'Ventes',
+      count: tableCounts.sales ?? 0,
+      icon: <Database size={16} className="text-purple-400" />,
+    },
+    {
+      name: 'payments',
+      label: 'Paiements',
+      count: tableCounts.payments ?? 0,
+      icon: <Database size={16} className="text-pink-400" />,
+    },
+    {
+      name: 'products',
+      label: 'Produits',
+      count: tableCounts.products ?? 0,
+      icon: <Database size={16} className="text-orange-400" />,
+    },
   ];
 
   const services = [
     { name: 'Base de données Supabase', status: supabaseOk, description: 'Connexion PostgreSQL' },
     { name: 'Authentification', status: supabaseOk, description: 'Supabase Auth' },
-    { name: 'Edge Functions', status: false, description: 'send-email à déployer (secret RESEND_API_KEY requis)' },
+    {
+      name: 'Edge Functions',
+      status: false,
+      description: 'send-email à déployer (secret RESEND_API_KEY requis)',
+    },
     { name: 'Webhook FedaPay', status: true, description: '/api/fedapay-webhook actif' },
   ];
 
@@ -68,7 +105,9 @@ export default function SuperAdminMaintenancePage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Maintenance Système</h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {lastChecked ? `Dernière vérification : ${lastChecked.toLocaleTimeString('fr-FR')}` : 'Vérification en cours...'}
+            {lastChecked
+              ? `Dernière vérification : ${lastChecked.toLocaleTimeString('fr-FR')}`
+              : 'Vérification en cours...'}
           </p>
         </div>
         <button
@@ -97,8 +136,12 @@ export default function SuperAdminMaintenancePage() {
               {loading ? (
                 <div className="w-4 h-4 rounded-full bg-[#718096] animate-pulse" />
               ) : (
-                <div className={`flex items-center gap-1.5 text-xs ${svc.status ? 'text-green-400' : 'text-red-400'}`}>
-                  <div className={`w-2 h-2 rounded-full ${svc.status ? 'bg-green-400' : 'bg-red-400'}`} />
+                <div
+                  className={`flex items-center gap-1.5 text-xs ${svc.status ? 'text-green-400' : 'text-red-400'}`}
+                >
+                  <div
+                    className={`w-2 h-2 rounded-full ${svc.status ? 'bg-green-400' : 'bg-red-400'}`}
+                  />
                   {svc.status ? 'OK' : 'Erreur'}
                 </div>
               )}
@@ -114,7 +157,7 @@ export default function SuperAdminMaintenancePage() {
           <h2 className="text-base font-semibold text-white">Statistiques base de données</h2>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {tables.map(t => (
+          {tables.map((t) => (
             <div key={t.name} className="p-4 bg-[#0A1628] rounded-xl">
               <div className="flex items-center gap-2 mb-2">
                 {t.icon}
@@ -143,7 +186,10 @@ export default function SuperAdminMaintenancePage() {
             { label: 'Authentification', value: 'Supabase Auth (email/password)' },
             { label: 'Paiements', value: 'FedaPay (webhook HMAC-SHA256)' },
             { label: 'Emails transactionnels', value: 'Resend via Edge Function' },
-            { label: 'URL de déploiement', value: process.env.NEXT_PUBLIC_SITE_URL || 'Non configurée (NEXT_PUBLIC_SITE_URL)' },
+            {
+              label: 'URL de déploiement',
+              value: process.env.NEXT_PUBLIC_SITE_URL || 'Non configurée (NEXT_PUBLIC_SITE_URL)',
+            },
           ].map((item, i) => (
             <div key={i} className="flex items-center justify-between p-3 bg-[#0A1628] rounded-xl">
               <span className="text-sm text-[#718096]">{item.label}</span>
@@ -155,7 +201,9 @@ export default function SuperAdminMaintenancePage() {
 
       <div className="flex items-center gap-2 p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
         <CheckCircle size={16} className="text-green-400 flex-shrink-0" />
-        <p className="text-sm text-green-400">Aucune action de maintenance requise pour le moment.</p>
+        <p className="text-sm text-green-400">
+          Aucune action de maintenance requise pour le moment.
+        </p>
       </div>
     </div>
   );

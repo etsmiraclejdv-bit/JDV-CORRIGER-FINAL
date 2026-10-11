@@ -63,8 +63,11 @@ export default function IntelligencePresenceTracker() {
         config: { presence: { key: auth.user.id } },
       });
 
-      channel.on('presence', { event: 'sync' }, () => {}).on('presence', { event: 'join' }, () => {}).on('presence', { event: 'leave' }, () => {});
-      channel.subscribe(async status => {
+      channel
+        .on('presence', { event: 'sync' }, () => {})
+        .on('presence', { event: 'join' }, () => {})
+        .on('presence', { event: 'leave' }, () => {});
+      channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           await channel.track({
             user_id: auth.user.id,

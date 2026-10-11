@@ -17,19 +17,21 @@ interface DashboardStats {
 export default function BusinessDashboardPage() {
   const [orgName, setOrgName] = useState('');
   const [orgId, setOrgId] = useState<string | null>(null);
-  const [stats, setStats] = useState<DashboardStats>({ clients: 0, sales: 0, revenue: 0, overdue: 0 });
+  const [stats, setStats] = useState<DashboardStats>({
+    clients: 0,
+    sales: 0,
+    revenue: 0,
+    overdue: 0,
+  });
   const [loading, setLoading] = useState(true);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   async function loadStats(oid: string) {
-    const [clientsRes, salesRes] = await Promise.all([
-      fetchClients(oid),
-      fetchSales(oid),
-    ]);
+    const [clientsRes, salesRes] = await Promise.all([fetchClients(oid), fetchSales(oid)]);
     const clients = clientsRes.data ?? [];
     const sales = salesRes.data ?? [];
-    const revenue = sales.reduce((sum: number, s: Record<string, unknown>) => sum + ((s.amount_cents as number) ?? 0), 0);
-    const overdue = (clients as Record<string, unknown>[]).filter(c => c.payment_status === 'en_retard').length;
+    const revenue = sales.reduce((sum, sale) => sum + sale.amount_cents, 0);
+    const overdue = clients.filter((client) => client.payment_status === 'en_retard').length;
     setStats({ clients: clients.length, sales: sales.length, revenue, overdue });
   }
 
@@ -37,11 +39,18 @@ export default function BusinessDashboardPage() {
     supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) return;
       const { data: profile } = await fetchOrgProfile();
-      if (!profile?.organization_id) { setLoading(false); return; }
+      if (!profile?.organization_id) {
+        setLoading(false);
+        return;
+      }
       const oid = profile.organization_id;
       setOrgId(oid);
 
-      const { data: org } = await supabase.from('organizations').select('name').eq('id', oid).single();
+      const { data: org } = await supabase
+        .from('organizations')
+        .select('name')
+        .eq('id', oid)
+        .single();
       if (org) setOrgName(org.name ?? '');
 
       await loadStats(oid);
@@ -53,17 +62,23 @@ export default function BusinessDashboardPage() {
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'sales', filter: `organization_id=eq.${oid}` },
-          () => { loadStats(oid); }
+          () => {
+            loadStats(oid);
+          }
         )
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'payments', filter: `organization_id=eq.${oid}` },
-          () => { loadStats(oid); }
+          () => {
+            loadStats(oid);
+          }
         )
         .on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'clients', filter: `organization_id=eq.${oid}` },
-          () => { loadStats(oid); }
+          () => {
+            loadStats(oid);
+          }
         )
         .subscribe();
 
@@ -79,10 +94,38 @@ export default function BusinessDashboardPage() {
   }, []);
 
   const kpis = [
-    { label: 'Clients', value: stats.clients, icon: <Users size={20} />, color: 'text-[#63B3ED]', href: '/business/dashboard/clients' },
-    { label: 'Ventes', value: stats.sales, icon: <ShoppingCart size={20} />, color: 'text-[#D4AF37]', href: '/business/dashboard/ventes' },
-    { label: 'Chiffre d\'affaires', value: new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(stats.revenue / 100), icon: <Wallet size={20} />, color: 'text-green-400', href: '/business/dashboard/ventes' },
-    { label: 'Clients en retard', value: stats.overdue, icon: <AlertTriangle size={20} />, color: 'text-red-400', href: '/business/dashboard/clients' },
+    {
+      label: 'Clients',
+      value: stats.clients,
+      icon: <Users size={20} />,
+      color: 'text-[#63B3ED]',
+      href: '/business/dashboard/clients',
+    },
+    {
+      label: 'Ventes',
+      value: stats.sales,
+      icon: <ShoppingCart size={20} />,
+      color: 'text-[#D4AF37]',
+      href: '/business/dashboard/ventes',
+    },
+    {
+      label: "Chiffre d'affaires",
+      value: new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: 'XOF',
+        maximumFractionDigits: 0,
+      }).format(stats.revenue / 100),
+      icon: <Wallet size={20} />,
+      color: 'text-green-400',
+      href: '/business/dashboard/ventes',
+    },
+    {
+      label: 'Clients en retard',
+      value: stats.overdue,
+      icon: <AlertTriangle size={20} />,
+      color: 'text-red-400',
+      href: '/business/dashboard/clients',
+    },
   ];
 
   return (
@@ -94,8 +137,12 @@ export default function BusinessDashboardPage() {
 
       {/* KPI Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map(kpi => (
-          <Link key={kpi.label} href={kpi.href} className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-5 hover:border-[#D4AF37]/40 transition-all">
+        {kpis.map((kpi) => (
+          <Link
+            key={kpi.label}
+            href={kpi.href}
+            className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-5 hover:border-[#D4AF37]/40 transition-all"
+          >
             <div className={`mb-3 ${kpi.color}`}>{kpi.icon}</div>
             <p className="text-xs text-[#A0AEC0] mb-1">{kpi.label}</p>
             <p className={`text-2xl font-bold ${kpi.color}`}>{loading ? '—' : kpi.value}</p>
@@ -106,13 +153,43 @@ export default function BusinessDashboardPage() {
       {/* Quick Links */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
-          { label: 'Gérer les clients', href: '/business/dashboard/clients', icon: <Users size={16} />, desc: 'Voir et gérer vos clients' },
-          { label: 'Voir les ventes', href: '/business/dashboard/ventes', icon: <ShoppingCart size={16} />, desc: 'Historique des ventes' },
-          { label: 'Catalogue articles', href: '/business/dashboard/catalogue', icon: <TrendingUp size={16} />, desc: 'Gérer vos produits' },
-          { label: 'Rapports', href: '/business/dashboard/reports', icon: <TrendingUp size={16} />, desc: 'Analyses et statistiques' },
-          { label: 'Journal d\'audit', href: '/business/dashboard/audit', icon: <UserCheck size={16} />, desc: 'Traçabilité des actions' },
-          { label: 'Paramètres', href: '/business/dashboard/settings', icon: <UserCheck size={16} />, desc: 'Configuration de l\'organisation' },
-        ].map(link => (
+          {
+            label: 'Gérer les clients',
+            href: '/business/dashboard/clients',
+            icon: <Users size={16} />,
+            desc: 'Voir et gérer vos clients',
+          },
+          {
+            label: 'Voir les ventes',
+            href: '/business/dashboard/ventes',
+            icon: <ShoppingCart size={16} />,
+            desc: 'Historique des ventes',
+          },
+          {
+            label: 'Catalogue articles',
+            href: '/business/dashboard/catalogue',
+            icon: <TrendingUp size={16} />,
+            desc: 'Gérer vos produits',
+          },
+          {
+            label: 'Rapports',
+            href: '/business/dashboard/reports',
+            icon: <TrendingUp size={16} />,
+            desc: 'Analyses et statistiques',
+          },
+          {
+            label: "Journal d'audit",
+            href: '/business/dashboard/audit',
+            icon: <UserCheck size={16} />,
+            desc: 'Traçabilité des actions',
+          },
+          {
+            label: 'Paramètres',
+            href: '/business/dashboard/settings',
+            icon: <UserCheck size={16} />,
+            desc: "Configuration de l'organisation",
+          },
+        ].map((link) => (
           <Link
             key={link.href}
             href={link.href}

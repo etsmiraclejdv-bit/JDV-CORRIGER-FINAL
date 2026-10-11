@@ -59,7 +59,14 @@ export interface PaymentSummary {
 }
 
 export function summarizePayments(rows: PaymentRow[]): PaymentSummary {
-  const s: PaymentSummary = { total: rows.length, successful: 0, pending: 0, failed: 0, successfulAmountXof: 0, otherCurrencies: false };
+  const s: PaymentSummary = {
+    total: rows.length,
+    successful: 0,
+    pending: 0,
+    failed: 0,
+    successfulAmountXof: 0,
+    otherCurrencies: false,
+  };
   for (const r of rows) {
     if (r.status === 'successful') {
       s.successful += 1;
@@ -85,7 +92,13 @@ export interface WebhookSummary {
 }
 
 export function summarizeWebhooks(rows: WebhookRow[]): WebhookSummary {
-  const s: WebhookSummary = { total: rows.length, processed: 0, ignored: 0, failed: 0, lastReceivedAt: null };
+  const s: WebhookSummary = {
+    total: rows.length,
+    processed: 0,
+    ignored: 0,
+    failed: 0,
+    lastReceivedAt: null,
+  };
   for (const r of rows) {
     if (r.status === 'processed') s.processed += 1;
     else if (r.status === 'ignored') s.ignored += 1;
@@ -107,9 +120,15 @@ export function webhookHealth(s: WebhookSummary): { state: WebhookHealth; messag
     };
   }
   if (s.failed > 0) {
-    return { state: 'errors', message: `${s.failed} webhook(s) en échec : ouvrez la liste ci-dessous pour lire le message d'erreur.` };
+    return {
+      state: 'errors',
+      message: `${s.failed} webhook(s) en échec : ouvrez la liste ci-dessous pour lire le message d'erreur.`,
+    };
   }
-  return { state: 'ok', message: 'Les webhooks reçus ont tous été traités ou ignorés volontairement.' };
+  return {
+    state: 'ok',
+    message: 'Les webhooks reçus ont tous été traités ou ignorés volontairement.',
+  };
 }
 
 /** Raccourcit un identifiant externe pour l'affichage. */
@@ -131,5 +150,7 @@ export function formatDateTimeFr(iso: string | null | undefined, timeZone?: stri
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
-  return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short', timeZone }).format(d).replace(',', '');
+  return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short', timeZone })
+    .format(d)
+    .replace(',', '');
 }

@@ -39,9 +39,7 @@ export default function SousBranchesPage() {
           className="rounded-2xl border border-white/10 bg-[#08152f] p-5 hover:bg-[#0F2347]"
         >
           <h2 className="font-semibold">Mouvements de stock</h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Journal global des mouvements.
-          </p>
+          <p className="mt-2 text-sm text-slate-400">Journal global des mouvements.</p>
         </Link>
 
         <Link

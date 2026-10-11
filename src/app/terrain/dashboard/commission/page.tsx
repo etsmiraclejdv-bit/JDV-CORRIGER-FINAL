@@ -28,14 +28,26 @@ export default function TerrainCommissionPage() {
         if (profile.prospecteur_id) {
           const [{ data: salesData }, { data: comms }] = await Promise.all([
             fetchSales(profile.organization_id, { prospecteurId: profile.prospecteur_id }),
-            supabase.from('commissions').select('commission_amount, status').eq('organization_id', profile.organization_id).eq('prospecteur_id', profile.prospecteur_id),
+            supabase
+              .from('commissions')
+              .select('commission_amount, status')
+              .eq('organization_id', profile.organization_id)
+              .eq('prospecteur_id', profile.prospecteur_id),
           ]);
-          const completed = (salesData ?? [])?.filter(s => s?.status === 'completed');
+          const completed = (salesData ?? [])?.filter((s) => s?.status === 'completed');
           setTotalSales(completed?.length);
-          setTotalAmount(completed?.reduce((sum, s) => sum + (s?.amount_cents ?? 0), 0));
+          setTotalAmount(completed?.reduce((sum, s) => sum + Number(s?.amount_cents ?? 0), 0));
           const rows = (comms ?? []) as { commission_amount: number | null; status: string }[];
-          setCommissionPending(rows.filter(c => c.status !== 'paid').reduce((sum, c) => sum + (Number(c.commission_amount) || 0) * 100, 0));
-          setCommissionPaid(rows.filter(c => c.status === 'paid').reduce((sum, c) => sum + (Number(c.commission_amount) || 0) * 100, 0));
+          setCommissionPending(
+            rows
+              .filter((c) => c.status !== 'paid')
+              .reduce((sum, c) => sum + (Number(c.commission_amount) || 0) * 100, 0)
+          );
+          setCommissionPaid(
+            rows
+              .filter((c) => c.status === 'paid')
+              .reduce((sum, c) => sum + (Number(c.commission_amount) || 0) * 100, 0)
+          );
         }
       }
       setLoading(false);
@@ -43,7 +55,11 @@ export default function TerrainCommissionPage() {
   }, []);
 
   const fmt = (cents: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: orgCurrency, maximumFractionDigits: 0 }).format(cents / 100);
+    new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: orgCurrency,
+      maximumFractionDigits: 0,
+    }).format(cents / 100);
 
   return (
     <div className="p-5 lg:p-8 space-y-6">
@@ -65,9 +81,7 @@ export default function TerrainCommissionPage() {
             <Wallet size={16} className="text-[#D4AF37]" />
             <p className="text-xs text-[#A0AEC0]">Chiffre d&apos;affaires généré</p>
           </div>
-          <p className="text-3xl font-bold text-[#D4AF37]">
-            {loading ? '—' : fmt(totalAmount)}
-          </p>
+          <p className="text-3xl font-bold text-[#D4AF37]">{loading ? '—' : fmt(totalAmount)}</p>
         </div>
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-5">
           <p className="text-xs text-[#A0AEC0] mb-3">Commission à recevoir</p>
@@ -85,9 +99,10 @@ export default function TerrainCommissionPage() {
           <p className="text-sm font-semibold text-white">À propos de votre commission</p>
         </div>
         <p className="text-sm text-[#A0AEC0] leading-relaxed">
-          Votre commission est calculée par votre administrateur sur la base de vos ventes complétées et validées.
-          Le taux de commission est défini dans les paramètres de votre organisation.
-          Contactez votre responsable pour connaître votre taux exact et le calendrier de règlement.
+          Votre commission est calculée par votre administrateur sur la base de vos ventes
+          complétées et validées. Le taux de commission est défini dans les paramètres de votre
+          organisation. Contactez votre responsable pour connaître votre taux exact et le calendrier
+          de règlement.
         </p>
       </div>
     </div>

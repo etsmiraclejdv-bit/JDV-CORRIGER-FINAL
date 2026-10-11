@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client';
+import type { TablesUpdate } from '@/types/database.types';
 import { newArticleCode, toCents } from '@/lib/services/compat';
 
 export interface Product {
@@ -17,11 +18,15 @@ type Row = Record<string, unknown>;
 
 function mapProduct(a: Row, stockQuantity = 0, minimumQuantity = 0): Product {
   return {
-    ...(a as Product),
+    id: String(a.id ?? ''),
+    organization_id: String(a.organization_id ?? ''),
+    name: String(a.name ?? ''),
     sku: String(a.code ?? ''),
     price_cents: toCents(a.cash_price ?? a.fixed_price),
     stock_quantity: Number(stockQuantity),
     minimum_quantity: Number(minimumQuantity),
+    created_at: String(a.created_at ?? ''),
+    active: typeof a.active === 'boolean' ? a.active : undefined,
   };
 }
 
@@ -59,7 +64,7 @@ export async function fetchProducts(organizationId: string, filters?: { search?:
   }
 
   return {
-    data: ((data ?? []) as Row[]).map(a => {
+    data: ((data ?? []) as Row[]).map((a) => {
       const s = byArticle.get(String(a.id));
       return mapProduct(a, s?.quantity ?? 0, s?.minimum ?? 0);
     }),
@@ -77,13 +82,23 @@ export async function fetchProductById(productId: string) {
     .eq('article_id', productId);
 
   const quantity = ((inventory ?? []) as Row[]).reduce((n, r) => n + Number(r.quantity ?? 0), 0);
-  const minimum = ((inventory ?? []) as Row[]).reduce((n, r) => Math.max(n, Number(r.minimum_quantity ?? 0)), 0);
+  const minimum = ((inventory ?? []) as Row[]).reduce(
+    (n, r) => Math.max(n, Number(r.minimum_quantity ?? 0)),
+    0
+  );
   return { data: mapProduct(data as Row, quantity, minimum), error: null };
 }
 
 export async function createProduct(product: Partial<Product>) {
   if (!product.organization_id) {
-    return { data: null, error: new Error('organization_id is required') as unknown as { message: string } };
+    return {
+      data: null,
+      error: new Error('organization_id is required') as unknown as { message: string },
+    };
+  }
+
+  if (!product.name?.trim()) {
+    return { data: null, error: new Error('name is required') as unknown as { message: string } };
   }
 
   const price = Math.round((product.price_cents ?? 0) / 100);
@@ -92,7 +107,7 @@ export async function createProduct(product: Partial<Product>) {
     .insert({
       organization_id: product.organization_id,
       code: (product.sku ?? '').trim() || newArticleCode(),
-      name: product.name,
+      name: product.name.trim(),
       fixed_price: price,
       cash_price: price,
       credit_price: price,
@@ -106,7 +121,7 @@ export async function createProduct(product: Partial<Product>) {
 }
 
 export async function updateProduct(productId: string, updates: Partial<Product>) {
-  const patch: Row = { updated_at: new Date().toISOString() };
+  const patch: TablesUpdate<'articles'> = { updated_at: new Date().toISOString() };
   if (updates.name !== undefined) patch.name = updates.name;
   if (updates.sku !== undefined && updates.sku.trim()) patch.code = updates.sku.trim();
   if (updates.active !== undefined) patch.active = updates.active;
@@ -117,7 +132,12 @@ export async function updateProduct(productId: string, updates: Partial<Product>
     patch.credit_price = price;
   }
 
-  const { data, error } = await supabase.from('articles').update(patch).eq('id', productId).select().single();
+  const { data, error } = await supabase
+    .from('articles')
+    .update(patch)
+    .eq('id', productId)
+    .select()
+    .single();
   if (error || !data) return { data: null, error };
   return { data: mapProduct(data as Row), error: null };
 }

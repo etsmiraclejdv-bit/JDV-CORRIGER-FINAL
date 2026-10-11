@@ -47,7 +47,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,md,json}\"",
     "serve": "next start",
     "type-check": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test \"tests/*.test.mjs\""
+    "test": "node --experimental-strip-types --test \"tests/*.test.mjs\"",
+    "db:types": "node scripts/generate-supabase-types.mjs"
   },
   "dependencies": {
     "@dhiwise/component-tagger": "^1.0.16",
@@ -83,5 +84,8 @@
     "tailwindcss": "3.4.6",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=22 <23"
   }
 }

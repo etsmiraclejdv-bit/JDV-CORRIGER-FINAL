@@ -33,20 +33,26 @@ export function validateVisit(v: VisitInput, now: Date): string | null {
   if (!v.prospect_id) return 'Choisissez le prospect visité.';
   const when = new Date(v.visit_date);
   if (Number.isNaN(when.getTime())) return 'La date de la visite est invalide.';
-  if (when.getTime() > now.getTime() + FUTURE_TOLERANCE_MS) return 'La date de la visite ne peut pas être dans le futur.';
-  if (!VISIT_RESULTS.some((r) => r.value === v.result)) return 'Choisissez le résultat de la visite.';
-  if (v.notes.length > MAX_NOTES) return `Les notes sont trop longues (${MAX_NOTES} caractères maximum).`;
+  if (when.getTime() > now.getTime() + FUTURE_TOLERANCE_MS)
+    return 'La date de la visite ne peut pas être dans le futur.';
+  if (!VISIT_RESULTS.some((r) => r.value === v.result))
+    return 'Choisissez le résultat de la visite.';
+  if (v.notes.length > MAX_NOTES)
+    return `Les notes sont trop longues (${MAX_NOTES} caractères maximum).`;
   if (v.next_follow_up_at) {
     const next = new Date(v.next_follow_up_at);
     if (Number.isNaN(next.getTime())) return 'La date de relance est invalide.';
-    if (next.getTime() <= when.getTime()) return 'La prochaine relance doit être postérieure à la visite.';
+    if (next.getTime() <= when.getTime())
+      return 'La prochaine relance doit être postérieure à la visite.';
   }
   const hasLat = v.latitude !== null;
   const hasLng = v.longitude !== null;
   if (hasLat !== hasLng) return 'La position GPS est incomplète.';
   if (hasLat && hasLng) {
-    if (!Number.isFinite(v.latitude) || Math.abs(v.latitude as number) > 90) return 'La latitude est invalide.';
-    if (!Number.isFinite(v.longitude) || Math.abs(v.longitude as number) > 180) return 'La longitude est invalide.';
+    if (!Number.isFinite(v.latitude) || Math.abs(v.latitude as number) > 90)
+      return 'La latitude est invalide.';
+    if (!Number.isFinite(v.longitude) || Math.abs(v.longitude as number) > 180)
+      return 'La longitude est invalide.';
   }
   return null;
 }
@@ -92,17 +98,34 @@ export interface FollowUpProspect {
 
 const CLOSED_STATUSES = ['converted', 'lost', 'inactive', 'closed', 'archived'];
 
-export function prospectsDueForFollowUp<T extends FollowUpProspect>(prospects: T[], now: Date): T[] {
+export function prospectsDueForFollowUp<T extends FollowUpProspect>(
+  prospects: T[],
+  now: Date
+): T[] {
   return prospects
-    .filter((p) => !CLOSED_STATUSES.includes(p.status) && p.next_follow_up_at && new Date(p.next_follow_up_at).getTime() <= now.getTime())
+    .filter(
+      (p) =>
+        !CLOSED_STATUSES.includes(p.status) &&
+        p.next_follow_up_at &&
+        new Date(p.next_follow_up_at).getTime() <= now.getTime()
+    )
     .sort((a, b) => (a.next_follow_up_at as string).localeCompare(b.next_follow_up_at as string));
 }
 
 export function mapsUrl(lat: unknown, lng: unknown): string {
-  if (lat === null || lat === undefined || lng === null || lng === undefined || lat === '' || lng === '') return '';
+  if (
+    lat === null ||
+    lat === undefined ||
+    lng === null ||
+    lng === undefined ||
+    lat === '' ||
+    lng === ''
+  )
+    return '';
   const la = Number(lat);
   const lo = Number(lng);
-  if (!Number.isFinite(la) || !Number.isFinite(lo) || Math.abs(la) > 90 || Math.abs(lo) > 180) return '';
+  if (!Number.isFinite(la) || !Number.isFinite(lo) || Math.abs(la) > 90 || Math.abs(lo) > 180)
+    return '';
   return `https://www.google.com/maps?q=${la},${lo}`;
 }
 

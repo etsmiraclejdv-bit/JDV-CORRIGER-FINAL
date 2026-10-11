@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { checkRateLimitShared, getClientIp } from '@/lib/middleware/rateLimiter';
-import { sanitizeString, sanitizeEmail, sanitizeUUID, sanitizeNumber } from '@/lib/security/sanitize';
+import {
+  sanitizeString,
+  sanitizeEmail,
+  sanitizeUUID,
+  sanitizeNumber,
+} from '@/lib/security/sanitize';
 
 export async function POST(req: NextRequest) {
   try {
     // ── Rate limiting: 10 requests per 15 minutes per IP ────────────────────
     const ip = getClientIp(req);
-    const rl = await checkRateLimitShared(`create-prospecteur:${ip}`, { limit: 10, windowMs: 15 * 60 * 1000 });
+    const rl = await checkRateLimitShared(`create-prospecteur:${ip}`, {
+      limit: 10,
+      windowMs: 15 * 60 * 1000,
+    });
     if (!rl.allowed) {
       return NextResponse.json(
         { error: 'Trop de requêtes. Veuillez réessayer dans quelques minutes.' },
@@ -36,11 +44,17 @@ export async function POST(req: NextRequest) {
     const workZone = sanitizeString(body.workZone);
 
     if (!email || !password || !organizationId) {
-      return NextResponse.json({ error: 'email, password et organizationId sont requis' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'email, password et organizationId sont requis' },
+        { status: 400 }
+      );
     }
 
     if (password.length < 8) {
-      return NextResponse.json({ error: 'Le mot de passe doit contenir au moins 8 caractères' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Le mot de passe doit contenir au moins 8 caractères' },
+        { status: 400 }
+      );
     }
     if (!firstName) {
       return NextResponse.json({ error: 'Le prénom est requis' }, { status: 400 });
@@ -54,7 +68,8 @@ export async function POST(req: NextRequest) {
 
     const supabaseUrl0 = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    const supabaseAdminKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseAdminKey =
+      process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl0 || !supabaseAnonKey || !supabaseAdminKey) {
       console.error('[create-prospecteur] configuration Supabase serveur incomplète', {
@@ -117,18 +132,22 @@ export async function POST(req: NextRequest) {
     }
 
     const sa = (saRows ?? [])[0] as { status?: string; actif?: boolean | null } | undefined;
-    const isSuperFromTable =
-      !!sa &&
-      sa.status === 'active' &&
-      sa.actif !== false;
+    const isSuperFromTable = !!sa && sa.status === 'active' && sa.actif !== false;
     const isSuper = isSuperFromWorkspace || isSuperFromTable;
 
     let member: { role?: string } | null = null;
-    let organization: { id?: string; owner_user_id?: string | null; status?: string | null } | null = null;
+    let organization: {
+      id?: string;
+      owner_user_id?: string | null;
+      status?: string | null;
+    } | null = null;
 
     // Si ce n'est pas le concepteur, on vérifie alors l'appartenance/admin de l'entreprise.
     if (!isSuper) {
-      const [{ data: memberRow, error: memberError }, { data: organizationRow, error: organizationError }] = await Promise.all([
+      const [
+        { data: memberRow, error: memberError },
+        { data: organizationRow, error: organizationError },
+      ] = await Promise.all([
         supabaseAdmin
           .from('organization_members')
           .select('role')
@@ -160,7 +179,11 @@ export async function POST(req: NextRequest) {
       }
 
       member = memberRow as { role?: string } | null;
-      organization = organizationRow as { id?: string; owner_user_id?: string | null; status?: string | null } | null;
+      organization = organizationRow as {
+        id?: string;
+        owner_user_id?: string | null;
+        status?: string | null;
+      } | null;
     }
 
     const memberRole = String(member?.role ?? '').toLowerCase();
@@ -178,17 +201,23 @@ export async function POST(req: NextRequest) {
     // Les concepteurs/Super Admins disposent de leur espace interne sans abonnement.
     // Pour les entreprises classiques, la limite du plan reste contrôlée par la base.
     if (!isSuper) {
-      const { data: limit, error: limitError } = await supabaseUser.rpc('jdvcrm_check_subscription_limit_v1', {
-        p_organization_id: organizationId,
-        p_resource_code: 'prospecteurs',
-      });
+      const { data: limit, error: limitError } = await supabaseUser.rpc(
+        'jdvcrm_check_subscription_limit_v1',
+        {
+          p_organization_id: organizationId,
+          p_resource_code: 'prospecteurs',
+        }
+      );
       if (limitError) {
         return NextResponse.json({ error: limitError.message }, { status: 400 });
       }
       const limitRow = Array.isArray(limit) ? limit[0] : limit;
       if (limitRow && limitRow.allowed === false) {
         return NextResponse.json(
-          { error: 'Limite de prospecteurs atteinte pour votre abonnement. Passez à un plan supérieur.' },
+          {
+            error:
+              'Limite de prospecteurs atteinte pour votre abonnement. Passez à un plan supérieur.',
+          },
           { status: 403 }
         );
       }
@@ -210,8 +239,16 @@ export async function POST(req: NextRequest) {
     const userId = authData.user.id;
 
     const rollback = async (message: string) => {
-      await supabaseAdmin.from('organization_members').delete().eq('user_id', userId).eq('organization_id', organizationId);
-      await supabaseAdmin.from('prospecteurs').delete().eq('user_id', userId).eq('organization_id', organizationId);
+      await supabaseAdmin
+        .from('organization_members')
+        .delete()
+        .eq('user_id', userId)
+        .eq('organization_id', organizationId);
+      await supabaseAdmin
+        .from('prospecteurs')
+        .delete()
+        .eq('user_id', userId)
+        .eq('organization_id', organizationId);
       await supabaseAdmin.auth.admin.deleteUser(userId);
       return NextResponse.json({ error: message }, { status: 400 });
     };
@@ -240,7 +277,8 @@ export async function POST(req: NextRequest) {
       })
       .select('id, code')
       .single();
-    if (prospError || !prosp) return rollback(prospError?.message ?? 'Création du prospecteur impossible');
+    if (prospError || !prosp)
+      return rollback(prospError?.message ?? 'Création du prospecteur impossible');
 
     // 4. Portefeuille clients privé du prospecteur
     await supabaseAdmin.from('client_portfolios').insert({
@@ -250,9 +288,26 @@ export async function POST(req: NextRequest) {
       name: 'Mon portefeuille clients',
     });
     if (warehouseId) {
-      const { data: warehouse } = await supabaseAdmin.from('warehouses').select('id').eq('id', warehouseId).eq('organization_id', organizationId).eq('active', true).maybeSingle();
+      const { data: warehouse } = await supabaseAdmin
+        .from('warehouses')
+        .select('id')
+        .eq('id', warehouseId)
+        .eq('organization_id', organizationId)
+        .eq('active', true)
+        .maybeSingle();
       if (!warehouse) return rollback('Entrepôt sélectionné introuvable ou inactif');
-      const { error: assignmentError } = await supabaseAdmin.from('prospecteur_warehouse_assignments').insert({ organization_id: organizationId, prospecteur_id: (prosp as { id: string }).id, warehouse_id: warehouseId, department: department || null, city: workCity || null, work_zone: workZone || null, is_primary: true, active: true });
+      const { error: assignmentError } = await supabaseAdmin
+        .from('prospecteur_warehouse_assignments')
+        .insert({
+          organization_id: organizationId,
+          prospecteur_id: (prosp as { id: string }).id,
+          warehouse_id: warehouseId,
+          department: department || null,
+          city: workCity || null,
+          work_zone: workZone || null,
+          is_primary: true,
+          active: true,
+        });
       if (assignmentError) return rollback(assignmentError.message);
     }
 
@@ -269,7 +324,12 @@ export async function POST(req: NextRequest) {
         apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       },
       body: JSON.stringify({ type: 'prospecteur_welcome', to: email }),
-    }).catch(err => console.error('[create-prospecteur] email accueil :', err instanceof Error ? err.message : err));
+    }).catch((err) =>
+      console.error(
+        '[create-prospecteur] email accueil :',
+        err instanceof Error ? err.message : err
+      )
+    );
 
     return NextResponse.json({
       success: true,

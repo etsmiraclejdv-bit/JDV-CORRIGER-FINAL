@@ -14,7 +14,7 @@ export interface Notification {
 
 export async function fetchNotifications(userId: string, limit = 10) {
   const { data, error } = await supabase
-    .from('notifications' as never)
+    .from('notifications')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
@@ -24,7 +24,7 @@ export async function fetchNotifications(userId: string, limit = 10) {
 
 export async function fetchUnreadCount(userId: string): Promise<number> {
   const { count, error } = await supabase
-    .from('notifications' as never)
+    .from('notifications')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
     .is('read_at', null);
@@ -34,7 +34,7 @@ export async function fetchUnreadCount(userId: string): Promise<number> {
 
 export async function markNotificationRead(notificationId: string) {
   const { error } = await supabase
-    .from('notifications' as never)
+    .from('notifications')
     .update({ read_at: new Date().toISOString() })
     .eq('id', notificationId);
   return { error };
@@ -42,7 +42,7 @@ export async function markNotificationRead(notificationId: string) {
 
 export async function markAllNotificationsRead(userId: string) {
   const { error } = await supabase
-    .from('notifications' as never)
+    .from('notifications')
     .update({ read_at: new Date().toISOString() })
     .eq('user_id', userId)
     .is('read_at', null);

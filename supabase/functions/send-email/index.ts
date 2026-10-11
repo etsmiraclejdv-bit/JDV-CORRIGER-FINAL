@@ -32,10 +32,10 @@ serve(async (req) => {
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const resendKey = Deno.env.get("RESEND_API_KEY");
-  const siteUrl = (Deno.env.get("SITE_URL") ?? "https://imaginative-rabanadas-afe4e7.netlify.app").replace(/\/+$/, "");
+  const siteUrl = (Deno.env.get("SITE_URL") ?? "").replace(/\/+$/, "");
   const from = Deno.env.get("EMAIL_FROM") ?? "JDV CRM <onboarding@resend.dev>";
 
-  if (!supabaseUrl || !anonKey || !serviceRoleKey) {
+  if (!supabaseUrl || !anonKey || !serviceRoleKey || !siteUrl) {
     console.error("[send-email] configuration Supabase incomplète");
     return json({ error: "Service email non configuré" }, 500);
   }
