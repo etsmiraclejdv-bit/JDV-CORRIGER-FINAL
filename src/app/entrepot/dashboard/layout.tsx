@@ -151,3 +151,11 @@ function Shell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+export default function EntrepotDashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <WarehouseProvider>
+      <Shell>{children}</Shell>
+    </WarehouseProvider>
+  );
+}
