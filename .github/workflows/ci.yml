@@ -36,7 +36,13 @@ jobs:
             src/app/entrepot/dashboard/layout.tsx \
             src/app/entrepot/dashboard/sous-entrepots/page.tsx \
             src/app/entrepot/login/page.tsx \
-            src/app/hidden-concepteur-gate/dashboard/company-applications/page.tsx
+            src/app/hidden-concepteur-gate/dashboard/company-applications/page.tsx \
+            src/app/hidden-concepteur-gate/dashboard/design-studio/page.tsx \
+            src/app/layout.tsx \
+            src/app/loading.tsx \
+            src/components/CompanyValidationPanel.tsx \
+            src/components/OrganizationAmbience.tsx \
+            src/components/theme/ThemeCustomizer.tsx
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [[ -n "$(git status --porcelain -- src/app)" ]]; then
