@@ -45,8 +45,8 @@ jobs:
             src/components/theme/ThemeCustomizer.tsx
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [[ -n "$(git status --porcelain -- src/app)" ]]; then
-            git add src/app
+          if [[ -n "$(git status --porcelain -- src/app src/components)" ]]; then
+            git add src/app src/components
             git commit -m "style: format remaining files required by strict lint"
             git push origin HEAD:fix/duplicate-lucide-import
           fi
