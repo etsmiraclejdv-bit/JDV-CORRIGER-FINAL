@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { CheckCircle2, MessageSquareQuote, Pencil, Plus, RefreshCw, Save, Star, Trash2, X } from 'lucide-react';
+import { MessageSquareQuote, Pencil, RefreshCw, Save, Star, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { checkCurrentSuperAdmin } from '@/lib/auth/super-admin';
