@@ -49,7 +49,7 @@ export default function AmbiancePage() {
   async function saveSettings(url = selectedUrl) {
     if (!organizationId) return;
     setBusy(true); setMessage('');
-    const { error } = await supabase.from('organization_personalization').upsert({
+    const { error } = await db.from('organization_personalization').upsert({
       organization_id: organizationId,
       dashboard_background_url: url || null,
       dashboard_background_opacity: opacity / 100,
@@ -73,7 +73,7 @@ export default function AmbiancePage() {
     if (uploadError) { setBusy(false); setMessage(`Téléversement impossible : ${uploadError.message}`); return; }
     const { data } = supabase.storage.from(bucket).getPublicUrl(path);
     setSelectedUrl(data.publicUrl);
-    const { error: saveError } = await supabase.from('organization_personalization').upsert({
+    const { error: saveError } = await db.from('organization_personalization').upsert({
       organization_id: organizationId, dashboard_background_url: data.publicUrl,
       dashboard_background_opacity: opacity / 100, dashboard_background_fit: fit,
       dashboard_background_motion: motion, dashboard_background_updated_at: new Date().toISOString(),
