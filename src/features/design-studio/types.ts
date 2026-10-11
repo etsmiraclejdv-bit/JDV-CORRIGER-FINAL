@@ -3,6 +3,12 @@ export type DesignStatus = 'draft' | 'published' | 'archived';
 export type DesignMode = 'light' | 'dark' | 'system';
 export type DesignDensity = 'comfortable' | 'compact';
 
+export interface DesignElementStyle {
+  color?: string; backgroundColor?: string; fontFamily?: string; fontSize?: number;
+  fontWeight?: string; borderColor?: string; borderWidth?: number; borderStyle?: string;
+  borderRadius?: number; shadow?: string; padding?: number;
+}
+
 export interface DesignConfig {
   brandName: string;
   primaryColor: string;
@@ -12,6 +18,7 @@ export interface DesignConfig {
   density: DesignDensity;
   radius: 'small' | 'medium' | 'large';
   fontScale: 'small' | 'normal' | 'large';
+  elementStyles?: Record<string, DesignElementStyle>;
 }
 
 export interface DesignVersion {

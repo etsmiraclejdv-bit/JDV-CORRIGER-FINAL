@@ -67,7 +67,7 @@ export default function VisualDesignEditor({config,onChange}:{config:DesignConfi
     <label className="block space-y-1.5"><span className="text-xs text-slate-300">Ombre</span><select value={style.shadow??'none'} onChange={e=>update({shadow:e.target.value})} className="w-full rounded-lg bg-[#08152F] p-2 text-sm text-white">{shadows.map(s=><option key={s.value} value={s.value}>{s.label}</option>)}</select></label>
    </div>
    <button type="button" onClick={resetSelected} className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-2.5 text-sm text-slate-300"><RotateCcw size={14}/> Réinitialiser cet élément</button>
-   <p className="text-[11px] leading-5 text-slate-500">Les réglages sont conservés dans la configuration JSON lorsque tu enregistres un brouillon ou publies. L’application aux pages réelles nécessite de relier les composants CRM à ces styles.</p>
+   <p className="text-[11px] leading-5 text-slate-500">Les réglages sont enregistrés avec la configuration publiée. Ils s’appliquent aux éléments du CRM portant le repère de design correspondant ; le menu latéral et les titres des espaces Entreprise et Concepteur sont déjà reliés. Les cartes, champs, boutons et badges des pages métier restent à baliser progressivement.</p>
   </aside>
  </div>;
 }
