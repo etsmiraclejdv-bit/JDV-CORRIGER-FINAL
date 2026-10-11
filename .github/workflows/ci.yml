@@ -42,7 +42,7 @@ jobs:
             src/app/loading.tsx \
             src/components/CompanyValidationPanel.tsx \
             src/components/OrganizationAmbience.tsx \
-            src/components/theme/ThemeCustomizer.tsx
+            src/components/theme/ThemeCustomizer.tsx \
             src/features/design-studio/VisualDesignEditor.tsx \
             src/features/design-studio/designService.ts \
             src/features/design-studio/types.ts \
