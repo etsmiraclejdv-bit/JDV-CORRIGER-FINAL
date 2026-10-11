@@ -42,3 +42,10 @@ Current definitions were also captured for these dependencies used by the live o
 - `public.jdvcrm_check_subscription_limit_v1(uuid,text)`: checks organization subscription and resource limits; the member-role RPC calls it before granting `business_admin`.
 
 The live trigger inspection confirmed three triggers on `public.organization_members` and no non-internal triggers directly attached to `organization_teams` or `organization_team_members`. These are current-state facts only; they do not prove which objects were introduced by migration version `20261011065602`.
+
+
+## Second forensic candidate: company application validation and document review
+
+A second partial evidence artifact was added at `docs/reconstruction-candidates/20261008115141_ai_company_validation_v1.partial.sql.txt`. It records five currently observed function bodies from the live database: application write guard, application-document guard, pending application listing, document review queue, and manual document review RPC.
+
+This is **not** the original `20261008115141_ai_company_validation_v1` migration. It does not include the full schema, trigger attachments, RLS policies, grants, storage configuration, Edge Function/provider configuration, secrets, or the complete AI analysis path. Function presence alone does not prove those functions were created by this migration. Keep this evidence file outside `supabase/migrations/` and do not execute it.
