@@ -31,7 +31,9 @@ const frError = (msg: string) => ERRORS.find(([k]) => msg.includes(k))?.[1] ?? m
 
 export default function BusinessProspecteursPage() {
   const [prospecteurs, setProspecteurs] = useState<ProspecteurRow[]>([]);
-  const [warehouses, setWarehouses] = useState<{id:string;name:string;code:string;city:string|null}[]>([]);
+  const [warehouses, setWarehouses] = useState<
+    { id: string; name: string; code: string; city: string | null }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'suspended'>('all');
@@ -80,7 +82,7 @@ export default function BusinessProspecteursPage() {
       return;
     }
 
-    const profiles = (rows as Record<string, unknown>[]).map(r => ({
+    const profiles = (rows as Record<string, unknown>[]).map((r) => ({
       id: r.id as string,
       full_name: personName(r as never) || 'Sans nom',
       phone: (r.phone as string) ?? null,
@@ -92,7 +94,7 @@ export default function BusinessProspecteursPage() {
       address: (r.address as string) ?? null,
       commission_rate: r.commission_rate === null || r.commission_rate === undefined ? null : Number(r.commission_rate),
     }));
-    const ids = profiles.map(p => p.id);
+    const ids = profiles.map((p) => p.id);
 
     const { data: salesRows } = await supabase
       .from('sales')
@@ -103,7 +105,7 @@ export default function BusinessProspecteursPage() {
 
     const salesCountMap: Record<string, number> = {};
     const salesAmountMap: Record<string, number> = {};
-    ((salesRes.data ?? []) as Record<string, unknown>[]).forEach(s => {
+    ((salesRes.data ?? []) as Record<string, unknown>[]).forEach((s) => {
       const pid = s.prospecteur_id as string | null;
       if (pid) {
         salesCountMap[pid] = (salesCountMap[pid] ?? 0) + 1;
@@ -111,11 +113,13 @@ export default function BusinessProspecteursPage() {
       }
     });
 
-    setProspecteurs(profiles.map(p => ({
-      ...p,
-      sales_count: salesCountMap[p.id] ?? 0,
-      sales_amount: salesAmountMap[p.id] ?? 0,
-    })));
+    setProspecteurs(
+      profiles.map((p) => ({
+        ...p,
+        sales_count: salesCountMap[p.id] ?? 0,
+        sales_amount: salesAmountMap[p.id] ?? 0,
+      }))
+    );
     setLoading(false);
   }
 
@@ -140,7 +144,10 @@ export default function BusinessProspecteursPage() {
         toast.error(json.error ?? 'Création impossible');
         return;
       }
-      toast.success(`Prospecteur créé (${json.code ?? 'code généré'}). Communiquez-lui son mot de passe de vive voix ou par un canal sûr : il n'est jamais envoyé par email.`, { duration: 9000 });
+      toast.success(
+        `Prospecteur créé (${json.code ?? 'code généré'}). Communiquez-lui son mot de passe de vive voix ou par un canal sûr : il n'est jamais envoyé par email.`,
+        { duration: 9000 }
+      );
       setModalOpen(false);
       setForm(emptyForm);
       loadProspecteurs(orgId);
@@ -186,21 +193,33 @@ export default function BusinessProspecteursPage() {
   );
 
   const fmt = (cents: number) =>
-    new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(cents / 100);
+    new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'XOF',
+      maximumFractionDigits: 0,
+    }).format(cents / 100);
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Prospecteurs</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">{prospecteurs.length} prospecteur{prospecteurs.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm text-[#A0AEC0] mt-1">
+            {prospecteurs.length} prospecteur{prospecteurs.length !== 1 ? 's' : ''}
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => orgId && loadProspecteurs(orgId)} className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm transition-colors">
+          <button
+            onClick={() => orgId && loadProspecteurs(orgId)}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm transition-colors"
+          >
             <RefreshCw size={14} />
             Actualiser
           </button>
-          <button onClick={() => setModalOpen(true)} className="flex items-center gap-2 btn-gold px-4 py-2 rounded-xl text-sm font-bold">
+          <button
+            onClick={() => setModalOpen(true)}
+            className="flex items-center gap-2 btn-gold px-4 py-2 rounded-xl text-sm font-bold"
+          >
             <Plus size={14} />
             Nouveau prospecteur
           </button>
@@ -232,7 +251,9 @@ export default function BusinessProspecteursPage() {
           <div className="py-16 text-center">
             <Users size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
             <p className="text-[#A0AEC0] text-sm">Aucun prospecteur trouvé</p>
-            <p className="text-xs text-[#718096] mt-1">Cliquez sur « Nouveau prospecteur » pour créer un compte terrain</p>
+            <p className="text-xs text-[#718096] mt-1">
+              Cliquez sur « Nouveau prospecteur » pour créer un compte terrain
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -248,8 +269,11 @@ export default function BusinessProspecteursPage() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(p => (
-                  <tr key={p.id} className="border-b border-[#D4AF37]/5 hover:bg-[#0A1628]/40 transition-colors">
+                {filtered.map((p) => (
+                  <tr
+                    key={p.id}
+                    className="border-b border-[#D4AF37]/5 hover:bg-[#0A1628]/40 transition-colors"
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] text-xs font-bold">
@@ -268,7 +292,9 @@ export default function BusinessProspecteursPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
                         <ShoppingCart size={12} className="text-[#D4AF37]" />
-                        <span className="text-sm font-semibold text-white">{p.sales_count ?? 0}</span>
+                        <span className="text-sm font-semibold text-white">
+                          {p.sales_count ?? 0}
+                        </span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold text-[#D4AF37]">
@@ -330,60 +356,137 @@ export default function BusinessProspecteursPage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Prénom *</label>
-              <input required value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
-                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
+              <input
+                required
+                value={form.firstName}
+                onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
+              />
             </div>
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Nom</label>
-              <input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
-                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
+              <input
+                value={form.lastName}
+                onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
+              />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Email de connexion *</label>
-            <input required type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
+            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              Email de connexion *
+            </label>
+            <input
+              required
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Téléphone</label>
-              <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
+              <input
+                value={form.phone}
+                onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
+              />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Commission (%)</label>
-              <input type="number" min={0} max={100} step="0.5" value={form.commissionRate}
-                onChange={e => setForm(f => ({ ...f, commissionRate: Math.min(100, Math.max(0, Number(e.target.value) || 0)) }))}
-                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                Commission (%)
+              </label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step="0.5"
+                value={form.commissionRate}
+                onChange={(e) =>
+                  setForm((f) => ({
+                    ...f,
+                    commissionRate: Math.min(100, Math.max(0, Number(e.target.value) || 0)),
+                  }))
+                }
+                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
+              />
             </div>
           </div>
           <div className="space-y-3 rounded-xl border border-[#D4AF37]/10 p-4">
-            <p className="text-xs font-semibold text-[#D4AF37]">Affectation terrain (définie par l’administrateur)</p>
-            <select value={form.warehouseId} onChange={e => setForm(f => ({ ...f, warehouseId: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm">
+            <p className="text-xs font-semibold text-[#D4AF37]">
+              Affectation terrain (définie par l’administrateur)
+            </p>
+            <select
+              value={form.warehouseId}
+              onChange={(e) => setForm((f) => ({ ...f, warehouseId: e.target.value }))}
+              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
+            >
               <option value="">Aucun entrepôt pour le moment</option>
-              {warehouses.map(w => <option key={w.id} value={w.id}>{w.name} — {w.code}{w.city ? ` — ${w.city}` : ''}</option>)}
+              {warehouses.map((w) => (
+                <option key={w.id} value={w.id}>
+                  {w.name} — {w.code}
+                  {w.city ? ` — ${w.city}` : ''}
+                </option>
+              ))}
             </select>
             <div className="grid grid-cols-3 gap-3">
-              <input placeholder="Département" value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm" />
-              <input placeholder="Ville de travail" value={form.workCity} onChange={e => setForm(f => ({ ...f, workCity: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm" />
-              <input placeholder="Zone / secteur" value={form.workZone} onChange={e => setForm(f => ({ ...f, workZone: e.target.value }))} className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm" />
+              <input
+                placeholder="Département"
+                value={form.department}
+                onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
+                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
+              />
+              <input
+                placeholder="Ville de travail"
+                value={form.workCity}
+                onChange={(e) => setForm((f) => ({ ...f, workCity: e.target.value }))}
+                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
+              />
+              <input
+                placeholder="Zone / secteur"
+                value={form.workZone}
+                onChange={(e) => setForm((f) => ({ ...f, workZone: e.target.value }))}
+                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
+              />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Mot de passe provisoire * (8 caractères minimum)</label>
+            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              Mot de passe provisoire * (8 caractères minimum)
+            </label>
             <div className="relative">
-              <input required minLength={8} type={showPwd ? 'text' : 'password'} value={form.password}
-                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 pr-10 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
-              <button type="button" onClick={() => setShowPwd(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#718096] hover:text-white">
+              <input
+                required
+                minLength={8}
+                type={showPwd ? 'text' : 'password'}
+                value={form.password}
+                onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 pr-10 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPwd((v) => !v)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#718096] hover:text-white"
+              >
                 {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
             <p className="text-xs text-[#718096] mt-1">Aucun e-mail n’est envoyé : transmettez vous-même le mot de passe au prospecteur.</p>
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors">Annuler</button>
-            <button type="submit" disabled={submitting} className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60">
+            <button
+              type="button"
+              onClick={() => setModalOpen(false)}
+              className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
+            >
               {submitting ? 'Création...' : 'Créer le compte'}
             </button>
           </div>
