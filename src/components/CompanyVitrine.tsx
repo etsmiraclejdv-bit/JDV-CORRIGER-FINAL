@@ -166,7 +166,11 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
   }
 
   if (loading) {
-    return (\n      <main className="min-h-screen bg-slate-950 p-8 text-white">Chargement de la vitrine…</main>\n    );
+    return (
+      <main className="min-h-screen bg-slate-950 p-8 text-white">
+        Chargement de la vitrine…
+      </main>
+    );
   }
 
   if (!data) {
