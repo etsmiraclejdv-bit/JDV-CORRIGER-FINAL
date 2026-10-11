@@ -1,6 +1,14 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { Users, ShoppingCart, Wallet, TrendingUp, AlertTriangle, UserCheck, Globe } from 'lucide-react';
+import {
+  Users,
+  ShoppingCart,
+  Wallet,
+  TrendingUp,
+  AlertTriangle,
+  UserCheck,
+  Globe,
+} from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchClients } from '@/lib/services/clientsService';
 import { fetchSales } from '@/lib/services/salesService';
