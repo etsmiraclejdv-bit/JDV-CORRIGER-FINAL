@@ -19,18 +19,19 @@ export default function PlatformTestimonialsPanel() {
 
   useEffect(() => {
     let active = true;
-    supabase
-      .from('testimonials')
-      .select('id,author_name,author_role,company_name,quote,rating')
-      .eq('status', 'approved')
-      .order('sort_order', { ascending: true })
-      .limit(3)
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('testimonials')
+          .select('id,author_name,author_role,company_name,quote,rating')
+          .eq('status', 'approved')
+          .order('sort_order', { ascending: true })
+          .limit(3);
         if (active) setItems((data ?? []) as PlatformTestimonial[]);
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    })();
     return () => {
       active = false;
     };
