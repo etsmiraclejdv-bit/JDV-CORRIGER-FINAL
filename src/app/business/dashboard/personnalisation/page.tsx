@@ -38,7 +38,7 @@ export default function OrganizationDesignPage() {
     setSaving(true);
     const result = await createDesignVersion({ scope: 'organization', organizationId: orgId, config, status });
     setSaving(false);
-    if (result.error) { toast.error('Enregistrement impossible. Vérifiez vos droits et la migration du studio.'); return; }
+    if (result.error) { toast.error(result.error.message || 'Enregistrement impossible. Vérifiez vos droits et la migration du studio.'); return; }
     toast.success(status === 'published' ? 'Thème de l’entreprise publié.' : 'Brouillon enregistré.');
     await reload(orgId);
   }
