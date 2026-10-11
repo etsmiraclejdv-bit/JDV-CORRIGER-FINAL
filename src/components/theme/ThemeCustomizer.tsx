@@ -137,7 +137,11 @@ export default function ThemeCustomizer() {
 
   // Application du thème : la configuration publiée est superposée aux préférences autorisées.
   useEffect(() => {
-    if (loaded.current) apply(prefs, designConfig);
+    if (!loaded.current) return;
+    apply(prefs, designConfig);
+    const observer = new MutationObserver(() => applyElementStyles(designConfig));
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
   }, [prefs, designConfig]);
 
   // Persistance des préférences personnelles, sans réécriture lors du chargement du thème global.
