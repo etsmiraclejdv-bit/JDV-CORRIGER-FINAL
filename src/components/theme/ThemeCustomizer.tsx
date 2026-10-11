@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, Contrast, Moon, Monitor, Palette, RotateCcw, Sun, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { fetchOrgProfile } from '@/lib/auth/context';
+import type { DesignConfig } from '@/features/design-studio/types';
 
 export type ThemeChoice = 'light' | 'dark' | 'contrast' | 'system';
 export type Accent = 'gold' | 'blue' | 'green' | 'violet' | 'orange';
@@ -48,17 +50,30 @@ function resolveTheme(theme: ThemeChoice): 'light' | 'dark' | 'contrast' {
   return theme;
 }
 
-function apply(p: Prefs) {
+function apply(p: Prefs, design: Partial<DesignConfig> | null = null) {
   const root = document.documentElement;
   root.dataset.theme = resolveTheme(p.theme);
   root.dataset.accent = p.accent;
   root.dataset.font = p.font;
   root.dataset.motion = p.reduceMotion ? 'reduce' : 'normal';
+  if (design?.primaryColor) {
+    root.style.setProperty('--brand', design.primaryColor);
+    root.style.setProperty('--brand-2', design.primaryColor);
+    root.style.setProperty('--brand-3', design.primaryColor);
+    root.style.setProperty('--brand-ink', design.primaryColor);
+    root.style.setProperty('--brand-ink-dark', design.primaryColor);
+  }
+  if (design?.secondaryColor) root.style.setProperty('--secondary', design.secondaryColor);
+  if (design?.accentColor) root.style.setProperty('--accent', design.accentColor);
+  if (design?.density) root.dataset.designDensity = design.density;
+  if (design?.radius) root.dataset.designRadius = design.radius;
+  if (design?.fontScale) root.dataset.designFontScale = design.fontScale;
 }
 
 export default function ThemeCustomizer() {
   const [open, setOpen] = useState(false);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
+  const [designConfig, setDesignConfig] = useState<Partial<DesignConfig> | null>(null);
   const loaded = useRef(false);
   const fromRemote = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -93,7 +108,7 @@ export default function ThemeCustomizer() {
   // Application + sauvegarde
   useEffect(() => {
     if (!loaded.current) return;
-    apply(prefs);
+    apply(prefs, designConfig);
     try { window.localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(prefs)); } catch { /* ignoré */ }
     if (fromRemote.current) { fromRemote.current = false; return; }
     if (timer.current) clearTimeout(timer.current);
@@ -109,16 +124,55 @@ export default function ThemeCustomizer() {
         if (error) await supabase.auth.updateUser({ data: { theme_prefs: prefs } });
       }
     }, 900);
-  }, [prefs]);
+  }, [prefs, designConfig]);
+
+  // Charger la dernière configuration publiée, d'abord la plateforme puis l'entreprise.
+  useEffect(() => {
+    let active = true;
+    async function loadPublishedDesign() {
+      try {
+        const { data: platform } = await supabase
+          .from('design_config_versions')
+          .select('config')
+          .eq('scope', 'platform')
+          .eq('status', 'published')
+          .is('organization_id', null)
+          .order('version_no', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        let resolved = ((platform as { config?: Partial<DesignConfig> } | null)?.config ?? null);
+        const { data: profile } = await fetchOrgProfile();
+        const organizationId = String((profile as Record<string, unknown> | null)?.organization_id ?? '');
+        if (organizationId) {
+          const { data: organization } = await supabase
+            .from('design_config_versions')
+            .select('config')
+            .eq('scope', 'organization')
+            .eq('organization_id', organizationId)
+            .eq('status', 'published')
+            .order('version_no', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const localConfig = (organization as { config?: Partial<DesignConfig> } | null)?.config;
+          if (localConfig) resolved = { ...(resolved ?? {}), ...localConfig };
+        }
+        if (active) setDesignConfig(resolved);
+      } catch {
+        // Avant l'application de la migration, l'application continue avec les thèmes existants.
+      }
+    }
+    void loadPublishedDesign();
+    return () => { active = false; };
+  }, []);
 
   // Mode automatique : suivre l'appareil
   useEffect(() => {
     if (prefs.theme !== 'system') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => apply(prefs);
+    const onChange = () => apply(prefs, designConfig);
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
-  }, [prefs]);
+  }, [prefs, designConfig]);
 
   useEffect(() => {
     if (!open) return;
