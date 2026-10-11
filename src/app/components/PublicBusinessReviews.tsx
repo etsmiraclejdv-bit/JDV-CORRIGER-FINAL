@@ -12,11 +12,7 @@ type ClientReview = {
   created_at: string;
 };
 
-export default function PublicBusinessReviews({
-  organizationId,
-}: {
-  organizationId: string;
-}) {
+export default function PublicBusinessReviews({ organizationId }: { organizationId: string }) {
   const [reviews, setReviews] = useState<ClientReview[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,27 +47,17 @@ export default function PublicBusinessReviews({
     >
       <div className="flex items-start gap-3">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--brand)_14%,transparent)]">
-          <MessageSquareText
-            size={21}
-            style={{ color: 'var(--brand-text)' }}
-          />
+          <MessageSquareText size={21} style={{ color: 'var(--brand-text)' }} />
         </span>
         <div>
-          <h2
-            id="business-reviews-title"
-            className="text-xl font-bold text-foreground"
-          >
+          <h2 id="business-reviews-title" className="text-xl font-bold text-foreground">
             Avis des clients
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Les avis publiés après validation.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">Les avis publiés après validation.</p>
         </div>
       </div>
       {loading ? (
-        <p className="mt-5 text-sm text-muted-foreground">
-          Chargement des avis…
-        </p>
+        <p className="mt-5 text-sm text-muted-foreground">Chargement des avis…</p>
       ) : reviews.length === 0 ? (
         <p className="mt-5 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
           Aucun avis publié pour le moment.
@@ -79,14 +65,8 @@ export default function PublicBusinessReviews({
       ) : (
         <div className="mt-5 space-y-3">
           {reviews.map((review) => (
-            <article
-              key={review.id}
-              className="rounded-xl border border-border p-4"
-            >
-              <div
-                className="flex gap-1"
-                aria-label={'Note : ' + review.rating + ' sur 5'}
-              >
+            <article key={review.id} className="rounded-xl border border-border p-4">
+              <div className="flex gap-1" aria-label={'Note : ' + review.rating + ' sur 5'}>
                 {Array.from({ length: 5 }, (_, index) => (
                   <Star
                     key={index}
@@ -100,9 +80,7 @@ export default function PublicBusinessReviews({
                 {review.comment}
               </p>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">
-                  {review.customer_name}
-                </span>
+                <span className="font-semibold text-foreground">{review.customer_name}</span>
                 <time dateTime={review.created_at}>
                   {new Date(review.created_at).toLocaleDateString('fr-FR')}
                 </time>
