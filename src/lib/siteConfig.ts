@@ -10,4 +10,4 @@ export const SITE = {
     address: '',
     hours: '',
   },
-} as const;
+};
