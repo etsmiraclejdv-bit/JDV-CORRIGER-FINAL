@@ -181,35 +181,6 @@ export default function RegistrationSection() {
 
   if(submitted)return <section id="register" className="py-20"><div className="max-w-xl mx-auto px-6"><div className="card-navy rounded-3xl p-10 text-center"><CheckCircle size={52} className="mx-auto mb-5 text-[#D4AF37]"/><h3 className="text-2xl font-bold text-foreground">Dossier d’entreprise créé</h3><p className="text-muted-foreground mt-3 leading-relaxed">{hasSession?'Redirection vers la vérification de votre entreprise…':'Votre compte est créé. Connectez-vous pour terminer la vérification de votre entreprise.'}</p><Link href={hasSession?'/business/validation':'/business/login'} className="btn-gold inline-flex mt-7 px-6 py-3 rounded-xl font-semibold">Continuer</Link></div></div></section>;
 
-  const input='input-navy w-full px-4 py-3 text-sm';
-  const label='block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide';
-
-  return <section id="register" className="py-20">
-    <div className="max-w-screen-xl mx-auto px-6 lg:px-10">
-      <div className="mb-10 max-w-3xl"><p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">Création sécurisée d’entreprise</p><h2 className="text-3xl lg:text-4xl font-extrabold text-foreground">Votre dossier professionnel <span className="gold-gradient-text">JDV CRM</span></h2><p className="text-muted-foreground mt-4">Une seule inscription pour constituer votre identité d’entreprise, son représentant légal et son secteur d’activité. JDV IA vérifie ensuite votre dossier et vos documents en quelques minutes, sans attendre de validation manuelle.</p></div>
-      {error&&<div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">{error}</div>}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-        <div className="card-navy rounded-3xl p-7">
-          <div className="flex items-center gap-3 mb-6"><Building2 className="text-[#D4AF37]"/><div><h3 className="text-lg font-bold">1. Identité de l’entreprise</h3><p className="text-xs text-muted-foreground">Informations juridiques et commerciales</p></div></div>
-          <div className="grid md:grid-cols-2 gap-5">
-            <Field label="Nom commercial *" error={errors.organizationName?.message}><input {...register('organizationName',{required:'Nom requis'})} className={input} placeholder="Ex. JDV Distribution"/></Field>
-            <Field label="Dénomination sociale"><input {...register('legalName')} className={input} placeholder="Dénomination légale"/></Field>
-            <Field label="Forme juridique *" error={errors.legalForm?.message}><select {...register('legalForm',{required:'Forme juridique requise'})} className={input}><option value="">Choisir...</option>{legalForms.map(x=><option key={x}>{x}</option>)}</select></Field>
-            <Field label="Nature de l’entité *"><select {...register('companyNature',{required:'Nature requise'})} className={input}><option value="">Choisir...</option>{natures.map(([v,l])=><option value={v} key={v}>{l}</option>)}</select></Field>
-            <Field label="Statut juridique"><input {...register('legalStatus')} className={input} placeholder="Ex. société en activité"/></Field>
-            <Field label="RCCM / registre de commerce"><input {...register('registrationNumber')} className={input}/></Field>
-            <Field label="IFU / identifiant fiscal"><input {...register('taxNumber')} className={input}/></Field>
-            <Field label="Email professionnel *" error={errors.professionalEmail?.message}><input type="email" {...register('professionalEmail',{required:'Email professionnel requis'})} className={input} placeholder="contact@entreprise.com"/></Field>
-            <Field label="Téléphone professionnel"><input {...register('phone')} className={input}/></Field>
-            <Field label="Pays *"><select {...register('country',{required:'Pays requis'})} className={input}><option value="">Choisir...</option>{countries.map(x=><option key={x}>{x}</option>)}</select></Field>
-            <Field label="Ville"><input {...register('city')} className={input}/></Field>
-            <Field label="Adresse complète"><input {...register('address')} className={input}/></Field>
-            <Field label="Site web"><input {...register('website')} className={input} placeholder="https://"/></Field>
-          </div>
-        </div>
-      </section>
-    );
-
   const input = 'input-navy w-full px-4 py-3 text-sm';
   const label = 'block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide';
 
