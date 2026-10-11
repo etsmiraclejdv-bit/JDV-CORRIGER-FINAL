@@ -43,7 +43,7 @@ export default function AvisClientsPage() {
     if(trimmedName.length<2||trimmedComment.length<2){setMessage('Renseigne le nom du client et un commentaire.');return;}
     setSaving(true);setMessage('');
     const {data:userData}=await supabase.auth.getUser();
-    const {error}=await supabase.from('client_reviews').insert({organization_id:orgId,client_id:clientId||null,customer_name:trimmedName,rating,comment:trimmedComment,source,status:'published',created_by:userData.user?.id??null});
+    const {error}=await db.from('client_reviews').insert({organization_id:orgId,client_id:clientId||null,customer_name:trimmedName,rating,comment:trimmedComment,source,status:'published',created_by:userData.user?.id??null});
     setSaving(false);
     if(error){setMessage(`Avis non enregistré : ${error.message}`);return;}
     setName('');setClientId('');setComment('');setRating(5);setSource('in_person');
@@ -51,13 +51,13 @@ export default function AvisClientsPage() {
   }
 
   async function setStatus(review:Review,status:'published'|'hidden'){
-    const {error}=await supabase.from('client_reviews').update({status,updated_at:new Date().toISOString()}).eq('id',review.id);
+    const {error}=await db.from('client_reviews').update({status,updated_at:new Date().toISOString()}).eq('id',review.id);
     setMessage(error?error.message:status==='hidden'?'Avis masqué.':'Avis publié.');
     if(!error&&orgId)await loadReviews(orgId);
   }
   async function remove(review:Review){
     if(!orgId)return;
-    const {error}=await supabase.from('client_reviews').delete().eq('id',review.id);
+    const {error}=await db.from('client_reviews').delete().eq('id',review.id);
     setMessage(error?error.message:'Avis supprimé.');
     if(!error)await loadReviews(orgId);
   }
