@@ -24,7 +24,7 @@ export default function PublicBusinessReviews({ organizationId }: { organization
           .from('client_reviews')
           .select('id,customer_name,comment,rating,created_at')
           .eq('organization_id', organizationId)
-          .eq('status', 'approved')
+          .eq('status', 'published')
           .order('created_at', { ascending: false })
           .limit(20);
         if (error) throw error;
