@@ -42,9 +42,7 @@ export default function CreateWarehouseManagerForm({
     password: '',
   });
 
-  const availableWarehouses = warehouses.filter(
-    (warehouse) => warehouse.active && !warehouse.manager_user_id,
-  );
+  const availableWarehouses = warehouses.filter((warehouse) => warehouse.active && !warehouse.manager_user_id);
 
   useEffect(() => {
     let active = true;
