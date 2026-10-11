@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
+const db = supabase as any;
 
 type AmbienceSettings = {
   dashboard_background_url: string | null;
@@ -22,7 +23,7 @@ export default function OrganizationAmbience() {
       const organizationId = profile?.organization_id;
       if (!organizationId) return;
       const load = async () => {
-        const { data } = await supabase.from('organization_personalization')
+        const { data } = await db.from('organization_personalization')
           .select('dashboard_background_url,dashboard_background_opacity,dashboard_background_fit,dashboard_background_motion')
           .eq('organization_id', organizationId).maybeSingle();
         if (active) setSettings(data as AmbienceSettings | null);
