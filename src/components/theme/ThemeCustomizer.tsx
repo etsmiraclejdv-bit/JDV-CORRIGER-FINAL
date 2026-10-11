@@ -9,15 +9,32 @@ import type { DesignConfig, DesignElementStyle } from '@/features/design-studio/
 export type ThemeChoice = 'light' | 'dark' | 'contrast' | 'system';
 export type Accent = 'gold' | 'blue' | 'green' | 'violet' | 'orange';
 export type FontSize = 'sm' | 'md' | 'lg' | 'xl';
-export type Prefs = { theme: ThemeChoice; accent: Accent; font: FontSize; reduceMotion: boolean; themeOverride?: boolean };
+export type Prefs = {
+  theme: ThemeChoice;
+  accent: Accent;
+  font: FontSize;
+  reduceMotion: boolean;
+  themeOverride?: boolean;
+};
 
-export const DEFAULT_PREFS: Prefs = { theme: 'light', accent: 'gold', font: 'md', reduceMotion: false, themeOverride: false };
+export const DEFAULT_PREFS: Prefs = {
+  theme: 'light',
+  accent: 'gold',
+  font: 'md',
+  reduceMotion: false,
+  themeOverride: false,
+};
 export const THEME_STORAGE_KEY = 'jdv_theme_v1';
 
 const THEMES: { id: ThemeChoice; label: string; hint: string; icon: typeof Sun }[] = [
   { id: 'light', label: 'Clair', hint: 'Fond blanc, lecture classique', icon: Sun },
   { id: 'dark', label: 'Nuit', hint: 'Fond bleu nuit, repose les yeux', icon: Moon },
-  { id: 'contrast', label: 'Contraste élevé', hint: 'Noir sur blanc, bordures marquées', icon: Contrast },
+  {
+    id: 'contrast',
+    label: 'Contraste élevé',
+    hint: 'Noir sur blanc, bordures marquées',
+    icon: Contrast,
+  },
   { id: 'system', label: 'Automatique', hint: 'Suit votre appareil', icon: Monitor },
 ];
 const ACCENTS: { id: Accent; label: string; color: string }[] = [
@@ -47,17 +64,25 @@ function clean(raw: unknown): Prefs | null {
 }
 
 function resolveTheme(theme: ThemeChoice): 'light' | 'dark' | 'contrast' {
-  if (theme === 'system') return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  if (theme === 'system')
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   return theme;
 }
 
 function applyElementStyles(design: Partial<DesignConfig> | null) {
   const styles = design?.elementStyles ?? {};
   const properties: Record<keyof DesignElementStyle, string> = {
-    color: 'color', backgroundColor: 'background-color', fontFamily: 'font-family',
-    fontSize: 'font-size', fontWeight: 'font-weight', borderColor: 'border-color',
-    borderWidth: 'border-width', borderStyle: 'border-style', borderRadius: 'border-radius',
-    shadow: 'box-shadow', padding: 'padding',
+    color: 'color',
+    backgroundColor: 'background-color',
+    fontFamily: 'font-family',
+    fontSize: 'font-size',
+    fontWeight: 'font-weight',
+    borderColor: 'border-color',
+    borderWidth: 'border-width',
+    borderStyle: 'border-style',
+    borderRadius: 'border-radius',
+    shadow: 'box-shadow',
+    padding: 'padding',
   };
   document.querySelectorAll<HTMLElement>('[data-jdv-design]').forEach((element) => {
     const id = element.dataset.jdvDesign;
@@ -69,8 +94,11 @@ function applyElementStyles(design: Partial<DesignConfig> | null) {
       if (value === undefined || value === null || value === '') {
         element.style.removeProperty(cssProperty);
       } else {
-        const cssValue = typeof value === 'number' && ['fontSize', 'borderWidth', 'borderRadius', 'padding'].includes(property)
-          ? String(value) + 'px' : String(value);
+        const cssValue =
+          typeof value === 'number' &&
+          ['fontSize', 'borderWidth', 'borderRadius', 'padding'].includes(property)
+            ? String(value) + 'px'
+            : String(value);
         element.style.setProperty(cssProperty, cssValue);
       }
     }
@@ -113,7 +141,9 @@ export default function ThemeCustomizer() {
     try {
       const local = clean(JSON.parse(window.localStorage.getItem(THEME_STORAGE_KEY) || 'null'));
       if (local) setPrefs(local);
-    } catch { /* stockage indisponible : valeurs par défaut */ }
+    } catch {
+      /* stockage indisponible : valeurs par défaut */
+    }
     loaded.current = true;
 
     const loadRemote = async (user: { id: string; user_metadata?: unknown } | null) => {
@@ -125,8 +155,13 @@ export default function ThemeCustomizer() {
         .eq('setting_key', 'theme_prefs')
         .maybeSingle();
       const stored = (row as { setting_value?: unknown } | null)?.setting_value;
-      const remote = clean(stored) ?? clean((user.user_metadata as { theme_prefs?: unknown } | null)?.theme_prefs);
-      if (remote) { fromRemote.current = true; setPrefs(remote); }
+      const remote =
+        clean(stored) ??
+        clean((user.user_metadata as { theme_prefs?: unknown } | null)?.theme_prefs);
+      if (remote) {
+        fromRemote.current = true;
+        setPrefs(remote);
+      }
     };
     supabase.auth.getSession().then(({ data }) => loadRemote(data.session?.user ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
@@ -147,22 +182,34 @@ export default function ThemeCustomizer() {
   // Persistance des préférences personnelles, sans réécriture lors du chargement du thème global.
   useEffect(() => {
     if (!loaded.current) return;
-    try { window.localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(prefs)); } catch { /* ignoré */ }
-    if (fromRemote.current) { fromRemote.current = false; return; }
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(prefs));
+    } catch {
+      /* ignoré */
+    }
+    if (fromRemote.current) {
+      fromRemote.current = false;
+      return;
+    }
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session?.user) {
-        const { error } = await supabase.from('user_settings').upsert({
-          user_id: data.session.user.id,
-          setting_key: 'theme_prefs',
-          setting_value: prefs,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id,setting_key' });
+        const { error } = await supabase.from('user_settings').upsert(
+          {
+            user_id: data.session.user.id,
+            setting_key: 'theme_prefs',
+            setting_value: prefs,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'user_id,setting_key' }
+        );
         if (error) await supabase.auth.updateUser({ data: { theme_prefs: prefs } });
       }
     }, 900);
-    return () => { if (timer.current) clearTimeout(timer.current); };
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
   }, [prefs]);
 
   // Charger la dernière configuration publiée, d'abord la plateforme puis l'entreprise.
@@ -179,9 +226,11 @@ export default function ThemeCustomizer() {
           .order('version_no', { ascending: false })
           .limit(1)
           .maybeSingle();
-        let resolved = ((platform as { config?: Partial<DesignConfig> } | null)?.config ?? null);
+        let resolved = (platform as { config?: Partial<DesignConfig> } | null)?.config ?? null;
         const { data: profile } = await fetchOrgProfile();
-        const organizationId = String((profile as Record<string, unknown> | null)?.organization_id ?? '');
+        const organizationId = String(
+          (profile as Record<string, unknown> | null)?.organization_id ?? ''
+        );
         if (organizationId) {
           const { data: organization } = await supabase
             .from('design_config_versions')
@@ -201,7 +250,9 @@ export default function ThemeCustomizer() {
       }
     }
     void loadPublishedDesign();
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   // Mode automatique : suivre l'appareil
@@ -215,12 +266,22 @@ export default function ThemeCustomizer() {
 
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const set = useCallback(<K extends keyof Prefs>(key: K, value: Prefs[K]) => setPrefs((p) => ({ ...p, [key]: value, ...(key === 'theme' ? { themeOverride: true } : {}) })), []);
+  const set = useCallback(
+    <K extends keyof Prefs>(key: K, value: Prefs[K]) =>
+      setPrefs((p) => ({
+        ...p,
+        [key]: value,
+        ...(key === 'theme' ? { themeOverride: true } : {}),
+      })),
+    []
+  );
 
   const section = 'text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2';
   const chip = (active: boolean) =>
@@ -239,16 +300,34 @@ export default function ThemeCustomizer() {
       </button>
 
       {open && (
-        <div role="dialog" aria-label="Personnalisation de l’apparence" className="fixed right-4 top-[8.25rem] z-50 max-h-[calc(100dvh-9.5rem)] w-[min(92vw,22rem)] overflow-y-auto rounded-2xl border border-border bg-card p-5 text-foreground shadow-card-hover print:hidden">
+        <div
+          role="dialog"
+          aria-label="Personnalisation de l’apparence"
+          className="fixed right-4 top-[8.25rem] z-50 max-h-[calc(100dvh-9.5rem)] w-[min(92vw,22rem)] overflow-y-auto rounded-2xl border border-border bg-card p-5 text-foreground shadow-card-hover print:hidden"
+        >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-base font-bold">Mon apparence</h2>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Fermer" className="rounded-lg p-1 hover:bg-muted"><X size={18} /></button>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Fermer"
+              className="rounded-lg p-1 hover:bg-muted"
+            >
+              <X size={18} />
+            </button>
           </div>
 
           <p className={section}>Thème</p>
           <div className="mb-4 grid grid-cols-2 gap-2">
             {THEMES.map(({ id, label, hint, icon: Icon }) => (
-              <button key={id} type="button" onClick={() => set('theme', id)} title={hint} aria-pressed={prefs.theme === id} className={`${chip(prefs.theme === id)} flex items-center gap-2 text-left`}>
+              <button
+                key={id}
+                type="button"
+                onClick={() => set('theme', id)}
+                title={hint}
+                aria-pressed={prefs.theme === id}
+                className={`${chip(prefs.theme === id)} flex items-center gap-2 text-left`}
+              >
                 <Icon size={16} /> <span className="leading-tight">{label}</span>
               </button>
             ))}
@@ -257,8 +336,16 @@ export default function ThemeCustomizer() {
           <p className={section}>Couleur principale</p>
           <div className="mb-4 flex flex-wrap gap-2">
             {ACCENTS.map(({ id, label, color }) => (
-              <button key={id} type="button" onClick={() => set('accent', id)} aria-label={label} aria-pressed={prefs.accent === id} title={label}
-                className={`flex h-9 w-9 items-center justify-center rounded-full border-2 ${prefs.accent === id ? 'border-foreground' : 'border-transparent'}`} style={{ backgroundColor: color }}>
+              <button
+                key={id}
+                type="button"
+                onClick={() => set('accent', id)}
+                aria-label={label}
+                aria-pressed={prefs.accent === id}
+                title={label}
+                className={`flex h-9 w-9 items-center justify-center rounded-full border-2 ${prefs.accent === id ? 'border-foreground' : 'border-transparent'}`}
+                style={{ backgroundColor: color }}
+              >
                 {prefs.accent === id && <Check size={16} color="#fff" />}
               </button>
             ))}
@@ -267,7 +354,13 @@ export default function ThemeCustomizer() {
           <p className={section}>Taille du texte</p>
           <div className="mb-4 grid grid-cols-4 gap-2">
             {FONTS.map(({ id, label, sample }) => (
-              <button key={id} type="button" onClick={() => set('font', id)} aria-pressed={prefs.font === id} className={`${chip(prefs.font === id)} px-1 text-center`}>
+              <button
+                key={id}
+                type="button"
+                onClick={() => set('font', id)}
+                aria-pressed={prefs.font === id}
+                className={`${chip(prefs.font === id)} px-1 text-center`}
+              >
                 <span className={`block font-semibold ${sample}`}>Aa</span>
                 <span className="block text-[10px] text-muted-foreground">{label}</span>
               </button>
@@ -276,13 +369,25 @@ export default function ThemeCustomizer() {
 
           <label className="mb-4 flex cursor-pointer items-center justify-between gap-3 text-sm">
             <span>Réduire les animations</span>
-            <input type="checkbox" checked={prefs.reduceMotion} onChange={(e) => set('reduceMotion', e.target.checked)} className="h-4 w-4" />
+            <input
+              type="checkbox"
+              checked={prefs.reduceMotion}
+              onChange={(e) => set('reduceMotion', e.target.checked)}
+              className="h-4 w-4"
+            />
           </label>
 
-          <button type="button" onClick={() => setPrefs(DEFAULT_PREFS)} className="flex w-full items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted">
+          <button
+            type="button"
+            onClick={() => setPrefs(DEFAULT_PREFS)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted"
+          >
             <RotateCcw size={14} /> Réinitialiser
           </button>
-          <p className="mt-3 text-[11px] leading-snug text-muted-foreground">Vos choix sont enregistrés sur cet appareil, et sur votre compte quand vous êtes connecté.</p>
+          <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
+            Vos choix sont enregistrés sur cet appareil, et sur votre compte quand vous êtes
+            connecté.
+          </p>
         </div>
       )}
     </>

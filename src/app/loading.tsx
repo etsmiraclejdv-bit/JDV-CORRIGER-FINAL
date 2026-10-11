@@ -14,9 +14,21 @@ const steps = [
 // Les noms de fichiers contiennent des espaces, des accents et une virgule : encodeURI garantit une adresse valide.
 // Les noms ci-dessous doivent correspondre EXACTEMENT aux fichiers de public/assets/images/.
 const slides = [
-  { image: encodeURI('/assets/images/CRM mobile pour commerciaux terrain.png'), title: 'Prospectez partout avec JDV CRM', alt: 'Commercial terrain enregistrant un prospect dans JDV CRM' },
-  { image: encodeURI('/assets/images/Présentation CRM JDV en entreprise.png'), title: 'Transformez vos opportunités en ventes', alt: 'Commercial présentant JDV CRM à son client' },
-  { image: encodeURI('/assets/images/JDV CRM _ Votre succès, notre priorité.png'), title: 'Pilotez votre croissance avec votre équipe', alt: 'Équipe commerciale utilisant le tableau de bord JDV CRM' },
+  {
+    image: encodeURI('/assets/images/CRM mobile pour commerciaux terrain.png'),
+    title: 'Prospectez partout avec JDV CRM',
+    alt: 'Commercial terrain enregistrant un prospect dans JDV CRM',
+  },
+  {
+    image: encodeURI('/assets/images/Présentation CRM JDV en entreprise.png'),
+    title: 'Transformez vos opportunités en ventes',
+    alt: 'Commercial présentant JDV CRM à son client',
+  },
+  {
+    image: encodeURI('/assets/images/JDV CRM _ Votre succès, notre priorité.png'),
+    title: 'Pilotez votre croissance avec votre équipe',
+    alt: 'Équipe commerciale utilisant le tableau de bord JDV CRM',
+  },
 ];
 
 export default function Loading() {

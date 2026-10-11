@@ -4,7 +4,21 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
-import { Building2, Mail, Lock, Phone, Globe, MapPin, Briefcase, Eye, EyeOff, CheckCircle, FileText, UserRound, UsersRound } from 'lucide-react';
+import {
+  Building2,
+  Mail,
+  Lock,
+  Phone,
+  Globe,
+  MapPin,
+  Briefcase,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  FileText,
+  UserRound,
+  UsersRound,
+} from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
 
@@ -79,39 +93,126 @@ const legalForms = [
 export default function RegistrationSection() {
   const router = useRouter();
   const defaultSectors = [
-    ['3000fa16-cca6-4ccc-bda3-31ff9c23949c','Industrie & fabrication'],['8b10e093-7a4e-4b18-bfcf-729be2ef6b67','Énergie & électricité'],['a76dd249-f18e-47f5-a9fb-fb640924d49c','BTP & construction'],['267aa018-7372-46e9-aa67-83b8f919330b','Immobilier'],['e4b73b8a-8527-4440-833d-e1f431548bf3','Commerce & distribution'],['d05c0ff6-5df3-4e34-aec5-e77b90ecb40b','Agriculture'],['fa47beed-dd19-4c34-be8f-7f9a43a910da','Élevage'],['3c26bc8d-a56a-4812-a546-02fa826ffd88','Pêche & aquaculture'],['1e26ce68-aaab-4de3-9e04-a9f8c13da91c','Informatique & technologies'],['2bbfce77-f579-4254-bb27-81d1f054d806','Télécommunications'],['dfde2b22-7a4a-4714-8179-becababe7c7a','Banque, finance & assurance'],['fd676883-a9f8-4277-be09-672bcf3bcda1','Santé & pharmacie'],['330ef158-fe73-4aa1-81a8-8fa3e1afe96d','Éducation & formation'],['492f4084-9018-4d6e-8039-b4b55f5d907e','Hôtellerie & restauration'],['2bd6d734-0314-4be1-b0b5-ebc22fbeab35','Tourisme & voyages'],['f80e93f5-9c74-4087-8d99-5dee5c2de428','Mode & textile'],['aea7bbc6-f38c-4160-aea7-3a108f51567a','Beauté & cosmétique'],['2586cb52-983a-480c-becf-a4f11d456e13','Agroalimentaire'],['ca9815fc-4f2d-49c6-a755-7ceb74a634b2','Environnement'],['ba764ad4-f643-455b-bf7e-8acda05234b0','Énergies renouvelables'],['b2f461f6-7f47-4403-ad0e-134ad3cdffdc','Chimie & laboratoire'],['53fc0a2a-520a-4f48-8ae6-2ebde03356f4','Mines & carrières'],['219205d4-caf9-4261-a6bb-16c74d1ed35e','Services juridiques'],['9c921735-35a0-4ac9-ab53-4fc00e693131','Conseil & services professionnels'],['50ad3f64-741f-42f9-b0f3-e6cd663143da','Communication & marketing'],['72fdeb02-8c83-47ad-83f9-20c3749805df','Arts, culture & création'],['aedc0392-2cb7-41f6-9d42-0d35781816d1','Médias & divertissement'],['eb6fe343-0513-4e4c-ade7-c3a379219d01','Administration & secteur public'],['50d1e87e-a607-4887-ac8e-d2a29ecc5c09','ONG, associations & organisations'],['060cbc06-38ea-45c2-a57c-fb22430b5e73','Recherche & développement'],['d6fb3488-50df-4f11-b16d-e9d4b0e53707','Services aux entreprises et particuliers'],['cb5f1442-d9ef-4c4f-98dd-28ac039bb09f','E-commerce'],['90641afd-dbcb-4d0c-8736-492a5416e117','Maintenance & réparation'],['3e2fe2a8-b555-4e84-a031-8da594b34ee8','Eau & assainissement'],['af752e70-dc83-456d-8ee0-9ccde4acf828','Autre secteur']
-  ].map(([id,name])=>({id,name,icon:null}));
-  const [sectors,setSectors]=useState<{id:string;name:string;icon:string|null}[]>(defaultSectors);
-  const [showPassword,setShowPassword]=useState(false),[showConfirm,setShowConfirm]=useState(false);
-  const [loading,setLoading]=useState(false),[submitted,setSubmitted]=useState(false),[hasSession,setHasSession]=useState(false),[error,setError]=useState('');
-  const {register,handleSubmit,watch,formState:{errors}}=useForm<FormData>();
-  const password=watch('password');
+    ['3000fa16-cca6-4ccc-bda3-31ff9c23949c', 'Industrie & fabrication'],
+    ['8b10e093-7a4e-4b18-bfcf-729be2ef6b67', 'Énergie & électricité'],
+    ['a76dd249-f18e-47f5-a9fb-fb640924d49c', 'BTP & construction'],
+    ['267aa018-7372-46e9-aa67-83b8f919330b', 'Immobilier'],
+    ['e4b73b8a-8527-4440-833d-e1f431548bf3', 'Commerce & distribution'],
+    ['d05c0ff6-5df3-4e34-aec5-e77b90ecb40b', 'Agriculture'],
+    ['fa47beed-dd19-4c34-be8f-7f9a43a910da', 'Élevage'],
+    ['3c26bc8d-a56a-4812-a546-02fa826ffd88', 'Pêche & aquaculture'],
+    ['1e26ce68-aaab-4de3-9e04-a9f8c13da91c', 'Informatique & technologies'],
+    ['2bbfce77-f579-4254-bb27-81d1f054d806', 'Télécommunications'],
+    ['dfde2b22-7a4a-4714-8179-becababe7c7a', 'Banque, finance & assurance'],
+    ['fd676883-a9f8-4277-be09-672bcf3bcda1', 'Santé & pharmacie'],
+    ['330ef158-fe73-4aa1-81a8-8fa3e1afe96d', 'Éducation & formation'],
+    ['492f4084-9018-4d6e-8039-b4b55f5d907e', 'Hôtellerie & restauration'],
+    ['2bd6d734-0314-4be1-b0b5-ebc22fbeab35', 'Tourisme & voyages'],
+    ['f80e93f5-9c74-4087-8d99-5dee5c2de428', 'Mode & textile'],
+    ['aea7bbc6-f38c-4160-aea7-3a108f51567a', 'Beauté & cosmétique'],
+    ['2586cb52-983a-480c-becf-a4f11d456e13', 'Agroalimentaire'],
+    ['ca9815fc-4f2d-49c6-a755-7ceb74a634b2', 'Environnement'],
+    ['ba764ad4-f643-455b-bf7e-8acda05234b0', 'Énergies renouvelables'],
+    ['b2f461f6-7f47-4403-ad0e-134ad3cdffdc', 'Chimie & laboratoire'],
+    ['53fc0a2a-520a-4f48-8ae6-2ebde03356f4', 'Mines & carrières'],
+    ['219205d4-caf9-4261-a6bb-16c74d1ed35e', 'Services juridiques'],
+    ['9c921735-35a0-4ac9-ab53-4fc00e693131', 'Conseil & services professionnels'],
+    ['50ad3f64-741f-42f9-b0f3-e6cd663143da', 'Communication & marketing'],
+    ['72fdeb02-8c83-47ad-83f9-20c3749805df', 'Arts, culture & création'],
+    ['aedc0392-2cb7-41f6-9d42-0d35781816d1', 'Médias & divertissement'],
+    ['eb6fe343-0513-4e4c-ade7-c3a379219d01', 'Administration & secteur public'],
+    ['50d1e87e-a607-4887-ac8e-d2a29ecc5c09', 'ONG, associations & organisations'],
+    ['060cbc06-38ea-45c2-a57c-fb22430b5e73', 'Recherche & développement'],
+    ['d6fb3488-50df-4f11-b16d-e9d4b0e53707', 'Services aux entreprises et particuliers'],
+    ['cb5f1442-d9ef-4c4f-98dd-28ac039bb09f', 'E-commerce'],
+    ['90641afd-dbcb-4d0c-8736-492a5416e117', 'Maintenance & réparation'],
+    ['3e2fe2a8-b555-4e84-a031-8da594b34ee8', 'Eau & assainissement'],
+    ['af752e70-dc83-456d-8ee0-9ccde4acf828', 'Autre secteur'],
+  ].map(([id, name]) => ({ id, name, icon: null }));
+  const [sectors, setSectors] =
+    useState<{ id: string; name: string; icon: string | null }[]>(defaultSectors);
+  const [showPassword, setShowPassword] = useState(false),
+    [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false),
+    [submitted, setSubmitted] = useState(false),
+    [hasSession, setHasSession] = useState(false),
+    [error, setError] = useState('');
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormData>();
+  const password = watch('password');
 
-  useEffect(()=>{supabase.from('company_sectors').select('id,name,icon').eq('active',true).order('sort_order').then(({data,error})=>{if(error){console.warn('company_sectors indisponible, secteurs de secours utilisés.',error);return;}if(data?.length)setSectors(data as typeof sectors);});},[]);
+  useEffect(() => {
+    supabase
+      .from('company_sectors')
+      .select('id,name,icon')
+      .eq('active', true)
+      .order('sort_order')
+      .then(({ data, error }) => {
+        if (error) {
+          console.warn('company_sectors indisponible, secteurs de secours utilisés.', error);
+          return;
+        }
+        if (data?.length) setSectors(data as typeof sectors);
+      });
+  }, []);
 
-  const sectorOptions=useMemo(()=>sectors.map(s=><option key={s.id} value={s.id}>{s.name}</option>),[sectors]);
+  const sectorOptions = useMemo(
+    () =>
+      sectors.map((s) => (
+        <option key={s.id} value={s.id}>
+          {s.name}
+        </option>
+      )),
+    [sectors]
+  );
 
-  async function onSubmit(d:FormData){
-    setLoading(true);setError('');
-    try{
-      const payload={
-        p_company_name:d.organizationName,p_legal_name:d.legalName,p_legal_form:d.legalForm,p_company_nature:d.companyNature,
-        p_legal_status:d.legalStatus,p_primary_sector_id:d.primarySectorId,p_secondary_sector_ids:[],
-        p_country:d.country,p_city:d.city,p_address:d.address,p_phone:d.phone,p_website:d.website,
-        p_registration_number:d.registrationNumber,p_tax_number:d.taxNumber,
-        p_representative_first_name:d.representativeFirstName,p_representative_last_name:d.representativeLastName,
-        p_representative_role:d.representativeRole,p_representative_phone:d.representativePhone,
-        p_representative_email:d.professionalEmail,p_representative_birth_date:d.representativeBirthDate||null,
-        p_representative_nationality:d.representativeNationality,p_ownership_count:Number(d.associateCount)||null,
-        p_associate_count:Number(d.associateCount)||null,p_manager_count:Number(d.managerCount)||null,
-        p_people_count:Number(d.peopleCount)||null,p_company_size:d.companySize
+  async function onSubmit(d: FormData) {
+    setLoading(true);
+    setError('');
+    try {
+      const payload = {
+        p_company_name: d.organizationName,
+        p_legal_name: d.legalName,
+        p_legal_form: d.legalForm,
+        p_company_nature: d.companyNature,
+        p_legal_status: d.legalStatus,
+        p_primary_sector_id: d.primarySectorId,
+        p_secondary_sector_ids: [],
+        p_country: d.country,
+        p_city: d.city,
+        p_address: d.address,
+        p_phone: d.phone,
+        p_website: d.website,
+        p_registration_number: d.registrationNumber,
+        p_tax_number: d.taxNumber,
+        p_representative_first_name: d.representativeFirstName,
+        p_representative_last_name: d.representativeLastName,
+        p_representative_role: d.representativeRole,
+        p_representative_phone: d.representativePhone,
+        p_representative_email: d.professionalEmail,
+        p_representative_birth_date: d.representativeBirthDate || '',
+        p_representative_nationality: d.representativeNationality,
+        p_ownership_count: Number(d.associateCount) || 0,
+        p_associate_count: Number(d.associateCount) || 0,
+        p_manager_count: Number(d.managerCount) || 0,
+        p_people_count: Number(d.peopleCount) || 0,
+        p_company_size: d.companySize,
       };
 
       // Si l'utilisateur est déjà connecté, ne recrée jamais son compte Auth.
-      const {data:{session:currentSession}}=await supabase.auth.getSession();
-      if(currentSession){
-        const {error:submitError}=await supabase.rpc('jdvcrm_submit_company_application_v1',payload);
-        if(submitError)throw submitError;
+      const {
+        data: { session: currentSession },
+      } = await supabase.auth.getSession();
+      if (currentSession) {
+        const { error: submitError } = await supabase.rpc(
+          'jdvcrm_submit_company_application_v1',
+          payload
+        );
+        if (submitError) throw submitError;
         localStorage.removeItem('jdv_pending_company_application');
         setHasSession(true);
         setSubmitted(true);
@@ -149,10 +250,13 @@ export default function RegistrationSection() {
       if (authError) throw authError;
       if (!authData.user) throw new Error('Impossible de créer ou récupérer le compte.');
 
-      localStorage.setItem('jdv_pending_company_application',JSON.stringify(payload));
-      if(authData.session){
-        const {error:submitError}=await supabase.rpc('jdvcrm_submit_company_application_v1',payload);
-        if(submitError)throw submitError;
+      localStorage.setItem('jdv_pending_company_application', JSON.stringify(payload));
+      if (authData.session) {
+        const { error: submitError } = await supabase.rpc(
+          'jdvcrm_submit_company_application_v1',
+          payload
+        );
+        if (submitError) throw submitError;
         localStorage.removeItem('jdv_pending_company_application');
         setHasSession(true);
         setSubmitted(true);
@@ -161,9 +265,17 @@ export default function RegistrationSection() {
         return;
       }
       setSubmitted(true);
-      toast.success('Compte créé. Confirmez votre email puis connectez-vous pour finaliser le dossier.');
-    }catch(e){
-      const err = e as { message?: string; error_description?: string; code?: string; details?: string; hint?: string } | null;
+      toast.success(
+        'Compte créé. Confirmez votre email puis connectez-vous pour finaliser le dossier.'
+      );
+    } catch (e) {
+      const err = e as {
+        message?: string;
+        error_description?: string;
+        code?: string;
+        details?: string;
+        hint?: string;
+      } | null;
       const rawMessage = err?.message || err?.error_description || '';
       const m = rawMessage || (err?.code ? 'Erreur ' + err.code : 'Une erreur est survenue');
       console.error('[registration] erreur inscription dossier entreprise', {
@@ -179,7 +291,28 @@ export default function RegistrationSection() {
     }
   }
 
-  if(submitted)return <section id="register" className="py-20"><div className="max-w-xl mx-auto px-6"><div className="card-navy rounded-3xl p-10 text-center"><CheckCircle size={52} className="mx-auto mb-5 text-[#D4AF37]"/><h3 className="text-2xl font-bold text-foreground">Dossier d’entreprise créé</h3><p className="text-muted-foreground mt-3 leading-relaxed">{hasSession?'Redirection vers la vérification de votre entreprise…':'Votre compte est créé. Connectez-vous pour terminer la vérification de votre entreprise.'}</p><Link href={hasSession?'/business/validation':'/business/login'} className="btn-gold inline-flex mt-7 px-6 py-3 rounded-xl font-semibold">Continuer</Link></div></div></section>;
+  if (submitted)
+    return (
+      <section id="register" className="py-20">
+        <div className="max-w-xl mx-auto px-6">
+          <div className="card-navy rounded-3xl p-10 text-center">
+            <CheckCircle size={52} className="mx-auto mb-5 text-[#D4AF37]" />
+            <h3 className="text-2xl font-bold text-foreground">Dossier d’entreprise créé</h3>
+            <p className="text-muted-foreground mt-3 leading-relaxed">
+              {hasSession
+                ? 'Redirection vers la vérification de votre entreprise…'
+                : 'Votre compte est créé. Connectez-vous pour terminer la vérification de votre entreprise.'}
+            </p>
+            <Link
+              href={hasSession ? '/business/validation' : '/business/login'}
+              className="btn-gold inline-flex mt-7 px-6 py-3 rounded-xl font-semibold"
+            >
+              Continuer
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
 
   const input = 'input-navy w-full px-4 py-3 text-sm';
   const label = 'block text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide';
@@ -362,11 +495,6 @@ export default function RegistrationSection() {
               </Field>
             </div>
           </div>
-
-        <div className="card-navy rounded-3xl p-7">
-          <div className="flex items-center gap-3 mb-6"><FileText className="text-[#D4AF37]"/><div><h3 className="text-lg font-bold">5. Documents de vérification</h3><p className="text-xs text-muted-foreground">Vous les enverrez juste après la création du dossier : JDV IA indique tout de suite si chaque document est conforme.</p></div></div>
-          <div className="grid md:grid-cols-3 gap-4">{['Pièce d’identité du représentant','RCCM / registre de commerce','IFU / document fiscal','Statuts / acte constitutif','Justificatif d’adresse'].map(x=><div key={x} className="rounded-xl border border-[#D4AF37]/15 bg-[#0A1628] p-4 text-sm text-muted-foreground">{x}</div>)}</div>
-        </div>
 
           <div className="card-navy rounded-3xl p-7">
             <div className="flex items-center gap-3 mb-6">

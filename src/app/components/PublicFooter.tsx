@@ -57,7 +57,7 @@ export default function PublicFooter() {
             <ul className="space-y-2">
               {[
                 { label: 'Contact', href: '/#contact' },
-                { label: 'Guide d\'utilisation', href: '/guide-onboarding' },
+                { label: "Guide d'utilisation", href: '/guide-onboarding' },
                 { label: 'Espace entreprise', href: '/business/login' },
                 { label: 'Espace prospecteur', href: '/terrain/login' },
               ].map((item) => (

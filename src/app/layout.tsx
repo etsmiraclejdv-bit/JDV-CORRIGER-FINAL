@@ -9,7 +9,11 @@ import GoogleAnalytics from '@/components/GoogleAnalytics';
 import JdvLoadingScreen from '@/app/components/JdvLoadingScreen';
 import ThemeCustomizer from '@/components/theme/ThemeCustomizer';
 
-const jakarta = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-plus-jakarta-sans', display: 'swap' });
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-plus-jakarta-sans',
+  display: 'swap',
+});
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -28,11 +32,17 @@ export const metadata: Metadata = {
 // Applique le thème choisi avant l'affichage de la page (évite le clignotement).
 const themeInit = `(function(){try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('jdv_theme_v1')||'{}'),t=p.theme||'light';if(t==='system')t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';d.dataset.theme=t;d.dataset.accent=p.accent||'gold';d.dataset.font=p.font||'md';d.dataset.motion=p.reduceMotion?'reduce':'normal';}catch(e){document.documentElement.dataset.theme='light';}})();`;
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr" className={jakarta.variable} data-theme="light" data-accent="gold" data-font="md" data-motion="normal" suppressHydrationWarning>
+    <html
+      lang="fr"
+      className={jakarta.variable}
+      data-theme="light"
+      data-accent="gold"
+      data-font="md"
+      data-motion="normal"
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
