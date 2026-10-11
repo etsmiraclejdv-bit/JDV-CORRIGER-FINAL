@@ -38,7 +38,7 @@ export default function DesignStudioPage() {
     setSaving(true);
     const result = await createDesignVersion({ scope: 'platform', config, status });
     setSaving(false);
-    if (result.error) { toast.error('Échec. La migration SQL du studio est nécessaire avant l’enregistrement.'); return; }
+    if (result.error) { toast.error(result.error.message || 'Échec. La migration SQL du studio est nécessaire avant l’enregistrement.'); return; }
     toast.success(status === 'published' ? 'Version publiée.' : 'Brouillon enregistré.');
     await reload();
   }
