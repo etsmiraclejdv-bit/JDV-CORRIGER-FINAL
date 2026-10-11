@@ -203,7 +203,6 @@ const navItems = [
     group: 'Système',
   },
   {
-  {
     id: 'formulaires',
     label: 'Formulaires',
     icon: <FilePlus2 size={18} />,
