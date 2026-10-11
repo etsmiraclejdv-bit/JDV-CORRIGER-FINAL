@@ -1,0 +1,59 @@
+name: One-time formatting for JDV build repair
+
+on:
+  push:
+    branches:
+      - fix/duplicate-lucide-import
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/duplicate-lucide-import
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Format only files reported by the lint gate
+        run: |
+          npx prettier --write \
+            src/app/a-propos-concepteur/page.tsx \
+            src/app/api/ai/jdv-crm/route.ts \
+            src/app/api/business/create-member/route.ts \
+            src/app/api/business/create-warehouse-manager/route.ts \
+            src/app/api/contact/route.ts \
+            src/app/api/jdv-news/route.ts \
+            src/app/business/dashboard/ambiance/page.tsx \
+            src/app/business/dashboard/avis-clients/page.tsx
+
+      - name: Commit formatting changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add \
+              src/app/a-propos-concepteur/page.tsx \
+              src/app/api/ai/jdv-crm/route.ts \
+              src/app/api/business/create-member/route.ts \
+              src/app/api/business/create-warehouse-manager/route.ts \
+              src/app/api/contact/route.ts \
+              src/app/api/jdv-news/route.ts \
+              src/app/business/dashboard/ambiance/page.tsx \
+              src/app/business/dashboard/avis-clients/page.tsx
+            git commit -m "style: format files required by lint gate"
+            git push origin HEAD:fix/duplicate-lucide-import
+          fi
