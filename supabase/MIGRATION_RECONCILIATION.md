@@ -79,6 +79,7 @@ Read-only definitions of the application validation/document-review functions, t
 - No Supabase development branch was created, and no production SQL was executed.
 
 
+chore/reconcile-supabase-migration-history
 ## Follow-up forensic work on 2026-10-11
 
 A first **partial forensic candidate** has now been committed outside the executable migrations directory:
@@ -103,3 +104,18 @@ Two more **partial live-state evidence artifacts** have been added under `docs/r
 These are deliberately non-executable `.sql.txt` evidence artifacts outside `supabase/migrations/`. They document observed current function definitions only. They do not establish migration ownership, recover the original source, or reproduce all schema, triggers, RLS, grants, storage configuration, Edge Functions, secrets, and historical changes. No production SQL was written or executed.
 
 The known missing-source count remains **at least five**. The next work is to capture the remaining live evidence for document review and agency/warehouse-head scope, then inspect whether the original SQL can be recovered from GitHub history or deployment artifacts. All candidate artifacts remain unapproved and untested.
+=======
+## Forensic follow-up carried onto current main base (2026-10-11)
+
+A fresh evidence branch based directly on current `main` now contains three partial live-state artifacts under `docs/reconstruction-candidates/`:
+
+- `20261011065602_team_rights_and_member_management_v1.partial.sql.txt`
+- `20261008115141_ai_company_validation_v1.partial.sql.txt`
+- `20261009012135_scope_prospecteur_assignments_to_agency_v1.partial.sql.txt`
+
+These are non-executable `.sql.txt` evidence files, explicitly labeled **RECONSTRUCTED FROM LIVE STATE — NOT ORIGINAL SOURCE**. They capture selected function bodies only. They are not complete replacements for the missing migrations and must not be copied into `supabase/migrations/` or executed against production.
+
+The known missing-source count remains at least five: the three areas with partial evidence above, plus `20261008174410_company_document_manual_review_v1` and `20261009011506_agency_head_chef_agence_v1` still need separate source recovery/verification. The overlapping document-review functions do not prove migration ownership.
+
+No production schema/data was changed; no migration was applied or marked applied; no merge, PR, or Netlify deployment was performed. The original reconciliation branch was 58 commits behind current main when compared, so this fresh branch is based on main to avoid asking for a blind merge of the stale branch. Full replay/tests remain outstanding.
+main

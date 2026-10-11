@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
+import { SITE } from '@/lib/siteConfig';
 
 export default function PublicFooter() {
   return (
@@ -15,7 +16,7 @@ export default function PublicFooter() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
-              La plateforme CRM conçue pour la vente à crédit avec paiements journaliers et agents terrain en Afrique de l&apos;Ouest.
+              {SITE.tagline}.
             </p>
           </div>
 
@@ -23,7 +24,9 @@ export default function PublicFooter() {
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4" style={{ letterSpacing: '0.08em' }}>Produit</p>
             <ul className="space-y-2">
               {[
+                { label: 'Services', href: '/#services' },
                 { label: 'Fonctionnalités', href: '/#features' },
+                { label: 'Avantages', href: '/#avantages' },
                 { label: 'Tarifs', href: '/#pricing' },
                 { label: 'Essai gratuit', href: '/#register' },
               ].map((item) => (
@@ -38,6 +41,7 @@ export default function PublicFooter() {
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4" style={{ letterSpacing: '0.08em' }}>Support</p>
             <ul className="space-y-2">
               {[
+                { label: 'Contact', href: '/#contact' },
                 { label: 'Guide d\'utilisation', href: '/guide-onboarding' },
                 { label: 'Espace entreprise', href: '/business/login' },
                 { label: 'Espace prospecteur', href: '/terrain/login' },
