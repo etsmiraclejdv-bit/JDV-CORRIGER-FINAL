@@ -56,15 +56,16 @@ function apply(p: Prefs, design: Partial<DesignConfig> | null = null) {
   root.dataset.accent = p.accent;
   root.dataset.font = p.font;
   root.dataset.motion = p.reduceMotion ? 'reduce' : 'normal';
-  if (design?.primaryColor) {
-    root.style.setProperty('--brand', design.primaryColor);
-    root.style.setProperty('--brand-2', design.primaryColor);
-    root.style.setProperty('--brand-3', design.primaryColor);
-    root.style.setProperty('--brand-ink', design.primaryColor);
-    root.style.setProperty('--brand-ink-dark', design.primaryColor);
+  const brandProperties = ['--brand', '--brand-2', '--brand-3', '--brand-ink', '--brand-ink-dark'];
+  if (design?.primaryColor && p.accent === 'gold') {
+    for (const property of brandProperties) root.style.setProperty(property, design.primaryColor);
+  } else {
+    for (const property of brandProperties) root.style.removeProperty(property);
   }
   if (design?.secondaryColor) root.style.setProperty('--secondary', design.secondaryColor);
+  else root.style.removeProperty('--secondary');
   if (design?.accentColor) root.style.setProperty('--accent', design.accentColor);
+  else root.style.removeProperty('--accent');
   if (design?.density) root.dataset.designDensity = design.density;
   if (design?.radius) root.dataset.designRadius = design.radius;
   if (design?.fontScale) root.dataset.designFontScale = design.fontScale;
