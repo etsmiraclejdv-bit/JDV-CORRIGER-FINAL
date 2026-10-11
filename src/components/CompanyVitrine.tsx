@@ -106,17 +106,14 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
     setNewsError('');
 
     try {
-      const response = await fetch(
-        '/api/jdv-news?category=' + encodeURIComponent(nextCategory),
-        { cache: 'no-store' },
-      );
+      const response = await fetch('/api/jdv-news?category=' + encodeURIComponent(nextCategory), {
+        cache: 'no-store',
+      });
       if (!response.ok) throw new Error('Les actualités sont momentanément indisponibles.');
       const result = await response.json();
       setArticles(Array.isArray(result.articles) ? result.articles : []);
     } catch (error) {
-      setNewsError(
-        error instanceof Error ? error.message : 'Impossible de charger les actualités.',
-      );
+      setNewsError(error instanceof Error ? error.message : 'Impossible de charger les actualités.');
     } finally {
       setNewsLoading(false);
     }
@@ -135,7 +132,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
       window.open(
         'https://www.google.com/search?q=' + encodeURIComponent(query),
         '_blank',
-        'noopener,noreferrer',
+        'noopener,noreferrer'
       );
     }
   }
@@ -154,27 +151,19 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Impossible d’envoyer cet avis.');
 
-      setReviewMessage(
-        result.message || 'Merci pour votre avis. Il sera publié après validation.',
-      );
+      setReviewMessage(result.message || 'Merci pour votre avis. Il sera publié après validation.');
       setCustomerName('');
       setComment('');
       setRating(5);
     } catch (error) {
-      setReviewMessage(
-        error instanceof Error ? error.message : 'Impossible d’envoyer cet avis.',
-      );
+      setReviewMessage(error instanceof Error ? error.message : 'Impossible d’envoyer cet avis.');
     } finally {
       setReviewBusy(false);
     }
   }
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-slate-950 p-8 text-white">
-        Chargement de la vitrine…
-      </main>
-    );
+    return <main className="min-h-screen bg-slate-950 p-8 text-white">Chargement de la vitrine…</main>;
   }
 
   if (!data) {
@@ -236,10 +225,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
               </div>
             )}
             {org.phone && (
-              <a
-                className="flex gap-3 text-slate-300 hover:text-white"
-                href={'tel:' + org.phone}
-              >
+              <a className="flex gap-3 text-slate-300 hover:text-white" href={'tel:' + org.phone}>
                 <Phone className="shrink-0" style={{ color: accent }} />
                 {org.phone}
               </a>
@@ -256,9 +242,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
             {org.website && (
               <a
                 className="flex gap-3 text-slate-300 hover:text-white"
-                href={
-                  /^https?:\/\//i.test(org.website) ? org.website : 'https://' + org.website
-                }
+                href={/^https?:\/\//i.test(org.website) ? org.website : 'https://' + org.website}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -489,9 +473,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
                   </div>
 
                   {newsError && (
-                    <p className="rounded-lg bg-red-950/50 p-3 text-sm text-red-200">
-                      {newsError}
-                    </p>
+                    <p className="rounded-lg bg-red-950/50 p-3 text-sm text-red-200">{newsError}</p>
                   )}
 
                   {newsLoading ? (
