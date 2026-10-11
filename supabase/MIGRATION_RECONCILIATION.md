@@ -91,3 +91,15 @@ The candidate records four live function bodies obtained with read-only `pg_get_
 Further catalog inspection confirmed the current columns and indexes for `organization_teams` / `organization_team_members`, their four RLS policies, grants on the three RPCs, and three triggers on `organization_members`. The candidate does not yet recreate tables, RLS, indexes, trigger attachments, helper dependencies, seeds, full grants, or historical intermediate states. It is therefore **not a complete replacement** for version `20261011065602`.
 
 No production schema or data was changed. No file was added to `supabase/migrations/`; no migration was applied, marked as applied, merged, or deployed. A clean replay remains untested.
+
+
+## Additional forensic captures on 2026-10-11
+
+Two more **partial live-state evidence artifacts** have been added under `docs/reconstruction-candidates/`:
+
+- `20261008115141_ai_company_validation_v1.partial.sql.txt`: five observed functions for application write protection, document upload protection, pending application listing, document review queue, and manual document review.
+- `20261009012135_scope_prospecteur_assignments_to_agency_v1.partial.sql.txt`: the current prospecteur-to-warehouse assignment RPC and warehouse-head synchronization function.
+
+These are deliberately non-executable `.sql.txt` evidence artifacts outside `supabase/migrations/`. They document observed current function definitions only. They do not establish migration ownership, recover the original source, or reproduce all schema, triggers, RLS, grants, storage configuration, Edge Functions, secrets, and historical changes. No production SQL was written or executed.
+
+The known missing-source count remains **at least five**. The next work is to capture the remaining live evidence for document review and agency/warehouse-head scope, then inspect whether the original SQL can be recovered from GitHub history or deployment artifacts. All candidate artifacts remain unapproved and untested.
