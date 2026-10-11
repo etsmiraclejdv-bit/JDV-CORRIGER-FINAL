@@ -31,3 +31,14 @@ Read-only queries against Supabase project `arxhppptxeeyeexkdyjv` confirmed:
 ## Safety decision
 
 Do not copy this candidate into `supabase/migrations/`, do not run it against production, and do not mark the missing version as applied based on this reconstruction. The migration remains unresolved. The existing production schema was not modified during this inspection.
+
+
+## Dependency follow-up (read-only, 2026-10-11)
+
+Current definitions were also captured for these dependencies used by the live objects:
+
+- `private.guard_membership_user_change()`: blocks changes to `organization_members.user_id` unless the caller is a super-admin.
+- `private.set_updated_at()`: sets `NEW.updated_at = now()`.
+- `public.jdvcrm_check_subscription_limit_v1(uuid,text)`: checks organization subscription and resource limits; the member-role RPC calls it before granting `business_admin`.
+
+The live trigger inspection confirmed three triggers on `public.organization_members` and no non-internal triggers directly attached to `organization_teams` or `organization_team_members`. These are current-state facts only; they do not prove which objects were introduced by migration version `20261011065602`.
