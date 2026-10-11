@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ImagePlus, Trash2, Sparkles, LoaderCircle, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
+const db = supabase as any;
 
 type Asset = { name: string; id?: string; created_at?: string; metadata?: { mimetype?: string; size?: number } | null };
 
@@ -31,7 +32,7 @@ export default function AmbiancePage() {
       const orgId = profile?.organization_id;
       if (!orgId) { if (alive) { setMessage('Aucune organisation active n’est associée à votre compte.'); setLoading(false); } return; }
       const [settings] = await Promise.all([
-        supabase.from('organization_personalization').select('dashboard_background_url,dashboard_background_opacity,dashboard_background_fit,dashboard_background_motion').eq('organization_id', orgId).maybeSingle(),
+        db.from('organization_personalization').select('dashboard_background_url,dashboard_background_opacity,dashboard_background_fit,dashboard_background_motion').eq('organization_id', orgId).maybeSingle(),
         loadAssets(orgId),
       ]);
       if (!alive) return;
