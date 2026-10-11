@@ -1,6 +1,14 @@
 'use client';
 import React, { useState, useEffect, useRef } from 'react';
-import { Users, ShoppingCart, Wallet, TrendingUp, AlertTriangle, UserCheck } from 'lucide-react';
+import {
+  Users,
+  ShoppingCart,
+  Wallet,
+  TrendingUp,
+  AlertTriangle,
+  UserCheck,
+  Globe,
+} from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchClients } from '@/lib/services/clientsService';
 import { fetchSales } from '@/lib/services/salesService';
@@ -170,6 +178,12 @@ export default function BusinessDashboardPage() {
             href: '/business/dashboard/catalogue',
             icon: <TrendingUp size={16} />,
             desc: 'Gérer vos produits',
+          },
+          {
+            label: 'Voir ma vitrine publique',
+            href: orgId ? `/vitrine/${orgId}` : '/business/dashboard',
+            icon: <Globe size={16} />,
+            desc: 'Partager votre vitrine, les avis et les actualités',
           },
           {
             label: 'Rapports',
