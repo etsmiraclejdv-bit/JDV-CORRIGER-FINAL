@@ -126,7 +126,9 @@ export default function PublicBusinessStorefrontPage() {
               </h1>
               {business.legal_name &&
                 business.legal_name !== business.name && (
-                  <p className="mt-2 text-sm text-slate-300">{business.legal_name}</p>
+                  <p className="mt-2 text-sm text-slate-300">
+              {business.legal_name}
+            </p>
                 )}
               {location && (
                 <p className="mt-3 flex items-start gap-2 text-sm text-slate-300">
