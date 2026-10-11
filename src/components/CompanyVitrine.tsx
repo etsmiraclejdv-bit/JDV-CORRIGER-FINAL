@@ -115,7 +115,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
       setArticles(Array.isArray(result.articles) ? result.articles : []);
     } catch (error) {
       setNewsError(
-        error instanceof Error ? error.message : 'Impossible de charger les actualités.',
+        error instanceof Error ? error.message : 'Impossible de charger les actualités.'
       );
     } finally {
       setNewsLoading(false);
@@ -166,11 +166,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
   }
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-slate-950 p-8 text-white">
-        Chargement de la vitrine…
-      </main>
-    );
+    return <main className="min-h-screen bg-slate-950 p-8 text-white">Chargement de la vitrine…</main>;
   }
 
   if (!data) {
