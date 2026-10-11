@@ -25,7 +25,10 @@ jobs:
         run: npm ci
 
       - name: Normalize legacy formatting before strict lint
+        if: github.head_ref == 'fix/duplicate-lucide-import'
         run: |
+          git fetch origin fix/duplicate-lucide-import
+          git checkout -B fix/duplicate-lucide-import origin/fix/duplicate-lucide-import
           npx prettier --write \
             src/app/a-propos-concepteur/page.tsx \
             src/app/api/ai/jdv-crm/route.ts \
