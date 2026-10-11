@@ -44,9 +44,16 @@ export default function PlatformTestimonialsPanel() {
           <MessageSquareQuote size={21} style={{ color: 'var(--brand-text)' }} />
         </span>
         <div>
-          <p className="mb-1 text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--brand-text)' }}>Avis & témoignages</p>
+          <p
+            className="mb-1 text-xs font-semibold uppercase tracking-widest"
+            style={{ color: 'var(--brand-text)' }}
+          >
+            Avis & témoignages
+          </p>
           <h3 className="text-xl font-bold text-foreground">Ils parlent de JDV CRM</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Les retours publiés par la plateforme.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Les retours publiés par la plateforme.
+          </p>
         </div>
       </div>
 
@@ -63,17 +70,26 @@ export default function PlatformTestimonialsPanel() {
         <div className="space-y-4">
           {items.map((item) => (
             <figure key={item.id} className="rounded-2xl border border-border p-4">
-              <blockquote className="text-sm leading-relaxed text-foreground">« {item.quote} »</blockquote>
+              <blockquote className="text-sm leading-relaxed text-foreground">
+                « {item.quote} »
+              </blockquote>
               {item.rating ? (
                 <div className="mt-3 flex gap-0.5" aria-label={`Note : ${item.rating} sur 5`}>
                   {Array.from({ length: 5 }).map((_, index) => (
-                    <Star key={index} size={14} fill={index < item.rating! ? 'currentColor' : 'none'} style={{ color: 'var(--brand)' }} />
+                    <Star
+                      key={index}
+                      size={14}
+                      fill={index < item.rating! ? 'currentColor' : 'none'}
+                      style={{ color: 'var(--brand)' }}
+                    />
                   ))}
                 </div>
               ) : null}
               <figcaption className="mt-3 text-sm">
                 <span className="font-semibold text-foreground">{item.author_name}</span>
-                <span className="block text-xs text-muted-foreground">{[item.author_role, item.company_name].filter(Boolean).join(' · ')}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {[item.author_role, item.company_name].filter(Boolean).join(' · ')}
+                </span>
               </figcaption>
             </figure>
           ))}
