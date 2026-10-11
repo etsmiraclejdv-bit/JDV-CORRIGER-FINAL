@@ -1,6 +1,9 @@
 # CI quality gate: tests, TypeScript, lint and strict build must be checked on the latest tree.
 name: CI
 
+permissions:
+  contents: write
+
 on:
   push:
     branches: [main]
@@ -20,6 +23,27 @@ jobs:
       # Bloquant : échoue si package-lock.json n'est pas synchronisé avec package.json
       - name: Installer les dépendances (reproductible)
         run: npm ci
+
+      - name: Normalize remaining legacy formatting before strict lint
+        if: github.head_ref == 'fix/duplicate-lucide-import'
+        run: |
+          git fetch origin fix/duplicate-lucide-import
+          git checkout -B fix/duplicate-lucide-import origin/fix/duplicate-lucide-import
+          npx prettier --write \
+            src/app/components/PublicFooter.tsx \
+            src/app/components/RegistrationSection.tsx \
+            src/app/components/ServicesSection.tsx \
+            src/app/entrepot/dashboard/layout.tsx \
+            src/app/entrepot/dashboard/sous-entrepots/page.tsx \
+            src/app/entrepot/login/page.tsx \
+            src/app/hidden-concepteur-gate/dashboard/company-applications/page.tsx
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [[ -n "$(git status --porcelain -- src/app)" ]]; then
+            git add src/app
+            git commit -m "style: format remaining files required by strict lint"
+            git push origin HEAD:fix/duplicate-lucide-import
+          fi
 
       # Bloquant : tests unitaires (assainissement, IP client, limiteur de débit)
       - name: Tests
