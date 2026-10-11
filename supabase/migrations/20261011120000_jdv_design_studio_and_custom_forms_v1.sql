@@ -99,7 +99,11 @@ alter table public.custom_form_versions enable row level security;
 drop policy if exists custom_form_definitions_read on public.custom_form_definitions;
 create policy custom_form_definitions_read on public.custom_form_definitions
   for select to authenticated
-  using (private.is_super_admin() or private.is_org_member(organization_id));
+  using (
+    private.is_super_admin()
+    or private.is_org_admin(organization_id)
+    or (status = 'published' and private.is_org_member(organization_id))
+  );
 drop policy if exists custom_form_definitions_insert on public.custom_form_definitions;
 create policy custom_form_definitions_insert on public.custom_form_definitions
   for insert to authenticated
@@ -121,7 +125,11 @@ create policy custom_form_versions_read on public.custom_form_versions
     private.is_super_admin()
     or exists (
       select 1 from public.custom_form_definitions f
-      where f.id = form_id and private.is_org_member(f.organization_id)
+      where f.id = form_id
+        and (
+          private.is_org_admin(f.organization_id)
+          or (status = 'published' and private.is_org_member(f.organization_id))
+        )
     )
   );
 drop policy if exists custom_form_versions_insert on public.custom_form_versions;
