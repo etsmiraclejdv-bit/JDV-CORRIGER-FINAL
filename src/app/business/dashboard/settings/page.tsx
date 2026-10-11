@@ -22,15 +22,11 @@ export default function BusinessSettingsPage() {
 
   const [settings, setSettings] = useState<{
     slogan: string;
-    email_on_late_payment: boolean;
-    sms_on_sale: boolean;
     default_payment_frequency: string;
     require_deposit: boolean;
     low_stock_alert_threshold_percent: number;
   }>({
     slogan: '',
-    email_on_late_payment: true,
-    sms_on_sale: false,
     default_payment_frequency: 'weekly',
     require_deposit: true,
     low_stock_alert_threshold_percent: 10,
@@ -55,8 +51,6 @@ export default function BusinessSettingsPage() {
       const s = saved as Record<string, any>;
       setSettings((cur) => ({
         slogan: s.slogan ?? cur.slogan,
-        email_on_late_payment: s.notifications?.email_on_late_payment ?? cur.email_on_late_payment,
-        sms_on_sale: s.notifications?.sms_on_sale ?? cur.sms_on_sale,
         default_payment_frequency: s.sales?.default_payment_frequency ?? cur.default_payment_frequency,
         require_deposit: s.sales?.require_deposit ?? cur.require_deposit,
         low_stock_alert_threshold_percent: s.stock?.low_stock_alert_threshold_percent ?? cur.low_stock_alert_threshold_percent,
@@ -85,9 +79,10 @@ export default function BusinessSettingsPage() {
     if (!orgId) return;
     setSaving(true);
     const { error } = await saveOrganizationSettings(orgId, {
+      // Les envois d'e-mail et de SMS ne sont pas encore disponibles : on n'enregistre aucune promesse.
       notifications: {
-        email_on_late_payment: settings.email_on_late_payment,
-        sms_on_sale: settings.sms_on_sale,
+        email_on_late_payment: false,
+        sms_on_sale: false,
       },
       sales: {
         default_payment_frequency: settings.default_payment_frequency,
@@ -219,7 +214,7 @@ export default function BusinessSettingsPage() {
       {activeTab === 'personalization' && (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-5">Personnalisation</h2>
-          <p className="text-sm text-[#A0AEC0]">Configurez les couleurs et l&apos;apparence de votre portail.</p>
+          <p className="text-sm text-[#A0AEC0]">Configurez l&apos;identité de votre entreprise. Pour adapter l&apos;affichage à votre vue (thème clair ou nuit, taille du texte), utilisez le bouton palette en bas à droite de l&apos;écran.</p>
           <div className="mt-4 space-y-4 max-w-lg">
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Couleur principale</label>
@@ -264,24 +259,15 @@ export default function BusinessSettingsPage() {
             <div>
               <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">Notifications</h3>
               <div className="space-y-3">
-                <label className="flex items-center justify-between">
-                  <span className="text-sm text-[#A0AEC0]">Email en cas de paiement en retard</span>
-                  <input
-                    type="checkbox"
-                    checked={settings.email_on_late_payment}
-                    onChange={e => setSettings(s => ({ ...s, email_on_late_payment: e.target.checked }))}
-                    className="w-4 h-4 accent-[#D4AF37]"
-                  />
+                <label className="flex items-center justify-between opacity-60">
+                  <span className="text-sm text-[#A0AEC0]">E-mail en cas de paiement en retard <em className="text-xs not-italic text-[#718096]">— bientôt disponible</em></span>
+                  <input type="checkbox" checked={false} disabled className="w-4 h-4 accent-[#D4AF37]" />
                 </label>
-                <label className="flex items-center justify-between">
-                  <span className="text-sm text-[#A0AEC0]">SMS à chaque vente</span>
-                  <input
-                    type="checkbox"
-                    checked={settings.sms_on_sale}
-                    onChange={e => setSettings(s => ({ ...s, sms_on_sale: e.target.checked }))}
-                    className="w-4 h-4 accent-[#D4AF37]"
-                  />
+                <label className="flex items-center justify-between opacity-60">
+                  <span className="text-sm text-[#A0AEC0]">SMS à chaque vente <em className="text-xs not-italic text-[#718096]">— bientôt disponible</em></span>
+                  <input type="checkbox" checked={false} disabled className="w-4 h-4 accent-[#D4AF37]" />
                 </label>
+                <p className="text-xs text-[#718096]">Les alertes de retard apparaissent déjà dans la page Relances &amp; impayés et dans les notifications de l&apos;application.</p>
               </div>
             </div>
             <div>
