@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ExternalLink,
   Globe,
@@ -113,7 +114,9 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
       const result = await response.json();
       setArticles(Array.isArray(result.articles) ? result.articles : []);
     } catch (error) {
-      setNewsError(error instanceof Error ? error.message : 'Impossible de charger les actualités.');
+      setNewsError(
+        error instanceof Error ? error.message : 'Impossible de charger les actualités.',
+      );
     } finally {
       setNewsLoading(false);
     }
@@ -163,7 +166,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
   }
 
   if (loading) {
-    return <main className="min-h-screen bg-slate-950 p-8 text-white">Chargement de la vitrine…</main>;
+    return (\n      <main className="min-h-screen bg-slate-950 p-8 text-white">Chargement de la vitrine…</main>\n    );
   }
 
   if (!data) {
@@ -183,9 +186,12 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
       <header className="border-b border-white/10 bg-[#08152f]">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-5 py-6">
           {org.logo_url ? (
-            <img
+            <Image
               src={org.logo_url}
               alt={'Logo ' + org.name}
+              width={64}
+              height={64}
+              unoptimized
               className="h-16 w-16 rounded-xl border border-white/10 bg-white object-contain p-1"
             />
           ) : (
