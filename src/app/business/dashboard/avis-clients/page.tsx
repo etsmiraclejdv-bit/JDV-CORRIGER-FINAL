@@ -5,12 +5,12 @@ import { MessageSquareQuote, Star, Send, RefreshCw, Trash2, ShieldCheck, Trendin
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
 
-type Review = { id: string; customer_name: string; rating: number; comment: string; source: string; status: string; created_at: string };
+type Review = { id: string; customer_name: string; rating: number; comment: string; source: string; status: string; created_at: string };\ntype ClientOption = { id: string; first_name: string; last_name: string | null; phone: string | null };
 const sources = [{value:'in_person',label:'En personne'},{value:'phone',label:'Téléphone'},{value:'whatsapp',label:'WhatsApp'},{value:'email',label:'E-mail'},{value:'online',label:'En ligne'}];
 
 export default function AvisClientsPage() {
   const [orgId,setOrgId]=useState<string|null>(null);
-  const [reviews,setReviews]=useState<Review[]>([]);
+  const [reviews,setReviews]=useState<Review[]>([]);\n  const [clients,setClients]=useState<ClientOption[]>([]);\n  const [clientId,setClientId]=useState('');
   const [name,setName]=useState('');
   const [rating,setRating]=useState(5);
   const [comment,setComment]=useState('');
@@ -19,24 +19,24 @@ export default function AvisClientsPage() {
   const [saving,setSaving]=useState(false);
   const [message,setMessage]=useState('');
 
-  const loadReviews=useCallback(async (id:string)=>{
+  const loadClients=useCallback(async (id:string)=>{\n    const {data}=await supabase.from('clients').select('id,first_name,last_name,phone').eq('organization_id',id).is('archived_at',null).order('first_name').limit(500);\n    setClients((data??[]) as ClientOption[]);\n  },[]);\n\n  const loadReviews=useCallback(async (id:string)=>{
     const {data,error}=await supabase.from('client_reviews').select('id,customer_name,rating,comment,source,status,created_at').eq('organization_id',id).order('created_at',{ascending:false}).limit(100);
     if(error){setMessage(`Chargement impossible : ${error.message}`);return;}
     setReviews((data??[]) as Review[]);
   },[]);
 
-  useEffect(()=>{let active=true;(async()=>{const {data:profile}=await fetchOrgProfile();const id=profile?.organization_id;if(!id){if(active){setMessage('Aucune organisation active trouvée.');setLoading(false);}return;}if(active)setOrgId(id);await loadReviews(id);if(active)setLoading(false);})();return()=>{active=false;};},[loadReviews]);
+  useEffect(()=>{let active=true;(async()=>{const {data:profile}=await fetchOrgProfile();const id=profile?.organization_id;if(!id){if(active){setMessage('Aucune organisation active trouvée.');setLoading(false);}return;}if(active)setOrgId(id);await Promise.all([loadReviews(id),loadClients(id)]);if(active)setLoading(false);})();return()=>{active=false;};},[loadReviews,loadClients]);
 
   async function submit(e:FormEvent){
     e.preventDefault();if(!orgId)return;
-    const trimmedName=name.trim(), trimmedComment=comment.trim();
+    const selectedClient=clients.find(client=>client.id===clientId);\n    const trimmedName=(selectedClient ? [selectedClient.first_name,selectedClient.last_name].filter(Boolean).join(' ') : name).trim(), trimmedComment=comment.trim();
     if(trimmedName.length<2||trimmedComment.length<2){setMessage('Renseigne le nom du client et un commentaire.');return;}
     setSaving(true);setMessage('');
     const {data:userData}=await supabase.auth.getUser();
-    const {error}=await supabase.from('client_reviews').insert({organization_id:orgId,customer_name:trimmedName,rating,comment:trimmedComment,source,status:'published',created_by:userData.user?.id??null});
+    const {error}=await supabase.from('client_reviews').insert({organization_id:orgId,client_id:clientId||null,customer_name:trimmedName,rating,comment:trimmedComment,source,status:'published',created_by:userData.user?.id??null});
     setSaving(false);
     if(error){setMessage(`Avis non enregistré : ${error.message}`);return;}
-    setName('');setComment('');setRating(5);setSource('in_person');
+    setName('');setClientId('');setComment('');setRating(5);setSource('in_person');
     setMessage('Avis client enregistré.');await loadReviews(orgId);
   }
 
@@ -63,7 +63,7 @@ export default function AvisClientsPage() {
     <div className="grid gap-5 lg:grid-cols-[.8fr_1.2fr]">
       <form onSubmit={submit} className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/70 p-5">
         <h2 className="font-semibold">Enregistrer un avis</h2>
-        <label className="block text-sm">Nom du client<input required minLength={2} maxLength={160} value={name} onChange={e=>setName(e.target.value)} placeholder="Nom et prénom" className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-3 text-white"/></label>
+        <label className="block text-sm">Lier à un client du CRM (facultatif)<select value={clientId} onChange={e=>{const id=e.target.value;setClientId(id);const client=clients.find(c=>c.id===id);if(client)setName([client.first_name,client.last_name].filter(Boolean).join(' '));}} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-3 text-white"><option value="">Saisie manuelle / client non répertorié</option>{clients.map(client=><option key={client.id} value={client.id}>{[client.first_name,client.last_name].filter(Boolean).join(' ')}{client.phone ? ' · '+client.phone : ''}</option>)}</select></label><label className="block text-sm">Nom du client<input required minLength={2} maxLength={160} value={name} onChange={e=>{setName(e.target.value);if(clientId)setClientId('');}} placeholder="Nom et prénom" className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-3 text-white"/></label>
         <div><p className="mb-2 text-sm">Note donnée par le client</p><div className="flex gap-1">{[1,2,3,4,5].map(n=><button key={n} type="button" onClick={()=>setRating(n)} aria-label={`${n} étoile(s)`} className="rounded-lg p-1 hover:bg-white/5"><Star size={28} className={n<=rating?'fill-amber-300 text-amber-300':'text-slate-600'}/></button>)}</div></div>
         <label className="block text-sm">Canal de retour<select value={source} onChange={e=>setSource(e.target.value)} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-3 text-white">{sources.map(s=><option key={s.value} value={s.value}>{s.label}</option>)}</select></label>
         <label className="block text-sm">Commentaire<textarea required minLength={2} maxLength={3000} rows={5} value={comment} onChange={e=>setComment(e.target.value)} placeholder="Que dit le client de son expérience ?" className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-3 text-white"/></label>
