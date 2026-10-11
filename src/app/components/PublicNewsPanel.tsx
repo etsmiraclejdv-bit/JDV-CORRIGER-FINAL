@@ -23,9 +23,7 @@ export default function PublicNewsPanel() {
     fetch('/api/public-news')
       .then(async (response) => {
         if (!response.ok)
-          throw new Error(
-            'Le flux d’actualités est momentanément indisponible.',
-          );
+          throw new Error('Le flux d’actualités est momentanément indisponible.');
         return response.json();
       })
       .then((data: { items?: NewsItem[] }) => {
@@ -33,11 +31,7 @@ export default function PublicNewsPanel() {
       })
       .catch((reason: unknown) => {
         if (active)
-          setError(
-            reason instanceof Error
-              ? reason.message
-              : 'Chargement impossible.',
-          );
+          setError(reason instanceof Error ? reason.message : 'Chargement impossible.');
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -49,10 +43,7 @@ export default function PublicNewsPanel() {
 
   return (
     <>
-      <section
-        className="mx-auto max-w-screen-xl px-6 py-8 lg:px-10"
-        aria-label="Actualités"
-      >
+      <section className="mx-auto max-w-screen-xl px-6 py-8 lg:px-10" aria-label="Actualités">
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -103,9 +94,7 @@ export default function PublicNewsPanel() {
                   <h2 id="jdv-news-title" className="font-bold">
                     Google Actualités
                   </h2>
-                  <p className="text-xs text-slate-400">
-                    Flux public d’actualités
-                  </p>
+                  <p className="text-xs text-slate-400">Flux public d’actualités</p>
                 </div>
               </div>
               <button
@@ -151,10 +140,7 @@ export default function PublicNewsPanel() {
                     <h3 className="font-semibold leading-6">{item.title}</h3>
                     <p className="mt-2 text-xs text-slate-400">
                       {item.source}
-                      {item.publishedAt
-                        ? ' · ' +
-                          new Date(item.publishedAt).toLocaleString('fr-FR')
-                        : ''}
+                      {item.publishedAt ? ' · ' + new Date(item.publishedAt).toLocaleString('fr-FR') : ''}
                     </p>
                     <a
                       href={item.link}
