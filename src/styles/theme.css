@@ -1,0 +1,191 @@
+/* JDV CRM — thèmes : clair (par défaut), nuit, contraste élevé.
+   Chargement : après tailwind.css, pour que ces variables remplacent celles de :root.
+   Choix de l'utilisateur : attributs data-theme / data-accent / data-font / data-motion sur <html>
+   (voir src/components/theme/ThemeCustomizer.tsx). */
+
+/* ─── Couleur principale (accent) ─── */
+:root, html[data-accent="gold"] {
+  --brand: #D4AF37; --brand-2: #F5E17A; --brand-3: #A8860C;
+  --brand-ink: #8A6D12; --brand-ink-dark: #D4AF37; --on-brand: #0B1B3D;
+}
+html[data-accent="blue"]   { --brand: #2563EB; --brand-2: #60A5FA; --brand-3: #1D4ED8; --brand-ink: #1D4ED8; --brand-ink-dark: #93C5FD; --on-brand: #FFFFFF; }
+html[data-accent="green"]  { --brand: #059669; --brand-2: #34D399; --brand-3: #047857; --brand-ink: #047857; --brand-ink-dark: #6EE7B7; --on-brand: #FFFFFF; }
+html[data-accent="violet"] { --brand: #7C3AED; --brand-2: #A78BFA; --brand-3: #5B21B6; --brand-ink: #6D28D9; --brand-ink-dark: #C4B5FD; --on-brand: #FFFFFF; }
+html[data-accent="orange"] { --brand: #EA580C; --brand-2: #FB923C; --brand-3: #C2410C; --brand-ink: #C2410C; --brand-ink-dark: #FDBA74; --on-brand: #FFFFFF; }
+
+/* ─── Thème clair (défaut) ─── */
+:root {
+  color-scheme: light;
+  --background: #F5F7FB;
+  --foreground: #0B1B3D;
+  --primary: var(--brand);
+  --primary-foreground: var(--on-brand);
+  --secondary: #E9EEF6;
+  --secondary-foreground: #0B1B3D;
+  --accent: #2563EB;
+  --accent-foreground: #FFFFFF;
+  --muted: #EEF2F8;
+  --muted-foreground: #53627C;
+  --card: #FFFFFF;
+  --card-foreground: #0B1B3D;
+  --border: rgba(11, 27, 61, 0.14);
+  --input: #FFFFFF;
+  --ring: var(--brand);
+  --success: #15803D;
+  --danger: #C53030;
+  --warning: #B45309;
+  --info: #1D4ED8;
+  --navy-deep: #E3E9F3;
+  --navy-mid: #EDF1F8;
+  --navy-light: #F5F7FB;
+  --faint: #7A889E;
+  --brand-text: var(--brand-ink);
+  --brand-gradient: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 40%, var(--brand) 60%, var(--brand-3) 100%);
+  --brand-text-gradient: linear-gradient(135deg, var(--brand-ink) 0%, var(--brand-3) 100%);
+  --shadow-card: 0 2px 12px rgba(11, 27, 61, 0.08), 0 1px 3px rgba(11, 27, 61, 0.06);
+  --shadow-card-hover: 0 10px 30px rgba(11, 27, 61, 0.12), 0 2px 8px rgba(11, 27, 61, 0.08);
+}
+
+/* ─── Thème nuit (l'ancien bleu nuit, corrigé) ─── */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #0B1B3D;
+  --foreground: #F7F9FC;
+  --secondary: #0F2347;
+  --secondary-foreground: #F7F9FC;
+  --accent: #63B3ED;
+  --accent-foreground: #0B1B3D;
+  --muted: #0A1628;
+  --muted-foreground: #A0AEC0;
+  --card: #0F2347;
+  --card-foreground: #F7F9FC;
+  --border: color-mix(in srgb, var(--brand) 22%, transparent);
+  --input: #0A1628;
+  --success: #68D391;
+  --danger: #FC8181;
+  --warning: #F6E05E;
+  --info: #63B3ED;
+  --navy-deep: #08152f;
+  --navy-mid: #041c48;
+  --navy-light: #031026;
+  --faint: #718096;
+  --brand-text: var(--brand-ink-dark);
+  --brand-text-gradient: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 50%, var(--brand-3) 100%);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 4px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── Contraste élevé (blanc, texte noir, bordures marquées) ─── */
+html[data-theme="contrast"] {
+  --background: #FFFFFF;
+  --foreground: #000000;
+  --card-foreground: #000000;
+  --secondary: #F0F0F0;
+  --muted: #F0F0F0;
+  --muted-foreground: #1F2937;
+  --border: rgba(0, 0, 0, 0.6);
+  --faint: #374151;
+  --success: #166534;
+  --danger: #991B1B;
+  --warning: #92400E;
+  --info: #1E3A8A;
+  --brand-text: #000000;
+  --brand-text-gradient: linear-gradient(135deg, #000000, #000000);
+}
+html[data-theme="contrast"] a { text-decoration: underline; }
+html[data-theme="contrast"] :focus-visible { outline: 3px solid #000000; outline-offset: 2px; }
+
+/* ─── Taille du texte (tout le site suit : les tailles sont en rem) ─── */
+html[data-font="sm"] { font-size: 93.75%; }
+html[data-font="lg"] { font-size: 112.5%; }
+html[data-font="xl"] { font-size: 125%; }
+
+/* ─── Animations réduites ─── */
+html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* ─── Composants de la charte, pilotés par la couleur principale (tous thèmes) ─── */
+.gold-gradient-bg { background: var(--brand-gradient); }
+.gold-gradient-text { background: var(--brand-text-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.btn-gold { background: var(--brand-gradient); color: var(--on-brand); }
+.btn-gold:hover { box-shadow: 0 6px 20px color-mix(in srgb, var(--brand) 40%, transparent); }
+.btn-outline-gold { color: var(--brand-text); border-color: color-mix(in srgb, var(--brand) 55%, transparent); }
+.btn-outline-gold:hover { background: color-mix(in srgb, var(--brand) 10%, transparent); border-color: var(--brand); }
+.sidebar-link-active { color: var(--brand-text); border-left-color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent); }
+.sidebar-link-inactive { color: var(--muted-foreground); }
+.sidebar-link-inactive:hover { color: var(--foreground); background: color-mix(in srgb, var(--brand) 8%, transparent); }
+.shadow-card { box-shadow: var(--shadow-card); }
+.shadow-card-hover { box-shadow: var(--shadow-card-hover); }
+.badge-gold { color: var(--brand-text); border-color: color-mix(in srgb, var(--brand) 40%, transparent); }
+.input-navy { border-color: var(--border); }
+.input-navy:focus { border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent); }
+.nav-glass { background: color-mix(in srgb, var(--card) 92%, transparent); border-bottom-color: var(--border); }
+.progress-bar-bg { background: color-mix(in srgb, var(--foreground) 10%, transparent); }
+.pricing-card-popular { background: linear-gradient(145deg, color-mix(in srgb, var(--brand) 10%, var(--card)) 0%, var(--card) 100%); border-color: color-mix(in srgb, var(--brand) 50%, transparent); }
+
+/* ─── Badges lisibles sur fond clair ─── */
+html:not([data-theme="dark"]) .badge-hot, html:not([data-theme="dark"]) .badge-danger { color: #B91C1C; background-color: rgba(220, 38, 38, 0.1); border-color: rgba(220, 38, 38, 0.3); }
+html:not([data-theme="dark"]) .badge-warm, html:not([data-theme="dark"]) .badge-warning { color: #92400E; background-color: rgba(245, 158, 11, 0.14); border-color: rgba(217, 119, 6, 0.35); }
+html:not([data-theme="dark"]) .badge-cold, html:not([data-theme="dark"]) .badge-info { color: #1D4ED8; background-color: rgba(37, 99, 235, 0.1); border-color: rgba(37, 99, 235, 0.3); }
+html:not([data-theme="dark"]) .badge-success { color: #15803D; background-color: rgba(22, 163, 74, 0.1); border-color: rgba(22, 163, 74, 0.3); }
+
+/* ─── Adaptation des couleurs écrites en dur dans les écrans (thèmes clair et contraste) ───
+   Les classes sont ciblées par jeton exact ([class~=…]) pour ne pas toucher aux variantes hover. */
+html:not([data-theme="dark"]) .text-white,
+html:not([data-theme="dark"]) [class~="text-[#F7F9FC]"],
+html:not([data-theme="dark"]) [class~="text-[#E2E8F0]"] { color: var(--foreground); }
+html:not([data-theme="dark"]) [class~="hover:text-white"]:hover { color: var(--foreground); }
+html:not([data-theme="dark"]) [class~="text-[#A0AEC0]"],
+html:not([data-theme="dark"]) .text-slate-300,
+html:not([data-theme="dark"]) .text-slate-400,
+html:not([data-theme="dark"]) .text-gray-300,
+html:not([data-theme="dark"]) .text-gray-400 { color: var(--muted-foreground); }
+html:not([data-theme="dark"]) [class~="text-[#718096]"],
+html:not([data-theme="dark"]) .text-slate-500 { color: var(--faint); }
+html:not([data-theme="dark"]) [class~="text-[#D4AF37]"],
+html:not([data-theme="dark"]) [class~="text-[#F5E17A]"] { color: var(--brand-text); }
+html:not([data-theme="dark"]) [class~="text-[#63B3ED]"] { color: var(--info); }
+html:not([data-theme="dark"]) .text-green-300, html:not([data-theme="dark"]) .text-green-400 { color: #15803D; }
+html:not([data-theme="dark"]) .text-red-300, html:not([data-theme="dark"]) .text-red-400, html:not([data-theme="dark"]) .text-red-200 { color: #B91C1C; }
+html:not([data-theme="dark"]) .text-yellow-300, html:not([data-theme="dark"]) .text-orange-300 { color: #B45309; }
+html:not([data-theme="dark"]) .text-blue-300 { color: #1D4ED8; }
+html:not([data-theme="dark"]) [class~="text-[#08152f]"], html:not([data-theme="dark"]) [class~="text-[#0B1B3D]"] { color: var(--on-brand); }
+html:not([data-theme="dark"]) .btn-gold, html:not([data-theme="dark"]) .btn-gold * { color: var(--on-brand); }
+
+/* fonds */
+html:not([data-theme="dark"]) [class~="bg-[#0B1B3D]"],
+html:not([data-theme="dark"]) [class~="bg-[#07142d]"] { background-color: var(--background); }
+html:not([data-theme="dark"]) [class~="bg-[#08152f]"],
+html:not([data-theme="dark"]) [class~="bg-[#0F2347]"],
+html:not([data-theme="dark"]) [class~="bg-[#050d22]"],
+html:not([data-theme="dark"]) [class~="bg-[#041c48]"],
+html:not([data-theme="dark"]) [class~="bg-[#031026]"] { background-color: var(--card); }
+html:not([data-theme="dark"]) [class~="bg-[#0A1628]"],
+html:not([data-theme="dark"]) [class~="bg-[#132a56]"],
+html:not([data-theme="dark"]) [class~="bg-[#102858]"] { background-color: var(--muted); }
+html:not([data-theme="dark"]) [class~="bg-[#08152f]/80"],
+html:not([data-theme="dark"]) [class~="bg-[#08152f]/90"],
+html:not([data-theme="dark"]) [class~="bg-[#0B1B3D]/90"],
+html:not([data-theme="dark"]) [class~="bg-[#0B1B3D]/95"] { background-color: color-mix(in srgb, var(--card) 90%, transparent); }
+html:not([data-theme="dark"]) [class~="hover:bg-[#0F2347]"]:hover,
+html:not([data-theme="dark"]) [class~="hover:bg-[#08152f]"]:hover { background-color: var(--muted); }
+html:not([data-theme="dark"]) [class~="bg-white/5"] { background-color: rgba(11, 27, 61, 0.04); }
+html:not([data-theme="dark"]) [class~="bg-white/10"] { background-color: rgba(11, 27, 61, 0.07); }
+html:not([data-theme="dark"]) [class~="hover:bg-white/5"]:hover { background-color: rgba(11, 27, 61, 0.05); }
+
+/* couleur principale remplace l'or écrit en dur */
+html [class~="bg-[#D4AF37]"] { background-color: var(--brand); }
+html [class*="bg-[#D4AF37]/"]:not([class*="hover:bg-[#D4AF37]/"]) { background-color: color-mix(in srgb, var(--brand) 14%, transparent); }
+html [class*="border-[#D4AF37]/"]:not([class*="hover:border-[#D4AF37]/"]) { border-color: color-mix(in srgb, var(--brand) 30%, transparent); }
+html [class~="border-[#D4AF37]"] { border-color: var(--brand); }
+html:not([data-theme="dark"]) [class*="border-white/"] { border-color: var(--border); }
+html[data-theme="dark"] [class~="text-[#D4AF37]"] { color: var(--brand-text); }
+
+/* états d'erreur du formulaire */
+.text-danger { color: var(--danger); }
