@@ -4,7 +4,7 @@ import AppLogo from '@/components/ui/AppLogo';
 import NotificationBell from '@/components/NotificationBell';
 import UserProfilePanel from '@/components/UserProfilePanel';
 import Modal from '@/components/ui/Modal';
-import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent, Warehouse, Network, MapPin, Undo2, ArrowLeftRight, Store } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent, Warehouse, Network, MapPin, Undo2, ArrowLeftRight, Store, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
@@ -20,6 +20,7 @@ const navItems = [
   { id:'relances',label:'Relances & impayés',icon:<AlertTriangle size={18}/>,href:'/business/dashboard/relances',group:'Commercial' },
   { id:'retours',label:'Retours de marchandise',icon:<Undo2 size={18}/>,href:'/business/dashboard/retours',group:'Commercial' },
   { id:'catalogue',label:'Catalogue',icon:<BookOpen size={18}/>,href:'/business/dashboard/catalogue',group:'Commercial' },
+  { id:'equipe',label:'Équipe & droits',icon:<ShieldCheck size={18}/>,href:'/business/dashboard/equipe',group:'Équipe' },
   { id:'prospecteurs',label:'Prospecteurs',icon:<UserCheck size={18}/>,href:'/business/dashboard/prospecteurs',group:'Équipe' },
   { id:'visites',label:'Visites terrain',icon:<MapPin size={18}/>,href:'/business/dashboard/visites',group:'Équipe' },
   { id:'suivi-prospecteurs',label:'Suivi prospecteurs',icon:<Users size={18}/>,href:'/business/dashboard/suivi-prospecteurs',group:'Équipe' },

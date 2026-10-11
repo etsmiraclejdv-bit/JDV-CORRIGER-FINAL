@@ -1,10 +1,11 @@
 'use client';
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { KeyRound, Plus, RefreshCw, ShieldCheck, UserCheck, UserX } from 'lucide-react';
+import { Building2, KeyRound, Plus, RefreshCw, ShieldCheck, UserCheck, UserX } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { getCurrentOrgId } from '@/lib/auth/context';
+import AgencyHeadsPanel from '@/components/team/AgencyHeadsPanel';
 
 type Member = {
   member_id: string; user_id: string; role: string; status: string; joined_at: string;
@@ -41,7 +42,7 @@ export default function TeamPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [matrix, setMatrix] = useState<MatrixRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'members' | 'rights'>('members');
+  const [tab, setTab] = useState<'members' | 'heads' | 'rights'>('members');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [creating, setCreating] = useState(false);
@@ -132,11 +133,11 @@ export default function TeamPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--brand-text)' }}>Équipe</p>
           <h1 className="text-2xl font-bold text-foreground">Équipe et droits</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Créez les comptes de vos collaborateurs, choisissez leur rôle et suspendez un accès en un clic. Les prospecteurs se gèrent depuis leur page, les chefs d’agence depuis les entrepôts.</p>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">Créez les comptes de vos collaborateurs, choisissez leur rôle et suspendez un accès en un clic. Les prospecteurs se gèrent depuis leur page, les chefs d’agence depuis l’onglet dédié.</p>
         </div>
         <div className="flex gap-2">
           <button onClick={load} className="rounded-xl border border-border p-2.5 text-muted-foreground" aria-label="Actualiser"><RefreshCw size={16} /></button>
-          {canManage && <button onClick={() => setShowForm((v) => !v)} className="btn-gold inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold"><Plus size={15} />Nouveau membre</button>}
+          {canManage && tab === 'members' && <button onClick={() => setShowForm((v) => !v)} className="btn-gold inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold"><Plus size={15} />Nouveau membre</button>}
         </div>
       </div>
 
@@ -146,7 +147,7 @@ export default function TeamPage() {
         <div className={card}><p className={lab}>Suspendus</p><p className="text-2xl font-bold text-foreground">{members.length - active}</p></div>
       </div>
 
-      {showForm && canManage && (
+      {showForm && canManage && tab === 'members' && (
         <form onSubmit={create} className={`${card} grid gap-4 md:grid-cols-3`}>
           <div><label className={lab}>Prénom *</label><input required className={input} value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} /></div>
           <div><label className={lab}>Nom</label><input className={input} value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} /></div>
@@ -164,8 +165,8 @@ export default function TeamPage() {
         </form>
       )}
 
-      <div className="flex gap-1 rounded-xl border border-border bg-muted p-1 w-fit">
-        {([['members', 'Membres', ShieldCheck], ['rights', 'Droits par rôle', KeyRound]] as const).map(([id, label, Icon]) => (
+      <div className="flex w-fit flex-wrap gap-1 rounded-xl border border-border bg-muted p-1">
+        {([['members', 'Membres', ShieldCheck], ['heads', 'Chefs d’agence', Building2], ['rights', 'Droits par rôle', KeyRound]] as const).map(([id, label, Icon]) => (
           <button key={id} onClick={() => setTab(id)} className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium ${tab === id ? 'btn-gold' : 'text-muted-foreground'}`}><Icon size={14} />{label}</button>
         ))}
       </div>
@@ -195,6 +196,8 @@ export default function TeamPage() {
             </div>
           ))}
         </div>
+      ) : tab === 'heads' ? (
+        orgId ? <AgencyHeadsPanel orgId={orgId} canManage={canManage} members={members} onChanged={load} /> : null
       ) : (
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
