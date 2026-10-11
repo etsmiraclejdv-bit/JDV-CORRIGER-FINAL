@@ -119,8 +119,8 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
       legal_name: form.legal_name?.trim() || null,
       registration_number: form.registration_number?.trim() || null,
       tax_number: form.tax_number?.trim() || null,
-      representative_first_name: form.representative_first_name?.trim() || null,
-      representative_last_name: form.representative_last_name?.trim() || null,
+      representative_first_name: form.representative_first_name?.trim() || '',
+      representative_last_name: form.representative_last_name?.trim() || '',
       city: form.city?.trim() || null,
       address: form.address?.trim() || null,
     };
