@@ -55,9 +55,7 @@ export default function PublicBusinessStorefrontPage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-950 px-5 py-16 text-slate-200">
-        <p className="mx-auto max-w-4xl animate-pulse">
-          Chargement de la vitrine…
-        </p>
+        <p className="mx-auto max-w-4xl animate-pulse">Chargement de la vitrine…</p>
       </main>
     );
   }
@@ -67,12 +65,9 @@ export default function PublicBusinessStorefrontPage() {
       <main className="min-h-screen bg-slate-950 px-5 py-16 text-slate-200">
         <div className="mx-auto max-w-xl rounded-2xl border border-white/10 bg-slate-900 p-8 text-center">
           <Building2 className="mx-auto mb-4 text-amber-300" size={32} />
-          <h1 className="text-2xl font-bold text-white">
-            Vitrine indisponible
-          </h1>
+          <h1 className="text-2xl font-bold text-white">Vitrine indisponible</h1>
           <p className="mt-3 text-sm leading-6 text-slate-300">
-            Cette entreprise n’a pas de vitrine publique disponible pour le
-            moment.
+            Cette entreprise n’a pas de vitrine publique disponible pour le moment.
           </p>
           <Link
             href="/"
@@ -87,10 +82,7 @@ export default function PublicBusinessStorefrontPage() {
 
   const brand = '#D4AF37';
   const location = [business.city, business.country].filter(Boolean).join(', ');
-  const websiteUrl =
-    business.website && /^https?:\/\//i.test(business.website)
-      ? business.website
-      : null;
+  const websiteUrl = business.website && /^https?:\/\//i.test(business.website) ? business.website : null;
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -123,20 +115,13 @@ export default function PublicBusinessStorefrontPage() {
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <p
-                className="text-xs font-bold uppercase tracking-[.2em]"
-                style={{ color: brand }}
-              >
+              <p className="text-xs font-bold uppercase tracking-[.2em]" style={{ color: brand }}>
                 Découvrez notre entreprise
               </p>
-              <h1 className="mt-2 break-words text-3xl font-extrabold text-white sm:text-4xl">
-                {business.name}
-              </h1>
+              <h1 className="mt-2 break-words text-3xl font-extrabold text-white sm:text-4xl">{business.name}</h1>
               {business.legal_name &&
                 business.legal_name !== business.name && (
-                  <p className="mt-2 text-sm text-slate-300">
-                    {business.legal_name}
-                  </p>
+                  <p className="mt-2 text-sm text-slate-300">{business.legal_name}</p>
                 )}
               {location && (
                 <p className="mt-3 flex items-start gap-2 text-sm text-slate-300">
