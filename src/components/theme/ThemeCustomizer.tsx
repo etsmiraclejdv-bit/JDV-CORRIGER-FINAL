@@ -71,13 +71,21 @@ export default function ThemeCustomizer() {
     } catch { /* stockage indisponible : valeurs par défaut */ }
     loaded.current = true;
 
-    const loadRemote = (meta: unknown) => {
-      const remote = clean((meta as { theme_prefs?: unknown } | null)?.theme_prefs);
+    const loadRemote = async (user: { id: string; user_metadata?: unknown } | null) => {
+      if (!user) return;
+      const { data: row } = await supabase
+        .from('user_settings')
+        .select('setting_value')
+        .eq('user_id', user.id)
+        .eq('setting_key', 'theme_prefs')
+        .maybeSingle();
+      const stored = (row as { setting_value?: unknown } | null)?.setting_value;
+      const remote = clean(stored) ?? clean((user.user_metadata as { theme_prefs?: unknown } | null)?.theme_prefs);
       if (remote) { fromRemote.current = true; setPrefs(remote); }
     };
-    supabase.auth.getSession().then(({ data }) => loadRemote(data.session?.user?.user_metadata ?? null));
+    supabase.auth.getSession().then(({ data }) => loadRemote(data.session?.user ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') loadRemote(session?.user?.user_metadata ?? null);
+      if (event === 'SIGNED_IN') void loadRemote(session?.user ?? null);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -91,7 +99,15 @@ export default function ThemeCustomizer() {
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       const { data } = await supabase.auth.getSession();
-      if (data.session) await supabase.auth.updateUser({ data: { theme_prefs: prefs } });
+      if (data.session?.user) {
+        const { error } = await supabase.from('user_settings').upsert({
+          user_id: data.session.user.id,
+          setting_key: 'theme_prefs',
+          setting_value: prefs,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,setting_key' });
+        if (error) await supabase.auth.updateUser({ data: { theme_prefs: prefs } });
+      }
     }, 900);
   }, [prefs]);
 
