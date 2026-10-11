@@ -340,7 +340,6 @@ export default function BusinessDashboardLayout({ children }: { children: React.
           </div>
         </aside>
         <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
-          <ConcepteurBranchBar />
           <div className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
             <h1 data-jdv-design="page-title" className="text-base font-semibold text-white">
               Portail Entreprise
