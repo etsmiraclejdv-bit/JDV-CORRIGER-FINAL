@@ -3,13 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, Contrast, Moon, Monitor, Palette, RotateCcw, Sun, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { fetchOrgProfile } from '@/lib/auth/context';
+import type { DesignConfig } from '@/features/design-studio/types';
 
 export type ThemeChoice = 'light' | 'dark' | 'contrast' | 'system';
 export type Accent = 'gold' | 'blue' | 'green' | 'violet' | 'orange';
 export type FontSize = 'sm' | 'md' | 'lg' | 'xl';
-export type Prefs = { theme: ThemeChoice; accent: Accent; font: FontSize; reduceMotion: boolean };
+export type Prefs = { theme: ThemeChoice; accent: Accent; font: FontSize; reduceMotion: boolean; themeOverride?: boolean };
 
-export const DEFAULT_PREFS: Prefs = { theme: 'light', accent: 'gold', font: 'md', reduceMotion: false };
+export const DEFAULT_PREFS: Prefs = { theme: 'light', accent: 'gold', font: 'md', reduceMotion: false, themeOverride: false };
 export const THEME_STORAGE_KEY = 'jdv_theme_v1';
 
 const THEMES: { id: ThemeChoice; label: string; hint: string; icon: typeof Sun }[] = [
@@ -40,6 +42,7 @@ function clean(raw: unknown): Prefs | null {
     accent: ACCENTS.some((a) => a.id === r.accent) ? (r.accent as Accent) : DEFAULT_PREFS.accent,
     font: FONTS.some((f) => f.id === r.font) ? (r.font as FontSize) : DEFAULT_PREFS.font,
     reduceMotion: r.reduceMotion === true,
+    themeOverride: r.themeOverride === true,
   };
 }
 
@@ -48,17 +51,31 @@ function resolveTheme(theme: ThemeChoice): 'light' | 'dark' | 'contrast' {
   return theme;
 }
 
-function apply(p: Prefs) {
+function apply(p: Prefs, design: Partial<DesignConfig> | null = null) {
   const root = document.documentElement;
-  root.dataset.theme = resolveTheme(p.theme);
+  root.dataset.theme = resolveTheme(!p.themeOverride && design?.mode ? design.mode : p.theme);
   root.dataset.accent = p.accent;
   root.dataset.font = p.font;
   root.dataset.motion = p.reduceMotion ? 'reduce' : 'normal';
+  const brandProperties = ['--brand', '--brand-2', '--brand-3', '--brand-ink', '--brand-ink-dark'];
+  if (design?.primaryColor && p.accent === 'gold') {
+    for (const property of brandProperties) root.style.setProperty(property, design.primaryColor);
+  } else {
+    for (const property of brandProperties) root.style.removeProperty(property);
+  }
+  if (design?.secondaryColor) root.style.setProperty('--secondary', design.secondaryColor);
+  else root.style.removeProperty('--secondary');
+  if (design?.accentColor) root.style.setProperty('--accent', design.accentColor);
+  else root.style.removeProperty('--accent');
+  if (design?.density) root.dataset.designDensity = design.density;
+  if (design?.radius) root.dataset.designRadius = design.radius;
+  if (design?.fontScale) root.dataset.designFontScale = design.fontScale;
 }
 
 export default function ThemeCustomizer() {
   const [open, setOpen] = useState(false);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
+  const [designConfig, setDesignConfig] = useState<Partial<DesignConfig> | null>(null);
   const loaded = useRef(false);
   const fromRemote = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,38 +88,98 @@ export default function ThemeCustomizer() {
     } catch { /* stockage indisponible : valeurs par défaut */ }
     loaded.current = true;
 
-    const loadRemote = (meta: unknown) => {
-      const remote = clean((meta as { theme_prefs?: unknown } | null)?.theme_prefs);
+    const loadRemote = async (user: { id: string; user_metadata?: unknown } | null) => {
+      if (!user) return;
+      const { data: row } = await supabase
+        .from('user_settings')
+        .select('setting_value')
+        .eq('user_id', user.id)
+        .eq('setting_key', 'theme_prefs')
+        .maybeSingle();
+      const stored = (row as { setting_value?: unknown } | null)?.setting_value;
+      const remote = clean(stored) ?? clean((user.user_metadata as { theme_prefs?: unknown } | null)?.theme_prefs);
       if (remote) { fromRemote.current = true; setPrefs(remote); }
     };
-    supabase.auth.getSession().then(({ data }) => loadRemote(data.session?.user?.user_metadata ?? null));
+    supabase.auth.getSession().then(({ data }) => loadRemote(data.session?.user ?? null));
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') loadRemote(session?.user?.user_metadata ?? null);
+      if (event === 'SIGNED_IN') void loadRemote(session?.user ?? null);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  // Application + sauvegarde
+  // Application du thème : la configuration publiée est superposée aux préférences autorisées.
+  useEffect(() => {
+    if (loaded.current) apply(prefs, designConfig);
+  }, [prefs, designConfig]);
+
+  // Persistance des préférences personnelles, sans réécriture lors du chargement du thème global.
   useEffect(() => {
     if (!loaded.current) return;
-    apply(prefs);
     try { window.localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(prefs)); } catch { /* ignoré */ }
     if (fromRemote.current) { fromRemote.current = false; return; }
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(async () => {
       const { data } = await supabase.auth.getSession();
-      if (data.session) await supabase.auth.updateUser({ data: { theme_prefs: prefs } });
+      if (data.session?.user) {
+        const { error } = await supabase.from('user_settings').upsert({
+          user_id: data.session.user.id,
+          setting_key: 'theme_prefs',
+          setting_value: prefs,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,setting_key' });
+        if (error) await supabase.auth.updateUser({ data: { theme_prefs: prefs } });
+      }
     }, 900);
+    return () => { if (timer.current) clearTimeout(timer.current); };
   }, [prefs]);
+
+  // Charger la dernière configuration publiée, d'abord la plateforme puis l'entreprise.
+  useEffect(() => {
+    let active = true;
+    async function loadPublishedDesign() {
+      try {
+        const { data: platform } = await supabase
+          .from('design_config_versions')
+          .select('config')
+          .eq('scope', 'platform')
+          .eq('status', 'published')
+          .is('organization_id', null)
+          .order('version_no', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        let resolved = ((platform as { config?: Partial<DesignConfig> } | null)?.config ?? null);
+        const { data: profile } = await fetchOrgProfile();
+        const organizationId = String((profile as Record<string, unknown> | null)?.organization_id ?? '');
+        if (organizationId) {
+          const { data: organization } = await supabase
+            .from('design_config_versions')
+            .select('config')
+            .eq('scope', 'organization')
+            .eq('organization_id', organizationId)
+            .eq('status', 'published')
+            .order('version_no', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const localConfig = (organization as { config?: Partial<DesignConfig> } | null)?.config;
+          if (localConfig) resolved = { ...(resolved ?? {}), ...localConfig };
+        }
+        if (active) setDesignConfig(resolved);
+      } catch {
+        // Avant l'application de la migration, l'application continue avec les thèmes existants.
+      }
+    }
+    void loadPublishedDesign();
+    return () => { active = false; };
+  }, []);
 
   // Mode automatique : suivre l'appareil
   useEffect(() => {
     if (prefs.theme !== 'system') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => apply(prefs);
+    const onChange = () => apply(prefs, designConfig);
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
-  }, [prefs]);
+  }, [prefs, designConfig]);
 
   useEffect(() => {
     if (!open) return;
@@ -111,7 +188,7 @@ export default function ThemeCustomizer() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const set = useCallback(<K extends keyof Prefs>(key: K, value: Prefs[K]) => setPrefs((p) => ({ ...p, [key]: value })), []);
+  const set = useCallback(<K extends keyof Prefs>(key: K, value: Prefs[K]) => setPrefs((p) => ({ ...p, [key]: value, ...(key === 'theme' ? { themeOverride: true } : {}) })), []);
 
   const section = 'text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2';
   const chip = (active: boolean) =>

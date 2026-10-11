@@ -4,7 +4,7 @@ import AppLogo from '@/components/ui/AppLogo';
 import NotificationBell from '@/components/NotificationBell';
 import UserProfilePanel from '@/components/UserProfilePanel';
 import Modal from '@/components/ui/Modal';
-import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent, Warehouse, Network, MapPin, Undo2, ArrowLeftRight, Store } from 'lucide-react';
+import { LayoutDashboard, Users, ShoppingCart, Package, FileText, Settings, LogOut, ChevronLeft, ChevronRight, UserCheck, BookOpen, ClipboardList, User, HelpCircle, AlertTriangle, Wallet, Truck, Percent, Warehouse, Network, MapPin, Undo2, ArrowLeftRight, Store, Palette, FilePlus2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
@@ -35,6 +35,8 @@ const navItems = [
   { id:'rapports',label:'Rapports',icon:<FileText size={18}/>,href:'/business/dashboard/reports',group:'Analyse' },
   { id:'audit',label:'Journal d\'audit',icon:<ClipboardList size={18}/>,href:'/business/dashboard/audit',group:'Analyse' },
   { id:'guide',label:'Guide d\'utilisation',icon:<HelpCircle size={18}/>,href:'/guide-onboarding',group:'Système' },
+  { id:'personnalisation',label:'Personnalisation',icon:<Palette size={18}/>,href:'/business/dashboard/personnalisation',group:'Système' },
+  { id:'formulaires',label:'Formulaires',icon:<FilePlus2 size={18}/>,href:'/business/dashboard/formulaires',group:'Système' },
   { id:'settings',label:'Paramètres',icon:<Settings size={18}/>,href:'/business/dashboard/settings',group:'Système' },
 ];
 
