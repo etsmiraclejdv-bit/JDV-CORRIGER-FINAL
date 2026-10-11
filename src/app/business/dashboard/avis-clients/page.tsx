@@ -4,6 +4,7 @@ import React, { FormEvent, useCallback, useEffect, useState } from 'react';
 import { MessageSquareQuote, Star, Send, RefreshCw, Trash2, ShieldCheck, TrendingUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
+const db = supabase as any;
 
 type Review = { id: string; customer_name: string; rating: number; comment: string; source: string; status: string; created_at: string };
 type ClientOption = { id: string; first_name: string; last_name: string | null; phone: string | null };
@@ -28,7 +29,7 @@ export default function AvisClientsPage() {
   },[]);
 
   const loadReviews=useCallback(async (id:string)=>{
-    const {data,error}=await supabase.from('client_reviews').select('id,customer_name,rating,comment,source,status,created_at').eq('organization_id',id).order('created_at',{ascending:false}).limit(100);
+    const {data,error}=await db.from('client_reviews').select('id,customer_name,rating,comment,source,status,created_at').eq('organization_id',id).order('created_at',{ascending:false}).limit(100);
     if(error){setMessage(`Chargement impossible : ${error.message}`);return;}
     setReviews((data??[]) as Review[]);
   },[]);
