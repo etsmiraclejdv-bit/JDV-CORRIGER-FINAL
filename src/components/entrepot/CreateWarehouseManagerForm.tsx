@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { getAuthContext } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
@@ -42,9 +42,8 @@ export default function CreateWarehouseManagerForm({
     password: '',
   });
 
-  const availableWarehouses = useMemo(
-    () => warehouses.filter((warehouse) => warehouse.active && !warehouse.manager_user_id),
-    [warehouses],
+  const availableWarehouses = warehouses.filter(
+    (warehouse) => warehouse.active && !warehouse.manager_user_id,
   );
 
   useEffect(() => {
@@ -131,7 +130,10 @@ export default function CreateWarehouseManagerForm({
       </div>
 
       {message && (
-        <p role="status" className="mt-3 rounded-lg border border-white/10 p-3 text-sm text-slate-200">
+        <p
+          role="status"
+          className="mt-3 rounded-lg border border-white/10 p-3 text-sm text-slate-200"
+        >
           {message}
         </p>
       )}
@@ -210,7 +212,7 @@ export default function CreateWarehouseManagerForm({
           <div className="md:col-span-2">
             {availableWarehouses.length === 0 && (
               <p className="mb-3 text-sm text-amber-200">
-                Tous les entrepôts actifs ont déjà un chef affecté, ou aucun entrepôt actif n’existe.
+                Tous les entrepôts actifs ont déjà un chef affecté, ou aucun entrepôt actif\n                n’existe.
               </p>
             )}
             <button
