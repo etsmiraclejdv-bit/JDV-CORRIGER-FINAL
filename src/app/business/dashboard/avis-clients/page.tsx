@@ -113,18 +113,16 @@ export default function AvisClientsPage() {
     setSaving(true);
     setMessage('');
     const { data: userData } = await supabase.auth.getUser();
-    const { error } = await db
-      .from('client_reviews')
-      .insert({
-        organization_id: orgId,
-        client_id: clientId || null,
-        customer_name: trimmedName,
-        rating,
-        comment: trimmedComment,
-        source,
-        status: 'published',
-        created_by: userData.user?.id ?? null,
-      });
+    const { error } = await db.from('client_reviews').insert({
+      organization_id: orgId,
+      client_id: clientId || null,
+      customer_name: trimmedName,
+      rating,
+      comment: trimmedComment,
+      source,
+      status: 'published',
+      created_by: userData.user?.id ?? null,
+    });
     setSaving(false);
     if (error) {
       setMessage(`Avis non enregistré : ${error.message}`);
