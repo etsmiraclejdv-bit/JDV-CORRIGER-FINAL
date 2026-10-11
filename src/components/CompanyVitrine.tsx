@@ -4,6 +4,9 @@ import { FormEvent, useEffect, useState } from 'react';
 import { ExternalLink, Globe, MapPin, MessageSquareQuote, Newspaper, Phone, Search, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 
+// The public vitrine RPC is introduced by the accompanying SQL migration.
+const db = supabase as any;
+
 type Review = {
   id: string;
   customer_name: string;
@@ -55,7 +58,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
   useEffect(() => {
     let alive = true;
     (async () => {
-      const { data: result, error } = await supabase.rpc('jdvcrm_public_company_vitrine_v1', {
+      const { data: result, error } = await db.rpc('jdvcrm_public_company_vitrine_v1', {
         p_organization_id: organizationId,
       });
       if (!alive) return;
