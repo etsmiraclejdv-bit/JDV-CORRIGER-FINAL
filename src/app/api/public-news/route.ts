@@ -34,9 +34,7 @@ export async function GET() {
       .slice(0, 20)
       .map((match) => {
         const raw = match[1];
-        const sourceMatch = raw.match(
-          /<source(?:\s[^>]*)?>([\s\S]*?)<\/source>/,
-        );
+        const sourceMatch = raw.match(/<source(?:\\s[^>]*)?>([\\s\\S]*?)<\\/source>/);
         return {
           title: tag(raw, 'title'),
           link: tag(raw, 'link'),
