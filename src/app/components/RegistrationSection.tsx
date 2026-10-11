@@ -101,10 +101,10 @@ export default function RegistrationSection() {
         p_registration_number:d.registrationNumber,p_tax_number:d.taxNumber,
         p_representative_first_name:d.representativeFirstName,p_representative_last_name:d.representativeLastName,
         p_representative_role:d.representativeRole,p_representative_phone:d.representativePhone,
-        p_representative_email:d.professionalEmail,p_representative_birth_date:d.representativeBirthDate||null,
-        p_representative_nationality:d.representativeNationality,p_ownership_count:Number(d.associateCount)||null,
-        p_associate_count:Number(d.associateCount)||null,p_manager_count:Number(d.managerCount)||null,
-        p_people_count:Number(d.peopleCount)||null,p_company_size:d.companySize
+        p_representative_email:d.professionalEmail,p_representative_birth_date:d.representativeBirthDate||'',
+        p_representative_nationality:d.representativeNationality,p_ownership_count:Number(d.associateCount)||0,
+        p_associate_count:Number(d.associateCount)||0,p_manager_count:Number(d.managerCount)||0,
+        p_people_count:Number(d.peopleCount)||0,p_company_size:d.companySize
       };
 
       // Si l'utilisateur est déjà connecté, ne recrée jamais son compte Auth.
@@ -362,11 +362,6 @@ export default function RegistrationSection() {
               </Field>
             </div>
           </div>
-
-        <div className="card-navy rounded-3xl p-7">
-          <div className="flex items-center gap-3 mb-6"><FileText className="text-[#D4AF37]"/><div><h3 className="text-lg font-bold">5. Documents de vérification</h3><p className="text-xs text-muted-foreground">Vous les enverrez juste après la création du dossier : JDV IA indique tout de suite si chaque document est conforme.</p></div></div>
-          <div className="grid md:grid-cols-3 gap-4">{['Pièce d’identité du représentant','RCCM / registre de commerce','IFU / document fiscal','Statuts / acte constitutif','Justificatif d’adresse'].map(x=><div key={x} className="rounded-xl border border-[#D4AF37]/15 bg-[#0A1628] p-4 text-sm text-muted-foreground">{x}</div>)}</div>
-        </div>
 
           <div className="card-navy rounded-3xl p-7">
             <div className="flex items-center gap-3 mb-6">
