@@ -1,4 +1,5 @@
 // Informations publiques du site. Renseignez ici vos coordonnées réelles :
+// Les champs restent typés comme des chaînes pour permettre leur configuration sans types littéraux vides.
 // seuls les moyens de contact remplis sont affichés sur la page d'accueil.
 export const SITE = {
   name: 'JDV CRM',
