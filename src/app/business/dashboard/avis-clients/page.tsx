@@ -5,12 +5,15 @@ import { MessageSquareQuote, Star, Send, RefreshCw, Trash2, ShieldCheck, Trendin
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
 
-type Review = { id: string; customer_name: string; rating: number; comment: string; source: string; status: string; created_at: string };\ntype ClientOption = { id: string; first_name: string; last_name: string | null; phone: string | null };
+type Review = { id: string; customer_name: string; rating: number; comment: string; source: string; status: string; created_at: string };
+type ClientOption = { id: string; first_name: string; last_name: string | null; phone: string | null };
 const sources = [{value:'in_person',label:'En personne'},{value:'phone',label:'Téléphone'},{value:'whatsapp',label:'WhatsApp'},{value:'email',label:'E-mail'},{value:'online',label:'En ligne'}];
 
 export default function AvisClientsPage() {
   const [orgId,setOrgId]=useState<string|null>(null);
-  const [reviews,setReviews]=useState<Review[]>([]);\n  const [clients,setClients]=useState<ClientOption[]>([]);\n  const [clientId,setClientId]=useState('');
+  const [reviews,setReviews]=useState<Review[]>([]);
+  const [clients,setClients]=useState<ClientOption[]>([]);
+  const [clientId,setClientId]=useState('');
   const [name,setName]=useState('');
   const [rating,setRating]=useState(5);
   const [comment,setComment]=useState('');
@@ -19,7 +22,12 @@ export default function AvisClientsPage() {
   const [saving,setSaving]=useState(false);
   const [message,setMessage]=useState('');
 
-  const loadClients=useCallback(async (id:string)=>{\n    const {data}=await supabase.from('clients').select('id,first_name,last_name,phone').eq('organization_id',id).is('archived_at',null).order('first_name').limit(500);\n    setClients((data??[]) as ClientOption[]);\n  },[]);\n\n  const loadReviews=useCallback(async (id:string)=>{
+  const loadClients=useCallback(async (id:string)=>{
+    const {data}=await supabase.from('clients').select('id,first_name,last_name,phone').eq('organization_id',id).is('archived_at',null).order('first_name').limit(500);
+    setClients((data??[]) as ClientOption[]);
+  },[]);
+
+  const loadReviews=useCallback(async (id:string)=>{
     const {data,error}=await supabase.from('client_reviews').select('id,customer_name,rating,comment,source,status,created_at').eq('organization_id',id).order('created_at',{ascending:false}).limit(100);
     if(error){setMessage(`Chargement impossible : ${error.message}`);return;}
     setReviews((data??[]) as Review[]);
@@ -29,7 +37,8 @@ export default function AvisClientsPage() {
 
   async function submit(e:FormEvent){
     e.preventDefault();if(!orgId)return;
-    const selectedClient=clients.find(client=>client.id===clientId);\n    const trimmedName=(selectedClient ? [selectedClient.first_name,selectedClient.last_name].filter(Boolean).join(' ') : name).trim(), trimmedComment=comment.trim();
+    const selectedClient=clients.find(client=>client.id===clientId);
+    const trimmedName=(selectedClient ? [selectedClient.first_name,selectedClient.last_name].filter(Boolean).join(' ') : name).trim(), trimmedComment=comment.trim();
     if(trimmedName.length<2||trimmedComment.length<2){setMessage('Renseigne le nom du client et un commentaire.');return;}
     setSaving(true);setMessage('');
     const {data:userData}=await supabase.auth.getUser();
