@@ -1,0 +1,47 @@
+name: JDV engagement hub checks
+
+on:
+  pull_request:
+    paths:
+      - 'src/app/api/jdv-news/**'
+      - 'src/app/business/dashboard/ambiance/**'
+      - 'src/app/business/dashboard/avis-clients/**'
+      - 'src/app/business/dashboard/veille/**'
+      - 'src/app/business/dashboard/layout.tsx'
+      - 'src/components/OrganizationAmbience.tsx'
+      - 'supabase/migrations/20261011142908_jdv_ambience_news_reviews_v1.sql'
+      - 'supabase/migrations/20261011143016_jdv_background_storage_org_listing_v1.sql'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/jdv-engagement-check.yml'
+  push:
+    branches:
+      - feature/jdv-engagement-hub-reconciled
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jdv-engagement-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: TypeScript and project tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: TypeScript validation
+        run: npm run type-check
+      - name: Automated tests
+        run: npm test
