@@ -157,7 +157,7 @@ export default function EntrepotApprovisionnementPage() {
     const { data, error } = await supabase.rpc('jdvcrm_warehouse_request_supply_v1', {
       p_warehouse_id: current.warehouse_id,
       p_target: target,
-      p_supplier_id: target === 'supplier' ? supplierId : null,
+      p_supplier_id: (target === 'supplier' ? supplierId : null) as unknown as string,
       p_items: items,
       p_notes: notes.trim() || undefined,
     });
