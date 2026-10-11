@@ -33,17 +33,7 @@ export default function BusinessLoginPage() {
         return;
       }
       const { data: sessionData } = await supabase.auth.getUser();
-fix/typescript-supabase-client
-      if (sessionData.user) {
-        const completed = await completePendingOnboarding(sessionData.user.id, email);
-        if (completed) {
-          router.replace('/business/onboarding');
-          return;
-        }
-      }
-=======
       if (sessionData.user) { const completed = await completePendingOnboarding(sessionData.user.id, email); if (completed) { router.replace('/business/validation'); return; } }
- main
       const result = await checkCurrentBusinessAdmin();
       if (!result.ok) {
         // Dossier d'entreprise en cours de validation : on envoie le candidat vers sa page de validation

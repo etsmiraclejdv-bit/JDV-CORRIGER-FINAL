@@ -42,26 +42,11 @@ export default function BusinessProspecteursPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
- fix/typescript-supabase-client
-  const emptyForm = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
-    commissionRate: 10,
-    warehouseId: '',
-    department: '',
-    workCity: '',
-    workZone: '',
-  };
-=======
   const [isAdmin, setIsAdmin] = useState(false);
   const [selected, setSelected] = useState<ProspecteurRow | null>(null);
   const [fiche, setFiche] = useState({ phone: '', city: '', address: '', commission: '' });
   const [busyId, setBusyId] = useState<string | null>(null);
   const emptyForm = { firstName: '', lastName: '', email: '', phone: '', password: '', commissionRate: 10, warehouseId: '', department: '', workCity: '', workZone: '' };
-main
   const [form, setForm] = useState(emptyForm);
 
   useEffect(() => {
@@ -72,33 +57,11 @@ main
       if (resolvedOrgId) {
         setOrgId(resolvedOrgId);
         loadProspecteurs(resolvedOrgId);
-fix/typescript-supabase-client
-        supabase
-          .from('warehouses')
-          .select('id,name,code,city')
-          .eq('organization_id', resolvedOrgId)
-          .eq('active', true)
-          .order('name')
-          .then(({ data }) =>
-            setWarehouses(
-              (data ?? []) as { id: string; name: string; code: string; city: string | null }[]
-            )
-          );
-        supabase
-          .from('organizations')
-          .select('name')
-          .eq('id', resolvedOrgId)
-          .maybeSingle()
-          .then(({ data: o }) => {
-            setOrgName((o as { name?: string } | null)?.name ?? '');
-          });
-=======
         supabase.rpc('jdvcrm_is_org_admin_v1', { p_organization_id: resolvedOrgId }).then(({ data: ok }) => setIsAdmin(ok === true));
         supabase.from('warehouses').select('id,name,code,city').eq('organization_id', resolvedOrgId).eq('active', true).order('name').then(({ data }) => setWarehouses((data ?? []) as {id:string;name:string;code:string;city:string|null}[]));
         supabase.from('organizations').select('name').eq('id', resolvedOrgId).maybeSingle().then(({ data: o }) => {
           setOrgName(((o as { name?: string } | null)?.name) ?? '');
         });
- main
       } else {
         setLoading(false);
       }
@@ -193,13 +156,6 @@ fix/typescript-supabase-client
     }
   }
 
-fix/typescript-supabase-client
-  const filtered = prospecteurs.filter(
-    (p) =>
-      !search ||
-      p.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      (p.phone ?? '').includes(search)
-=======
   async function setStatus(p: ProspecteurRow, status: 'active' | 'suspended') {
     if (status === 'suspended' && !window.confirm(`Suspendre ${p.full_name} ? Il ne pourra plus se connecter ni enregistrer de ventes.`)) return;
     setBusyId(p.id);
@@ -234,7 +190,6 @@ fix/typescript-supabase-client
     (!search ||
       p.full_name.toLowerCase().includes(search.toLowerCase()) ||
       (p.phone ?? '').includes(search))
- main
   );
 
   const fmt = (cents: number) =>
@@ -271,17 +226,6 @@ fix/typescript-supabase-client
         </div>
       </div>
 
-fix/typescript-supabase-client
-      <div className="relative max-w-sm">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher un prospecteur..."
-          className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
-        />
-=======
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative w-full max-w-sm">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]" />
@@ -298,7 +242,6 @@ fix/typescript-supabase-client
           <option value="active">Actifs</option>
           <option value="suspended">Suspendus ou bloqués</option>
         </select>
-main
       </div>
 
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
@@ -317,27 +260,12 @@ main
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-fix/typescript-supabase-client
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
-                    Prospecteur
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
-                    Téléphone
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
-                    Ventes
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
-                    CA généré
-                  </th>
-=======
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">Prospecteur</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">Téléphone</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">Statut</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">Ventes</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">CA généré</th>
                   <th className="px-4 py-3" />
-main
                 </tr>
               </thead>
               <tbody>
@@ -390,14 +318,6 @@ main
         )}
       </div>
 
-fix/typescript-supabase-client
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Nouveau prospecteur"
-        size="md"
-      >
-=======
       <Modal open={!!selected} onClose={() => setSelected(null)} title={selected ? `Fiche : ${selected.full_name}` : ''} size="md">
         {selected && (
           <div className="space-y-4 p-1">
@@ -432,7 +352,6 @@ fix/typescript-supabase-client
       </Modal>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Nouveau prospecteur" size="md">
-main
         <form onSubmit={handleCreate} className="space-y-4 p-1">
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -553,13 +472,7 @@ main
                 {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
-fix/typescript-supabase-client
-            <p className="text-xs text-[#718096] mt-1">
-              Les identifiants sont envoyés par email au prospecteur.
-            </p>
-=======
             <p className="text-xs text-[#718096] mt-1">Aucun e-mail n’est envoyé : transmettez vous-même le mot de passe au prospecteur.</p>
-main
           </div>
           <div className="flex gap-3 pt-2">
             <button

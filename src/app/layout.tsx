@@ -25,16 +25,12 @@ export const metadata: Metadata = {
   },
 };
 
-fix/typescript-supabase-client
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-=======
 // Applique le thème choisi avant l'affichage de la page (évite le clignotement).
 const themeInit = `(function(){try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('jdv_theme_v1')||'{}'),t=p.theme||'light';if(t==='system')t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';d.dataset.theme=t;d.dataset.accent=p.accent||'gold';d.dataset.font=p.font||'md';d.dataset.motion=p.reduceMotion?'reduce':'normal';}catch(e){document.documentElement.dataset.theme='light';}})();`;
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-main
   return (
     <html lang="fr" className={jakarta.variable} data-theme="light" data-accent="gold" data-font="md" data-motion="normal" suppressHydrationWarning>
       <head>
