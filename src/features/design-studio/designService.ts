@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase/client';
+import type { Json } from '@/types/database.types';
 import type { CustomFormDefinition, CustomFormSchema, DesignConfig, DesignScope, DesignVersion } from './types';
 
 type DbRow = Record<string, unknown>;
@@ -39,7 +40,7 @@ export async function createDesignVersion(input: {
     organization_id: input.scope === 'organization' ? input.organizationId : null,
     version_no: versionNo,
     status: nextStatus,
-    config: input.config,
+    config: input.config as unknown as Json,
     created_by: userData.user.id,
     published_at: nextStatus === 'published' ? new Date().toISOString() : null,
   }).select('*').single();
@@ -99,7 +100,7 @@ export async function saveCustomForm(input: {
   if (!userData.user) return { data: null, error: new Error('Connexion requise') };
   let formId = input.formId;
   if (formId) {
-    const updates: DbRow = {
+    const updates = {
       name: input.name,
       description: input.description || null,
       updated_at: new Date().toISOString(),
@@ -127,7 +128,7 @@ export async function saveCustomForm(input: {
   const { data: insertedVersion, error: versionError } = await supabase.from('custom_form_versions').insert({
     form_id: formId,
     version_no: versionNo,
-    schema_json: input.schema,
+    schema_json: input.schema as unknown as Json,
     status: input.publish ? 'published' : 'draft',
     created_by: userData.user.id,
     published_at: input.publish ? new Date().toISOString() : null,
