@@ -11,6 +11,7 @@ import RegistrationSection from './components/RegistrationSection';
 import ContactSection from './components/ContactSection';
 import PublicFooter from './components/PublicFooter';
 import PublicAIAssistant from '@/components/PublicAIAssistant';
+import PublicNewsPanel from './components/PublicNewsPanel';
 import Link from 'next/link';
 import { Building2, MapPin } from 'lucide-react';
 
@@ -38,6 +39,7 @@ export default function PublicSitePage() {
         </div>
       </div>
       <PublicExperience />
+      <PublicNewsPanel />
       <BrandSection />
       <ServicesSection />
       <FeaturesSection />
