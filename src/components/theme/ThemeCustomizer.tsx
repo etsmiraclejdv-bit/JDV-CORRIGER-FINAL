@@ -106,10 +106,14 @@ export default function ThemeCustomizer() {
     return () => sub.subscription.unsubscribe();
   }, []);
 
-  // Application + sauvegarde
+  // Application du thème : la configuration publiée est superposée aux préférences autorisées.
+  useEffect(() => {
+    if (loaded.current) apply(prefs, designConfig);
+  }, [prefs, designConfig]);
+
+  // Persistance des préférences personnelles, sans réécriture lors du chargement du thème global.
   useEffect(() => {
     if (!loaded.current) return;
-    apply(prefs, designConfig);
     try { window.localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(prefs)); } catch { /* ignoré */ }
     if (fromRemote.current) { fromRemote.current = false; return; }
     if (timer.current) clearTimeout(timer.current);
@@ -125,7 +129,8 @@ export default function ThemeCustomizer() {
         if (error) await supabase.auth.updateUser({ data: { theme_prefs: prefs } });
       }
     }, 900);
-  }, [prefs, designConfig]);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [prefs]);
 
   // Charger la dernière configuration publiée, d'abord la plateforme puis l'entreprise.
   useEffect(() => {
