@@ -9,9 +9,9 @@ import type { DesignConfig } from '@/features/design-studio/types';
 export type ThemeChoice = 'light' | 'dark' | 'contrast' | 'system';
 export type Accent = 'gold' | 'blue' | 'green' | 'violet' | 'orange';
 export type FontSize = 'sm' | 'md' | 'lg' | 'xl';
-export type Prefs = { theme: ThemeChoice; accent: Accent; font: FontSize; reduceMotion: boolean };
+export type Prefs = { theme: ThemeChoice; accent: Accent; font: FontSize; reduceMotion: boolean; themeOverride?: boolean };
 
-export const DEFAULT_PREFS: Prefs = { theme: 'light', accent: 'gold', font: 'md', reduceMotion: false };
+export const DEFAULT_PREFS: Prefs = { theme: 'light', accent: 'gold', font: 'md', reduceMotion: false, themeOverride: false };
 export const THEME_STORAGE_KEY = 'jdv_theme_v1';
 
 const THEMES: { id: ThemeChoice; label: string; hint: string; icon: typeof Sun }[] = [
@@ -42,6 +42,7 @@ function clean(raw: unknown): Prefs | null {
     accent: ACCENTS.some((a) => a.id === r.accent) ? (r.accent as Accent) : DEFAULT_PREFS.accent,
     font: FONTS.some((f) => f.id === r.font) ? (r.font as FontSize) : DEFAULT_PREFS.font,
     reduceMotion: r.reduceMotion === true,
+    themeOverride: r.themeOverride === true,
   };
 }
 
@@ -52,7 +53,7 @@ function resolveTheme(theme: ThemeChoice): 'light' | 'dark' | 'contrast' {
 
 function apply(p: Prefs, design: Partial<DesignConfig> | null = null) {
   const root = document.documentElement;
-  root.dataset.theme = resolveTheme(p.theme);
+  root.dataset.theme = resolveTheme(!p.themeOverride && design?.mode ? design.mode : p.theme);
   root.dataset.accent = p.accent;
   root.dataset.font = p.font;
   root.dataset.motion = p.reduceMotion ? 'reduce' : 'normal';
