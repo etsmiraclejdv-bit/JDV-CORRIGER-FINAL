@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, Building2, Package, Users, Settings, Wrench, LogOut, ChevronLeft, ChevronRight, ClipboardList, User, HelpCircle, CreditCard, FileCheck, Palette } from 'lucide-react';
+import { LayoutDashboard, Building2, Package, Users, Settings, Wrench, LogOut, ChevronLeft, ChevronRight, ClipboardList, User, HelpCircle, CreditCard, FileCheck, Palette, MessageSquareQuote } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import AppLogo from '@/components/ui/AppLogo';
@@ -23,6 +23,7 @@ const navItems = [
   { id: 'audit', label: "Journal d'audit", icon: <ClipboardList size={18} />, href: '/hidden-concepteur-gate/dashboard/audit', group: 'Système' },
   { id: 'guide', label: "Guide d'utilisation", icon: <HelpCircle size={18} />, href: '/guide-onboarding', group: 'Système' },
   { id: 'design-studio', label: 'Studio de design', icon: <Palette size={18} />, href: '/hidden-concepteur-gate/dashboard/design-studio', group: 'Système' },
+  { id: 'platform-testimonials', label: 'Avis plateforme', icon: <MessageSquareQuote size={18} />, href: '/hidden-concepteur-gate/dashboard/testimonials', group: 'Système' },
   { id: 'settings', label: 'Paramètres', icon: <Settings size={18} />, href: '/hidden-concepteur-gate/dashboard/settings', group: 'Système' },
 ];
 
