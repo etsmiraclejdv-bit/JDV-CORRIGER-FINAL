@@ -274,7 +274,7 @@ begin
         reference_type, reference_id, source_location, destination_location, notes, created_by
       ) values (
         v_shipment.organization_id, v_item.article_id, v_shipment.prospecteur_id,
-        'supply', v_accepted_delta, 'prospecteur_supply_shipment', v_shipment.id,
+        'transfer_in', v_accepted_delta, 'prospecteur_supply_shipment', v_shipment.id,
         'EN_TRANSIT:' || v_shipment.shipment_number, 'stock_prospecteur',
         'Réception acceptée du bon ' || v_shipment.shipment_number, v_uid
       );
