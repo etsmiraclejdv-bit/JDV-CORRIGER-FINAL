@@ -126,8 +126,8 @@ export default function JdvLoadingScreen() {
     const started = Date.now();
     const timer = window.setInterval(() => {
       const elapsed = Date.now() - started;
-      setProgress(Math.min(100, (elapsed / 15000) * 100));
-      if (elapsed >= 15000) {
+      setProgress(Math.min(100, (elapsed / 30000) * 100));
+      if (elapsed >= 30000) {
         window.clearInterval(timer);
         sessionStorage.setItem('jdv_loading_seen', '1');
         setVisible(false);
@@ -198,6 +198,20 @@ export default function JdvLoadingScreen() {
           <div className="jdv-loading__status">
             <span>Découvrez JDV CRM avant d’entrer dans votre espace</span>
             <span>{Math.round(progress)}%</span>
+          </div>
+        </div>
+        <div className="mt-5 rounded-2xl border border-white/10 bg-[#08152f]/75 px-4 py-3 text-center backdrop-blur">
+          <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#D4AF37]">Personnalisation de votre plateforme</p>
+          <p className="mt-1 text-xs text-slate-300">Contacter directement le concepteur pour adapter JDV CRM à votre secteur.</p>
+          <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-white">
+            <a href="tel:+2290166038221" className="hover:text-[#F5E17A]">+229 01 66 03 82 21</a>
+            <a href="tel:+2290195325987" className="hover:text-[#F5E17A]">+229 01 95 32 59 87</a>
+            <a href="tel:+2290151565878" className="hover:text-[#F5E17A]">+229 01 51 56 58 78</a>
+            <a href="tel:+2290140164627" className="hover:text-[#F5E17A]">+229 01 40 16 46 27</a>
+          </div>
+          <div className="mt-1 flex flex-wrap justify-center gap-x-3 text-[11px] text-slate-300">
+            <a href="mailto:centre.global.jdv@gmail.com" className="hover:text-[#F5E17A]">centre.global.jdv@gmail.com</a>
+            <span>Cotonou, Bénin</span>
           </div>
         </div>
       </section>
