@@ -4,9 +4,15 @@ import { checkRateLimitShared, getClientIp } from '@/lib/middleware/rateLimiter'
 import { sanitizeString } from '@/lib/security/sanitize';
 import { JDV_CRM_KNOWLEDGE } from '@/lib/ai/jdvCrmKnowledge';
 import { buildKnowledgeAnswer } from '@/lib/ai/jdvFallbackAnswer';
+import {
+  describeOpenAIFailure,
+  extractOutputText,
+  resolveOpenAIConfig,
+} from '@/lib/ai/openaiResponses';
 
 type OrgMember = { organization_id: string; role: string };
 type PageContext = { pathname?: string; section?: string };
+const OPENAI_TIMEOUT_MS = 25_000;
 const safeLike = (value: string) =>
   value
     .replace(/[%,()]/g, ' ')
@@ -23,8 +29,14 @@ export async function POST(req: NextRequest) {
       { status: 429 }
     );
 
+  let body: any;
   try {
-    const body = await req.json();
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: 'Requête invalide.' }, { status: 400 });
+  }
+
+  try {
     const raw = Array.isArray(body?.messages) ? body.messages : [];
     const messages = raw
       .slice(-12)
@@ -40,7 +52,7 @@ export async function POST(req: NextRequest) {
       section: sanitizeString(body?.page_context?.section).slice(0, 120),
     };
     const lastUser = messages.filter((m: any) => m.role === 'user').at(-1)?.content || '';
-    const apiKey = process.env.OPENAI_API_KEY;
+    const openai = resolveOpenAIConfig(process.env);
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -48,11 +60,12 @@ export async function POST(req: NextRequest) {
 
     // Le guide reste utilisable même si les clés serveur ou la table de connaissances
     // ne sont pas encore configurées. Le contexte privé est ajouté seulement si possible.
-    const admin = supabaseUrl && serviceKey
-      ? createClient(supabaseUrl, serviceKey, {
-          auth: { autoRefreshToken: false, persistSession: false },
-        })
-      : null;
+    const admin =
+      supabaseUrl && serviceKey
+        ? createClient(supabaseUrl, serviceKey, {
+            auth: { autoRefreshToken: false, persistSession: false },
+          })
+        : null;
     let knowledgeContext: any[] = [];
     if (admin) {
       const { data: knowledgeRows, error: knowledgeError } = await admin
@@ -71,153 +84,157 @@ export async function POST(req: NextRequest) {
       page: pageContext,
     };
 
-    if (token && admin && supabaseUrl && anonKey) {
-      const userClient = createClient(supabaseUrl, anonKey, {
-        global: { headers: { Authorization: 'Bearer ' + token } },
-        auth: { autoRefreshToken: false, persistSession: false },
-      });
-      const {
-        data: { user },
-      } = await userClient.auth.getUser(token);
-      if (user) {
-        const { data: members, error: memberError } = await admin
-          .from('organization_members')
-          .select('organization_id,role')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .order('created_at', { ascending: true });
-        if (memberError) throw memberError;
+    // Un incident Supabase ne doit pas rendre l’assistant muet : on garde alors le mode public.
+    if (token && admin && supabaseUrl && anonKey)
+      try {
+        const userClient = createClient(supabaseUrl, anonKey, {
+          global: { headers: { Authorization: 'Bearer ' + token } },
+          auth: { autoRefreshToken: false, persistSession: false },
+        });
+        const {
+          data: { user },
+        } = await userClient.auth.getUser(token);
+        if (user) {
+          const { data: members, error: memberError } = await admin
+            .from('organization_members')
+            .select('organization_id,role')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .order('created_at', { ascending: true });
+          if (memberError) throw memberError;
 
-        // Ne charger que l’organisation principale pour éviter tout mélange entre organisations.
-        const primaryMember = (members as OrgMember[] | null)?.[0];
-        if (primaryMember) {
-          const primary = primaryMember.organization_id;
-          const [
-            { data: org },
-            { data: warehouses },
-            { data: subwarehouses },
-            { data: articles },
-            { count: prospectCount },
-            { count: clientCount },
-            { count: saleCount },
-          ] = await Promise.all([
-            admin
-              .from('organizations')
-              .select('id,name,legal_name,country,currency,timezone,status,subscription_status')
-              .eq('id', primary)
-              .maybeSingle(),
-            admin
-              .from('warehouses')
-              .select('id,code,name,city,active,manager_user_id')
-              .eq('organization_id', primary)
-              .order('name')
-              .limit(100),
-            admin
-              .from('warehouse_subwarehouses')
-              .select('id,code,name,parent_warehouse_id,city,zone,active,manager_user_id')
-              .eq('organization_id', primary)
-              .order('name')
-              .limit(200),
-            admin
-              .from('articles')
-              .select('id,code,name,description,category,unit,active')
-              .eq('organization_id', primary)
-              .eq('active', true)
-              .order('updated_at', { ascending: false })
-              .limit(300),
-            admin
-              .from('prospects')
-              .select('*', { count: 'exact', head: true })
-              .eq('organization_id', primary),
-            admin
-              .from('clients')
-              .select('*', { count: 'exact', head: true })
-              .eq('organization_id', primary),
-            admin
-              .from('sales')
-              .select('*', { count: 'exact', head: true })
-              .eq('organization_id', primary),
-          ]);
+          // Ne charger que l’organisation principale pour éviter tout mélange entre organisations.
+          const primaryMember = (members as OrgMember[] | null)?.[0];
+          if (primaryMember) {
+            const primary = primaryMember.organization_id;
+            const [
+              { data: org },
+              { data: warehouses },
+              { data: subwarehouses },
+              { data: articles },
+              { count: prospectCount },
+              { count: clientCount },
+              { count: saleCount },
+            ] = await Promise.all([
+              admin
+                .from('organizations')
+                .select('id,name,legal_name,country,currency,timezone,status,subscription_status')
+                .eq('id', primary)
+                .maybeSingle(),
+              admin
+                .from('warehouses')
+                .select('id,code,name,city,active,manager_user_id')
+                .eq('organization_id', primary)
+                .order('name')
+                .limit(100),
+              admin
+                .from('warehouse_subwarehouses')
+                .select('id,code,name,parent_warehouse_id,city,zone,active,manager_user_id')
+                .eq('organization_id', primary)
+                .order('name')
+                .limit(200),
+              admin
+                .from('articles')
+                .select('id,code,name,description,category,unit,active')
+                .eq('organization_id', primary)
+                .eq('active', true)
+                .order('updated_at', { ascending: false })
+                .limit(300),
+              admin
+                .from('prospects')
+                .select('*', { count: 'exact', head: true })
+                .eq('organization_id', primary),
+              admin
+                .from('clients')
+                .select('*', { count: 'exact', head: true })
+                .eq('organization_id', primary),
+              admin
+                .from('sales')
+                .select('*', { count: 'exact', head: true })
+                .eq('organization_id', primary),
+            ]);
 
-          let articleMatches: any[] = [];
-          const terms = lastUser
-            .split(/\s+/)
-            .map((x: string) => safeLike(x))
-            .filter((x: string) => x.length >= 3)
-            .slice(0, 6);
-          const filters = terms
-            .flatMap((term: string) => ['code.ilike.%' + term + '%', 'name.ilike.%' + term + '%'])
-            .join(',');
-          if (filters) {
-            const { data: matches } = await admin
-              .from('articles')
-              .select('id,code,name,description,category,unit,active')
+            let articleMatches: any[] = [];
+            const terms = lastUser
+              .split(/\s+/)
+              .map((x: string) => safeLike(x))
+              .filter((x: string) => x.length >= 3)
+              .slice(0, 6);
+            const filters = terms
+              .flatMap((term: string) => ['code.ilike.%' + term + '%', 'name.ilike.%' + term + '%'])
+              .join(',');
+            if (filters) {
+              const { data: matches } = await admin
+                .from('articles')
+                .select('id,code,name,description,category,unit,active')
+                .eq('organization_id', primary)
+                .eq('active', true)
+                .or(filters)
+                .limit(20);
+              articleMatches = matches ?? [];
+            }
+            const articleMap = new Map((articles ?? []).map((a: any) => [a.id, a]));
+            const { data: inventory } = await admin
+              .from('warehouse_inventory')
+              .select(
+                'warehouse_id,subwarehouse_id,article_id,quantity,reserved_quantity,minimum_quantity,updated_at'
+              )
               .eq('organization_id', primary)
-              .eq('active', true)
-              .or(filters)
-              .limit(20);
-            articleMatches = matches ?? [];
+              .limit(1000);
+
+            liveContext = {
+              mode: 'authenticated',
+              synchronized_at: new Date().toISOString(),
+              page: pageContext,
+              user: {
+                role: primaryMember.role ?? 'unknown',
+                permissions_hint:
+                  primaryMember.role === 'business_admin'
+                    ? 'administration complète'
+                    : primaryMember.role === 'manager' || primaryMember.role === 'supervisor'
+                      ? 'pilotage opérationnel'
+                      : 'accès limité selon permissions',
+              },
+              organization: org ?? { id: primary },
+              warehouses: warehouses ?? [],
+              subwarehouses: subwarehouses ?? [],
+              articles: (articles ?? []).map((a: any) => ({
+                code: a.code,
+                name: a.name,
+                description: a.description,
+                category: a.category,
+                unit: a.unit,
+              })),
+              article_matches: articleMatches.map((a: any) => ({
+                code: a.code,
+                name: a.name,
+                description: a.description,
+                category: a.category,
+                unit: a.unit,
+              })),
+              inventory: (inventory ?? []).map((x: any) => ({
+                warehouse_id: x.warehouse_id,
+                subwarehouse_id: x.subwarehouse_id,
+                article: x.article_id ? (articleMap.get(x.article_id)?.code ?? null) : null,
+                quantity: x.quantity,
+                reserved: x.reserved_quantity,
+                minimum: x.minimum_quantity,
+                updated_at: x.updated_at,
+              })),
+              counts: {
+                prospects: prospectCount ?? 0,
+                clients: clientCount ?? 0,
+                sales: saleCount ?? 0,
+              },
+            };
           }
-          const articleMap = new Map((articles ?? []).map((a: any) => [a.id, a]));
-          const { data: inventory } = await admin
-            .from('warehouse_inventory')
-            .select(
-              'warehouse_id,subwarehouse_id,article_id,quantity,reserved_quantity,minimum_quantity,updated_at'
-            )
-            .eq('organization_id', primary)
-            .limit(1000);
-
-          liveContext = {
-            mode: 'authenticated',
-            synchronized_at: new Date().toISOString(),
-            page: pageContext,
-            user: {
-              role: primaryMember.role ?? 'unknown',
-              permissions_hint:
-                primaryMember.role === 'business_admin'
-                  ? 'administration complète'
-                  : primaryMember.role === 'manager' || primaryMember.role === 'supervisor'
-                    ? 'pilotage opérationnel'
-                    : 'accès limité selon permissions',
-            },
-            organization: org ?? { id: primary },
-            warehouses: warehouses ?? [],
-            subwarehouses: subwarehouses ?? [],
-            articles: (articles ?? []).map((a: any) => ({
-              code: a.code,
-              name: a.name,
-              description: a.description,
-              category: a.category,
-              unit: a.unit,
-            })),
-            article_matches: articleMatches.map((a: any) => ({
-              code: a.code,
-              name: a.name,
-              description: a.description,
-              category: a.category,
-              unit: a.unit,
-            })),
-            inventory: (inventory ?? []).map((x: any) => ({
-              warehouse_id: x.warehouse_id,
-              subwarehouse_id: x.subwarehouse_id,
-              article: x.article_id ? (articleMap.get(x.article_id)?.code ?? null) : null,
-              quantity: x.quantity,
-              reserved: x.reserved_quantity,
-              minimum: x.minimum_quantity,
-              updated_at: x.updated_at,
-            })),
-            counts: {
-              prospects: prospectCount ?? 0,
-              clients: clientCount ?? 0,
-              sales: saleCount ?? 0,
-            },
-          };
         }
+      } catch (e) {
+        console.error('Assistant JDV : contexte CRM indisponible', e);
       }
-    }
 
     // Réponse de secours utile lorsque la clé OpenAI n'est pas configurée.
-    if (!apiKey) {
+    if (!openai) {
       const content = buildKnowledgeAnswer({
         question: lastUser,
         pageContext,
@@ -240,17 +257,29 @@ export async function POST(req: NextRequest) {
       ' Contexte CRM synchronisé : ' +
       JSON.stringify(liveContext);
 
-    const response = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
-      body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || 'gpt-4.1-mini',
-        instructions: system,
-        input: messages,
-      }),
-    });
-    const json = await response.json();
-    if (!response.ok || !json.output_text) {
+    let response: Response | null = null;
+    let json: unknown = null;
+    try {
+      response = await fetch(openai.baseUrl + '/responses', {
+        signal: AbortSignal.timeout(OPENAI_TIMEOUT_MS),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + openai.apiKey },
+        body: JSON.stringify({
+          model: openai.model,
+          instructions: system,
+          input: messages,
+        }),
+      });
+      json = await response.json().catch(() => null);
+    } catch (e) {
+      console.error('Assistant JDV : appel OpenAI impossible', e);
+    }
+    const outputText = extractOutputText(json);
+    if (!response?.ok || !outputText) {
+      console.error(
+        'Assistant JDV : bascule en mode guide —',
+        response ? describeOpenAIFailure(response.status, json) : 'délai dépassé ou réseau'
+      );
       // Une clé invalide, un modèle non disponible ou une panne OpenAI ne doit pas
       // rendre l’assistant muet : on revient au guide métier JDV sans inventer de données.
       const content = buildKnowledgeAnswer({
@@ -267,7 +296,7 @@ export async function POST(req: NextRequest) {
       });
     }
     return NextResponse.json({
-      content: json.output_text,
+      content: outputText,
       synchronized_at: liveContext.synchronized_at,
       mode: 'openai',
     });
