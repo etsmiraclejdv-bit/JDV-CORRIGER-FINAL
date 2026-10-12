@@ -79,11 +79,13 @@ export default function ExpeditionsProspecteursPage() {
       p_prospecteur_id: prospecteurId,
       p_items: cart.map((item) => ({ article_id: item.article_id, quantity: item.quantity, scanned_code: item.scanned_code, device_type: 'usb_bluetooth_reader' })),
       p_notes: notes.trim() || null,
+      p_idempotency_key: (idempotencyRef.current ??= crypto.randomUUID()),
     });
     setBusy(false);
     if (error) { fail(error.message); return; }
     const result = data as { shipment_number?: string };
     ok('Bon ' + (result?.shipment_number ?? '') + ' expédié. Le prospecteur doit confirmer la réception.');
+    idempotencyRef.current = null;
     setCart([]); setNotes('');
     void load();
   }
