@@ -29,12 +29,14 @@ export default function ContactSection() {
           href: `tel:${phone.replace(/[^+\d]/g, '')}`,
         }))
       : c.phone
-        ? [{
-            icon: Phone,
-            title: 'Téléphone',
-            value: c.phone,
-            href: `tel:${c.phone.replace(/[^+\d]/g, '')}`,
-          }]
+        ? [
+            {
+              icon: Phone,
+              title: 'Téléphone',
+              value: c.phone,
+              href: `tel:${c.phone.replace(/[^+\\d]/g, '')}`,
+            },
+          ]
         : []),
     c.email && { icon: Mail, title: 'E-mail', value: c.email, href: `mailto:${c.email}` },
     c.address && { icon: MapPin, title: 'Adresse', value: c.address, href: undefined },
