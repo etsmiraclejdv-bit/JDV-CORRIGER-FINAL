@@ -5,7 +5,8 @@ create or replace function public.jdvcrm_dispatch_prospecteur_shipment_v1(
   p_warehouse_id uuid,
   p_prospecteur_id uuid,
   p_items jsonb,
-  p_notes text default null
+  p_notes text default null,
+  p_idempotency_key uuid default null
 )
 returns jsonb
 language plpgsql
@@ -22,8 +23,15 @@ declare
   v_available numeric;
   v_scanned_code text;
   v_device text;
+  v_key uuid := coalesce(p_idempotency_key, gen_random_uuid());
+  v_existing public.prospecteur_supply_shipments%rowtype;
 begin
   if v_uid is null then raise exception 'Session utilisateur introuvable'; end if;
+  select * into v_existing from public.prospecteur_supply_shipments where idempotency_key = v_key;
+  if found then
+    if v_existing.dispatched_by <> v_uid then raise exception 'Clé d''opération déjà utilisée'; end if;
+    return jsonb_build_object('shipment_id', v_existing.id, 'shipment_number', v_existing.shipment_number, 'status', v_existing.status, 'organization_id', v_existing.organization_id);
+  end if;
   if p_warehouse_id is null or p_prospecteur_id is null then
     raise exception 'Entrepôt et prospecteur obligatoires';
   end if;
@@ -41,18 +49,9 @@ begin
     where w.id = p_warehouse_id and w.organization_id = v_org and w.active = true
   ) then raise exception 'Entrepôt inactif ou hors organisation'; end if;
 
-  if not (
-    exists (
-      select 1 from public.organization_members om
-      where om.organization_id = v_org and om.user_id = v_uid
-        and om.status = 'active' and om.role in ('business_admin','manager')
-    )
-    or exists (
-      select 1 from public.warehouse_users wu
-      where wu.warehouse_id = p_warehouse_id and wu.user_id = v_uid and wu.active = true
-        and wu.role in ('admin','manager','warehouse_manager','agent')
-    )
-  ) then raise exception 'Vous ne pouvez pas expédier depuis cet entrepôt'; end if;
+  if not private.can_manage_warehouse(p_warehouse_id) then
+    raise exception 'Vous ne pouvez pas expédier depuis cet entrepôt';
+  end if;
 
   if not exists (
     select 1 from public.prospecteur_warehouse_assignments a
@@ -76,10 +75,10 @@ begin
 
   insert into public.prospecteur_supply_shipments (
     organization_id, warehouse_id, prospecteur_id, shipment_number,
-    status, dispatched_by, dispatched_at, dispatch_notes
+    status, dispatched_by, dispatched_at, dispatch_notes, idempotency_key
   ) values (
     v_org, p_warehouse_id, p_prospecteur_id, v_number,
-    'draft', v_uid, null, p_notes
+    'draft', v_uid, null, p_notes, v_key
   ) returning id into v_shipment;
 
   for v_item in
@@ -95,6 +94,9 @@ begin
     from public.articles a
     where a.id = v_item.article_id and a.organization_id = v_org and a.active = true;
     if v_article.id is null then raise exception 'Article inconnu ou inactif'; end if;
+    if v_item.scanned_code is not null and v_item.scanned_code not in (v_article.barcode, v_article.code) then
+      raise exception 'Le code scanné ne correspond pas à l''article %', v_article.name;
+    end if;
 
     select wi.quantity - wi.reserved_quantity into v_available
     from public.warehouse_inventory wi
@@ -321,7 +323,7 @@ begin
 end;
 $$;
 
-revoke all on function public.jdvcrm_dispatch_prospecteur_shipment_v1(uuid,uuid,jsonb,text) from public, anon;
+revoke all on function public.jdvcrm_dispatch_prospecteur_shipment_v1(uuid,uuid,jsonb,text,uuid) from public, anon;
 revoke all on function public.jdvcrm_confirm_prospecteur_shipment_receipt_v1(uuid,jsonb,text) from public, anon;
-grant execute on function public.jdvcrm_dispatch_prospecteur_shipment_v1(uuid,uuid,jsonb,text) to authenticated;
+grant execute on function public.jdvcrm_dispatch_prospecteur_shipment_v1(uuid,uuid,jsonb,text,uuid) to authenticated;
 grant execute on function public.jdvcrm_confirm_prospecteur_shipment_receipt_v1(uuid,jsonb,text) to authenticated;
