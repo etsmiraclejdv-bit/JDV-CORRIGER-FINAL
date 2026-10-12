@@ -185,8 +185,8 @@ using (
 );
 
 -- Les mutations directes sont volontairement non exposées aux clients.
--- Les futures RPC devront valider le rôle, l'organisation et les quantités,
--- puis écrire stock, mouvements, bon de livraison et événement de scan dans une transaction.
+-- La migration RPC associée expose les opérations d'expédition et de réception
+-- après validation du rôle, de l'organisation et des quantités dans une transaction.
 revoke insert, update, delete on public.prospecteur_supply_shipments from anon, authenticated;
 revoke insert, update, delete on public.prospecteur_supply_shipment_items from anon, authenticated;
 revoke insert, update, delete on public.prospecteur_supply_scan_events from anon, authenticated;
