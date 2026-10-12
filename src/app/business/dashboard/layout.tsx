@@ -263,7 +263,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
         <OrganizationAmbience />
         <aside
           data-jdv-design="sidebar"
-          className={`relative z-10 h-full md:h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${mobilePreview ? (mobileMenuOpen ? 'absolute inset-y-0 left-0 flex w-72 shadow-2xl' : 'hidden') : mobileMenuOpen ? 'fixed inset-y-0 left-0 flex w-72 shadow-2xl md:relative md:inset-auto md:shadow-none' : 'hidden md:flex'} ${collapsed ? 'md:w-16' : 'md:w-60'}`}
+          className={`relative z-10 h-full md:h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${mobilePreview ? (mobileMenuOpen ? 'absolute inset-y-0 left-0 z-30 flex w-72 shadow-2xl' : 'hidden') : mobileMenuOpen ? 'fixed inset-y-0 left-0 z-30 flex w-72 shadow-2xl md:relative md:inset-auto md:shadow-none md:z-10' : 'hidden md:flex'} ${collapsed ? 'md:w-16' : 'md:w-60'}`}
         >
           <div
             className={`h-16 flex items-center border-b border-[#D4AF37]/10 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
