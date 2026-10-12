@@ -22,6 +22,7 @@ export default function ExpeditionsProspecteursPage() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const scanRef = useRef<HTMLInputElement>(null);
+  const idempotencyRef = useRef<string | null>(null);
 
   const load = useCallback(async () => {
     if (!current) return;
@@ -33,11 +34,15 @@ export default function ExpeditionsProspecteursPage() {
     if (stock.error) fail(stock.error.message);
     if (people.error) fail(people.error.message);
     const rows = (stock.data ?? []) as Array<Record<string, unknown>>;
+    const ids = rows.map((r) => String(r.article_id)).filter(Boolean);
+    const barcodeResult = ids.length ? await supabase.from('articles').select('id,barcode').in('id', ids) : { data: [], error: null };
+    if (barcodeResult.error) fail(barcodeResult.error.message);
+    const barcodeById = new Map((barcodeResult.data ?? []).map((row) => [row.id, row.barcode]));
     setArticles(rows.map((r) => ({
       article_id: String(r.article_id),
       article_code: String(r.article_code ?? r.code ?? ''),
       article_name: String(r.article_name ?? r.name ?? 'Article'),
-      barcode: typeof r.barcode === 'string' ? r.barcode : null,
+      barcode: barcodeById.get(String(r.article_id)) ?? null,
       quantity: Number(r.quantity ?? 0),
       reserved_quantity: Number(r.reserved_quantity ?? 0),
     })));
