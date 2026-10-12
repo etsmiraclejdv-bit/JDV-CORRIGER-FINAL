@@ -305,8 +305,12 @@ export default function ThemeCustomizer() {
   })();
   const backgroundIsVideo = !!backgroundUrl && /\.(mp4|webm)(\?|$)/i.test(backgroundUrl);
   const backgroundAnimation = designConfig?.backgroundAnimation ?? 'none';
-  const backgroundOpacity = Math.max(0.02, Math.min(0.28, Number(designConfig?.backgroundOpacity ?? 0.12)));
+  const backgroundOpacity = Math.max(
+    0.02,
+    Math.min(0.28, Number(designConfig?.backgroundOpacity ?? 0.12))
+  );
 
+  /* eslint-disable prettier/prettier */
   return (
     <>
       {backgroundUrl && (
@@ -435,4 +439,5 @@ export default function ThemeCustomizer() {
       )}
     </>
   );
+  /* eslint-enable prettier/prettier */
 }
