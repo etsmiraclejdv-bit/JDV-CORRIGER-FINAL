@@ -26,14 +26,14 @@ export default function ContactSection() {
           icon: Phone,
           title: 'Téléphone direct du concepteur',
           value: phone,
-          href: `tel:${phone.replace(/[^+\\d]/g, '')}`,
+          href: `tel:${phone.replace(/[^+\d]/g, '')}`,
         }))
       : c.phone
         ? [{
             icon: Phone,
             title: 'Téléphone',
             value: c.phone,
-            href: `tel:${c.phone.replace(/[^+\\d]/g, '')}`,
+            href: `tel:${c.phone.replace(/[^+\d]/g, '')}`,
           }]
         : []),
     c.email && { icon: Mail, title: 'E-mail', value: c.email, href: `mailto:${c.email}` },
