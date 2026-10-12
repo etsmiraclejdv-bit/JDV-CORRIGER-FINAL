@@ -28,11 +28,7 @@ export default function ExpeditionsProspecteursPage() {
     if (!current) return;
     setLoading(true);
     const [stock, people] = await Promise.all([
- feature/jdv-scan-approvisionnement
-      supabase.rpc('jdvcrm_warehouse_dispatch_catalog_v1', { p_warehouse_id: current.warehouse_id }),
-=======
       (supabase as any).rpc('jdvcrm_warehouse_dispatch_catalog_v1', { p_warehouse_id: current.warehouse_id }),
- main
       supabase.rpc('jdvcrm_warehouse_prospecteurs_v1', { p_warehouse_id: current.warehouse_id }),
     ]);
     if (stock.error) fail(stock.error.message);
@@ -74,11 +70,7 @@ export default function ExpeditionsProspecteursPage() {
   async function dispatch() {
     if (!current || !prospecteurId || cart.length === 0) { fail('Choisissez un prospecteur et scannez au moins un article.'); return; }
     setBusy(true);
- feature/jdv-scan-approvisionnement
-    const { data, error } = await supabase.rpc('jdvcrm_dispatch_prospecteur_shipment_v1', {
-=======
     const { data, error } = await (supabase as any).rpc('jdvcrm_dispatch_prospecteur_shipment_v1', {
- main
       p_warehouse_id: current.warehouse_id,
       p_prospecteur_id: prospecteurId,
       p_items: cart.map((item) => ({ article_id: item.article_id, quantity: item.quantity, scanned_code: item.scanned_code, device_type: 'usb_bluetooth_reader' })),
