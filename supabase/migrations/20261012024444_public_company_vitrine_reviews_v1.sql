@@ -1,4 +1,5 @@
 -- Public company vitrine: expose only approved, non-sensitive information and published reviews.
+-- This filename matches the version already recorded in Supabase migration history.
 -- Never expose organization email, phone, WhatsApp, or street address through this public RPC.
 create or replace function public.jdvcrm_public_company_vitrine_v1(p_organization_id uuid)
 returns jsonb

@@ -27,6 +27,16 @@ export interface DesignConfig {
   radius: 'small' | 'medium' | 'large';
   fontScale: 'small' | 'normal' | 'large';
   elementStyles?: Record<string, DesignElementStyle>;
+  /** Optional platform-wide background uploaded by the concepteur. */
+  backgroundMediaUrl?: string;
+  backgroundAnimation?: 'none' | 'slow-pan' | 'float' | 'gradient';
+  backgroundOpacity?: number;
+  /** Homepage update card managed from the design studio. */
+  updateTitle?: string;
+  updateBody?: string;
+  updateMediaUrl?: string;
+  updateMediaType?: 'image' | 'video';
+  updatePublished?: boolean;
 }
 
 export interface DesignVersion {

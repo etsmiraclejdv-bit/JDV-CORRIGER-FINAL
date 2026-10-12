@@ -1,5 +1,5 @@
 -- JDV CRM: minimal public storefront profile and published customer reviews.
--- Staged in GitHub only. Do not apply to production until schema reconciliation is approved.
+-- This filename matches the version already recorded in Supabase migration history.
 -- Only non-sensitive display fields are exposed. Contact details are deliberately excluded
 -- until organizations have an explicit public-contact opt-in setting.
 

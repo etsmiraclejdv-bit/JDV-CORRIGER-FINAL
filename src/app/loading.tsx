@@ -124,6 +124,24 @@ export default function Loading() {
             <span>30 secondes</span>
           </div>
         </div>
+        <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-white/10 bg-[#08152f]/80 px-4 py-3 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#D4AF37]">
+            Besoin d’une plateforme adaptée à votre secteur ?
+          </p>
+          <p className="mt-1 text-xs text-slate-300">
+            Contactez directement le concepteur JDV CRM.
+          </p>
+          <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-white">
+            <a href="tel:+2290166038221">+229 01 66 03 82 21</a>
+            <a href="tel:+2290195325987">+229 01 95 32 59 87</a>
+            <a href="tel:+2290151565878">+229 01 51 56 58 78</a>
+            <a href="tel:+2290140164627">+229 01 40 16 46 27</a>
+          </div>
+          <div className="mt-1 flex flex-wrap justify-center gap-x-3 text-[11px] text-slate-300">
+            <a href="mailto:centre.global.jdv@gmail.com">centre.global.jdv@gmail.com</a>
+            <span>Cotonou, Bénin</span>
+          </div>
+        </div>
       </section>
       <p className="jdv-loading__footer">Votre activité. Votre contrôle. Votre croissance.</p>
     </main>

@@ -7,6 +7,7 @@ import { DEFAULT_DESIGN_CONFIG } from '@/features/design-studio/defaults';
 import { createDesignVersion, listDesignVersions } from '@/features/design-studio/designService';
 import type { DesignConfig, DesignVersion } from '@/features/design-studio/types';
 import VisualDesignEditor from '@/features/design-studio/VisualDesignEditor';
+import { supabase } from '@/lib/supabase/client';
 
 export default function DesignStudioPage() {
   const [allowed, setAllowed] = useState(false);
@@ -15,6 +16,41 @@ export default function DesignStudioPage() {
   const [config, setConfig] = useState<DesignConfig>(DEFAULT_DESIGN_CONFIG);
   const [versions, setVersions] = useState<DesignVersion[]>([]);
   const [history, setHistory] = useState(false);
+  const [uploading, setUploading] = useState<'background' | 'update' | null>(null);
+
+  /* eslint-disable prettier/prettier */
+  async function uploadMedia(file: File, target: 'background' | 'update') {
+    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'video/mp4', 'video/webm'];
+    if (!allowed.includes(file.type)) {
+      toast.error('Format refusé. Utilisez JPG, PNG, WebP, GIF, AVIF, MP4 ou WebM.');
+      return;
+    }
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error('Le fichier dépasse la limite de 50 Mo.');
+      return;
+    }
+    setUploading(target);
+    try {
+      const safeName = file.name.normalize('NFKD').replace(/[^a-zA-Z0-9._-]/g, '-').slice(-100);
+      const path = 'platform/' + Date.now() + '-' + safeName;
+      const { error } = await supabase.storage.from('jdv-dashboard-backgrounds').upload(path, file, {
+        cacheControl: '3600',
+        contentType: file.type,
+        upsert: false,
+      });
+      if (error) throw error;
+      const { data } = supabase.storage.from('jdv-dashboard-backgrounds').getPublicUrl(path);
+      setConfig((current) => target === 'background'
+        ? { ...current, backgroundMediaUrl: data.publicUrl }
+        : { ...current, updateMediaUrl: data.publicUrl, updateMediaType: file.type.startsWith('video/') ? 'video' : 'image' });
+      toast.success('Média téléversé. Enregistrez un brouillon avant de publier.');
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : 'Téléversement impossible. Vérifiez la migration du studio et vos droits concepteur.');
+    } finally {
+      setUploading(null);
+    }
+  }
+  /* eslint-enable prettier/prettier */
 
   const reload = useCallback(async () => {
     const result = await listDesignVersions('platform');
@@ -71,6 +107,7 @@ export default function DesignStudioPage() {
     { key: 'accentColor', label: 'Couleur d’accentuation' },
   ];
 
+  /* eslint-disable prettier/prettier */
   return (
     <div className="space-y-6 p-5 sm:p-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -293,6 +330,65 @@ export default function DesignStudioPage() {
               </p>
             </section>
           </div>
+          <section className="grid gap-5 xl:grid-cols-2">
+            <div className="space-y-4 rounded-2xl border border-white/10 bg-[#0F2347] p-5">
+              <div>
+                <h2 className="text-base font-bold text-white">Arrière-plan et animations</h2>
+                <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">Ajoutez une image ou une courte vidéo de fond pour les pages qui prennent en charge l’ambiance JDV. Respectez la lisibilité et les préférences de réduction des mouvements.</p>
+              </div>
+              <label className="block space-y-2 text-sm text-white">
+                URL du média de fond
+                <input value={config.backgroundMediaUrl ?? ''} onChange={(e) => setConfig((v) => ({ ...v, backgroundMediaUrl: e.target.value }))} placeholder="https://…" className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm" />
+              </label>
+              <label className="block space-y-2 text-sm text-white">
+                Importer une image ou vidéo (50 Mo maximum)
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm" disabled={uploading !== null} onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadMedia(file, 'background'); e.currentTarget.value = ''; }} className="block w-full text-xs text-[#A0AEC0] file:mr-3 file:rounded-lg file:border-0 file:bg-[#D4AF37] file:px-3 file:py-2 file:font-bold file:text-[#0B1B3D]" />
+                {uploading === 'background' && <span className="text-xs text-[#F5E17A]">Téléversement…</span>}
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block space-y-2 text-sm text-white">
+                  Animation
+                  <select value={config.backgroundAnimation ?? 'none'} onChange={(e) => setConfig((v) => ({ ...v, backgroundAnimation: e.target.value as NonNullable<DesignConfig['backgroundAnimation']> }))} className="w-full rounded-xl border border-white/10 bg-[#08152F] p-2.5">
+                    <option value="none">Aucune</option>
+                    <option value="slow-pan">Déplacement lent</option>
+                    <option value="float">Flottement doux</option>
+                    <option value="gradient">Dégradé animé</option>
+                  </select>
+                </label>
+                <label className="block space-y-2 text-sm text-white">
+                  Intensité visuelle ({Math.round((config.backgroundOpacity ?? 0.12) * 100)} %)
+                  <input type="range" min="0.02" max="0.28" step="0.01" value={config.backgroundOpacity ?? 0.12} onChange={(e) => setConfig((v) => ({ ...v, backgroundOpacity: Number(e.target.value) }))} className="mt-3 w-full accent-[#D4AF37]" />
+                </label>
+              </div>
+            </div>
+            <div className="space-y-4 rounded-2xl border border-white/10 bg-[#0F2347] p-5">
+              <div>
+                <h2 className="text-base font-bold text-white">Actualités du concepteur</h2>
+                <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">Publiez une annonce de mise à jour, un visuel ou une courte vidéo de démonstration. La publication devient visible sur l’accueil lorsque la version est publiée.</p>
+              </div>
+              <label className="block space-y-2 text-sm text-white">
+                Titre de l’annonce
+                <input maxLength={120} value={config.updateTitle ?? ''} onChange={(e) => setConfig((v) => ({ ...v, updateTitle: e.target.value }))} placeholder="Nouvelle fonctionnalité disponible" className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm" />
+              </label>
+              <label className="block space-y-2 text-sm text-white">
+                Information à communiquer
+                <textarea maxLength={2000} rows={4} value={config.updateBody ?? ''} onChange={(e) => setConfig((v) => ({ ...v, updateBody: e.target.value }))} placeholder="Expliquez ce qui change et comment l’utiliser…" className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm" />
+              </label>
+              <label className="block space-y-2 text-sm text-white">
+                URL du média de démonstration (facultatif)
+                <input value={config.updateMediaUrl ?? ''} onChange={(e) => setConfig((v) => ({ ...v, updateMediaUrl: e.target.value }))} placeholder="https://…" className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm" />
+              </label>
+              <label className="block space-y-2 text-sm text-white">
+                Importer image ou courte vidéo
+                <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm" disabled={uploading !== null} onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadMedia(file, 'update'); e.currentTarget.value = ''; }} className="block w-full text-xs text-[#A0AEC0] file:mr-3 file:rounded-lg file:border-0 file:bg-[#D4AF37] file:px-3 file:py-2 file:font-bold file:text-[#0B1B3D]" />
+                {uploading === 'update' && <span className="text-xs text-[#F5E17A]">Téléversement…</span>}
+              </label>
+              <label className="flex items-center gap-3 text-sm text-white">
+                <input type="checkbox" checked={config.updatePublished ?? false} onChange={(e) => setConfig((v) => ({ ...v, updatePublished: e.target.checked }))} className="h-4 w-4 accent-[#D4AF37]" />
+                Afficher cette annonce sur la page d’accueil après publication du design
+              </label>
+            </div>
+          </section>
         </div>
       ) : (
         <section className="divide-y divide-white/5 rounded-2xl border border-white/10 bg-[#0F2347]">
@@ -331,4 +427,5 @@ export default function DesignStudioPage() {
       )}
     </div>
   );
+  /* eslint-enable prettier/prettier */
 }

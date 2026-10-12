@@ -1,0 +1,200 @@
+{
+  "pack": "JDV CRM Demo Pack",
+  "version": 1,
+  "safety": {
+    "productionWrites": false,
+    "syntheticOnly": true,
+    "identifierPrefix": "DEMO-",
+    "currency": "XOF"
+  },
+  "organizations": [
+    {
+      "ref": "DEMO-ORG-001",
+      "name": "Atelier Démo Horizon",
+      "status": "active",
+      "sector": "commerce",
+      "city": "Cotonou",
+      "country": "Bénin"
+    },
+    {
+      "ref": "DEMO-ORG-002",
+      "name": "Entreprise Démo inactive",
+      "status": "inactive",
+      "sector": "services",
+      "city": "Porto-Novo",
+      "country": "Bénin"
+    }
+  ],
+  "users": [
+    {
+      "ref": "DEMO-USER-SA",
+      "email": "demo.superadmin@example.test",
+      "role": "SUPER_ADMIN"
+    },
+    {
+      "ref": "DEMO-USER-ADMIN",
+      "email": "demo.admin@example.test",
+      "role": "ADMIN",
+      "organization": "DEMO-ORG-001"
+    },
+    {
+      "ref": "DEMO-USER-MGR",
+      "email": "demo.manager@example.test",
+      "role": "MANAGER",
+      "organization": "DEMO-ORG-001"
+    },
+    {
+      "ref": "DEMO-USER-P1",
+      "email": "demo.prospecteur1@example.test",
+      "role": "PROSPECTEUR",
+      "organization": "DEMO-ORG-001"
+    },
+    {
+      "ref": "DEMO-USER-P2",
+      "email": "demo.prospecteur2@example.test",
+      "role": "PROSPECTEUR",
+      "organization": "DEMO-ORG-001"
+    },
+    {
+      "ref": "DEMO-USER-WH",
+      "email": "demo.warehouse@example.test",
+      "role": "GESTIONNAIRE_ENTREPOT",
+      "organization": "DEMO-ORG-001"
+    },
+    {
+      "ref": "DEMO-USER-RO",
+      "email": "demo.viewer@example.test",
+      "role": "LECTURE_SEULE",
+      "organization": "DEMO-ORG-001"
+    }
+  ],
+  "products": [
+    {
+      "ref": "DEMO-ART-001",
+      "name": "Savon Démo",
+      "sku": "DEMO-SAV-001",
+      "unitPriceXof": 1500,
+      "initialQuantity": 100
+    },
+    {
+      "ref": "DEMO-ART-002",
+      "name": "Huile Démo",
+      "sku": "DEMO-HUI-002",
+      "unitPriceXof": 3200,
+      "initialQuantity": 60
+    }
+  ],
+  "people": [
+    {
+      "ref": "DEMO-PROS-001",
+      "name": "Prospect Démo A",
+      "phone": "+229000000001",
+      "assignedTo": "DEMO-USER-P1"
+    },
+    {
+      "ref": "DEMO-PROS-002",
+      "name": "Prospect Démo B",
+      "phone": "+229000000002",
+      "assignedTo": "DEMO-USER-P2"
+    },
+    {
+      "ref": "DEMO-CLIENT-001",
+      "name": "Client Démo A",
+      "phone": "+229000000003"
+    }
+  ],
+  "sales": [
+    {
+      "ref": "DEMO-SALE-CASH",
+      "type": "cash",
+      "product": "DEMO-ART-001",
+      "quantity": 2,
+      "unitPriceXof": 1500,
+      "paidXof": 3000,
+      "expectedStatus": "paid"
+    },
+    {
+      "ref": "DEMO-SALE-CREDIT",
+      "type": "credit",
+      "product": "DEMO-ART-002",
+      "quantity": 3,
+      "unitPriceXof": 3200,
+      "paidXof": 3200,
+      "installments": 3,
+      "expectedStatus": "partial"
+    }
+  ],
+  "stock": [
+    {
+      "ref": "DEMO-MOVE-IN",
+      "type": "receipt",
+      "product": "DEMO-ART-001",
+      "quantity": 20
+    },
+    {
+      "ref": "DEMO-MOVE-OUT",
+      "type": "issue",
+      "product": "DEMO-ART-001",
+      "quantity": 5
+    },
+    {
+      "ref": "DEMO-MOVE-RETURN",
+      "type": "return",
+      "product": "DEMO-ART-001",
+      "quantity": 1
+    }
+  ],
+  "reviews": [
+    {
+      "ref": "DEMO-REVIEW-001",
+      "author": "Utilisateur Démo",
+      "rating": 5,
+      "quote": "La démonstration m'a permis de comprendre le suivi des ventes et des stocks.",
+      "status": "pending"
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "AUTH-01",
+      "area": "Accès",
+      "test": "Un prospecteur ne consulte pas les dossiers du second prospecteur.",
+      "expected": "Accès refusé ou liste limitée aux dossiers attribués."
+    },
+    {
+      "id": "APPT-01",
+      "area": "Rendez-vous",
+      "test": "Modifier l'heure d'un rendez-vous sans changer son client.",
+      "expected": "Nouvelle date sauvegardée et ancienne date conservée dans l'historique."
+    },
+    {
+      "id": "STOCK-01",
+      "area": "Stock",
+      "test": "Entrée 20, sortie 5, retour 1.",
+      "expected": "Stock final = stock initial + 20 - 5 + 1."
+    },
+    {
+      "id": "WAREHOUSE-01",
+      "area": "Sous-entrepôt",
+      "test": "Un prospecteur tente de créer un sous-entrepôt.",
+      "expected": "Refus côté serveur et RLS/RPC."
+    },
+    {
+      "id": "REVIEW-01",
+      "area": "Avis plateforme",
+      "test": "Envoyer une note depuis l'accueil.",
+      "expected": "Avis en attente ; non visible publiquement avant approbation."
+    },
+    {
+      "id": "DESIGN-01",
+      "area": "Studio de design",
+      "test": "Enregistrer un brouillon puis publier une autre version.",
+      "expected": "Le brouillon ne change pas le thème public ; la version publiée devient active."
+    },
+    {
+      "id": "MIG-01",
+      "area": "Migrations",
+      "test": "Comparer les préfixes des fichiers SQL à schema_migrations.",
+      "expected": "Aucune version attendue en double ni fichier appliqué en attente."
+    }
+  ]
+}
