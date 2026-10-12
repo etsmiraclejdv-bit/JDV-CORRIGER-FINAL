@@ -6,6 +6,20 @@
 - Un catalogue d'articles partagé : code interne unique par entreprise, code-barres fabricant facultatif et référence affichée.
 - Le scan identifie la référence article. Il ne signifie pas à lui seul que chaque unité physique possède un identifiant unique.
 
+## Fichiers d'interface ajoutés sur la branche de travail
+- `src/app/business/dashboard/catalogue/page.tsx` : saisie du code-barres et du type de code sur la fiche article.
+- `src/app/entrepot/dashboard/expeditions-prospecteurs/page.tsx` : préparation par lecteur USB/Bluetooth, contrôle du stock central et création du bon.
+- `src/app/terrain/dashboard/reception-marchandises/page.tsx` : réception par caméra lorsque `BarcodeDetector` est pris en charge, saisie manuelle de secours, comparaison des quantités.
+- Les menus entrepôt et terrain pointent vers ces écrans.
+- `src/lib/services/catalogueService.ts` et `src/types/database.types.ts` transportent les métadonnées code-barres.
+
+## État d'intégration et limites à lever
+- Les pages et les migrations sont uniquement dans la branche `feature/jdv-scan-approvisionnement`; aucune migration n'a été appliquée à Supabase.
+- Le lecteur USB/Bluetooth de type HID est traité comme un clavier qui termine la lecture par Entrée.
+- La lecture par caméra utilise actuellement l'API native `BarcodeDetector`. Sa disponibilité dépend du navigateur et du téléphone; les appareils incompatibles doivent utiliser la saisie manuelle. Avant mise en service générale, intégrer une bibliothèque de décodage compatible avec les navigateurs ciblés et verrouiller sa version dans le fichier de verrouillage npm.
+- L'impression d'étiquettes graphiques (code-barres/QR) reste à ajouter. Les codes fabricant peuvent être saisis dès que la migration est appliquée; le code interne reste disponible comme solution de saisie manuelle.
+- Exécuter ensuite le contrôle TypeScript/build et les tests transactionnels sur un projet Supabase de développement avant de fusionner ou déployer.
+
 ## Écrans à construire
 
 ### A. Catalogue / fiche article
