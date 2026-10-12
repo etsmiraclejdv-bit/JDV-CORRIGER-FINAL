@@ -200,7 +200,7 @@ export default function RegistrationSection() {
         p_associate_count: Number(d.associateCount) || 0,
         p_manager_count: Number(d.managerCount) || 0,
         p_people_count: Number(d.peopleCount) || 0,
-        p_company_size: d.companySize,
+        p_company_size: d.companySize || null,
       };
 
       // Si l'utilisateur est déjà connecté, ne recrée jamais son compte Auth.
