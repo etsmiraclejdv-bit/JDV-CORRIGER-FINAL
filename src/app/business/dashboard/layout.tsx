@@ -360,21 +360,27 @@ export default function BusinessDashboardLayout({ children }: { children: React.
               className="fixed inset-0 z-20 bg-black/60 md:hidden"
             />
           )}
-          <div className="relative z-10 flex-1 min-w-0 flex flex-col overflow-hidden">
-            <div className="h-16 flex items-center justify-between px-3 sm:px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
+          <div className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
+            <div className="flex h-16 flex-shrink-0 items-center justify-between border-b border-[#D4AF37]/10 bg-[#08152f]/80 px-3 backdrop-blur-sm sm:px-6">
               <div className="flex min-w-0 items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen((open) => !open)}
-                  aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-                  className="inline-flex md:hidden items-center justify-center rounded-lg p-2 text-white hover:bg-[#0F2347]"
+                  aria-label={
+                    mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'
+                  }
+                  className="inline-flex items-center justify-center rounded-lg p-2 text-white hover:bg-[#0F2347] md:hidden"
                   title="Menu mobile"
                 >
-                  {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                  {mobileMenuOpen ? (
+                    <X size={20} />
+                  ) : (
+                    <Menu size={20} />
+                  )}
                 </button>
                 <h1
                   data-jdv-design="page-title"
-                  className="truncate text-sm sm:text-base font-semibold text-white"
+                  className="truncate text-sm font-semibold text-white sm:text-base"
                 >
                   Portail Entreprise
                 </h1>
@@ -394,7 +400,11 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                       : 'Activer l’aperçu mobile'
                   }
                 >
-                  {mobilePreview ? <Monitor size={16} /> : <Smartphone size={16} />}
+                  {mobilePreview ? (
+                    <Monitor size={16} />
+                  ) : (
+                    <Smartphone size={16} />
+                  )}
                   <span className="hidden sm:inline">
                     {mobilePreview ? 'Mode ordinateur' : 'Aperçu mobile'}
                   </span>
