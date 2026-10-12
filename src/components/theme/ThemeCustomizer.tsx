@@ -130,6 +130,12 @@ function apply(p: Prefs, design: Partial<DesignConfig> | null = null) {
 
 export default function ThemeCustomizer() {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const openCustomizer = () => setOpen(true);
+    window.addEventListener('jdv:open-theme-customizer', openCustomizer);
+    return () => window.removeEventListener('jdv:open-theme-customizer', openCustomizer);
+  }, []);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [designConfig, setDesignConfig] = useState<Partial<DesignConfig> | null>(null);
   const loaded = useRef(false);
