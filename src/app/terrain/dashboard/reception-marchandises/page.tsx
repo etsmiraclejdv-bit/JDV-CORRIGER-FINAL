@@ -34,11 +34,7 @@ export default function ReceptionMarchandisesPage() {
     const context = await getMyProspecteurContext();
     if (context.error || !context.data?.id) { setMessage(context.error?.message ?? 'Compte prospecteur introuvable.'); setLoading(false); return; }
     setProspecteurId(context.data.id);
- feature/jdv-scan-approvisionnement
-    const { data, error } = await supabase.from('prospecteur_supply_shipments')
-=======
     const { data, error } = await (supabase as any).from('prospecteur_supply_shipments')
- main
       .select('id,shipment_number,status,dispatched_at,dispatch_notes,prospecteur_supply_shipment_items(id,article_id,barcode_snapshot,article_code_snapshot,article_name_snapshot,quantity_dispatched,quantity_received,quantity_accepted,quantity_damaged,quantity_missing)')
       .eq('prospecteur_id', context.data.id).eq('status', 'dispatched').order('dispatched_at', { ascending: false });
     if (error) setMessage(error.message);
@@ -110,11 +106,7 @@ export default function ReceptionMarchandisesPage() {
       return { article_id: line.article_id, quantity_received: received, quantity_accepted: received - damaged, quantity_damaged: damaged, quantity_missing: Math.max(0, line.quantity_dispatched - received), scanned_code: scannedCodes[line.article_id] ?? null, device_type: scanDevices[line.article_id] ?? 'manual' };
     });
     setBusy(true);
- feature/jdv-scan-approvisionnement
-    const { data, error } = await supabase.rpc('jdvcrm_confirm_prospecteur_shipment_receipt_v1', { p_shipment_id: shipment.id, p_items: items, p_notes: notes.trim() || null });
-=======
     const { data, error } = await (supabase as any).rpc('jdvcrm_confirm_prospecteur_shipment_receipt_v1', { p_shipment_id: shipment.id, p_items: items, p_notes: notes.trim() || null });
- main
     setBusy(false);
     if (error) { setMessage(error.message); return; }
     const result = data as { status?: string; shipment_number?: string };
