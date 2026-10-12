@@ -1,6 +1,43 @@
 -- JDV CRM — RPC atomiques d'expédition et d'accusé de réception.
 -- À tester sur une branche/base de développement avant toute application en production.
 
+create or replace function public.jdvcrm_warehouse_dispatch_catalog_v1(p_warehouse_id uuid)
+returns table (
+  article_id uuid,
+  article_code text,
+  article_name text,
+  barcode text,
+  quantity numeric,
+  reserved_quantity numeric,
+  available numeric
+)
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $
+declare
+  v_org uuid;
+begin
+  if (select auth.uid()) is null then raise exception 'Authentification requise'; end if;
+  if not private.can_manage_warehouse(p_warehouse_id) then raise exception 'Accès refusé à cet entrepôt'; end if;
+  select w.organization_id into v_org from public.warehouses w where w.id = p_warehouse_id and w.active = true;
+  if v_org is null then raise exception 'Entrepôt introuvable ou inactif'; end if;
+  return query
+    select a.id, a.code, a.name, a.barcode,
+           coalesce(wi.quantity, 0), coalesce(wi.reserved_quantity, 0),
+           coalesce(wi.quantity, 0) - coalesce(wi.reserved_quantity, 0)
+    from public.articles a
+    left join public.warehouse_inventory wi
+      on wi.article_id = a.id and wi.warehouse_id = p_warehouse_id and wi.subwarehouse_id is null
+    where a.organization_id = v_org and a.active = true
+    order by a.name;
+end;
+$;
+
+revoke all on function public.jdvcrm_warehouse_dispatch_catalog_v1(uuid) from public, anon;
+grant execute on function public.jdvcrm_warehouse_dispatch_catalog_v1(uuid) to authenticated;
+
 create or replace function public.jdvcrm_dispatch_prospecteur_shipment_v1(
   p_warehouse_id uuid,
   p_prospecteur_id uuid,
@@ -101,7 +138,7 @@ begin
     select wi.quantity - wi.reserved_quantity into v_available
     from public.warehouse_inventory wi
     where wi.organization_id = v_org and wi.warehouse_id = p_warehouse_id
-      and wi.article_id = v_item.article_id
+      and wi.article_id = v_item.article_id and wi.subwarehouse_id is null
     for update;
     if not found or coalesce(v_available, 0) < v_item.quantity then
       raise exception 'Stock insuffisant pour % (disponible %, demandé %)',
@@ -119,7 +156,7 @@ begin
     update public.warehouse_inventory
       set quantity = quantity - v_item.quantity, updated_at = now()
     where organization_id = v_org and warehouse_id = p_warehouse_id
-      and article_id = v_item.article_id;
+      and article_id = v_item.article_id and subwarehouse_id is null;
 
     insert into public.stock_movements (
       organization_id, article_id, prospecteur_id, movement_type, quantity,
