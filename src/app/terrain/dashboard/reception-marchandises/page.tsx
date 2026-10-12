@@ -25,6 +25,8 @@ export default function ReceptionMarchandisesPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const detectorRef = useRef<Detector | null>(null);
   const scanLockRef = useRef(false);
+  const scannedRef = useRef<Record<string, number>>({});
+  const [scanDevice, setScanDevice] = useState<'phone_camera' | 'manual'>('manual');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -49,9 +51,12 @@ export default function ReceptionMarchandisesPage() {
     if (!code || !shipment) return;
     const item = shipment.prospecteur_supply_shipment_items.find((line) => line.barcode_snapshot === code || line.article_code_snapshot === code);
     if (!item) { setMessage('Code non prévu sur ce bon : ' + code + '. Vérifiez avec l’entrepôt.'); setManualCode(''); return; }
-    const current = scanned[item.article_id] ?? 0;
+    const current = scannedRef.current[item.article_id] ?? 0;
     if (current + 1 > item.quantity_dispatched) { setMessage('La quantité scannée dépasse la quantité expédiée pour ' + item.article_name_snapshot + '.'); setManualCode(''); return; }
-    setScanned((prev) => ({ ...prev, [item.article_id]: (prev[item.article_id] ?? 0) + 1 }));
+    const next = { ...scannedRef.current, [item.article_id]: current + 1 };
+    scannedRef.current = next;
+    setScanned(next);
+    setScanDevice('manual');
     setMessage('Article reconnu : ' + item.article_name_snapshot);
     setManualCode('');
   }
@@ -75,6 +80,7 @@ export default function ReceptionMarchandisesPage() {
           if (results.length && !scanLockRef.current) {
             scanLockRef.current = true;
             matchCode(results[0].rawValue);
+            setScanDevice('phone_camera');
             window.setTimeout(() => { scanLockRef.current = false; }, 900);
           }
         } catch { /* Une frame floue est ignorée. */ }
@@ -96,7 +102,7 @@ export default function ReceptionMarchandisesPage() {
     const items = allLines.map((line) => {
       const received = scanned[line.article_id] ?? 0;
       const damaged = 0;
-      return { article_id: line.article_id, quantity_received: received, quantity_accepted: received - damaged, quantity_damaged: damaged, quantity_missing: Math.max(0, line.quantity_dispatched - received), scanned_code: line.barcode_snapshot ?? line.article_code_snapshot, device_type: cameraOn ? 'phone_camera' : 'manual' };
+      return { article_id: line.article_id, quantity_received: received, quantity_accepted: received - damaged, quantity_damaged: damaged, quantity_missing: Math.max(0, line.quantity_dispatched - received), scanned_code: line.barcode_snapshot ?? line.article_code_snapshot, device_type: scanDevice };
     });
     setBusy(true);
     const { data, error } = await supabase.rpc('jdvcrm_confirm_prospecteur_shipment_receipt_v1', { p_shipment_id: shipment.id, p_items: items, p_notes: notes.trim() || null });
@@ -113,14 +119,14 @@ export default function ReceptionMarchandisesPage() {
       <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-xs uppercase tracking-widest text-[#D4AF37]">Stock</p><h1 className="text-2xl font-bold">Réception des marchandises</h1><p className="text-sm text-[#A0AEC0]">Scannez chaque référence reçue avec la caméra du téléphone, puis accusez réception.</p></div><button onClick={() => void load()} className="rounded-xl bg-[#0F2347] p-3 text-slate-300" aria-label="Actualiser"><RefreshCw size={17} /></button></div>
       {message && <div className="rounded-xl border border-[#D4AF37]/20 bg-[#0F2347] p-3 text-sm">{message}</div>}
       {loading ? <p className="text-slate-400">Chargement des bons en attente…</p> : shipments.length === 0 ? <div className="rounded-2xl border border-white/10 bg-[#0F2347] p-6"><CheckCircle2 className="text-emerald-400" /><h2 className="mt-2 font-semibold">Aucun bon en attente</h2><p className="text-sm text-slate-400">Les bons expédiés par votre entrepôt apparaîtront ici.</p></div> : <>
-        <section className="rounded-2xl border border-white/10 bg-[#0F2347] p-4"><label className="mb-2 block text-sm text-slate-300">Bon de livraison</label><select className="w-full rounded-xl border border-white/10 bg-[#08152f] p-3" value={selectedId} onChange={(e) => { stopCamera(); setSelectedId(e.target.value); setScanned({}); setMessage(''); }}><option value="">Choisir un bon à réceptionner</option>{shipments.map((s) => <option key={s.id} value={s.id}>{s.shipment_number} · {new Date(s.dispatched_at ?? '').toLocaleString('fr-FR')}</option>)}</select></section>
+        <section className="rounded-2xl border border-white/10 bg-[#0F2347] p-4"><label className="mb-2 block text-sm text-slate-300">Bon de livraison</label><select className="w-full rounded-xl border border-white/10 bg-[#08152f] p-3" value={selectedId} onChange={(e) => { stopCamera(); setSelectedId(e.target.value); setScanned({}); scannedRef.current = {}; setScanDevice('manual'); setMessage(''); }}><option value="">Choisir un bon à réceptionner</option>{shipments.map((s) => <option key={s.id} value={s.id}>{s.shipment_number} · {new Date(s.dispatched_at ?? '').toLocaleString('fr-FR')}</option>)}</select></section>
         {shipment && <>
           <section className="rounded-2xl border border-[#D4AF37]/20 bg-[#0F2347] p-4 space-y-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">{shipment.shipment_number}</h2><p className="text-xs text-slate-400">Scannés : {Object.values(scanned).reduce((n, x) => n + x, 0)} / {shipment.prospecteur_supply_shipment_items.reduce((n, x) => n + x.quantity_dispatched, 0)}</p></div><button onClick={() => cameraOn ? stopCamera() : void startCamera()} className="rounded-xl bg-[#D4AF37] px-4 py-2 text-sm font-semibold text-[#08152f]">{cameraOn ? 'Arrêter la caméra' : <><Camera size={16} className="inline mr-2" />Ouvrir la caméra</>}</button></div>
             {cameraError && <p className="text-sm text-amber-300"><AlertTriangle size={14} className="inline mr-1" />{cameraError}</p>}
             {cameraOn && <video ref={videoRef} playsInline muted className="max-h-72 w-full rounded-xl bg-black object-contain" />}
             <label className="block text-sm text-slate-300">Saisie manuelle de secours</label><div className="flex gap-2"><input value={manualCode} onChange={(e) => setManualCode(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); matchCode(manualCode); } }} placeholder="Code-barres / code article" className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#08152f] p-3" /><button onClick={() => matchCode(manualCode)} className="rounded-xl bg-[#D4AF37] px-3 text-[#08152f]" aria-label="Valider le code"><ScanBarcode size={18} /></button></div>
           </section>
-          <section className="rounded-2xl border border-white/10 bg-[#0F2347] p-4"><h2 className="mb-3 font-semibold">Récapitulatif de réception</h2><div className="space-y-3">{shipment.prospecteur_supply_shipment_items.map((line) => <div key={line.id} className="grid grid-cols-[1fr_72px_90px] items-center gap-3 border-b border-white/5 pb-3"><div><p className="text-sm font-medium">{line.article_name_snapshot}</p><p className="text-xs text-slate-400">{line.barcode_snapshot || line.article_code_snapshot} · expédié {line.quantity_dispatched}</p></div><div className="text-center"><p className="text-xs text-slate-400">Scanné</p><p className="font-bold">{scanned[line.article_id] ?? 0}</p></div><div><label className="text-xs text-slate-400">Reçu réel</label><input type="number" min="0" max={line.quantity_dispatched} value={scanned[line.article_id] ?? ''} onChange={(e) => { const q = Number(e.target.value); if (e.target.value === '') { setScanned((prev) => { const next = { ...prev }; delete next[line.article_id]; return next; }); } else if (Number.isInteger(q) && q >= 0 && q <= line.quantity_dispatched) setScanned((prev) => ({ ...prev, [line.article_id]: q })); }} className="mt-1 w-full rounded-lg border border-white/10 bg-[#08152f] p-2" /></div></div>)}</div>
+          <section className="rounded-2xl border border-white/10 bg-[#0F2347] p-4"><h2 className="mb-3 font-semibold">Récapitulatif de réception</h2><div className="space-y-3">{shipment.prospecteur_supply_shipment_items.map((line) => <div key={line.id} className="grid grid-cols-[1fr_72px_90px] items-center gap-3 border-b border-white/5 pb-3"><div><p className="text-sm font-medium">{line.article_name_snapshot}</p><p className="text-xs text-slate-400">{line.barcode_snapshot || line.article_code_snapshot} · expédié {line.quantity_dispatched}</p></div><div className="text-center"><p className="text-xs text-slate-400">Scanné</p><p className="font-bold">{scanned[line.article_id] ?? 0}</p></div><div><label className="text-xs text-slate-400">Reçu réel</label><input type="number" min="0" max={line.quantity_dispatched} value={scanned[line.article_id] ?? ''} onChange={(e) => { const q = Number(e.target.value); if (e.target.value === '') { const next = { ...scannedRef.current }; delete next[line.article_id]; scannedRef.current = next; setScanned(next); setScanDevice('manual'); } else if (Number.isInteger(q) && q >= 0 && q <= line.quantity_dispatched) { const next = { ...scannedRef.current, [line.article_id]: q }; scannedRef.current = next; setScanned(next); setScanDevice('manual'); } }} className="mt-1 w-full rounded-lg border border-white/10 bg-[#08152f] p-2" /></div></div>)}</div>
             <label className="mt-4 block text-sm text-slate-300">Observation (écart, colis abîmé, quantité manquante…)</label><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="mt-2 w-full rounded-xl border border-white/10 bg-[#08152f] p-3" placeholder="Précisions sur la réception" />
             <button disabled={busy || shipment.prospecteur_supply_shipment_items.some((line) => scanned[line.article_id] === undefined)} onClick={() => void confirmReceipt()} className="mt-4 w-full rounded-xl bg-[#D4AF37] p-3 font-semibold text-[#08152f] disabled:opacity-50">{busy ? 'Confirmation…' : 'Confirmer la réception'}</button>
           </section>
