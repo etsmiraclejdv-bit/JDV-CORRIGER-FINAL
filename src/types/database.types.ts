@@ -201,8 +201,6 @@ export type Database = {
         }
         Update: {
           active?: boolean
-          barcode?: string | null
-          barcode_type?: string
           cash_price?: number
           category?: string | null
           code?: string
