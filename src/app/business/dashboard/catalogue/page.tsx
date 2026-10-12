@@ -13,6 +13,8 @@ interface Product {
   organization_id: string;
   name: string;
   sku: string;
+  barcode: string | null;
+  barcode_type: string;
   stock_quantity: number;
   price_cents: number;
   created_at: string;
@@ -27,7 +29,7 @@ export default function CataloguePage() {
   const [orgId, setOrgId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
-  const [form, setForm] = useState({ name: '', sku: '', price_cents: 0 });
+  const [form, setForm] = useState({ name: '', sku: '', barcode: '', barcode_type: 'internal', price_cents: 0 });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -51,13 +53,13 @@ export default function CataloguePage() {
 
   function openCreate() {
     setEditProduct(null);
-    setForm({ name: '', sku: '', price_cents: 0 });
+    setForm({ name: '', sku: '', barcode: '', barcode_type: 'internal', price_cents: 0 });
     setModalOpen(true);
   }
 
   function openEdit(p: Product) {
     setEditProduct(p);
-    setForm({ name: p.name, sku: p.sku, price_cents: p.price_cents });
+    setForm({ name: p.name, sku: p.sku, barcode: p.barcode ?? '', barcode_type: p.barcode_type ?? 'internal', price_cents: p.price_cents });
     setModalOpen(true);
   }
 
@@ -81,7 +83,7 @@ export default function CataloguePage() {
 
   const filtered = products.filter((p) => {
     const q = search.trim().toLowerCase();
-    return !q || p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q);
+    return !q || p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || (p.barcode ?? '').toLowerCase().includes(q);
   });
 
   return (
@@ -125,6 +127,7 @@ export default function CataloguePage() {
                 <tr className="border-b border-[#D4AF37]/10">
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Code</th>
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Article</th>
+                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Code-barres</th>
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Prix</th>
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">
                     Stock entrepôts
@@ -137,6 +140,7 @@ export default function CataloguePage() {
                   <tr key={p.id} className="border-b border-[#D4AF37]/5">
                     <td className="px-4 py-3 text-xs font-mono text-[#D4AF37]">{p.sku}</td>
                     <td className="px-4 py-3 text-sm font-medium text-white">{p.name}</td>
+                    <td className="px-4 py-3 text-xs font-mono text-[#A0AEC0]">{p.barcode || 'Code interne uniquement'}</td>
                     <td className="px-4 py-3 text-sm text-[#A0AEC0]">
                       {new Intl.NumberFormat('fr-FR', {
                         style: 'currency',
@@ -187,6 +191,30 @@ export default function CataloguePage() {
               placeholder="Généré si vide"
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
             />
+          </div>
+          <div>
+            <label className="block text-xs text-[#A0AEC0] mb-1.5">Code-barres fabricant ou code scannable</label>
+            <input
+              value={form.barcode}
+              onChange={(e) => setForm((f) => ({ ...f, barcode: e.target.value }))}
+              placeholder="EAN-13, EAN-8, UPC-A, Code 128…"
+              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
+            />
+            <label className="block text-xs text-[#A0AEC0] mt-3 mb-1.5">Type de code</label>
+            <select
+              value={form.barcode_type}
+              onChange={(e) => setForm((f) => ({ ...f, barcode_type: e.target.value }))}
+              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
+            >
+              <option value="internal">Code interne</option>
+              <option value="ean13">EAN-13</option>
+              <option value="ean8">EAN-8</option>
+              <option value="upca">UPC-A</option>
+              <option value="code128">Code 128</option>
+              <option value="qr">QR</option>
+              <option value="other">Autre</option>
+            </select>
+            <p className="text-xs text-[#718096] mt-1">Le code-barres doit être unique dans l’entreprise. Si le champ reste vide, le code article JDV reste utilisable en saisie manuelle.</p>
           </div>
           <div>
             <label className="block text-xs text-[#A0AEC0] mb-1.5">Prix comptant (XOF)</label>
