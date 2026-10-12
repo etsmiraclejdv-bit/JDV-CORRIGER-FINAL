@@ -51,6 +51,14 @@ export default function CataloguePage() {
     setLoading(false);
   }
 
+  function generateInternalBarcode() {
+    // Code interne JDV unique et utilisable aussi en saisie manuelle.
+    const randomPart = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()
+      : Math.random().toString(36).slice(2, 14).toUpperCase();
+    setForm((f) => ({ ...f, barcode: `JDV-${randomPart}`, barcode_type: 'internal' }));
+  }
+
   function openCreate() {
     setEditProduct(null);
     setForm({ name: '', sku: '', barcode: '', barcode_type: 'internal', price_cents: 0 });
@@ -200,6 +208,16 @@ export default function CataloguePage() {
               placeholder="EAN-13, EAN-8, UPC-A, Code 128…"
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
             />
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={generateInternalBarcode}
+                className="rounded-lg border border-[#D4AF37]/30 px-3 py-2 text-xs font-semibold text-[#D4AF37] hover:bg-[#D4AF37]/10"
+              >
+                Générer un code interne JDV
+              </button>
+              <span className="text-xs text-[#718096]">Ou saisissez un code existant ci-dessus.</span>
+            </div>
             <label className="block text-xs text-[#A0AEC0] mt-3 mb-1.5">Type de code</label>
             <select
               value={form.barcode_type}
