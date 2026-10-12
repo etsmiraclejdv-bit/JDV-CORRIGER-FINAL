@@ -75,7 +75,7 @@ BEGIN
 
     INSERT INTO public.organization_settings(organization_id, settings)
     VALUES (v_org_id, '{}'::jsonb)
-    ON CONFLICT (organization_id) DO NOTHING;
+    ON CONFLICT ON CONSTRAINT organization_settings_organization_id_key DO NOTHING;
   ELSE
     UPDATE public.organizations o
        SET status = 'active',
@@ -85,7 +85,7 @@ BEGIN
 
     INSERT INTO public.organization_members(organization_id, user_id, role, status)
     VALUES (v_org_id, auth.uid(), 'business_admin', 'active')
-    ON CONFLICT (organization_id, user_id)
+    ON CONFLICT ON CONSTRAINT organization_members_organization_id_user_id_key
     DO UPDATE SET role = 'business_admin', status = 'active', updated_at = now();
   END IF;
 
