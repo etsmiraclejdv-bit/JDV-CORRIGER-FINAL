@@ -1,4 +1,5 @@
 -- Public company vitrine: expose only approved, non-sensitive information and published reviews.
+-- Never expose organization email, phone, WhatsApp, or street address through this public RPC.
 create or replace function public.jdvcrm_public_company_vitrine_v1(p_organization_id uuid)
 returns jsonb
 language sql
@@ -11,11 +12,8 @@ as $function$
       'id', o.id,
       'name', o.name,
       'legal_name', o.legal_name,
-      'email', o.email,
-      'phone', o.phone,
-      'whatsapp', o.whatsapp,
       'country', o.country,
-      'address', o.address,
+      'language', o.language,
       'city', o.city,
       'logo_url', o.logo_url,
       'website', o.website,
