@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Camera, PackageCheck, ScanBarcode, Send, RefreshCw, AlertTriangle, Trash2 } from 'lucide-react';
+import { PackageCheck, ScanBarcode, Send, RefreshCw, AlertTriangle, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
-import { Banner, Card, PageTitle, btnGold, inputCls, num, useBanner } from '@/components/entrepot/common';
+import { Banner, Card, PageTitle, btnGold, inputCls, useBanner } from '@/components/entrepot/common';
 
 type Article = { article_id: string; article_code: string; article_name: string; barcode: string | null; quantity: number; reserved_quantity: number; };
 type Prospecteur = { prospecteur_id: string; full_name: string | null; code?: string };
@@ -28,21 +28,17 @@ export default function ExpeditionsProspecteursPage() {
     if (!current) return;
     setLoading(true);
     const [stock, people] = await Promise.all([
-      supabase.rpc('jdvcrm_warehouse_stock_v1', { p_warehouse_id: current.warehouse_id }),
+      supabase.rpc('jdvcrm_warehouse_dispatch_catalog_v1', { p_warehouse_id: current.warehouse_id }),
       supabase.rpc('jdvcrm_warehouse_prospecteurs_v1', { p_warehouse_id: current.warehouse_id }),
     ]);
     if (stock.error) fail(stock.error.message);
     if (people.error) fail(people.error.message);
     const rows = (stock.data ?? []) as Array<Record<string, unknown>>;
-    const ids = rows.map((r) => String(r.article_id)).filter(Boolean);
-    const barcodeResult = ids.length ? await supabase.from('articles').select('id,barcode').in('id', ids) : { data: [], error: null };
-    if (barcodeResult.error) fail(barcodeResult.error.message);
-    const barcodeById = new Map((barcodeResult.data ?? []).map((row) => [row.id, row.barcode]));
     setArticles(rows.map((r) => ({
       article_id: String(r.article_id),
       article_code: String(r.article_code ?? r.code ?? ''),
       article_name: String(r.article_name ?? r.name ?? 'Article'),
-      barcode: barcodeById.get(String(r.article_id)) ?? null,
+      barcode: typeof r.barcode === 'string' ? r.barcode : null,
       quantity: Number(r.quantity ?? 0),
       reserved_quantity: Number(r.reserved_quantity ?? 0),
     })));
