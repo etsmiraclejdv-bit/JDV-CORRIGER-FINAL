@@ -334,7 +334,7 @@ export default function ThemeCustomizer() {
       )}
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)
+        onClick={() => setOpen((v) => !v)}
         aria-label="Personnaliser l’apparence"
         aria-expanded={open}
         className="fixed right-4 top-20 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-card transition-all hover:scale-105 hover:shadow-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 print:hidden"
