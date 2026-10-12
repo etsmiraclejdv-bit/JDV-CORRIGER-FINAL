@@ -41,7 +41,11 @@ export default function PublicNewsPanel() {
 
   return (
     <>
-      <section id="actualites" className="mx-auto max-w-screen-xl scroll-mt-28 px-6 py-8 lg:px-10" aria-label="Actualités">
+      <section
+        id="actualites"
+        className="mx-auto max-w-screen-xl scroll-mt-28 px-6 py-8 lg:px-10"
+        aria-label="Actualités"
+      >
         <button
           type="button"
           onClick={() => setOpen(true)}
