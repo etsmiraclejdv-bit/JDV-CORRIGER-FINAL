@@ -167,6 +167,8 @@ export type Database = {
       articles: {
         Row: {
           active: boolean
+          barcode: string | null
+          barcode_type: string
           cash_price: number
           category: string | null
           code: string
@@ -184,6 +186,8 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          barcode?: string | null
+          barcode_type?: string
           cash_price?: number
           category?: string | null
           code: string
@@ -201,6 +205,8 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          barcode?: string | null
+          barcode_type?: string
           cash_price?: number
           category?: string | null
           code?: string
