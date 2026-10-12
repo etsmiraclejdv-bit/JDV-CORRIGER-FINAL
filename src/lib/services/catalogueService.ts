@@ -47,7 +47,7 @@ export async function fetchProducts(organizationId: string, filters?: { search?:
 
   if (filters?.search) {
     const s = filters.search.replace(/[%,()]/g, ' ');
-    query = query.or(`name.ilike.%${s}%,code.ilike.%${s}%`);
+    query = query.or(`name.ilike.%${s}%,code.ilike.%${s}%,barcode.ilike.%${s}%`);
   }
 
   const { data, error } = await query;
