@@ -64,6 +64,7 @@ declare
   v_existing public.prospecteur_supply_shipments%rowtype;
 begin
   if v_uid is null then raise exception 'Session utilisateur introuvable'; end if;
+  perform pg_advisory_xact_lock(hashtext(v_key::text));
   select * into v_existing from public.prospecteur_supply_shipments where idempotency_key = v_key;
   if found then
     if v_existing.dispatched_by <> v_uid then raise exception 'Clé d''opération déjà utilisée'; end if;
