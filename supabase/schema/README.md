@@ -1,25 +1,31 @@
 # Référence du schéma Supabase
 
-Dernière vérification : **2026-10-09**. Projet `arxhppptxeeyeexkdyjv`, schéma `public`.
+Dernière vérification : **2026-10-12**. Projet `arxhppptxeeyeexkdyjv`, schéma `public`.
 
-- Tables live répertoriées : **102**.
-- RLS activé : **102/102** tables selon l'inventaire consulté.
-- Historique des migrations live : **136** versions.
-- Types TypeScript générés depuis le schéma live : `src/types/database.types.ts`.
-- Instantané SQL historique : `00_baseline_public_schema.sql`, daté du 2026-10-01 ; il est obsolète pour restaurer le schéma actuel.
+- Tables publiques live répertoriées : **108**.
+- Vues publiques : **22**.
+- Routines publiques : **202**.
+- Politiques RLS publiques : **298**.
+- RLS activé : **108/108** tables publiques selon l'inventaire consulté.
+- Historique des migrations live : **152** versions.
+- Le dépôt contient les sources des **152 migrations déjà enregistrées**, avec les deux migrations de vitrine réalignées sur les versions live `20261012024437` et `20261012024444`.
+- Le fichier `supabase/schema/00_baseline_public_schema.sql` reste un instantané historique du 1 octobre 2026 ; ce n'est pas un export complet et actuel de la base.
 
-## Écart de reproductibilité bloquant
+## Migration en préparation
 
-Les sources SQL correspondant aux versions ci-dessous n'ont pas été retrouvées dans le dépôt :
+La migration `20261012180000_platform_design_media_v1.sql` est ajoutée sur une branche de travail. Elle autorise les téléversements de médias du studio uniquement sous le dossier `platform/` et pour le super-administrateur, et étend les types de médias du bucket de design. **Elle n'a pas été appliquée à la base de production.**
 
-- `20261008115141_ai_company_validation_v1`
-- `20261008174410_company_document_manual_review_v1`
-- `20261009011506_agency_head_chef_agence_v1`
-- `20261009012135_scope_prospecteur_assignments_to_agency_v1`
+Avant de l'appliquer :
+1. Vérifier la CI et la revue SQL.
+2. Exécuter le workflow de prévisualisation en lecture seule sur cette branche.
+3. Vérifier que la seule migration en attente est `20261012180000_platform_design_media_v1.sql`.
+4. Appliquer uniquement après approbation explicite et contrôle des politiques de stockage.
 
-Ne pas inventer leur SQL, ne pas exécuter `supabase db push`, et ne pas traiter l'instantané historique comme une restauration actuelle complète. La reconstruction reproductible n'est pas certifiée tant que ces sources ne sont pas récupérées/reconstruites à partir de preuves fiables et qu'un replay propre n'a pas été validé.
+## Reproductibilité
 
-## Régénération
+La réconciliation des deux migrations de vitrine aligne désormais les préfixes de fichiers avec les versions enregistrées par Supabase. Cela corrige l'écart observé dans le dernier aperçu CLI. La restauration complète depuis zéro n'est toutefois **pas certifiée** : le baseline est historique et doit être testé dans un projet de test séparé avant de servir à une reconstruction.
+
+## Régénération des types
 
 ```bash
 npm run db:types
