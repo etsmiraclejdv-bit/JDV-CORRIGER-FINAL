@@ -15,7 +15,12 @@ export default function PublicNavbar() {
   }, []);
 
   const navLinks = [
+    { label: 'Accueil', href: '/' },
+    { label: 'Services', href: '#services' },
     { label: 'Fonctionnalités', href: '#features' },
+    { label: 'Actualités', href: '#actualites' },
+    { label: 'Avis', href: '#avis-plateforme' },
+    { label: 'Contact', href: '#contact' },
     { label: 'Tarifs', href: '#pricing' },
     { label: 'Le concepteur', href: '/a-propos-concepteur' },
   ];
