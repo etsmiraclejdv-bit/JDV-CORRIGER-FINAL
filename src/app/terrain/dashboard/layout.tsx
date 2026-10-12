@@ -14,6 +14,7 @@ import {
   HelpCircle,
   AlertTriangle,
   Warehouse,
+  PackageCheck,
   MapPin,
   Palette,
 } from 'lucide-react';
@@ -47,6 +48,13 @@ const navItems = [
     label: 'Mon approvisionnement',
     icon: <Warehouse size={18} />,
     href: '/terrain/dashboard/approvisionnement',
+    group: 'Stock',
+  },
+  {
+    id: 'reception-marchandises',
+    label: 'Réception marchandises',
+    icon: <PackageCheck size={18} />,
+    href: '/terrain/dashboard/reception-marchandises',
     group: 'Stock',
   },
   {
