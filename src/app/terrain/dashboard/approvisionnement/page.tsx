@@ -12,6 +12,8 @@ import {
   MapPin,
   AlertTriangle,
   RotateCcw,
+  TrendingUp,
+  AlertCircle,
 } from 'lucide-react';
 import {
   getMyProspecteurContext,
@@ -183,7 +185,7 @@ export default function ApprovisionnementPage() {
               jours. Retournez-la avant toute nouvelle demande.
             </div>
           )}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
             {[
               ['catalogue', 'Catalogue', Package, catalog.length],
               [
@@ -194,11 +196,17 @@ export default function ApprovisionnementPage() {
               ],
               [
                 'ventes',
-                'Vendus',
+                'Vendus', 
                 ShoppingCart,
                 sales.reduce((n, x) => n + Number(x.quantity || 0), 0),
               ],
               ['demandes', 'Historique', Truck, requests.length],
+              [
+                'analyse',
+                'Analyse',
+                TrendingUp,
+                sales.filter((s: any) => Date.now() - new Date(s.sale_date).getTime() <= 7 * 86400000).reduce((n: number, s: any) => n + Number(s.quantity || 0), 0),
+              ],
             ].map((x: any) => {
               const Icon = x[2];
               return (
@@ -393,6 +401,124 @@ export default function ApprovisionnementPage() {
                   <Empty text="Aucune vente enregistrée." />
                 )}
               </div>
+            </section>
+          )}
+          {tab === 'analyse' && (
+            <section className="space-y-4">
+              <div>
+                <h2 className="font-semibold text-white">Analyse de mon stock et de mes ventes</h2>
+                <p className="text-sm text-[#A0AEC0] mt-1">
+                  Analyse basée sur les ventes enregistrées des 7 et 30 derniers jours. Les recommandations sont indicatives et ne déclenchent aucun mouvement automatique.
+                </p>
+              </div>
+              {(() => {
+                const now = Date.now();
+                const day = 86400000;
+                const recent7 = sales.filter((s: any) => {
+                  const date = new Date(s.sale_date).getTime();
+                  return Number.isFinite(date) && date >= now - 7 * day && date <= now;
+                });
+                const recent30 = sales.filter((s: any) => {
+                  const date = new Date(s.sale_date).getTime();
+                  return Number.isFinite(date) && date >= now - 30 * day && date <= now;
+                });
+                const sumQty = (rows: any[]) => rows.reduce((n, s) => n + Number(s.quantity || 0), 0);
+                const sold7 = sumQty(recent7);
+                const sold30 = sumQty(recent30);
+                const totalStock = stock.reduce((n, item) => n + Number(item.quantity || 0), 0);
+                const overdue = holdings.filter((h: any) => Number(h.remaining_quantity) > 0 && new Date(h.return_due_at).getTime() <= now).length;
+                const rows = catalog.map((entry: any) => {
+                  const article = entry.articles;
+                  if (!article?.id) return null;
+                  const currentStock = Number(stock.find((item: any) => item.article_id === article.id)?.quantity || 0);
+                  const soldArticle7 = sumQty(recent7.filter((s: any) => s.article_id === article.id));
+                  const soldArticle30 = sumQty(recent30.filter((s: any) => s.article_id === article.id));
+                  const target = Math.ceil((soldArticle7 / 7) * 7);
+                  const suggestion = Math.max(0, target - currentStock);
+                  const availableAtWarehouse = Math.max(0, Number(entry.quantity || 0) - Number(entry.reserved_quantity || 0));
+                  return { article, currentStock, soldArticle7, soldArticle30, target, suggestion, availableAtWarehouse };
+                }).filter(Boolean) as Array<{
+                  article: any; currentStock: number; soldArticle7: number; soldArticle30: number;
+                  target: number; suggestion: number; availableAtWarehouse: number;
+                }>;
+                const suggestedTotal = rows.reduce((n, row) => n + Math.min(row.suggestion, row.availableAtWarehouse), 0);
+                return (
+                  <>
+                    <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+                      <div className="p-4 rounded-xl bg-[#0F2347] border border-[#D4AF37]/20">
+                        <p className="text-xs text-[#A0AEC0]">Stock personnel actuel</p>
+                        <p className="text-2xl font-bold text-white mt-1">{totalStock}</p>
+                        <p className="text-xs text-[#718096]">unité(s) toutes références</p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-[#0F2347] border border-[#D4AF37]/20">
+                        <p className="text-xs text-[#A0AEC0]">Ventes sur 7 jours</p>
+                        <p className="text-2xl font-bold text-[#D4AF37] mt-1">{sold7}</p>
+                        <p className="text-xs text-[#718096]">unité(s) vendue(s)</p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-[#0F2347] border border-[#D4AF37]/20">
+                        <p className="text-xs text-[#A0AEC0]">Ventes sur 30 jours</p>
+                        <p className="text-2xl font-bold text-white mt-1">{sold30}</p>
+                        <p className="text-xs text-[#718096]">unité(s) vendue(s)</p>
+                      </div>
+                      <div className="p-4 rounded-xl bg-[#0F2347] border border-[#D4AF37]/20">
+                        <p className="text-xs text-[#A0AEC0]">Retours en retard</p>
+                        <p className={'text-2xl font-bold mt-1 ' + (overdue ? 'text-red-300' : 'text-emerald-300')}>{overdue}</p>
+                        <p className="text-xs text-[#718096]">lot(s) à régulariser</p>
+                      </div>
+                    </div>
+                    <div className="p-4 rounded-xl bg-[#D4AF37]/5 border border-[#D4AF37]/20">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle size={18} className="text-[#D4AF37] mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-sm font-semibold text-white">Suggestion de réapprovisionnement</p>
+                          <p className="text-sm text-[#A0AEC0] mt-1">
+                            La cible est calculée à partir des ventes des 7 derniers jours. Pour éviter une demande supérieure au stock disponible, le tableau indique aussi le stock de l’entrepôt.
+                          </p>
+                          <p className="text-sm text-[#D4AF37] mt-2">
+                            {suggestedTotal} unité(s) maximum actuellement disponibles à l’entrepôt pour les références à recompléter.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-[#D4AF37]/15 overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-[#08152f] text-left text-xs uppercase text-[#A0AEC0]">
+                          <tr>
+                            <th className="p-3">Article</th>
+                            <th className="p-3">Mon stock</th>
+                            <th className="p-3">Vendus / 7 j</th>
+                            <th className="p-3">Vendus / 30 j</th>
+                            <th className="p-3">Cible 7 j</th>
+                            <th className="p-3">À reprendre</th>
+                            <th className="p-3">Dispo. entrepôt</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rows.map((row) => (
+                            <tr key={row.article.id} className="border-t border-white/5">
+                              <td className="p-3">
+                                <p className="text-white font-medium">{row.article.name}</p>
+                                <p className="text-xs text-[#718096]">{row.article.code || '—'}</p>
+                              </td>
+                              <td className="p-3 text-white">{row.currentStock}</td>
+                              <td className="p-3 text-white">{row.soldArticle7}</td>
+                              <td className="p-3 text-white">{row.soldArticle30}</td>
+                              <td className="p-3 text-[#A0AEC0]">{row.target}</td>
+                              <td className="p-3">
+                                <span className={row.suggestion > 0 ? 'text-amber-300 font-semibold' : 'text-emerald-300'}>
+                                  {row.suggestion}
+                                </span>
+                              </td>
+                              <td className="p-3 text-white">{row.availableAtWarehouse}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {!rows.length && <p className="p-6 text-sm text-[#718096]">Aucune donnée d’article à analyser pour cet entrepôt.</p>}
+                    </div>
+                  </>
+                );
+              })()}
             </section>
           )}
           {tab === 'demandes' && (
