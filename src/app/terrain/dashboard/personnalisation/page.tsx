@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 'use client';
 
 import { Palette, Moon, Sun, Contrast, Type, Sparkles } from 'lucide-react';
