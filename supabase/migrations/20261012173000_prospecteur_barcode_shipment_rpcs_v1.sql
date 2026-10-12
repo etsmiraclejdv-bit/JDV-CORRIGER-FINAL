@@ -15,7 +15,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
-as $
+as $$
 declare
   v_org uuid;
 begin
@@ -33,7 +33,7 @@ begin
     where a.organization_id = v_org and a.active = true
     order by a.name;
 end;
-$;
+$$;
 
 revoke all on function public.jdvcrm_warehouse_dispatch_catalog_v1(uuid) from public, anon;
 grant execute on function public.jdvcrm_warehouse_dispatch_catalog_v1(uuid) to authenticated;
