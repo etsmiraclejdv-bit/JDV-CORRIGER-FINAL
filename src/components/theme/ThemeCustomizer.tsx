@@ -287,11 +287,48 @@ export default function ThemeCustomizer() {
   const chip = (active: boolean) =>
     `rounded-xl border px-3 py-2 text-sm transition-colors ${active ? 'border-[var(--brand)] bg-[color-mix(in_srgb,var(--brand)_14%,transparent)] font-semibold' : 'border-border hover:bg-muted'}`;
 
+  const backgroundUrl = (() => {
+    const value = designConfig?.backgroundMediaUrl;
+    if (!value) return null;
+    try {
+      const parsed = new URL(value);
+      return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.toString() : null;
+    } catch {
+      return null;
+    }
+  })();
+  const backgroundIsVideo = !!backgroundUrl && /\.(mp4|webm)(\?|$)/i.test(backgroundUrl);
+  const backgroundAnimation = designConfig?.backgroundAnimation ?? 'none';
+  const backgroundOpacity = Math.max(0.02, Math.min(0.28, Number(designConfig?.backgroundOpacity ?? 0.12)));
+
   return (
     <>
+      {backgroundUrl && (
+        <div
+          aria-hidden="true"
+          data-jdv-platform-background
+          className={`pointer-events-none fixed inset-0 z-[1] overflow-hidden mix-blend-soft-light ${backgroundAnimation === 'slow-pan' ? 'jdv-platform-bg-pan' : ''} ${backgroundAnimation === 'float' ? 'jdv-platform-bg-float' : ''} ${backgroundAnimation === 'gradient' ? 'jdv-platform-bg-gradient' : ''}`}
+          style={{ opacity: prefs.reduceMotion ? Math.min(backgroundOpacity, 0.08) : backgroundOpacity }}
+        >
+          {backgroundIsVideo ? (
+            <video src={backgroundUrl} autoPlay muted loop playsInline preload="metadata" className="h-full w-full object-cover" />
+          ) : (
+            <div className="h-full w-full bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${JSON.stringify(backgroundUrl)})` }} />
+          )}
+          <style jsx global>{`
+            @keyframes jdv-platform-pan { from { transform: scale(1); background-position: 45% 50%; } to { transform: scale(1.08); background-position: 55% 50%; } }
+            @keyframes jdv-platform-float { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(0,-1.2%,0) scale(1.03); } }
+            @keyframes jdv-platform-gradient { 0%,100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(18deg); } }
+            .jdv-platform-bg-pan { animation: jdv-platform-pan 50s ease-in-out infinite alternate; }
+            .jdv-platform-bg-float { animation: jdv-platform-float 32s ease-in-out infinite; }
+            .jdv-platform-bg-gradient { animation: jdv-platform-gradient 28s ease-in-out infinite; }
+            @media (prefers-reduced-motion: reduce) { .jdv-platform-bg-pan,.jdv-platform-bg-float,.jdv-platform-bg-gradient { animation: none !important; } }
+          `}</style>
+        </div>
+      )}
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((v) => !v)
         aria-label="Personnaliser l’apparence"
         aria-expanded={open}
         className="fixed right-4 top-20 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-card transition-all hover:scale-105 hover:shadow-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 print:hidden"
