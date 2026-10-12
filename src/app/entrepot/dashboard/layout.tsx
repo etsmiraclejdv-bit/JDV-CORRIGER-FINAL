@@ -9,6 +9,7 @@ import {
   Users,
   Headphones,
   Truck,
+  ScanBarcode,
   Search,
   ClipboardCheck,
   LogOut,
