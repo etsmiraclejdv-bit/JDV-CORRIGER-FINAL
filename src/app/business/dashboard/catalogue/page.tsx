@@ -168,7 +168,11 @@ export default function CataloguePage() {
                   <tr key={p.id} className="border-b border-[#D4AF37]/5">
                     <td className="px-4 py-3 text-xs font-mono text-[#D4AF37]">{p.sku}</td>
                     <td className="px-4 py-3 text-sm font-medium text-white">{p.name}</td>
+ feature/jdv-scan-approvisionnement
+                    <td className="px-4 py-3 text-xs font-mono text-[#A0AEC0]">{p.barcode || 'Code interne uniquement'}</td>
+=======
                     <td className="px-4 py-3 text-xs font-mono text-[#A0AEC0]">{p.barcode || "Code interne uniquement"}</td>
+ main
                     <td className="px-4 py-3 text-sm text-[#A0AEC0]">
                       {new Intl.NumberFormat('fr-FR', {
                         style: 'currency',
@@ -240,6 +244,8 @@ export default function CataloguePage() {
               placeholder="EAN-13, EAN-8, UPC-A, Code 128…"
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
             />
+ feature/jdv-scan-approvisionnement
+=======
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <button
                 type="button"
@@ -250,6 +256,7 @@ export default function CataloguePage() {
               </button>
               <span className="text-xs text-[#718096]">Ou saisissez un code existant ci-dessus.</span>
             </div>
+ main
             <label className="block text-xs text-[#A0AEC0] mt-3 mb-1.5">Type de code</label>
             <select
               value={form.barcode_type}
@@ -264,7 +271,11 @@ export default function CataloguePage() {
               <option value="qr">QR</option>
               <option value="other">Autre</option>
             </select>
+ feature/jdv-scan-approvisionnement
+            <p className="text-xs text-[#718096] mt-1">Le code-barres doit être unique dans l’entreprise. Si le champ reste vide, le code article JDV reste utilisable en saisie manuelle.</p>
+=======
             <p className="text-xs text-[#718096] mt-1">Le code doit être unique dans l’entreprise. Le code article JDV reste utilisable en saisie manuelle.</p>
+ main
           </div>
           <div>
             <label className="block text-xs text-[#A0AEC0] mb-1.5">Prix comptant (XOF)</label>
