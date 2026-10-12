@@ -3,14 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  ExternalLink,
-  MapPin,
-  MessageSquareQuote,
-  Newspaper,
-  Search,
-  X,
-} from 'lucide-react';
+import { ExternalLink, MapPin, MessageSquareQuote, Newspaper, Search, X } from 'lucide-react';
 
 type Review = {
   id: string;
@@ -80,12 +73,15 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
         if (!alive) return;
 
         if (!response.ok || !result?.organization) {
-          setLoadError(result.error || 'Cette vitrine est introuvable ou momentanément indisponible.');
+          setLoadError(
+            result.error || 'Cette vitrine est introuvable ou momentanément indisponible.'
+          );
         } else {
           setData(result as VitrinePayload);
         }
       } catch {
-        if (alive) setLoadError('Impossible de joindre la vitrine pour le moment. Réessayez plus tard.');
+        if (alive)
+          setLoadError('Impossible de joindre la vitrine pour le moment. Réessayez plus tard.');
       }
       if (alive) setLoading(false);
     })();
@@ -237,7 +233,9 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
               </a>
             )}
             {!org.city && !org.country && !org.website && (
-              <p className="text-sm text-slate-400">Les informations publiques de cette entreprise seront bientôt complétées.</p>
+              <p className="text-sm text-slate-400">
+                Les informations publiques de cette entreprise seront bientôt complétées.
+              </p>
             )}
           </div>
           <div className="flex flex-wrap gap-3 pt-2">
