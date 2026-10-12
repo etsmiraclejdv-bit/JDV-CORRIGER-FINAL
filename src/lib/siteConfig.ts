@@ -6,10 +6,16 @@ export const SITE = {
   tagline:
     'La plateforme CRM de la vente à crédit et de la prospection terrain en Afrique de l’Ouest',
   contact: {
-    email: '',
-    phone: '',
-    whatsapp: '', // numéro au format international, sans le +, par exemple 22997000000
-    address: '',
+    email: 'centre.global.jdv@gmail.com',
+    phone: '+229 01 66 03 82 21',
+    phones: [
+      '+229 01 66 03 82 21',
+      '+229 01 95 32 59 87',
+      '+229 01 51 56 58 78',
+      '+229 01 40 16 46 27',
+    ],
+    whatsapp: '',
+    address: 'Cotonou, Bénin',
     hours: '',
   },
 };
