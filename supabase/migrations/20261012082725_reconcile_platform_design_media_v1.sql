@@ -1,6 +1,8 @@
--- Platform design studio media uploads.
--- This migration is intentionally staged in GitHub for review; it has not been applied to production.
+-- Reconciled platform design studio media storage configuration.
+-- This migration version matches the migration already recorded in Supabase
+-- as 20261012082725_reconcile_platform_design_media_v1.
 -- Platform files live under the "platform/" folder and require an authenticated super-admin.
+
 update storage.buckets
 set file_size_limit = 52428800,
     allowed_mime_types = array[
