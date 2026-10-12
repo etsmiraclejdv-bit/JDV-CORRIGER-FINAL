@@ -9,14 +9,9 @@ import {
   MapPin,
   MessageSquareQuote,
   Newspaper,
-  Phone,
   Search,
   X,
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
-
-// The public vitrine RPC is introduced by the accompanying SQL migration.
-const db = supabase as any;
 
 type Review = {
   id: string;
@@ -30,16 +25,11 @@ type Organization = {
   id: string;
   name: string;
   legal_name: string | null;
-  email: string | null;
-  phone: string | null;
-  whatsapp: string | null;
   country: string;
-  address: string | null;
+  language: string;
   city: string | null;
   logo_url: string | null;
   website: string | null;
-  primary_color: string | null;
-  secondary_color: string | null;
 };
 
 type VitrinePayload = {
@@ -83,18 +73,22 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
     let alive = true;
 
     (async () => {
-      const { data: result, error } = await db.rpc('jdvcrm_public_company_vitrine_v1', {
-        p_organization_id: organizationId,
-      });
+      try {
+        const response = await fetch('/api/public/vitrine/' + encodeURIComponent(organizationId), {
+          cache: 'no-store',
+        });
+        const result = await response.json();
+        if (!alive) return;
 
-      if (!alive) return;
-
-      if (error || !result?.organization) {
-        setLoadError('Cette vitrine est introuvable ou momentanément indisponible.');
-      } else {
-        setData(result as VitrinePayload);
+        if (!response.ok || !result?.organization) {
+          setLoadError(result.error || 'Cette vitrine est introuvable ou momentanément indisponible.');
+        } else {
+          setData(result as VitrinePayload);
+        }
+      } catch {
+        if (alive) setLoadError('Impossible de joindre la vitrine pour le moment. Réessayez plus tard.');
       }
-      setLoading(false);
+      if (alive) setLoading(false);
     })();
 
     return () => {
@@ -181,7 +175,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
   }
 
   const org = data.organization;
-  const accent = org.secondary_color || '#D4AF37';
+  const accent = '#D4AF37';
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -224,48 +218,29 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
 
       <div className="mx-auto grid max-w-6xl gap-6 px-5 py-8 lg:grid-cols-[1.3fr_.7fr]">
         <section className="space-y-5 rounded-2xl border border-white/10 bg-white/[.03] p-5 sm:p-7">
-          <h2 className="text-xl font-semibold">Contact et informations</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {(org.address || org.city || org.country) && (
-              <div className="flex gap-3 text-slate-300">
+          <h2 className="text-xl font-semibold">À propos de l’entreprise</h2>
+          <div className="space-y-4 text-slate-300">
+            {(org.city || org.country) && (
+              <p className="flex gap-3">
                 <MapPin className="shrink-0" style={{ color: accent }} />
-                <span>{[org.address, org.city, org.country].filter(Boolean).join(', ')}</span>
-              </div>
+                <span>{[org.city, org.country].filter(Boolean).join(', ')}</span>
+              </p>
             )}
-            {org.phone && (
-              <a className="flex gap-3 text-slate-300 hover:text-white" href={'tel:' + org.phone}>
-                <Phone className="shrink-0" style={{ color: accent }} />
-                {org.phone}
-              </a>
-            )}
-            {org.email && (
+            {org.website && /^https?:\/\//i.test(org.website) && (
               <a
-                className="flex gap-3 text-slate-300 hover:text-white"
-                href={'mailto:' + org.email}
-              >
-                <Globe className="shrink-0" style={{ color: accent }} />
-                {org.email}
-              </a>
-            )}
-            {org.website && (
-              <a
-                className="flex gap-3 text-slate-300 hover:text-white"
-                href={/^https?:\/\//i.test(org.website) ? org.website : 'https://' + org.website}
+                className="flex gap-3 break-all hover:text-white"
+                href={org.website}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
               >
                 <ExternalLink className="shrink-0" style={{ color: accent }} />
-                Site internet
+                Site officiel
               </a>
             )}
+            {!org.city && !org.country && !org.website && (
+              <p className="text-sm text-slate-400">Les informations publiques de cette entreprise seront bientôt complétées.</p>
+            )}
           </div>
-
-          {!org.address && !org.city && !org.phone && !org.email && !org.website && (
-            <p className="text-sm text-slate-400">
-              Cette entreprise n’a pas encore renseigné ses coordonnées publiques.
-            </p>
-          )}
-
           <div className="flex flex-wrap gap-3 pt-2">
             <button
               onClick={() => openPanel('news')}
@@ -274,16 +249,6 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
             >
               <Newspaper size={18} /> Google & Actualités
             </button>
-            {org.whatsapp && (
-              <a
-                href={'https://wa.me/' + org.whatsapp.replace(/\D/g, '')}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-xl border border-emerald-400/30 px-4 py-3 text-emerald-300"
-              >
-                Contacter par WhatsApp
-              </a>
-            )}
           </div>
         </section>
 
