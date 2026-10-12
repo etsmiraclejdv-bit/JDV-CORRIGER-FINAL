@@ -267,6 +267,10 @@ begin
     where si.shipment_id = v_shipment.id and si.article_id = v_item.article_id
     for update;
     if not found then raise exception 'Article scanné non prévu sur ce bon'; end if;
+    if v_item.scanned_code is not null
+       and v_item.scanned_code not in (v_line.barcode_snapshot, v_line.article_code_snapshot) then
+      raise exception 'Le code scanné ne correspond pas à l''article %', v_line.article_name_snapshot;
+    end if;
     if v_item.quantity_received > v_line.quantity_dispatched then
       raise exception 'La quantité reçue dépasse la quantité expédiée pour %', v_line.article_name_snapshot;
     end if;
