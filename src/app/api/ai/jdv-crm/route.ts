@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       if (!knowledgeError) knowledgeContext = knowledgeRows ?? [];
     }
 
-    const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\\s+/i, '').trim();
+    const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
     let liveContext: any = {
       mode: 'public',
       synchronized_at: new Date().toISOString(),
