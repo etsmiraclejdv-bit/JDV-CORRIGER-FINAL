@@ -8,7 +8,7 @@ test('demo pack is synthetic and explicitly excludes production writes', () => {
   assert.equal(pack.safety.syntheticOnly, true);
   assert.equal(pack.safety.productionWrites, false);
   assert.equal(pack.safety.identifierPrefix, 'DEMO-');
-  assert.ok(pack.users.every((user) => user.email.endsWith('.example.test')));
+  assert.ok(pack.users.every((user) => user.email.endsWith('@example.test')));
 });
 
 test('demo identities and fixture references are unique', () => {
