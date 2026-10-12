@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Warehouse,
   MapPin,
+  Palette,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -89,6 +90,13 @@ const navItems = [
     icon: <Wallet size={18} />,
     href: '/terrain/dashboard/commission',
     group: 'Activité',
+  },
+  {
+    id: 'personnalisation',
+    label: 'Personnaliser mon écran',
+    icon: <Palette size={18} />,
+    href: '/terrain/dashboard/personnalisation',
+    group: 'Aide',
   },
   {
     id: 'guide',
