@@ -353,49 +353,51 @@ export default function BusinessDashboardLayout({ children }: { children: React.
             </div>
           </aside>
           {mobileMenuOpen && !mobilePreview && (
-          <button
-            type="button"
-            aria-label="Fermer le menu"
-            onClick={() => setMobileMenuOpen(false)}
-            className="fixed inset-0 z-20 bg-black/60 md:hidden"
-          />
-        )}
+            <button
+              type="button"
+              aria-label="Fermer le menu"
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 z-20 bg-black/60 md:hidden"
+            />
+          )}
           <div className="relative z-10 flex-1 min-w-0 flex flex-col overflow-hidden">
             <div className="h-16 flex items-center justify-between px-3 sm:px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
               <div className="flex min-w-0 items-center gap-2">
                 <button
-                type="button"
-                onClick={() => setMobileMenuOpen((open) => !open)}
-                aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-                className="inline-flex md:hidden items-center justify-center rounded-lg p-2 text-white hover:bg-[#0F2347]"
-                title="Menu mobile"
-              >
+                  type="button"
+                  onClick={() => setMobileMenuOpen((open) => !open)}
+                  aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+                  className="inline-flex md:hidden items-center justify-center rounded-lg p-2 text-white hover:bg-[#0F2347]"
+                  title="Menu mobile"
+                >
                   {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
                 <h1
-                data-jdv-design="page-title"
-                className="truncate text-sm sm:text-base font-semibold text-white"
-              >
-                Portail Entreprise
-              </h1>
+                  data-jdv-design="page-title"
+                  className="truncate text-sm sm:text-base font-semibold text-white"
+                >
+                  Portail Entreprise
+                </h1>
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
                 <button
-                type="button"
-                onClick={() => {
-                  setMobilePreview((value) => !value);
-                  setMobileMenuOpen(false);
-                }}
-                aria-pressed={mobilePreview}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#D4AF37]/30 px-2 py-2 text-xs font-semibold text-[#D4AF37] hover:bg-[#D4AF37]/10"
-                title={
-                  mobilePreview
-                    ? 'Revenir à l’affichage ordinateur'
-                    : 'Activer l’aperçu mobile'
-                }
-              >
+                  type="button"
+                  onClick={() => {
+                    setMobilePreview((value) => !value);
+                    setMobileMenuOpen(false);
+                  }}
+                  aria-pressed={mobilePreview}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#D4AF37]/30 px-2 py-2 text-xs font-semibold text-[#D4AF37] hover:bg-[#D4AF37]/10"
+                  title={
+                    mobilePreview
+                      ? 'Revenir à l’affichage ordinateur'
+                      : 'Activer l’aperçu mobile'
+                  }
+                >
                   {mobilePreview ? <Monitor size={16} /> : <Smartphone size={16} />}
-                  <span className="hidden sm:inline">{mobilePreview ? 'Mode ordinateur' : 'Aperçu mobile'}</span>
+                  <span className="hidden sm:inline">
+                    {mobilePreview ? 'Mode ordinateur' : 'Aperçu mobile'}
+                  </span>
                 </button>
                 <NotificationBell />
               </div>
