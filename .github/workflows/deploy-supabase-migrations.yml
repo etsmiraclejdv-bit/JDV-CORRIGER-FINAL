@@ -33,7 +33,43 @@ jobs:
           test -n "$SUPABASE_DB_URL" || (echo "Missing SUPABASE_DB_URL" && exit 1)
 
       - name: Preview pending migrations (read-only dry run)
-        run: supabase db push --db-url "$SUPABASE_DB_URL" --password "$SUPABASE_DB_PASSWORD" --dry-run
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Compose the PostgreSQL URL with the password secret. URL-encode credentials
+          # so characters such as @, :, /, #, ?, and % cannot corrupt the connection URL.
+          DB_URL_WITH_PASSWORD="$(python - <<'PY'
+          import os
+          from urllib.parse import quote, unquote, urlsplit, urlunsplit
+
+          raw_url = os.environ["SUPABASE_DB_URL"]
+          password = os.environ["SUPABASE_DB_PASSWORD"]
+          parsed = urlsplit(raw_url)
+
+          if parsed.scheme not in ("postgres", "postgresql"):
+              raise SystemExit("SUPABASE_DB_URL must use postgres:// or postgresql://")
+          if not parsed.hostname or not parsed.username:
+              raise SystemExit("SUPABASE_DB_URL must include a database host and username")
+
+          username = quote(unquote(parsed.username), safe="")
+          hostname = parsed.hostname
+          if ":" in hostname and not hostname.startswith("["):
+              hostname = f"[{hostname}]"
+          if parsed.port:
+              hostname = f"{hostname}:{parsed.port}"
+
+          netloc = f"{username}:{quote(password, safe='')}@{hostname}"
+          print(urlunsplit((parsed.scheme, netloc, parsed.path or "/postgres", parsed.query, parsed.fragment)))
+          PY
+          )"
+
+          # Mask the composed URL before invoking the CLI; never print credentials.
+          echo "::add-mask::$DB_URL_WITH_PASSWORD"
+          echo "Connection URL validated; password is present (value hidden)."
+
+          # This remains a preview only: it does not apply migrations to Supabase.
+          supabase db push --db-url "$DB_URL_WITH_PASSWORD" --dry-run
 
       # Production migrations must be applied only after a separate, explicit review and approval.
       # This workflow intentionally contains no non-dry-run db push command.
