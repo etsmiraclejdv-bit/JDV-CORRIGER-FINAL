@@ -22,16 +22,14 @@ export default function PublicNewsPanel() {
     setLoading(true);
     fetch('/api/public-news')
       .then(async (response) => {
-        if (!response.ok)
-          throw new Error('Le flux d’actualités est momentanément indisponible.');
+        if (!response.ok) throw new Error('Le flux d’actualités est momentanément indisponible.');
         return response.json();
       })
       .then((data: { items?: NewsItem[] }) => {
         if (active) setItems(Array.isArray(data.items) ? data.items : []);
       })
       .catch((reason: unknown) => {
-        if (active)
-          setError(reason instanceof Error ? reason.message : 'Chargement impossible.');
+        if (active) setError(reason instanceof Error ? reason.message : 'Chargement impossible.');
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -140,7 +138,9 @@ export default function PublicNewsPanel() {
                     <h3 className="font-semibold leading-6">{item.title}</h3>
                     <p className="mt-2 text-xs text-slate-400">
                       {item.source}
-                      {item.publishedAt ? ' · ' + new Date(item.publishedAt).toLocaleString('fr-FR') : ''}
+                      {item.publishedAt
+                        ? ' · ' + new Date(item.publishedAt).toLocaleString('fr-FR')
+                        : ''}
                     </p>
                     <a
                       href={item.link}

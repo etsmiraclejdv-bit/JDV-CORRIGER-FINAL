@@ -42,20 +42,33 @@ interface Prospect {
   appointment_reason?: string;
 }
 
-type AppointmentUpdate = { date: string; time: string; location: string; reason: string; updated_at: string };
+type AppointmentUpdate = {
+  date: string;
+  time: string;
+  location: string;
+  reason: string;
+  updated_at: string;
+};
 const APPOINTMENT_MARKER = '[RDV_REPROGRAMME] ';
 
 function getAppointmentUpdates(notes?: string | null): AppointmentUpdate[] {
   if (!notes) return [];
-  return notes.split('\n').flatMap(line => {
+  return notes.split('\n').flatMap((line) => {
     if (!line.startsWith(APPOINTMENT_MARKER)) return [];
-    try { return [JSON.parse(line.slice(APPOINTMENT_MARKER.length)) as AppointmentUpdate]; }
-    catch { return []; }
+    try {
+      return [JSON.parse(line.slice(APPOINTMENT_MARKER.length)) as AppointmentUpdate];
+    } catch {
+      return [];
+    }
   });
 }
 
 function getVisibleNotes(notes?: string | null): string {
-  return (notes ?? '').split('\n').filter(line => !line.startsWith(APPOINTMENT_MARKER)).join('\n').trim();
+  return (notes ?? '')
+    .split('\n')
+    .filter((line) => !line.startsWith(APPOINTMENT_MARKER))
+    .join('\n')
+    .trim();
 }
 
 const TEMP_COLORS: Record<string, string> = {
@@ -78,7 +91,12 @@ export default function TerrainProspectsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
   const [appointmentProspect, setAppointmentProspect] = useState<Prospect | null>(null);
-  const [appointmentForm, setAppointmentForm] = useState({ date: '', time: '', location: '', reason: '' });
+  const [appointmentForm, setAppointmentForm] = useState({
+    date: '',
+    time: '',
+    location: '',
+    reason: '',
+  });
   const [savingAppointment, setSavingAppointment] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [form, setForm] = useState({
@@ -146,18 +164,19 @@ export default function TerrainProspectsPage() {
         desired_product: (r.desired_article as string) ?? undefined,
         proposed_price: r.estimated_amount ? Math.round(Number(r.estimated_amount) * 100) : 0,
         temperature: (r.temperature as string) ?? undefined,
- feature/prospecteur-approvisionnement-entrepot
-        next_contact_date: r.next_follow_up_at ? String(r.next_follow_up_at).split('T')[0] : undefined,
-        appointment_date: getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.date ?? ((r.purchase_date_planned as string) ?? undefined),
-        appointment_time: getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.time || undefined,
-        appointment_location: getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.location || undefined,
-        appointment_reason: getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.reason || undefined,
-=======
         next_contact_date: r.next_follow_up_at
           ? String(r.next_follow_up_at).split('T')[0]
           : undefined,
-        appointment_date: (r.purchase_date_planned as string) ?? undefined,
- main
+        appointment_date:
+          getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.date ??
+          (r.purchase_date_planned as string) ??
+          undefined,
+        appointment_time:
+          getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.time || undefined,
+        appointment_location:
+          getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.location || undefined,
+        appointment_reason:
+          getAppointmentUpdates((r.notes as string) ?? null).at(-1)?.reason || undefined,
         is_prospect: true,
         created_at: r.created_at as string,
       })) as Prospect[]
@@ -267,7 +286,10 @@ export default function TerrainProspectsPage() {
       toast.error(readError?.message ?? 'Prospect introuvable');
       return;
     }
-    const previousDate = (current.purchase_date_planned as string | null) ?? appointmentProspect.appointment_date ?? null;
+    const previousDate =
+      (current.purchase_date_planned as string | null) ??
+      appointmentProspect.appointment_date ??
+      null;
     const update: AppointmentUpdate = {
       date: appointmentForm.date,
       time: appointmentForm.time,
@@ -281,7 +303,9 @@ export default function TerrainProspectsPage() {
       previousDate && previousDate !== update.date
         ? `Historique RDV : date précédente ${previousDate}, nouvelle date ${update.date}${update.reason ? ` — Motif : ${update.reason}` : ''}`
         : '',
-    ].filter(Boolean).join('\n');
+    ]
+      .filter(Boolean)
+      .join('\n');
     const { error } = await supabase
       .from('prospects')
       .update({ purchase_date_planned: update.date, notes: history || null })
@@ -504,7 +528,8 @@ export default function TerrainProspectsPage() {
                 {p.appointment_date && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-lg text-[#D4AF37] text-xs">
                     <Calendar size={12} />
-                    RDV {new Date(p.appointment_date).toLocaleDateString('fr-FR')}{p.appointment_time ? ` à ${p.appointment_time.slice(0, 5)}` : ''}
+                    RDV {new Date(p.appointment_date).toLocaleDateString('fr-FR')}
+                    {p.appointment_time ? ` à ${p.appointment_time.slice(0, 5)}` : ''}
                   </div>
                 )}
                 <button
@@ -606,37 +631,80 @@ export default function TerrainProspectsPage() {
       </div>
 
       {/* Appointment rescheduling modal */}
-      <Modal open={appointmentModalOpen} onClose={() => setAppointmentModalOpen(false)} title="Reprogrammer le rendez-vous" size="md">
+      <Modal
+        open={appointmentModalOpen}
+        onClose={() => setAppointmentModalOpen(false)}
+        title="Reprogrammer le rendez-vous"
+        size="md"
+      >
         <form onSubmit={handleRescheduleAppointment} className="space-y-4 p-1">
           <div className="rounded-xl border border-[#D4AF37]/20 bg-[#0A1628] p-3">
             <p className="text-sm font-semibold text-white">{appointmentProspect?.full_name}</p>
-            <p className="text-xs text-[#A0AEC0] mt-1">Modifiez le programme convenu avec le client. L'ancienne date est conservée dans l'historique des notes.</p>
+            <p className="mt-1 text-xs text-[#A0AEC0]">
+              Modifiez le programme convenu avec le client. L&apos;ancienne date est conservée dans
+              l&apos;historique des notes.
+            </p>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Nouvelle date du rendez-vous *</label>
-            <input type="date" value={appointmentForm.date} onChange={e => setAppointmentForm(v => ({ ...v, date: e.target.value }))} required
-              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
+            <label className="mb-1.5 block text-xs font-medium text-[#A0AEC0]">
+              Nouvelle date du rendez-vous *
+            </label>
+            <input
+              type="date"
+              value={appointmentForm.date}
+              onChange={(e) => setAppointmentForm((v) => ({ ...v, date: e.target.value }))}
+              required
+              className="w-full rounded-xl border border-[#D4AF37]/20 bg-[#0A1628] px-3 py-2.5 text-sm text-white focus:border-[#D4AF37]/60 focus:outline-none"
+            />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Heure</label>
-              <input type="time" value={appointmentForm.time} onChange={e => setAppointmentForm(v => ({ ...v, time: e.target.value }))}
-                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
+              <label className="mb-1.5 block text-xs font-medium text-[#A0AEC0]">Heure</label>
+              <input
+                type="time"
+                value={appointmentForm.time}
+                onChange={(e) => setAppointmentForm((v) => ({ ...v, time: e.target.value }))}
+                className="w-full rounded-xl border border-[#D4AF37]/20 bg-[#0A1628] px-3 py-2.5 text-sm text-white focus:border-[#D4AF37]/60 focus:outline-none"
+              />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Lieu</label>
-              <input type="text" value={appointmentForm.location} onChange={e => setAppointmentForm(v => ({ ...v, location: e.target.value }))} placeholder="Lieu du rendez-vous"
-                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60" />
+              <label className="mb-1.5 block text-xs font-medium text-[#A0AEC0]">Lieu</label>
+              <input
+                type="text"
+                value={appointmentForm.location}
+                onChange={(e) => setAppointmentForm((v) => ({ ...v, location: e.target.value }))}
+                placeholder="Lieu du rendez-vous"
+                className="w-full rounded-xl border border-[#D4AF37]/20 bg-[#0A1628] px-3 py-2.5 text-sm text-white focus:border-[#D4AF37]/60 focus:outline-none"
+              />
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Motif du changement (facultatif)</label>
-            <textarea value={appointmentForm.reason} onChange={e => setAppointmentForm(v => ({ ...v, reason: e.target.value }))} rows={2} placeholder="Ex. : le client n'est pas disponible à la date prévue"
-              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60 resize-none" />
+            <label className="mb-1.5 block text-xs font-medium text-[#A0AEC0]">
+              Motif du changement (facultatif)
+            </label>
+            <textarea
+              value={appointmentForm.reason}
+              onChange={(e) => setAppointmentForm((v) => ({ ...v, reason: e.target.value }))}
+              rows={2}
+              placeholder="Ex. : le client n'est pas disponible à la date prévue"
+              className="w-full resize-none rounded-xl border border-[#D4AF37]/20 bg-[#0A1628] px-3 py-2.5 text-sm text-white focus:border-[#D4AF37]/60 focus:outline-none"
+            />
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={() => setAppointmentModalOpen(false)} className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors">Annuler</button>
-            <button type="submit" disabled={savingAppointment} className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60">{savingAppointment ? 'Enregistrement...' : 'Enregistrer le nouveau RDV'}</button>
+            <button
+              type="button"
+              onClick={() => setAppointmentModalOpen(false)}
+              className="flex-1 rounded-xl border border-[#D4AF37]/20 py-2.5 text-sm text-[#A0AEC0] transition-colors hover:text-white"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={savingAppointment}
+              className="btn-gold flex-1 rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60"
+            >
+              {savingAppointment ? 'Enregistrement...' : 'Enregistrer le nouveau RDV'}
+            </button>
           </div>
         </form>
       </Modal>
