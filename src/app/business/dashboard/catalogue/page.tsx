@@ -29,7 +29,13 @@ export default function CataloguePage() {
   const [orgId, setOrgId] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
-  const [form, setForm] = useState({ name: '', sku: '', barcode: '', barcode_type: 'internal', price_cents: 0 });
+  const [form, setForm] = useState({
+    name: '',
+    sku: '',
+    barcode: '',
+    barcode_type: 'internal',
+    price_cents: 0,
+  });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -53,9 +59,10 @@ export default function CataloguePage() {
 
   function generateInternalBarcode() {
     // Code interne JDV unique et utilisable aussi en saisie manuelle.
-    const randomPart = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-      ? crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()
-      : Math.random().toString(36).slice(2, 14).toUpperCase();
+    const randomPart =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID().replace(/-/g, '').slice(0, 12).toUpperCase()
+        : Math.random().toString(36).slice(2, 14).toUpperCase();
     setForm((f) => ({ ...f, barcode: `JDV-${randomPart}`, barcode_type: 'internal' }));
   }
 
@@ -67,15 +74,36 @@ export default function CataloguePage() {
     }
     // Le service BWIP-JS rend un vrai symbole Code 128/QR/EAN, contrairement à de simples barres décoratives.
     const type = (product.barcode_type ?? 'internal').toLowerCase();
-    const bcid = type === 'qr' ? 'qrcode' : type === 'ean13' ? 'ean13' : type === 'ean8' ? 'ean8' : type === 'upca' ? 'upca' : 'code128';
-    const barcodeImage = 'https://bwipjs-api.metafloor.com/?bcid=' + bcid + '&text=' + encodeURIComponent(code) + '&scale=3&height=16&includetext';
-    const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] ?? char));
+    const bcid =
+      type === 'qr'
+        ? 'qrcode'
+        : type === 'ean13'
+          ? 'ean13'
+          : type === 'ean8'
+            ? 'ean8'
+            : type === 'upca'
+              ? 'upca'
+              : 'code128';
+    const barcodeImage =
+      'https://bwipjs-api.metafloor.com/?bcid=' +
+      bcid +
+      '&text=' +
+      encodeURIComponent(code) +
+      '&scale=3&height=16&includetext';
+    const escapeHtml = (value: string) =>
+      value.replace(
+        /[&<>"']/g,
+        (char) =>
+          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char] ?? char
+      );
     const popup = window.open('', '_blank', 'width=620,height=520');
     if (!popup) {
       toast.error('Autorisez les fenêtres contextuelles pour imprimer l’étiquette.');
       return;
     }
-    popup.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Étiquette JDV - ${escapeHtml(product.name)}</title><style>body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#111}.label{width:340px;min-height:170px;border:1px solid #ddd;padding:18px;text-align:center;margin:auto}.brand{font-weight:700;letter-spacing:2px;font-size:12px}.name{font-size:16px;font-weight:700;margin:12px 0 4px}.code{font:13px monospace;word-break:break-all}.barcode{display:block;max-width:100%;height:auto;margin:12px auto 4px}@media print{body{padding:0}.label{border:0;margin:0}}</style></head><body><section class="label"><div class="brand">JDV CRM</div><div class="name">${escapeHtml(product.name)}</div><img class="barcode" src="${barcodeImage}" alt="Code-barres ${escapeHtml(code)}"><div class="code">${escapeHtml(code)}</div><p style="font-size:10px;color:#555">Étiquette article — conserver le code lisible</p></section><script>window.onload=()=>setTimeout(()=>window.print(),500)</script></body></html>`);
+    popup.document.write(
+      `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Étiquette JDV - ${escapeHtml(product.name)}</title><style>body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#111}.label{width:340px;min-height:170px;border:1px solid #ddd;padding:18px;text-align:center;margin:auto}.brand{font-weight:700;letter-spacing:2px;font-size:12px}.name{font-size:16px;font-weight:700;margin:12px 0 4px}.code{font:13px monospace;word-break:break-all}.barcode{display:block;max-width:100%;height:auto;margin:12px auto 4px}@media print{body{padding:0}.label{border:0;margin:0}}</style></head><body><section class="label"><div class="brand">JDV CRM</div><div class="name">${escapeHtml(product.name)}</div><img class="barcode" src="${barcodeImage}" alt="Code-barres ${escapeHtml(code)}"><div class="code">${escapeHtml(code)}</div><p style="font-size:10px;color:#555">Étiquette article — conserver le code lisible</p></section><script>window.onload=()=>setTimeout(()=>window.print(),500)</script></body></html>`
+    );
     popup.document.close();
   }
 
@@ -87,7 +115,13 @@ export default function CataloguePage() {
 
   function openEdit(p: Product) {
     setEditProduct(p);
-    setForm({ name: p.name, sku: p.sku, barcode: p.barcode ?? '', barcode_type: p.barcode_type ?? 'internal', price_cents: p.price_cents });
+    setForm({
+      name: p.name,
+      sku: p.sku,
+      barcode: p.barcode ?? '',
+      barcode_type: p.barcode_type ?? 'internal',
+      price_cents: p.price_cents,
+    });
     setModalOpen(true);
   }
 
@@ -111,7 +145,12 @@ export default function CataloguePage() {
 
   const filtered = products.filter((p) => {
     const q = search.trim().toLowerCase();
-    return !q || p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || (p.barcode ?? '').toLowerCase().includes(q);
+    return (
+      !q ||
+      p.name.toLowerCase().includes(q) ||
+      p.sku.toLowerCase().includes(q) ||
+      (p.barcode ?? '').toLowerCase().includes(q)
+    );
   });
 
   return (
@@ -155,7 +194,9 @@ export default function CataloguePage() {
                 <tr className="border-b border-[#D4AF37]/10">
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Code</th>
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Article</th>
-                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Code-barres</th>
+                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">
+                    Code-barres
+                  </th>
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Prix</th>
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">
                     Stock entrepôts
@@ -168,7 +209,9 @@ export default function CataloguePage() {
                   <tr key={p.id} className="border-b border-[#D4AF37]/5">
                     <td className="px-4 py-3 text-xs font-mono text-[#D4AF37]">{p.sku}</td>
                     <td className="px-4 py-3 text-sm font-medium text-white">{p.name}</td>
-                    <td className="px-4 py-3 text-xs font-mono text-[#A0AEC0]">{p.barcode || "Code interne uniquement"}</td>
+                    <td className="px-4 py-3 text-xs font-mono text-[#A0AEC0]">
+                      {p.barcode || 'Code interne uniquement'}
+                    </td>
                     <td className="px-4 py-3 text-sm text-[#A0AEC0]">
                       {new Intl.NumberFormat('fr-FR', {
                         style: 'currency',
@@ -233,7 +276,9 @@ export default function CataloguePage() {
             />
           </div>
           <div>
-            <label className="block text-xs text-[#A0AEC0] mb-1.5">Code-barres fabricant ou code scannable</label>
+            <label className="block text-xs text-[#A0AEC0] mb-1.5">
+              Code-barres fabricant ou code scannable
+            </label>
             <input
               value={form.barcode}
               onChange={(e) => setForm((f) => ({ ...f, barcode: e.target.value }))}
@@ -248,7 +293,9 @@ export default function CataloguePage() {
               >
                 Générer un code interne JDV
               </button>
-              <span className="text-xs text-[#718096]">Ou saisissez un code existant ci-dessus.</span>
+              <span className="text-xs text-[#718096]">
+                Ou saisissez un code existant ci-dessus.
+              </span>
             </div>
             <label className="block text-xs text-[#A0AEC0] mt-3 mb-1.5">Type de code</label>
             <select
@@ -264,7 +311,10 @@ export default function CataloguePage() {
               <option value="qr">QR</option>
               <option value="other">Autre</option>
             </select>
-            <p className="text-xs text-[#718096] mt-1">Le code doit être unique dans l’entreprise. Le code article JDV reste utilisable en saisie manuelle.</p>
+            <p className="text-xs text-[#718096] mt-1">
+              Le code doit être unique dans l’entreprise. Le code article JDV reste utilisable en
+              saisie manuelle.
+            </p>
           </div>
           <div>
             <label className="block text-xs text-[#A0AEC0] mb-1.5">Prix comptant (XOF)</label>
