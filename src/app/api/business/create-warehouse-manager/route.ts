@@ -70,11 +70,7 @@ export async function POST(req: NextRequest) {
         .eq('user_id', caller.user.id)
         .eq('status', 'active')
         .maybeSingle(),
-      admin
-        .from('organizations')
-        .select('owner_user_id')
-        .eq('id', organizationId)
-        .maybeSingle(),
+      admin.from('organizations').select('owner_user_id').eq('id', organizationId).maybeSingle(),
     ]);
     const isSuper = !!sa && (sa as any).status === 'active' && (sa as any).actif !== false;
     const isAdmin =
