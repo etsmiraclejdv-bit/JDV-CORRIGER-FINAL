@@ -1,0 +1,31 @@
+name: Temporary format JDV PR 43
+on:
+  push:
+    branches:
+      - feature/jdv-manual-barcode-entry
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/jdv-manual-barcode-entry
+          token: ${'{'}{ secrets.GITHUB_TOKEN }${'}'}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Format files touched by the JDV barcode and assistant work
+        run: npx prettier --write src/app/business/dashboard/catalogue/page.tsx src/app/api/ai/jdv-crm/route.ts src/app/entrepot/dashboard/expeditions-prospecteurs/page.tsx src/app/entrepot/dashboard/layout.tsx src/app/terrain/dashboard/reception-marchandises/page.tsx
+      - name: Commit formatting changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet; then
+            git add src/app/business/dashboard/catalogue/page.tsx src/app/api/ai/jdv-crm/route.ts src/app/entrepot/dashboard/expeditions-prospecteurs/page.tsx src/app/entrepot/dashboard/layout.tsx src/app/terrain/dashboard/reception-marchandises/page.tsx
+            git commit -m "Formatte les fichiers du circuit code-barres et de l’assistant"
+            git push origin HEAD:feature/jdv-manual-barcode-entry
+          fi
