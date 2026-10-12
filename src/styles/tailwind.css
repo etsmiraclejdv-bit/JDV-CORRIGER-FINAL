@@ -1094,3 +1094,84 @@
     width: 100%;
   }
 }
+
+
+/* JDV CRM — socle responsive partagé pour l'ensemble de la plateforme */
+@media (max-width: 767px) {
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  button,
+  a,
+  [role='button'],
+  input[type='checkbox'],
+  input[type='radio'] {
+    touch-action: manipulation;
+  }
+
+  button,
+  [role='button'] {
+    min-height: 40px;
+  }
+
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  img,
+  video,
+  canvas,
+  iframe {
+    max-width: 100%;
+  }
+
+  table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  pre,
+  code {
+    overflow-wrap: anywhere;
+  }
+
+  [data-jdv-design='page-title'] {
+    overflow-wrap: anywhere;
+  }
+
+  .jdv-mobile-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 420px) {
+  .jdv-loading {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .jdv-loading__name {
+    letter-spacing: 0.1em;
+  }
+
+  .jdv-founder-strip {
+    align-items: flex-start;
+    padding: 10px;
+  }
+}
