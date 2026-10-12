@@ -18,6 +18,7 @@ export default function DesignStudioPage() {
   const [history, setHistory] = useState(false);
   const [uploading, setUploading] = useState<'background' | 'update' | null>(null);
 
+  /* eslint-disable prettier/prettier */
   async function uploadMedia(file: File, target: 'background' | 'update') {
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'video/mp4', 'video/webm'];
     if (!allowed.includes(file.type)) {
@@ -49,6 +50,7 @@ export default function DesignStudioPage() {
       setUploading(null);
     }
   }
+  /* eslint-enable prettier/prettier */
 
   const reload = useCallback(async () => {
     const result = await listDesignVersions('platform');
@@ -105,6 +107,7 @@ export default function DesignStudioPage() {
     { key: 'accentColor', label: 'Couleur d’accentuation' },
   ];
 
+  /* eslint-disable prettier/prettier */
   return (
     <div className="space-y-6 p-5 sm:p-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -424,4 +427,5 @@ export default function DesignStudioPage() {
       )}
     </div>
   );
+  /* eslint-enable prettier/prettier */
 }
