@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     if (!warehouse.active)
       return NextResponse.json({ error: 'Cet entrepôt est inactif' }, { status: 400 });
     const organizationId = warehouse.organization_id as string;
-    const [{ data: sa }, { data: member }] = await Promise.all([
+    const [{ data: sa }, { data: member }, { data: organization }] = await Promise.all([
       admin
         .from('super_admins')
         .select('id,status,actif')
@@ -70,11 +70,17 @@ export async function POST(req: NextRequest) {
         .eq('user_id', caller.user.id)
         .eq('status', 'active')
         .maybeSingle(),
+      admin
+        .from('organizations')
+        .select('owner_user_id')
+        .eq('id', organizationId)
+        .maybeSingle(),
     ]);
     const isSuper = !!sa && (sa as any).status === 'active' && (sa as any).actif !== false;
     const isAdmin =
       !!member && ['business_admin', 'admin'].includes(String((member as any).role).toLowerCase());
-    if (!isSuper && !isAdmin)
+    const isOwner = !!organization && organization.owner_user_id === caller.user.id;
+    if (!isSuper && !isAdmin && !isOwner)
       return NextResponse.json({ error: 'Accès refusé pour cette entreprise' }, { status: 403 });
     const { data: authData, error: createError } = await admin.auth.admin.createUser({
       email,
