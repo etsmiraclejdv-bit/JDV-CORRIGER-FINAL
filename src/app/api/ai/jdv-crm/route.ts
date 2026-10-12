@@ -45,33 +45,33 @@ export async function POST(req: NextRequest) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !serviceKey || !anonKey) {
-      return NextResponse.json(
-        { error: 'Configuration Supabase serveur incomplète.' },
-        { status: 503 }
-      );
+
+    // Le guide reste utilisable même si les clés serveur ou la table de connaissances
+    // ne sont pas encore configurées. Le contexte privé est ajouté seulement si possible.
+    const admin = supabaseUrl && serviceKey
+      ? createClient(supabaseUrl, serviceKey, {
+          auth: { autoRefreshToken: false, persistSession: false },
+        })
+      : null;
+    let knowledgeContext: any[] = [];
+    if (admin) {
+      const { data: knowledgeRows, error: knowledgeError } = await admin
+        .from('ai_jdv_knowledge')
+        .select('scope,topic,content')
+        .eq('active', true)
+        .order('scope')
+        .order('topic');
+      if (!knowledgeError) knowledgeContext = knowledgeRows ?? [];
     }
 
-    const admin = createClient(supabaseUrl, serviceKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-    const { data: knowledgeRows, error: knowledgeError } = await admin
-      .from('ai_jdv_knowledge')
-      .select('scope,topic,content')
-      .eq('active', true)
-      .order('scope')
-      .order('topic');
-    if (knowledgeError) throw knowledgeError;
-    const knowledgeContext = knowledgeRows ?? [];
-
-    const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
+    const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\\s+/i, '').trim();
     let liveContext: any = {
       mode: 'public',
       synchronized_at: new Date().toISOString(),
       page: pageContext,
     };
 
-    if (token) {
+    if (token && admin && supabaseUrl && anonKey) {
       const userClient = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: 'Bearer ' + token } },
         auth: { autoRefreshToken: false, persistSession: false },
@@ -250,16 +250,26 @@ export async function POST(req: NextRequest) {
       }),
     });
     const json = await response.json();
-    if (!response.ok)
-      return NextResponse.json(
-        { error: json?.error?.message || 'Le service IA est indisponible.' },
-        { status: 502 }
-      );
+    if (!response.ok || !json.output_text) {
+      // Une clé invalide, un modèle non disponible ou une panne OpenAI ne doit pas
+      // rendre l’assistant muet : on revient au guide métier JDV sans inventer de données.
+      const content = buildKnowledgeAnswer({
+        question: lastUser,
+        pageContext,
+        knowledge: knowledgeContext,
+        live: liveContext,
+        base: { mission: JDV_CRM_KNOWLEDGE.mission, modules: JDV_CRM_KNOWLEDGE.modules },
+      });
+      return NextResponse.json({
+        content,
+        synchronized_at: liveContext.synchronized_at,
+        mode: 'knowledge_fallback',
+      });
+    }
     return NextResponse.json({
-      content:
-        json.output_text ||
-        'Je n’ai pas pu produire une réponse. Pouvez-vous reformuler votre question ?',
+      content: json.output_text,
       synchronized_at: liveContext.synchronized_at,
+      mode: 'openai',
     });
   } catch (e) {
     return NextResponse.json(
