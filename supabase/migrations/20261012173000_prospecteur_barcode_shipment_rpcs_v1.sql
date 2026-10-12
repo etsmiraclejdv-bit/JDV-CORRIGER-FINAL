@@ -367,5 +367,7 @@ $$;
 
 revoke all on function public.jdvcrm_dispatch_prospecteur_shipment_v1(uuid,uuid,jsonb,text,uuid) from public, anon;
 revoke all on function public.jdvcrm_confirm_prospecteur_shipment_receipt_v1(uuid,jsonb,text) from public, anon;
+revoke all on function public.jdvcrm_dispatch_prospecteur_shipment_v1(uuid,uuid,jsonb,text,uuid) from public, anon;
+revoke all on function public.jdvcrm_confirm_prospecteur_shipment_receipt_v1(uuid,jsonb,text) from public, anon;
 grant execute on function public.jdvcrm_dispatch_prospecteur_shipment_v1(uuid,uuid,jsonb,text,uuid) to authenticated;
 grant execute on function public.jdvcrm_confirm_prospecteur_shipment_receipt_v1(uuid,jsonb,text) to authenticated;
