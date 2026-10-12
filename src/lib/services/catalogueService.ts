@@ -7,6 +7,8 @@ export interface Product {
   organization_id: string;
   name: string;
   sku: string;
+  barcode: string | null;
+  barcode_type: string;
   stock_quantity: number;
   price_cents: number;
   created_at: string;
@@ -22,6 +24,8 @@ function mapProduct(a: Row, stockQuantity = 0, minimumQuantity = 0): Product {
     organization_id: String(a.organization_id ?? ''),
     name: String(a.name ?? ''),
     sku: String(a.code ?? ''),
+    barcode: typeof a.barcode === 'string' ? a.barcode : null,
+    barcode_type: String(a.barcode_type ?? 'internal'),
     price_cents: toCents(a.cash_price ?? a.fixed_price),
     stock_quantity: Number(stockQuantity),
     minimum_quantity: Number(minimumQuantity),
@@ -43,7 +47,7 @@ export async function fetchProducts(organizationId: string, filters?: { search?:
 
   if (filters?.search) {
     const s = filters.search.replace(/[%,()]/g, ' ');
-    query = query.or(`name.ilike.%${s}%,code.ilike.%${s}%`);
+    query = query.or(`name.ilike.%${s}%,code.ilike.%${s}%,barcode.ilike.%${s}%`);
   }
 
   const { data, error } = await query;
@@ -107,6 +111,8 @@ export async function createProduct(product: Partial<Product>) {
     .insert({
       organization_id: product.organization_id,
       code: (product.sku ?? '').trim() || newArticleCode(),
+      barcode: product.barcode?.trim() || null,
+      barcode_type: product.barcode_type || 'internal',
       name: product.name.trim(),
       fixed_price: price,
       cash_price: price,
@@ -123,6 +129,8 @@ export async function createProduct(product: Partial<Product>) {
 export async function updateProduct(productId: string, updates: Partial<Product>) {
   const patch: TablesUpdate<'articles'> = { updated_at: new Date().toISOString() };
   if (updates.name !== undefined) patch.name = updates.name;
+  if (updates.barcode !== undefined) patch.barcode = updates.barcode?.trim() || null;
+  if (updates.barcode_type !== undefined) patch.barcode_type = updates.barcode_type;
   if (updates.sku !== undefined && updates.sku.trim()) patch.code = updates.sku.trim();
   if (updates.active !== undefined) patch.active = updates.active;
   if (updates.price_cents !== undefined) {

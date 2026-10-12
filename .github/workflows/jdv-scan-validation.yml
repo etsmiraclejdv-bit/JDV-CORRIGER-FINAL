@@ -1,0 +1,33 @@
+name: JDV scan feature validation
+
+on:
+  push:
+    branches:
+      - feature/jdv-scan-reconciled
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jdv-scan-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: TypeScript check
+        run: npm run type-check
+      - name: Unit tests
+        run: npm test
