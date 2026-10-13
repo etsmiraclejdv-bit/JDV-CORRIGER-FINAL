@@ -72,7 +72,6 @@ export default function CataloguePage() {
       toast.error('Enregistrez d’abord le code de traçabilité de cet article.');
       return;
     }
-    // Le service BWIP-JS rend un vrai symbole Code 128/QR/EAN, contrairement à de simples barres décoratives.
     // Le code officiel JDV est imprimé en Code 128, indépendamment du code fabricant.
     const bcid = 'code128';
     const barcodeImage =
@@ -93,7 +92,7 @@ export default function CataloguePage() {
       return;
     }
     popup.document.write(
-      `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Étiquette JDV - ${escapeHtml(product.name)}</title><style>body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#111}.label{width:340px;min-height:170px;border:1px solid #ddd;padding:18px;text-align:center;margin:auto}.brand{font-weight:700;letter-spacing:2px;font-size:12px}.name{font-size:16px;font-weight:700;margin:12px 0 4px}.code{font:13px monospace;word-break:break-all}.barcode{display:block;max-width:100%;height:auto;margin:12px auto 4px}@media print{body{padding:0}.label{border:0;margin:0}}</style></head><body><section class="label"><div class="brand">JDV CRM</div><div class="name">${escapeHtml(product.name)}</div><img class="barcode" src="${barcodeImage}" alt="Code-barres ${escapeHtml(code)}"><div class="code">${escapeHtml(code)}</div><p style="font-size:10px;color:#555">Code officiel de traçabilité JDV — conserver le code lisible</p></section><script>window.onload=()=>setTimeout(()=>window.print(),500)</script></body></html>`
+      `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Code de traçabilité JDV - ${escapeHtml(product.name)}</title><style>body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#111}.label{width:340px;min-height:170px;border:1px solid #ddd;padding:18px;text-align:center;margin:auto}.brand{font-weight:700;letter-spacing:2px;font-size:12px}.name{font-size:16px;font-weight:700;margin:12px 0 4px}.code{font:13px monospace;word-break:break-all}.barcode{display:block;max-width:100%;height:auto;margin:12px auto 4px}@media print{body{padding:0}.label{border:0;margin:0}}</style></head><body><section class="label"><div class="brand">JDV CRM</div><div class="name">${escapeHtml(product.name)}</div><img class="barcode" src="${barcodeImage}" alt="Code-barres ${escapeHtml(code)}"><div class="code">${escapeHtml(code)}</div><p style="font-size:10px;color:#555">Code officiel de traçabilité JDV — conserver le code lisible</p></section><script>window.onload=()=>setTimeout(()=>window.print(),500)</script></body></html>`
     );
     popup.document.close();
   }
