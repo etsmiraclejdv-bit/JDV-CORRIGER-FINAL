@@ -287,7 +287,9 @@ export default function CataloguePage() {
                 Le code JDV reste distinct du code fabricant.
               </span>
             </div>
-            <label className="block text-xs text-[#A0AEC0] mt-3 mb-1.5">Type du code-barres fabricant</label>
+            <label className="block text-xs text-[#A0AEC0] mt-3 mb-1.5">
+              Type du code-barres fabricant
+            </label>
             <select
               value={form.barcode_type}
               onChange={(e) => setForm((f) => ({ ...f, barcode_type: e.target.value }))}
@@ -302,7 +304,8 @@ export default function CataloguePage() {
               <option value="other">Autre</option>
             </select>
             <p className="text-xs text-[#718096] mt-1">
-              Le code JDV est la référence officielle de traçabilité. Le code-barres fabricant est facultatif et reste distinct.
+              Le code JDV est la référence officielle de traçabilité. Le code-barres fabricant est
+              facultatif et reste distinct.
             </p>
           </div>
           <div>
