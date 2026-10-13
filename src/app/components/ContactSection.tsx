@@ -89,7 +89,7 @@ export default function ContactSection() {
               <div className="grid gap-3 sm:grid-cols-2">
                 {channels.map(({ icon: Icon, title, value, href }) => (
                   <div
-                    key={title}
+                    key={`${title}-${value}`}
                     className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4"
                   >
                     <span

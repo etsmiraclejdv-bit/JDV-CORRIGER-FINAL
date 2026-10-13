@@ -4,110 +4,126 @@ import { Menu, X, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+const navLinks = [
+  { label: 'Accueil', href: '/' },
+  { label: 'Services', href: '#services' },
+  { label: 'Fonctionnalités', href: '#features' },
+  { label: 'Actualités', href: '#actualites' },
+  { label: 'Avis', href: '#avis-plateforme' },
+  { label: 'Contact', href: '#contact' },
+  { label: 'Tarifs', href: '#pricing' },
+  { label: 'Le concepteur', href: '/a-propos-concepteur' },
+];
+
 export default function PublicNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handler);
+    handler();
+    window.addEventListener('scroll', handler, { passive: true });
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  const navLinks = [
-    { label: 'Accueil', href: '/' },
-    { label: 'Services', href: '#services' },
-    { label: 'Fonctionnalités', href: '#features' },
-    { label: 'Actualités', href: '#actualites' },
-    { label: 'Avis', href: '#avis-plateforme' },
-    { label: 'Contact', href: '#contact' },
-    { label: 'Tarifs', href: '#pricing' },
-    { label: 'Le concepteur', href: '/a-propos-concepteur' },
-  ];
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMobileOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [mobileOpen]);
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? 'nav-glass shadow-card' : 'bg-transparent'
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        scrolled || mobileOpen ? 'nav-glass shadow-card' : 'bg-transparent'
       }`}
     >
-      <div className="max-w-screen-xl px-6 lg:px-10 h-16 flex items-center justify-between mx-0 mt-[51px] pl-6 rounded-t-[15px] border-0">
-        <div className="flex items-center gap-3">
+      <nav
+        aria-label="Navigation principale"
+        className="mx-auto flex h-16 max-w-screen-xl items-center justify-between gap-4 px-4 sm:px-6 xl:px-10"
+      >
+        <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="JDV CRM, accueil">
           <Image
             src="/assets/images/image_a5395bef-1789678648033.jpg"
-            alt="JDV CRM Logo"
+            alt=""
             width={36}
             height={36}
-            className="rounded-lg object-contain flex-shrink-0"
+            className="flex-shrink-0 rounded-lg object-contain"
             priority
           />
-
-          <span className="font-bold text-xl tracking-tight text-foreground">
+          <span className="whitespace-nowrap text-lg font-bold tracking-tight text-foreground sm:text-xl">
             JDV <span className="gold-gradient-text">CRM</span>
           </span>
-        </div>
+        </Link>
 
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks?.map((link) => (
+        <div className="hidden items-center gap-6 xl:flex">
+          {navLinks.map((link) => (
             <a
-              key={`nav-${link?.href}`}
-              href={link?.href}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150"
+              key={`nav-${link.href}`}
+              href={link.href}
+              className="whitespace-nowrap text-sm font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground"
             >
-              {link?.label}
+              {link.label}
             </a>
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           <Link
             href="/business/login"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 py-2"
+            className="hidden whitespace-nowrap px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
           >
             Connexion
           </Link>
           <a
             href="#register"
-            className="btn-gold text-sm font-semibold px-5 py-2 rounded-xl flex items-center gap-2"
+            className="btn-gold hidden items-center gap-1.5 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold sm:flex"
           >
             Essai gratuit
-            <ChevronRight size={14} />
+            <ChevronRight size={14} aria-hidden="true" />
           </a>
+          <button
+            type="button"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground xl:hidden"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+            aria-expanded={mobileOpen}
+            aria-controls="public-mobile-menu"
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
-
-        <button
-          className="md:hidden p-2 text-muted-foreground hover:text-foreground"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Menu mobile"
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
+      </nav>
 
       {mobileOpen && (
-        <div className="md:hidden nav-glass border-t border-border animate-slide-up">
-          <div className="px-6 py-4 flex flex-col gap-4">
-            {navLinks?.map((link) => (
+        <div
+          id="public-mobile-menu"
+          className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-border animate-slide-up xl:hidden"
+        >
+          <div className="mx-auto grid max-w-screen-xl gap-1 px-4 py-4 sm:grid-cols-2 sm:px-6">
+            {navLinks.map((link) => (
               <a
-                key={`mobile-nav-${link?.href}`}
-                href={link?.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2"
+                key={`mobile-nav-${link.href}`}
+                href={link.href}
+                className="rounded-xl px-3 py-3 text-base font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                 onClick={() => setMobileOpen(false)}
               >
-                {link?.label}
+                {link.label}
               </a>
             ))}
-            <hr className="divider-gold" />
+          </div>
+          <div className="mx-auto flex max-w-screen-xl flex-col gap-2 border-t border-border px-4 py-4 sm:flex-row sm:px-6">
             <Link
               href="/business/login"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 text-center"
+              className="rounded-xl border border-border px-5 py-3 text-center text-sm font-semibold text-foreground hover:bg-muted sm:flex-1"
               onClick={() => setMobileOpen(false)}
             >
               Connexion
             </Link>
             <a
               href="#register"
-              className="btn-gold text-sm font-semibold px-5 py-3 rounded-xl text-center"
+              className="btn-gold rounded-xl px-5 py-3 text-center text-sm font-semibold sm:flex-1"
               onClick={() => setMobileOpen(false)}
             >
               Démarrer l&apos;essai gratuit
@@ -115,6 +131,6 @@ export default function PublicNavbar() {
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 }

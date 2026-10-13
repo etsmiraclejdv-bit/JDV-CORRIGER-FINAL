@@ -251,6 +251,10 @@ export default function BusinessDashboardLayout({ children }: { children: React.
   const pathname = usePathname();
   const router = useRouter();
   const groups = Array.from(new Set(navItems.map((i) => i.group)));
+  const activeItem = [...navItems]
+    .sort((a, b) => b.href.length - a.href.length)
+    .find((i) => pathname === i.href || (i.href !== '/business/dashboard' && pathname.startsWith(i.href)));
+  const pageTitle = activeItem?.label ?? 'Portail Entreprise';
   async function handleLogout() {
     await supabase.auth.signOut();
     router.replace('/business/login');
@@ -286,6 +290,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
               {!collapsed && (
                 <button
                   onClick={() => setCollapsed(true)}
+                  aria-label="Réduire le menu"
                   className="p-1.5 rounded-lg text-[#718096] hover:text-white hover:bg-[#0F2347] transition-all"
                 >
                   <ChevronLeft size={16} />
@@ -296,7 +301,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
               {groups.map((group) => (
                 <div key={group} className="mb-4">
                   {!collapsed && (
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-[#718096] px-3 mb-2">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-[#8A99B4] px-3 mb-1.5">
                       {group}
                     </p>
                   )}
@@ -313,6 +318,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                           href={item.href}
                           onClick={() => setMobileMenuOpen(false)}
                           title={collapsed ? item.label : undefined}
+                          aria-current={isActive ? 'page' : undefined}
                           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
                         >
                           <span className="flex-shrink-0">{item.icon}</span>
@@ -345,6 +351,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
               {collapsed && (
                 <button
                   onClick={() => setCollapsed(false)}
+                  aria-label="Déplier le menu"
                   className="w-full flex justify-center p-2 mt-1 text-[#718096] hover:text-white hover:bg-[#0F2347] rounded-xl transition-all"
                 >
                   <ChevronRight size={14} />
@@ -376,7 +383,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                   data-jdv-design="page-title"
                   className="truncate text-sm sm:text-base font-semibold text-white"
                 >
-                  Portail Entreprise
+                  {pageTitle}
                 </h1>
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
