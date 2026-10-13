@@ -391,8 +391,10 @@ export default function ExpeditionsProspecteursPage() {
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{a.article_name}</p>
-                    <p className="text-xs text-slate-400">Code JDV : {a.article_code}{a.barcode ? <span className="block text-xs text-slate-500">Code fabricant : {a.barcode}</span> : null}
-                    </p>
+                    <div className="text-xs text-slate-400">
+                      <p>Code de traçabilité JDV : {a.article_code}</p>
+                      {a.barcode ? <p className="text-slate-500">Code fabricant : {a.barcode}</p> : null}
+                    </div>
                   </div>
                   <span className="text-sm tabular-nums">
                     {Math.max(0, a.quantity - a.reserved_quantity)}
