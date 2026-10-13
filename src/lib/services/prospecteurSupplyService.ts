@@ -92,7 +92,7 @@ export async function getMySupplyRequests(prospecteurId: string, organizationId:
   const { data, error } = await supabase
     .from('prospecteur_supply_requests')
     .select(
-      'id,warehouse_id,status,requested_at,processed_at,notes,prospecteur_supply_request_items(quantity,article_id,articles(code,name))'
+      'id,warehouse_id,status,requested_at,processed_at,notes,shipment_id,prospecteur_supply_request_items(quantity,article_id,articles(code,name))'
     )
     .eq('organization_id', organizationId)
     .eq('prospecteur_id', prospecteurId)
@@ -101,19 +101,19 @@ export async function getMySupplyRequests(prospecteurId: string, organizationId:
 }
 
 export async function requestSupply(
-  organizationId: string,
+  _organizationId: string,
   _prospecteurId: string,
   warehouseId: string,
   items: { article_id: string; quantity: number }[]
 ) {
   if (!items.length) return { data: null, error: new Error('Sélectionnez au moins un article') };
 
-  // Le prospecteur ne demande plus une validation à l'administrateur.
-  // Le réapprovisionnement est exécuté atomiquement depuis son entrepôt
-  // principal affecté par la fonction SQL sécurisée.
-  const { data, error } = await supabase.rpc('jdvcrm_request_prospecteur_supply_v1', {
+  // La demande ne touche pas au stock. L'entrepôt prépare un bon scanné,
+  // puis le prospecteur confirme les quantités réellement reçues.
+  const { data, error } = await supabase.rpc('jdvcrm_create_prospecteur_supply_request_v1', {
     p_warehouse_id: warehouseId,
     p_items: items,
+    p_notes: null,
   });
 
   return { data, error };
