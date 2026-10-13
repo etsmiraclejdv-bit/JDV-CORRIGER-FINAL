@@ -32,6 +32,7 @@ export default function ReceptionMarchandisesPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [selectedId, setSelectedId] = useState('');
   const [scanned, setScanned] = useState<Record<string, number>>({});
+  const [damaged, setDamaged] = useState<Record<string, number>>({});
   const [scannedCodes, setScannedCodes] = useState<Record<string, string>>({});
   const [manualCode, setManualCode] = useState('');
   const [notes, setNotes] = useState('');
@@ -185,18 +186,18 @@ export default function ReceptionMarchandisesPage() {
     const allLines = shipment.prospecteur_supply_shipment_items;
     if (allLines.some((line) => scanned[line.article_id] === undefined)) {
       setMessage(
-        'Scannez chaque référence du bon. Pour une ligne absente, utilisez le comptage manuel après vérification.'
+        'Renseignez chaque ligne du bon. Scannez les articles reçus ou utilisez « Déclarer absent » après vérification du colis.'
       );
       return;
     }
     const items = allLines.map((line) => {
       const received = scanned[line.article_id] ?? 0;
-      const damaged = 0;
+      const damagedQuantity = damaged[line.article_id] ?? 0;
       return {
         article_id: line.article_id,
         quantity_received: received,
-        quantity_accepted: received - damaged,
-        quantity_damaged: damaged,
+        quantity_accepted: received - damagedQuantity,
+        quantity_damaged: damagedQuantity,
         quantity_missing: Math.max(0, line.quantity_dispatched - received),
         scanned_code: scannedCodes[line.article_id] ?? null,
         device_type: scanDevices[line.article_id] ?? 'manual',
@@ -215,7 +216,7 @@ export default function ReceptionMarchandisesPage() {
         /could not find the function|function .* does not exist/i.test(error.message ?? '');
       setMessage(
         missingRpc
-          ? 'La fonction de confirmation de réception est absente de Supabase. La migration 20261012173000_prospecteur_barcode_shipment_rpcs_v1.sql doit être appliquée et vérifiée avant de confirmer ce bon.'
+          ? 'La fonction de confirmation de réception est absente de Supabase. La migration 20261012195023_jdv_prospecteur_barcode_shipment_rpcs_v1.sql doit être appliquée et vérifiée avant de confirmer ce bon.'
           : 'Réception non enregistrée : ' + (error.message || 'erreur inconnue')
       );
       return;
@@ -231,6 +232,7 @@ export default function ReceptionMarchandisesPage() {
     stopCamera();
     setSelectedId('');
     setScanned({});
+    setDamaged({});
     scannedRef.current = {};
     setScannedCodes({});
     setScanDevices({});
@@ -282,6 +284,7 @@ export default function ReceptionMarchandisesPage() {
                 stopCamera();
                 setSelectedId(e.target.value);
                 setScanned({});
+                setDamaged({});
                 scannedRef.current = {};
                 setScannedCodes({});
                 setScanDevices({});
@@ -303,7 +306,7 @@ export default function ReceptionMarchandisesPage() {
                   <div>
                     <h2 className="font-semibold">{shipment.shipment_number}</h2>
                     <p className="text-xs text-slate-400">
-                      Scannés : {Object.values(scanned).reduce((n, x) => n + x, 0)} /{' '}
+                      Quantité reçue : {Object.values(scanned).reduce((n, x) => n + x, 0)} /{' '}
                       {shipment.prospecteur_supply_shipment_items.reduce(
                         (n, x) => n + x.quantity_dispatched,
                         0
@@ -367,7 +370,7 @@ export default function ReceptionMarchandisesPage() {
                   {shipment.prospecteur_supply_shipment_items.map((line) => (
                     <div
                       key={line.id}
-                      className="grid grid-cols-[1fr_72px_90px] items-center gap-3 border-b border-white/5 pb-3"
+                      className="grid grid-cols-[minmax(0,1fr)_54px_76px_76px] items-start gap-2 border-b border-white/5 pb-3"
                     >
                       <div>
                         <p className="text-sm font-medium">{line.article_name_snapshot}</p>
@@ -376,9 +379,29 @@ export default function ReceptionMarchandisesPage() {
                           {line.quantity_dispatched}
                         {line.barcode_snapshot ? <span className="block text-xs text-slate-500">Code fabricant : {line.barcode_snapshot}</span> : null}
                         </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!window.confirm('Confirmez-vous que cet article est totalement absent du colis ?')) return;
+                            const next = { ...scannedRef.current, [line.article_id]: 0 };
+                            scannedRef.current = next;
+                            setScanned(next);
+                            setDamaged((prev) => ({ ...prev, [line.article_id]: 0 }));
+                            setScannedCodes((prev) => {
+                              const codes = { ...prev };
+                              delete codes[line.article_id];
+                              return codes;
+                            });
+                            setScanDevices((prev) => ({ ...prev, [line.article_id]: 'manual' }));
+                            setMessage('Absence déclarée manuellement pour ' + line.article_name_snapshot + '. Vérifiez le colis avant de confirmer.');
+                          }}
+                          className="mt-2 text-left text-xs font-medium text-amber-300 underline underline-offset-2"
+                        >
+                          Déclarer absent
+                        </button>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-slate-400">Scanné</p>
+                        <p className="text-xs text-slate-400">Reçu</p>
                         <p className="font-bold">{scanned[line.article_id] ?? 0}</p>
                       </div>
                       <div>
@@ -395,6 +418,11 @@ export default function ReceptionMarchandisesPage() {
                               delete next[line.article_id];
                               scannedRef.current = next;
                               setScanned(next);
+                              setDamaged((prev) => {
+                                const updated = { ...prev };
+                                delete updated[line.article_id];
+                                return updated;
+                              });
                               setScannedCodes((prev) => {
                                 const codes = { ...prev };
                                 delete codes[line.article_id];
@@ -409,12 +437,32 @@ export default function ReceptionMarchandisesPage() {
                               const next = { ...scannedRef.current, [line.article_id]: q };
                               scannedRef.current = next;
                               setScanned(next);
+                              setDamaged((prev) => ({ ...prev, [line.article_id]: Math.min(prev[line.article_id] ?? 0, q) }));
                               setScannedCodes((prev) => {
                                 const codes = { ...prev };
                                 delete codes[line.article_id];
                                 return codes;
                               });
                               setScanDevices((prev) => ({ ...prev, [line.article_id]: 'manual' }));
+                            }
+                          }}
+                          className="mt-1 w-full rounded-lg border border-white/10 bg-[#08152f] p-2"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-400">Abîmés</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max={scanned[line.article_id] ?? 0}
+                          value={damaged[line.article_id] ?? 0}
+                          onChange={(e) => {
+                            const q = Number(e.target.value);
+                            const received = scanned[line.article_id] ?? 0;
+                            if (e.target.value === '') {
+                              setDamaged((prev) => ({ ...prev, [line.article_id]: 0 }));
+                            } else if (Number.isInteger(q) && q >= 0 && q <= received) {
+                              setDamaged((prev) => ({ ...prev, [line.article_id]: q }));
                             }
                           }}
                           className="mt-1 w-full rounded-lg border border-white/10 bg-[#08152f] p-2"
