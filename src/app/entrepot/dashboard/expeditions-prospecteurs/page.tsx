@@ -78,7 +78,13 @@ export default function ExpeditionsProspecteursPage() {
       p_idempotency_key: (idempotencyRef.current ??= crypto.randomUUID()),
     });
     setBusy(false);
-    if (error) { fail(error.message); return; }
+    if (error) {
+      const missingRpc = error.code === 'PGRST202' || error.code === '42883' || /could not find the function|function .* does not exist/i.test(error.message ?? '');
+      fail(missingRpc
+        ? 'Fonction de traçabilité absente dans Supabase : la migration 20261012173000_prospecteur_barcode_shipment_rpcs_v1.sql doit être appliquée et vérifiée avant les expéditions.'
+        : 'Échec de l’expédition : ' + (error.message || 'erreur inconnue'));
+      return;
+    }
     const result = data as { shipment_number?: string };
     ok('Bon ' + (result?.shipment_number ?? '') + ' expédié. Le prospecteur doit confirmer la réception.');
     idempotencyRef.current = null;
