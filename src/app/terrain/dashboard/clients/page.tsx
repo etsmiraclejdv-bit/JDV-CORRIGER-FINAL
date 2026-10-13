@@ -60,7 +60,8 @@ export default function TerrainClientsPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!orgId || !pid) return;
+    if (!orgId) return toast.error('Entreprise introuvable pour ce compte. Vérifiez votre rattachement à l’entreprise, puis reconnectez-vous.');
+    if (!pid) return toast.error('Profil prospecteur introuvable. Votre compte doit être rattaché à un prospecteur autorisé avant de créer un client.');
     if (!form.full_name.trim()) return toast.error('Le nom est requis');
     setSaving(true);
     const pf = await getMyPortfolioId(orgId);
@@ -79,7 +80,13 @@ export default function TerrainClientsPage() {
       status: 'active',
     } as never);
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      const message = error.message || 'Erreur inconnue';
+      if (error.code === '42501' || message.toLowerCase().includes('permission denied') || message.toLowerCase().includes('row-level security')) {
+        return toast.error('Création refusée par les autorisations. Vérifiez que votre compte prospecteur est bien affecté à cette entreprise et à son portefeuille.');
+      }
+      return toast.error('Impossible de créer le client : ' + message);
+    }
     toast.success('Client ajouté');
     setOpen(false);
     setForm({ full_name: '', phone: '', city: '', address: '' });

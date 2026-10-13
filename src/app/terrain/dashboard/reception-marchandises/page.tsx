@@ -108,7 +108,13 @@ export default function ReceptionMarchandisesPage() {
     setBusy(true);
     const { data, error } = await (supabase as any).rpc('jdvcrm_confirm_prospecteur_shipment_receipt_v1', { p_shipment_id: shipment.id, p_items: items, p_notes: notes.trim() || null });
     setBusy(false);
-    if (error) { setMessage(error.message); return; }
+    if (error) {
+      const missingRpc = error.code === 'PGRST202' || error.code === '42883' || /could not find the function|function .* does not exist/i.test(error.message ?? '');
+      setMessage(missingRpc
+        ? 'La fonction de confirmation de réception est absente de Supabase. La migration 20261012173000_prospecteur_barcode_shipment_rpcs_v1.sql doit être appliquée et vérifiée avant de confirmer ce bon.'
+        : 'Réception non enregistrée : ' + (error.message || 'erreur inconnue'));
+      return;
+    }
     const result = data as { status?: string; shipment_number?: string };
     setMessage('Réception enregistrée pour ' + (result.shipment_number ?? shipment.shipment_number) + ' — statut : ' + (result.status ?? 'confirmé') + '.');
     stopCamera(); setSelectedId(''); setScanned({}); scannedRef.current = {}; setScannedCodes({}); setScanDevices({}); setNotes('');
