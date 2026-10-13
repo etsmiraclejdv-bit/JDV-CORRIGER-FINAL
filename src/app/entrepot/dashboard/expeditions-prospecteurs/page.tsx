@@ -105,6 +105,28 @@ export default function ExpeditionsProspecteursPage() {
       <Banner state={banner} />
       <div className="grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
         <Card title="1. Préparer la marchandise">
+          <label className="block text-sm text-slate-300 mb-2">Demande de réapprovisionnement</label>
+          <select className={inputCls + ' mb-4'} value={selectedRequestId} onChange={(e) => {
+            const id = e.target.value;
+            const request = pendingRequests.find((item) => item.id === id);
+            setSelectedRequestId(id);
+            setCart([]);
+            setNotes(request?.notes ?? '');
+            setRequestedQuantities(request ? Object.fromEntries(request.prospecteur_supply_request_items.map((item) => [item.article_id, Number(item.quantity)])) : {});
+            setProspecteurId(request?.prospecteur_id ?? '');
+            idempotencyRef.current = null;
+          }}>
+            <option value="">Expédition directe sans demande</option>
+            {pendingRequests.map((request) => {
+              const person = prospecteurs.find((p) => p.prospecteur_id === request.prospecteur_id);
+              const summary = request.prospecteur_supply_request_items.map((item) => {
+                const article = articles.find((a) => a.article_id === item.article_id);
+                return (article?.article_name ?? 'Article') + ' × ' + item.quantity;
+              }).join(', ');
+              return <option key={request.id} value={request.id}>{(person?.full_name ?? person?.code ?? 'Prospecteur') + ' · ' + new Date(request.requested_at).toLocaleString('fr-FR') + ' · ' + summary}</option>;
+            })}
+          </select>
+          {selectedRequestId && <p className="mb-4 rounded-lg bg-emerald-500/10 p-3 text-xs text-emerald-200">Demande sélectionnée : scannez les quantités exactes ci-dessous.</p>}
           <label className="block text-sm text-slate-300 mb-2">Prospecteur destinataire</label>
           <select className={inputCls + ' mb-4'} value={prospecteurId} onChange={(e) => setProspecteurId(e.target.value)}>
             <option value="">Choisir un prospecteur affecté à cet entrepôt</option>
