@@ -35,7 +35,7 @@ Le build de CI et le build Netlify utilisent `STRICT_BUILD=true`. Le workflow CI
 
 Le fichier [.env.example](.env.example) décrit les variables de l'application web. Les variables publiques préfixées par `NEXT_PUBLIC_` sont embarquées côté navigateur : n'y placer aucun secret. `SUPABASE_SERVICE_ROLE_KEY`, les clés FedaPay, OpenAI, Anthropic et Resend sont des secrets serveur.
 
-Les Edge Functions ont leurs propres secrets Supabase. Configurer notamment `SITE_URL=https://joie-de-vivr.netlify.app`, `RESEND_API_KEY` et, si nécessaire, `EMAIL_FROM` pour les emails ; `ANTHROPIC_API_KEY` et `ANTHROPIC_MODEL` pour l'analyse IA des dossiers. Les variables de plateforme `SUPABASE_URL`, `SUPABASE_ANON_KEY` et `SUPABASE_SERVICE_ROLE_KEY` doivent être disponibles côté fonction. Ne pas copier les secrets de production dans un fichier versionné.
+Les Edge Functions ont leurs propres secrets Supabase. Configurer notamment `SITE_URL=https://crmjdv.netlify.app`, `RESEND_API_KEY` et, si nécessaire, `EMAIL_FROM` pour les emails ; `ANTHROPIC_API_KEY` et `ANTHROPIC_MODEL` pour l'analyse IA des dossiers. Les variables de plateforme `SUPABASE_URL`, `SUPABASE_ANON_KEY` et `SUPABASE_SERVICE_ROLE_KEY` doivent être disponibles côté fonction. Ne pas copier les secrets de production dans un fichier versionné.
 
 ## Schéma et migrations Supabase
 
@@ -55,4 +55,4 @@ La configuration versionnée dans `supabase/config.toml` exige un JWT pour les t
 
 ## Déploiement
 
-Le site de production est hébergé sur Netlify. Le build utilise Node.js 22 et le mode strict TypeScript. Aucun déploiement de production ni aucune modification de base de données ne doit être déduit d'un simple commit ou d'une PR.
+Le site de production est hébergé sur Netlify (projet `crmjdv`) à l'adresse officielle **https://crmjdv.netlify.app**. Le build utilise Node.js 22 et le mode strict TypeScript. Aucun déploiement de production ni aucune modification de base de données ne doit être déduit d'un simple commit ou d'une PR.
