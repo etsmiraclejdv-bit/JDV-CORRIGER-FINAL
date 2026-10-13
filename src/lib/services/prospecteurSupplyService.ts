@@ -89,7 +89,7 @@ export async function returnProspecteurStock(holdingId: string) {
 }
 
 export async function getMySupplyRequests(prospecteurId: string, organizationId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('prospecteur_supply_requests')
     .select(
       'id,warehouse_id,status,requested_at,processed_at,notes,shipment_id,prospecteur_supply_request_items(quantity,article_id,articles(code,name))'
