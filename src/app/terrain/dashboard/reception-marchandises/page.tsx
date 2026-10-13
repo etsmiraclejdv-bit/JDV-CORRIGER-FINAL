@@ -247,7 +247,8 @@ export default function ReceptionMarchandisesPage() {
           <p className="text-xs uppercase tracking-widest text-[#D4AF37]">Stock</p>
           <h1 className="text-2xl font-bold">Réception des marchandises</h1>
           <p className="text-sm text-[#A0AEC0]">
-            Le code de traçabilité JDV est créé par l’entreprise. Saisissez-le manuellement ou scannez-le pour confirmer que l’article expédié est bien reçu.
+            Le code de traçabilité JDV est créé par l’entreprise. Saisissez-le manuellement ou
+            scannez-le pour confirmer que l’article expédié est bien reçu.
           </p>
         </div>
         <button
@@ -379,7 +380,7 @@ export default function ReceptionMarchandisesPage() {
                         <p className="text-xs text-slate-400">
                           Code JDV : {line.article_code_snapshot} · expédié{' '}
                           {line.quantity_dispatched}
-                        {line.barcode_snapshot ? (
+                          {line.barcode_snapshot ? (
                             <span className="block text-xs text-slate-500">
                               Code fabricant : {line.barcode_snapshot}
                             </span>
