@@ -99,7 +99,7 @@ export default function ExpeditionsProspecteursPage() {
     const result = data as { shipment_number?: string };
     ok('Bon ' + (result?.shipment_number ?? '') + ' expédié. Le prospecteur doit confirmer la réception.');
     idempotencyRef.current = null;
-    setCart([]); setNotes('');
+    setCart([]); setNotes(''); setSelectedRequestId(''); setRequestedQuantities({});
     void load();
   }
 
@@ -132,7 +132,7 @@ export default function ExpeditionsProspecteursPage() {
           </select>
           {selectedRequestId && <p className="mb-4 rounded-lg bg-emerald-500/10 p-3 text-xs text-emerald-200">Demande sélectionnée : scannez les quantités exactes ci-dessous.</p>}
           <label className="block text-sm text-slate-300 mb-2">Prospecteur destinataire</label>
-          <select className={inputCls + ' mb-4'} value={prospecteurId} onChange={(e) => setProspecteurId(e.target.value)}>
+          <select className={inputCls + ' mb-4'} value={prospecteurId} disabled={Boolean(selectedRequestId)} onChange={(e) => setProspecteurId(e.target.value)}>
             <option value="">Choisir un prospecteur affecté à cet entrepôt</option>
             {prospecteurs.map((p) => <option key={p.prospecteur_id} value={p.prospecteur_id}>{p.full_name ?? p.code ?? p.prospecteur_id}</option>)}
           </select>
