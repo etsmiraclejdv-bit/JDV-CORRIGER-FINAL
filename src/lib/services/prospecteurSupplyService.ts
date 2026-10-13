@@ -89,7 +89,7 @@ export async function returnProspecteurStock(holdingId: string) {
 }
 
 export async function getMySupplyRequests(prospecteurId: string, organizationId: string) {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('prospecteur_supply_requests')
     .select(
       'id,warehouse_id,status,requested_at,processed_at,notes,shipment_id,prospecteur_supply_request_items(quantity,article_id,articles(code,name))'
@@ -110,7 +110,7 @@ export async function requestSupply(
 
   // La demande ne touche pas au stock. L'entrepôt prépare un bon scanné,
   // puis le prospecteur confirme les quantités réellement reçues.
-  const { data, error } = await (supabase as any).rpc(
+  const { data, error } = await supabase.rpc(
     'jdvcrm_create_prospecteur_supply_request_v1',
     {
       p_warehouse_id: warehouseId,
@@ -139,13 +139,13 @@ export async function getMySales(organizationId: string, prospecteurId: string) 
       .select('id,first_name,last_name,phone')
       .eq('organization_id', organizationId),
   ]);
-  const am = new Map((articles.data ?? []).map((x: any) => [x.id, x]));
-  const cm = new Map((clients.data ?? []).map((x: any) => [x.id, x]));
+  const am = new Map((articles.data ?? []).map((article) => [article.id, article] as const));
+  const cm = new Map((clients.data ?? []).map((client) => [client.id, client] as const));
   return {
-    data: (data ?? []).map((s: any) => ({
-      ...s,
-      article: am.get(s.article_id),
-      client: cm.get(s.client_id),
+    data: (data ?? []).map((sale) => ({
+      ...sale,
+      article: sale.article_id ? am.get(sale.article_id) : undefined,
+      client: sale.client_id ? cm.get(sale.client_id) : undefined,
     })),
     error: null,
   };

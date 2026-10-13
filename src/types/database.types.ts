@@ -4127,6 +4127,7 @@ export type Database = {
           processed_by: string | null
           prospecteur_id: string
           requested_at: string
+          shipment_id: string | null
           status: string
           updated_at: string
           warehouse_id: string
@@ -4140,6 +4141,7 @@ export type Database = {
           processed_by?: string | null
           prospecteur_id: string
           requested_at?: string
+          shipment_id?: string | null
           status?: string
           updated_at?: string
           warehouse_id: string
@@ -4153,6 +4155,7 @@ export type Database = {
           processed_by?: string | null
           prospecteur_id?: string
           requested_at?: string
+          shipment_id?: string | null
           status?: string
           updated_at?: string
           warehouse_id?: string
@@ -8734,6 +8737,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      jdvcrm_create_prospecteur_supply_request_v1: {
+        Args: { p_items: Json; p_notes?: string | null; p_warehouse_id: string }
+        Returns: Json
       }
       jdvcrm_process_supplier_payment_v1: {
         Args: { p_payment_id: string }
