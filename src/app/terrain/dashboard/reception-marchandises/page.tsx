@@ -341,7 +341,9 @@ export default function ReceptionMarchandisesPage() {
                     className="max-h-72 w-full rounded-xl bg-black object-contain"
                   />
                 )}
-                <label className="block text-sm text-slate-300">Saisir le code de traçabilité JDV</label>
+                <label className="block text-sm text-slate-300">
+                  Saisir le code de traçabilité JDV
+                </label>
                 <div className="flex gap-2">
                   <input
                     value={manualCode}
@@ -377,12 +379,21 @@ export default function ReceptionMarchandisesPage() {
                         <p className="text-xs text-slate-400">
                           Code JDV : {line.article_code_snapshot} · expédié{' '}
                           {line.quantity_dispatched}
-                        {line.barcode_snapshot ? <span className="block text-xs text-slate-500">Code fabricant : {line.barcode_snapshot}</span> : null}
+                        {line.barcode_snapshot ? (
+                            <span className="block text-xs text-slate-500">
+                              Code fabricant : {line.barcode_snapshot}
+                            </span>
+                          ) : null}
                         </p>
                         <button
                           type="button"
                           onClick={() => {
-                            if (!window.confirm('Confirmez-vous que cet article est totalement absent du colis ?')) return;
+                            if (
+                              !window.confirm(
+                                'Confirmez-vous que cet article est totalement absent du colis ?'
+                              )
+                            )
+                              return;
                             const next = { ...scannedRef.current, [line.article_id]: 0 };
                             scannedRef.current = next;
                             setScanned(next);
@@ -393,7 +404,11 @@ export default function ReceptionMarchandisesPage() {
                               return codes;
                             });
                             setScanDevices((prev) => ({ ...prev, [line.article_id]: 'manual' }));
-                            setMessage('Absence déclarée manuellement pour ' + line.article_name_snapshot + '. Vérifiez le colis avant de confirmer.');
+                            setMessage(
+                              'Absence déclarée manuellement pour ' +
+                                line.article_name_snapshot +
+                                '. Vérifiez le colis avant de confirmer.'
+                            );
                           }}
                           className="mt-2 text-left text-xs font-medium text-amber-300 underline underline-offset-2"
                         >
@@ -437,7 +452,10 @@ export default function ReceptionMarchandisesPage() {
                               const next = { ...scannedRef.current, [line.article_id]: q };
                               scannedRef.current = next;
                               setScanned(next);
-                              setDamaged((prev) => ({ ...prev, [line.article_id]: Math.min(prev[line.article_id] ?? 0, q) }));
+                              setDamaged((prev) => ({
+                                ...prev,
+                                [line.article_id]: Math.min(prev[line.article_id] ?? 0, q),
+                              }));
                               setScannedCodes((prev) => {
                                 const codes = { ...prev };
                                 delete codes[line.article_id];
