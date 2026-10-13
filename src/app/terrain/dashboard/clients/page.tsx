@@ -82,7 +82,7 @@ export default function TerrainClientsPage() {
     setSaving(false);
     if (error) {
       const message = error.message || 'Erreur inconnue';
-      if (error.code === '42501' || message.toLowerCase().includes('permission denied') || message.toLowerCase().includes('row-level security')) {
+      if (('code' in error && error.code === '42501') || message.toLowerCase().includes('permission denied') || message.toLowerCase().includes('row-level security')) {
         return toast.error('Création refusée par les autorisations. Vérifiez que votre compte prospecteur est bien affecté à cette entreprise et à son portefeuille.');
       }
       return toast.error('Impossible de créer le client : ' + message);
