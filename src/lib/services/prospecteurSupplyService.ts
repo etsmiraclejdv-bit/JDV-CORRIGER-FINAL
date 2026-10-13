@@ -144,8 +144,8 @@ export async function getMySales(organizationId: string, prospecteurId: string) 
   return {
     data: (data ?? []).map((sale) => ({
       ...sale,
-      article: am.get(sale.article_id),
-      client: cm.get(sale.client_id),
+      article: sale.article_id ? am.get(sale.article_id) : undefined,
+      client: sale.client_id ? cm.get(sale.client_id) : undefined,
     })),
     error: null,
   };
