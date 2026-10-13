@@ -382,6 +382,7 @@ export default function ReceptionMarchandisesPage() {
                         <button
                           type="button"
                           onClick={() => {
+                            if (!window.confirm('Confirmez-vous que cet article est totalement absent du colis ?')) return;
                             const next = { ...scannedRef.current, [line.article_id]: 0 };
                             scannedRef.current = next;
                             setScanned(next);
@@ -400,7 +401,7 @@ export default function ReceptionMarchandisesPage() {
                         </button>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-slate-400">Scanné</p>
+                        <p className="text-xs text-slate-400">Reçu</p>
                         <p className="font-bold">{scanned[line.article_id] ?? 0}</p>
                       </div>
                       <div>
