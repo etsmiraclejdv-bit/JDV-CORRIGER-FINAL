@@ -9,12 +9,16 @@ import { Banner, Card, PageTitle, btnGold, inputCls, useBanner } from '@/compone
 type Article = { article_id: string; article_code: string; article_name: string; barcode: string | null; quantity: number; reserved_quantity: number; };
 type Prospecteur = { prospecteur_id: string; full_name: string | null; code?: string };
 type CartLine = { article_id: string; article_code: string; article_name: string; barcode: string | null; quantity: number; scanned_code: string; };
+type SupplyRequest = { id: string; prospecteur_id: string; notes: string | null; requested_at: string; prospecteur_supply_request_items: Array<{ article_id: string; quantity: number }> };
 
 export default function ExpeditionsProspecteursPage() {
   const { current } = useWarehouse();
   const { banner, ok, fail } = useBanner();
   const [articles, setArticles] = useState<Article[]>([]);
   const [prospecteurs, setProspecteurs] = useState<Prospecteur[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<SupplyRequest[]>([]);
+  const [selectedRequestId, setSelectedRequestId] = useState('');
+  const [requestedQuantities, setRequestedQuantities] = useState<Record<string, number>>({});
   const [cart, setCart] = useState<CartLine[]>([]);
   const [prospecteurId, setProspecteurId] = useState('');
   const [scan, setScan] = useState('');
@@ -27,12 +31,14 @@ export default function ExpeditionsProspecteursPage() {
   const load = useCallback(async () => {
     if (!current) return;
     setLoading(true);
-    const [stock, people] = await Promise.all([
+    const [stock, people, requests] = await Promise.all([
       (supabase as any).rpc('jdvcrm_warehouse_dispatch_catalog_v1', { p_warehouse_id: current.warehouse_id }),
       supabase.rpc('jdvcrm_warehouse_prospecteurs_v1', { p_warehouse_id: current.warehouse_id }),
+      (supabase as any).from('prospecteur_supply_requests').select('id,prospecteur_id,notes,requested_at,prospecteur_supply_request_items(article_id,quantity)').eq('warehouse_id', current.warehouse_id).eq('status', 'pending').order('requested_at', { ascending: true }),
     ]);
     if (stock.error) fail(stock.error.message);
     if (people.error) fail(people.error.message);
+    if (requests.error) fail('Demandes en attente indisponibles : ' + requests.error.message);
     const rows = (stock.data ?? []) as Array<Record<string, unknown>>;
     setArticles(rows.map((r) => ({
       article_id: String(r.article_id),
@@ -43,6 +49,7 @@ export default function ExpeditionsProspecteursPage() {
       reserved_quantity: Number(r.reserved_quantity ?? 0),
     })));
     setProspecteurs((people.data ?? []) as Prospecteur[]);
+    setPendingRequests((requests.data ?? []) as SupplyRequest[]);
     setLoading(false);
   }, [current, fail]);
 
@@ -70,13 +77,17 @@ export default function ExpeditionsProspecteursPage() {
   async function dispatch() {
     if (!current || !prospecteurId || cart.length === 0) { fail('Choisissez un prospecteur et scannez au moins un article.'); return; }
     setBusy(true);
-    const { data, error } = await (supabase as any).rpc('jdvcrm_dispatch_prospecteur_shipment_v1', {
-      p_warehouse_id: current.warehouse_id,
-      p_prospecteur_id: prospecteurId,
-      p_items: cart.map((item) => ({ article_id: item.article_id, quantity: item.quantity, scanned_code: item.scanned_code, device_type: 'usb_bluetooth_reader' })),
-      p_notes: notes.trim() || null,
-      p_idempotency_key: (idempotencyRef.current ??= crypto.randomUUID()),
-    });
+    const items = cart.map((item) => ({ article_id: item.article_id, quantity: item.quantity, scanned_code: item.scanned_code, device_type: 'usb_bluetooth_reader' }));
+    const { data, error } = selectedRequestId
+      ? await (supabase as any).rpc('jdvcrm_dispatch_prospecteur_supply_request_v1', {
+          p_request_id: selectedRequestId, p_items: items, p_notes: notes.trim() || null,
+          p_idempotency_key: (idempotencyRef.current ??= crypto.randomUUID()),
+        })
+      : await (supabase as any).rpc('jdvcrm_dispatch_prospecteur_shipment_v1', {
+          p_warehouse_id: current.warehouse_id, p_prospecteur_id: prospecteurId,
+          p_items: items, p_notes: notes.trim() || null,
+          p_idempotency_key: (idempotencyRef.current ??= crypto.randomUUID()),
+        });
     setBusy(false);
     if (error) {
       const missingRpc = error.code === 'PGRST202' || error.code === '42883' || /could not find the function|function .* does not exist/i.test(error.message ?? '');
@@ -88,7 +99,7 @@ export default function ExpeditionsProspecteursPage() {
     const result = data as { shipment_number?: string };
     ok('Bon ' + (result?.shipment_number ?? '') + ' expédié. Le prospecteur doit confirmer la réception.');
     idempotencyRef.current = null;
-    setCart([]); setNotes('');
+    setCart([]); setNotes(''); setSelectedRequestId(''); setRequestedQuantities({});
     void load();
   }
 
@@ -98,8 +109,30 @@ export default function ExpeditionsProspecteursPage() {
       <Banner state={banner} />
       <div className="grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
         <Card title="1. Préparer la marchandise">
+          <label className="block text-sm text-slate-300 mb-2">Demande de réapprovisionnement</label>
+          <select className={inputCls + ' mb-4'} value={selectedRequestId} onChange={(e) => {
+            const id = e.target.value;
+            const request = pendingRequests.find((item) => item.id === id);
+            setSelectedRequestId(id);
+            setCart([]);
+            setNotes(request?.notes ?? '');
+            setRequestedQuantities(request ? Object.fromEntries(request.prospecteur_supply_request_items.map((item) => [item.article_id, Number(item.quantity)])) : {});
+            setProspecteurId(request?.prospecteur_id ?? '');
+            idempotencyRef.current = null;
+          }}>
+            <option value="">Expédition directe sans demande</option>
+            {pendingRequests.map((request) => {
+              const person = prospecteurs.find((p) => p.prospecteur_id === request.prospecteur_id);
+              const summary = request.prospecteur_supply_request_items.map((item) => {
+                const article = articles.find((a) => a.article_id === item.article_id);
+                return (article?.article_name ?? 'Article') + ' × ' + item.quantity;
+              }).join(', ');
+              return <option key={request.id} value={request.id}>{(person?.full_name ?? person?.code ?? 'Prospecteur') + ' · ' + new Date(request.requested_at).toLocaleString('fr-FR') + ' · ' + summary}</option>;
+            })}
+          </select>
+          {selectedRequestId && <p className="mb-4 rounded-lg bg-emerald-500/10 p-3 text-xs text-emerald-200">Demande sélectionnée : scannez les quantités exactes ci-dessous.</p>}
           <label className="block text-sm text-slate-300 mb-2">Prospecteur destinataire</label>
-          <select className={inputCls + ' mb-4'} value={prospecteurId} onChange={(e) => setProspecteurId(e.target.value)}>
+          <select className={inputCls + ' mb-4'} value={prospecteurId} disabled={Boolean(selectedRequestId)} onChange={(e) => setProspecteurId(e.target.value)}>
             <option value="">Choisir un prospecteur affecté à cet entrepôt</option>
             {prospecteurs.map((p) => <option key={p.prospecteur_id} value={p.prospecteur_id}>{p.full_name ?? p.code ?? p.prospecteur_id}</option>)}
           </select>

@@ -108,7 +108,7 @@ export default function ApprovisionnementPage() {
       return;
     }
     setSelected({});
-    setMsg('Réapprovisionnement effectué depuis votre entrepôt affecté.');
+    setMsg('Demande transmise à l’entrepôt. Le stock sera crédité après expédition scannée et confirmation de réception.');
     await load();
     setTab('demandes');
   }
@@ -228,7 +228,7 @@ export default function ApprovisionnementPage() {
                   onClick={submit}
                   className="btn-gold px-4 py-2 rounded-xl text-sm disabled:opacity-50"
                 >
-                  {blocked ? 'Retour obligatoire' : `Réapprovisionner (${chosen.length})`}
+                  {blocked ? 'Retour obligatoire' : `Envoyer la demande (${chosen.length})`}
                 </button>
               </div>
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
@@ -413,11 +413,15 @@ export default function ApprovisionnementPage() {
                         </p>
                       </div>
                       <span className="text-xs text-amber-300">
-                        {r.status === 'approved'
-                          ? 'Approuvée'
-                          : r.status === 'rejected'
-                            ? 'Refusée'
-                            : 'En attente'}
+                        {r.shipment_id
+                          ? 'Expédiée · réception à confirmer'
+                          : r.status === 'approved'
+                            ? 'Traitée'
+                            : r.status === 'rejected'
+                              ? 'Refusée'
+                              : r.status === 'cancelled'
+                                ? 'Annulée'
+                                : 'En attente de préparation'}
                       </span>
                     </div>
                   ))
