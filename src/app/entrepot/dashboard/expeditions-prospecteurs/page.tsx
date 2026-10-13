@@ -77,13 +77,17 @@ export default function ExpeditionsProspecteursPage() {
   async function dispatch() {
     if (!current || !prospecteurId || cart.length === 0) { fail('Choisissez un prospecteur et scannez au moins un article.'); return; }
     setBusy(true);
-    const { data, error } = await (supabase as any).rpc('jdvcrm_dispatch_prospecteur_shipment_v1', {
-      p_warehouse_id: current.warehouse_id,
-      p_prospecteur_id: prospecteurId,
-      p_items: cart.map((item) => ({ article_id: item.article_id, quantity: item.quantity, scanned_code: item.scanned_code, device_type: 'usb_bluetooth_reader' })),
-      p_notes: notes.trim() || null,
-      p_idempotency_key: (idempotencyRef.current ??= crypto.randomUUID()),
-    });
+    const items = cart.map((item) => ({ article_id: item.article_id, quantity: item.quantity, scanned_code: item.scanned_code, device_type: 'usb_bluetooth_reader' }));
+    const { data, error } = selectedRequestId
+      ? await (supabase as any).rpc('jdvcrm_dispatch_prospecteur_supply_request_v1', {
+          p_request_id: selectedRequestId, p_items: items, p_notes: notes.trim() || null,
+          p_idempotency_key: (idempotencyRef.current ??= crypto.randomUUID()),
+        })
+      : await (supabase as any).rpc('jdvcrm_dispatch_prospecteur_shipment_v1', {
+          p_warehouse_id: current.warehouse_id, p_prospecteur_id: prospecteurId,
+          p_items: items, p_notes: notes.trim() || null,
+          p_idempotency_key: (idempotencyRef.current ??= crypto.randomUUID()),
+        });
     setBusy(false);
     if (error) {
       const missingRpc = error.code === 'PGRST202' || error.code === '42883' || /could not find the function|function .* does not exist/i.test(error.message ?? '');
