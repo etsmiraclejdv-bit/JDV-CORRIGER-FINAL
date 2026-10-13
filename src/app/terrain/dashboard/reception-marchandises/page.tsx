@@ -186,7 +186,7 @@ export default function ReceptionMarchandisesPage() {
     const allLines = shipment.prospecteur_supply_shipment_items;
     if (allLines.some((line) => scanned[line.article_id] === undefined)) {
       setMessage(
-        'Scannez chaque référence du bon. Pour une ligne absente, utilisez le comptage manuel après vérification.'
+        'Renseignez chaque ligne du bon. Scannez les articles reçus ou utilisez « Déclarer absent » après vérification du colis.'
       );
       return;
     }
@@ -216,7 +216,7 @@ export default function ReceptionMarchandisesPage() {
         /could not find the function|function .* does not exist/i.test(error.message ?? '');
       setMessage(
         missingRpc
-          ? 'La fonction de confirmation de réception est absente de Supabase. La migration 20261012173000_prospecteur_barcode_shipment_rpcs_v1.sql doit être appliquée et vérifiée avant de confirmer ce bon.'
+          ? 'La fonction de confirmation de réception est absente de Supabase. La migration 20261012195023_jdv_prospecteur_barcode_shipment_rpcs_v1.sql doit être appliquée et vérifiée avant de confirmer ce bon.'
           : 'Réception non enregistrée : ' + (error.message || 'erreur inconnue')
       );
       return;
@@ -306,7 +306,7 @@ export default function ReceptionMarchandisesPage() {
                   <div>
                     <h2 className="font-semibold">{shipment.shipment_number}</h2>
                     <p className="text-xs text-slate-400">
-                      Scannés : {Object.values(scanned).reduce((n, x) => n + x, 0)} /{' '}
+                      Quantité reçue : {Object.values(scanned).reduce((n, x) => n + x, 0)} /{' '}
                       {shipment.prospecteur_supply_shipment_items.reduce(
                         (n, x) => n + x.quantity_dispatched,
                         0
