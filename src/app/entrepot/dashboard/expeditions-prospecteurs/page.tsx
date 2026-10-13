@@ -393,7 +393,9 @@ export default function ExpeditionsProspecteursPage() {
                     <p className="text-sm font-medium truncate">{a.article_name}</p>
                     <div className="text-xs text-slate-400">
                       <p>Code de traçabilité JDV : {a.article_code}</p>
-                      {a.barcode ? <p className="text-slate-500">Code fabricant : {a.barcode}</p> : null}
+                      {a.barcode ? (
+                        <p className="text-slate-500">Code fabricant : {a.barcode}</p>
+                      ) : null}
                     </div>
                   </div>
                   <span className="text-sm tabular-nums">
@@ -411,7 +413,8 @@ export default function ExpeditionsProspecteursPage() {
         </Card>
       </div>
       <div className="flex items-center gap-2 text-xs text-slate-400">
-        <PackageCheck size={15} /> Le code de traçabilité JDV créé par l’entreprise accompagne l’article jusqu’au prospecteur, qui le confirme à la réception.
+        <PackageCheck size={15} /> Le code de traçabilité JDV créé par l’entreprise accompagne
+        l’article jusqu’au prospecteur, qui le confirme à la réception.
       </div>
     </div>
   );
