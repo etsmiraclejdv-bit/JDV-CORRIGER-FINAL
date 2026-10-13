@@ -60,8 +60,14 @@ export default function TerrainClientsPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!orgId) return toast.error('Entreprise introuvable pour ce compte. Vérifiez votre rattachement à l’entreprise, puis reconnectez-vous.');
-    if (!pid) return toast.error('Profil prospecteur introuvable. Votre compte doit être rattaché à un prospecteur autorisé avant de créer un client.');
+    if (!orgId)
+      return toast.error(
+        'Entreprise introuvable pour ce compte. Vérifiez votre rattachement à l’entreprise, puis reconnectez-vous.'
+      );
+    if (!pid)
+      return toast.error(
+        'Profil prospecteur introuvable. Votre compte doit être rattaché à un prospecteur autorisé avant de créer un client.'
+      );
     if (!form.full_name.trim()) return toast.error('Le nom est requis');
     setSaving(true);
     const pf = await getMyPortfolioId(orgId);
@@ -82,8 +88,14 @@ export default function TerrainClientsPage() {
     setSaving(false);
     if (error) {
       const message = error.message || 'Erreur inconnue';
-      if (('code' in error && error.code === '42501') || message.toLowerCase().includes('permission denied') || message.toLowerCase().includes('row-level security')) {
-        return toast.error('Création refusée par les autorisations. Vérifiez que votre compte prospecteur est bien affecté à cette entreprise et à son portefeuille.');
+      if (
+        ('code' in error && error.code === '42501') ||
+        message.toLowerCase().includes('permission denied') ||
+        message.toLowerCase().includes('row-level security')
+      ) {
+        return toast.error(
+          'Création refusée par les autorisations. Vérifiez que votre compte prospecteur est bien affecté à cette entreprise et à son portefeuille.'
+        );
       }
       return toast.error('Impossible de créer le client : ' + message);
     }

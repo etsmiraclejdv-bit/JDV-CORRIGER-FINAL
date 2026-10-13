@@ -29,7 +29,11 @@ const NAV = [
   { href: '/entrepot/dashboard/prospecteurs', label: 'Prospecteurs & retours', icon: Users },
   { href: '/entrepot/dashboard/appels', label: 'Appels & plaintes', icon: Headphones },
   { href: '/entrepot/dashboard/approvisionnement', label: 'Approvisionnement', icon: Truck },
-  { href: '/entrepot/dashboard/expeditions-prospecteurs', label: 'Expéditions prospecteurs', icon: ScanBarcode },
+  {
+    href: '/entrepot/dashboard/expeditions-prospecteurs',
+    label: 'Expéditions prospecteurs',
+    icon: ScanBarcode,
+  },
   { href: '/entrepot/dashboard/tracabilite', label: 'Traçabilité', icon: Search },
   { href: '/entrepot/dashboard/fin-de-service', label: 'Fin de service', icon: ClipboardCheck },
   { href: '/entrepot/dashboard/cloture-stock', label: 'Clôture de stock', icon: Lock },

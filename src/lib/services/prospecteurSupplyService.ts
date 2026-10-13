@@ -110,11 +110,14 @@ export async function requestSupply(
 
   // La demande ne touche pas au stock. L'entrepôt prépare un bon scanné,
   // puis le prospecteur confirme les quantités réellement reçues.
-  const { data, error } = await (supabase as any).rpc('jdvcrm_create_prospecteur_supply_request_v1', {
-    p_warehouse_id: warehouseId,
-    p_items: items,
-    p_notes: null,
-  });
+  const { data, error } = await (supabase as any).rpc(
+    'jdvcrm_create_prospecteur_supply_request_v1',
+    {
+      p_warehouse_id: warehouseId,
+      p_items: items,
+      p_notes: null,
+    }
+  );
 
   return { data, error };
 }
