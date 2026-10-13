@@ -182,7 +182,7 @@ export default function CataloguePage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Code</th>
+                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Code JDV</th>
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Article</th>
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">
                     Code-barres
@@ -200,7 +200,7 @@ export default function CataloguePage() {
                     <td className="px-4 py-3 text-xs font-mono text-[#D4AF37]">{p.sku}</td>
                     <td className="px-4 py-3 text-sm font-medium text-white">{p.name}</td>
                     <td className="px-4 py-3 text-xs font-mono text-[#A0AEC0]">
-                      {p.barcode || 'Code interne uniquement'}
+                      {p.barcode || 'Aucun code fabricant'}
                     </td>
                     <td className="px-4 py-3 text-sm text-[#A0AEC0]">
                       {new Intl.NumberFormat('fr-FR', {
@@ -216,7 +216,7 @@ export default function CataloguePage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => openEdit(p)}
-                          title="Modifier l’article et son code-barres"
+                          title="Modifier le code JDV ou le code-barres fabricant"
                           className="p-1.5 rounded-lg text-[#718096] hover:text-[#D4AF37]"
                         >
                           <Edit2 size={14} />
@@ -284,10 +284,10 @@ export default function CataloguePage() {
                 Générer le code de traçabilité JDV
               </button>
               <span className="text-xs text-[#718096]">
-                Ou saisissez un code existant ci-dessus.
+                Le code JDV reste distinct du code fabricant.
               </span>
             </div>
-            <label className="block text-xs text-[#A0AEC0] mt-3 mb-1.5">Type de code</label>
+            <label className="block text-xs text-[#A0AEC0] mt-3 mb-1.5">Type du code-barres fabricant</label>
             <select
               value={form.barcode_type}
               onChange={(e) => setForm((f) => ({ ...f, barcode_type: e.target.value }))}
@@ -302,7 +302,7 @@ export default function CataloguePage() {
               <option value="other">Autre</option>
             </select>
             <p className="text-xs text-[#718096] mt-1">
-              Le code article JDV est la référence officielle de traçabilité. Le code-barres fabricant est facultatif et reste distinct.
+              Le code JDV est la référence officielle de traçabilité. Le code-barres fabricant est facultatif et reste distinct.
             </p>
           </div>
           <div>
