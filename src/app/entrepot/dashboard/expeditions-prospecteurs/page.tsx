@@ -9,12 +9,16 @@ import { Banner, Card, PageTitle, btnGold, inputCls, useBanner } from '@/compone
 type Article = { article_id: string; article_code: string; article_name: string; barcode: string | null; quantity: number; reserved_quantity: number; };
 type Prospecteur = { prospecteur_id: string; full_name: string | null; code?: string };
 type CartLine = { article_id: string; article_code: string; article_name: string; barcode: string | null; quantity: number; scanned_code: string; };
+type SupplyRequest = { id: string; prospecteur_id: string; notes: string | null; requested_at: string; prospecteur_supply_request_items: Array<{ article_id: string; quantity: number }> };
 
 export default function ExpeditionsProspecteursPage() {
   const { current } = useWarehouse();
   const { banner, ok, fail } = useBanner();
   const [articles, setArticles] = useState<Article[]>([]);
   const [prospecteurs, setProspecteurs] = useState<Prospecteur[]>([]);
+  const [pendingRequests, setPendingRequests] = useState<SupplyRequest[]>([]);
+  const [selectedRequestId, setSelectedRequestId] = useState('');
+  const [requestedQuantities, setRequestedQuantities] = useState<Record<string, number>>({});
   const [cart, setCart] = useState<CartLine[]>([]);
   const [prospecteurId, setProspecteurId] = useState('');
   const [scan, setScan] = useState('');
@@ -27,12 +31,14 @@ export default function ExpeditionsProspecteursPage() {
   const load = useCallback(async () => {
     if (!current) return;
     setLoading(true);
-    const [stock, people] = await Promise.all([
+    const [stock, people, requests] = await Promise.all([
       (supabase as any).rpc('jdvcrm_warehouse_dispatch_catalog_v1', { p_warehouse_id: current.warehouse_id }),
       supabase.rpc('jdvcrm_warehouse_prospecteurs_v1', { p_warehouse_id: current.warehouse_id }),
+      (supabase as any).from('prospecteur_supply_requests').select('id,prospecteur_id,notes,requested_at,prospecteur_supply_request_items(article_id,quantity)').eq('warehouse_id', current.warehouse_id).eq('status', 'pending').order('requested_at', { ascending: true }),
     ]);
     if (stock.error) fail(stock.error.message);
     if (people.error) fail(people.error.message);
+    if (requests.error) fail('Demandes en attente indisponibles : ' + requests.error.message);
     const rows = (stock.data ?? []) as Array<Record<string, unknown>>;
     setArticles(rows.map((r) => ({
       article_id: String(r.article_id),
@@ -43,6 +49,7 @@ export default function ExpeditionsProspecteursPage() {
       reserved_quantity: Number(r.reserved_quantity ?? 0),
     })));
     setProspecteurs((people.data ?? []) as Prospecteur[]);
+    setPendingRequests((requests.data ?? []) as SupplyRequest[]);
     setLoading(false);
   }, [current, fail]);
 
