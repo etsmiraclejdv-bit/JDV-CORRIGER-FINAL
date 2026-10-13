@@ -1,4 +1,3 @@
- feature/jdv-scan-approvisionnement
 # JDV CRM — Architecture du scan et de la réception des approvisionnements
 
 ## Décision validée
@@ -76,7 +75,7 @@ Règle : unicité du code-barres au sein d'une organisation; les codes fabricant
 La migration SQL associée ajoute le schéma et les politiques de lecture, sans toucher aux quantités existantes. Les tables n'autorisent pas les écritures directes depuis le client. Les RPC d'expédition/réception doivent être livrées et testées séparément avant activation du flux dans l'interface.
 Les politiques RLS complètent les permissions SQL; elles ne remplacent pas la validation métier dans les RPC.
 Voir : https://supabase.com/docs/guides/database/postgres/row-level-security
-=======
+
 # Approvisionnement entre l’entrepôt et le prospecteur — scan
 
 ## Parcours prévu
@@ -99,7 +98,7 @@ Voir : https://supabase.com/docs/guides/database/postgres/row-level-security
 ## Limites connues avant mise en service
 
 - La caméra s’appuie sur l’API native `BarcodeDetector`, absente de certains navigateurs. Si elle est indisponible, la saisie manuelle fonctionne; une bibliothèque de décodage compatible multi-navigateurs devra être intégrée pour une couverture universelle.
-- La création d’une étiquette graphique imprimable (Code 128/EAN/QR) n’est pas encore intégrée. Le catalogue permet d’enregistrer la valeur et le type du code.
+- L’impression d’étiquettes (Code 128/EAN/QR) est disponible depuis le catalogue, mais l’image du symbole dépend du service public BWIP-JS ; aucun rendu local de secours n’est encore intégré.
 - Le flux doit être validé sur une base de test avec des comptes d’entrepôt et de prospecteur réels avant la migration de production.
 - La migration n’a pas été appliquée au projet Supabase de production. Aucun déploiement Netlify ni fusion dans `main` n’est prévu dans cette étape.
 
@@ -109,4 +108,3 @@ Voir : https://supabase.com/docs/guides/database/postgres/row-level-security
 - Les expéditions sont protégées contre les répétitions par une clé d’idempotence.
 - Le stock n’est pas validé par le navigateur : la base vérifie le stock disponible et verrouille la ligne avant de le décrémenter.
 - Les codes scannés à la réception sont transmis au serveur pour validation. Une saisie manuelle reste possible et est identifiée comme telle dans les événements de scan.
- main

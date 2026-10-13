@@ -15,11 +15,7 @@ language plpgsql
 stable
 security definer
 set search_path = ''
- feature/jdv-scan-approvisionnement
-as $
-=======
 as $$
- main
 declare
   v_org uuid;
 begin
@@ -37,11 +33,7 @@ begin
     where a.organization_id = v_org and a.active = true
     order by a.name;
 end;
- feature/jdv-scan-approvisionnement
-$;
-=======
 $$;
- main
 
 revoke all on function public.jdvcrm_warehouse_dispatch_catalog_v1(uuid) from public, anon;
 grant execute on function public.jdvcrm_warehouse_dispatch_catalog_v1(uuid) to authenticated;
@@ -375,10 +367,5 @@ $$;
 
 revoke all on function public.jdvcrm_dispatch_prospecteur_shipment_v1(uuid,uuid,jsonb,text,uuid) from public, anon;
 revoke all on function public.jdvcrm_confirm_prospecteur_shipment_receipt_v1(uuid,jsonb,text) from public, anon;
- feature/jdv-scan-approvisionnement
-=======
-revoke all on function public.jdvcrm_dispatch_prospecteur_shipment_v1(uuid,uuid,jsonb,text,uuid) from public, anon;
-revoke all on function public.jdvcrm_confirm_prospecteur_shipment_receipt_v1(uuid,jsonb,text) from public, anon;
- main
 grant execute on function public.jdvcrm_dispatch_prospecteur_shipment_v1(uuid,uuid,jsonb,text,uuid) to authenticated;
 grant execute on function public.jdvcrm_confirm_prospecteur_shipment_receipt_v1(uuid,jsonb,text) to authenticated;
