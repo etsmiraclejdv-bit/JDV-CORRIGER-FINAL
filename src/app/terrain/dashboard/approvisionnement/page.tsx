@@ -108,7 +108,9 @@ export default function ApprovisionnementPage() {
       return;
     }
     setSelected({});
-    setMsg('Demande transmise à l’entrepôt. Le stock sera crédité après expédition scannée et confirmation de réception.');
+    setMsg(
+      'Demande transmise à l’entrepôt. Le stock sera crédité après expédition scannée et confirmation de réception.'
+    );
     await load();
     setTab('demandes');
   }

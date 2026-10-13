@@ -48,11 +48,12 @@ export async function POST(req: NextRequest) {
 
     // Le guide reste utilisable même si les clés serveur ou la table de connaissances
     // ne sont pas encore configurées. Le contexte privé est ajouté seulement si possible.
-    const admin = supabaseUrl && serviceKey
-      ? createClient(supabaseUrl, serviceKey, {
-          auth: { autoRefreshToken: false, persistSession: false },
-        })
-      : null;
+    const admin =
+      supabaseUrl && serviceKey
+        ? createClient(supabaseUrl, serviceKey, {
+            auth: { autoRefreshToken: false, persistSession: false },
+          })
+        : null;
     let knowledgeContext: any[] = [];
     if (admin) {
       const { data: knowledgeRows, error: knowledgeError } = await admin
