@@ -86,12 +86,23 @@ BEGIN
         'article_serial_assignments',
         'articles',
         'audit_events',
+        'call_center_tasks',
+        'call_logs',
         'commissions',
+        'commission_adjustments',
+        'commission_rules',
+        'custom_form_definitions',
+        'custom_form_versions',
         'daily_tokens',
+        'documents',
         'field_visits',
         'follow_up_reminders',
         'goods_receipt_items',
         'goods_receipts',
+        'prospect_activities',
+        'prospect_assignments',
+        'prospect_followups',
+        'prospect_status_history',
         'prospecteur_stocks',
         'prospecteurs',
         'purchase_order_items',
@@ -109,6 +120,8 @@ BEGIN
         'suppliers',
         'unit_code_events',
         'unit_codes',
+        'organization_teams',
+        'organization_team_members',
         'warehouse_inventory',
         'warehouses',
         'prospecteur_supply_scan_events',
@@ -349,6 +362,142 @@ CREATE POLICY daily_tokens_update ON public.daily_tokens
       )
     )
   );
+
+-- Commission rules and adjustments are company data, not platform-wide data.
+DROP POLICY IF EXISTS commission_adjustments_super_admin_all ON public.commission_adjustments;
+DROP POLICY IF EXISTS commission_rules_super_admin_all ON public.commission_rules;
+
+-- Forms are scoped to their owning organization. Published forms can be read by that
+-- organization's members; drafts and writes stay with the organization's administrators.
+DROP POLICY IF EXISTS custom_form_definitions_delete ON public.custom_form_definitions;
+DROP POLICY IF EXISTS custom_form_definitions_insert ON public.custom_form_definitions;
+DROP POLICY IF EXISTS custom_form_definitions_read ON public.custom_form_definitions;
+DROP POLICY IF EXISTS custom_form_definitions_update ON public.custom_form_definitions;
+CREATE POLICY custom_form_definitions_delete ON public.custom_form_definitions
+  FOR DELETE TO authenticated
+  USING (private.is_org_admin(organization_id));
+CREATE POLICY custom_form_definitions_insert ON public.custom_form_definitions
+  FOR INSERT TO authenticated
+  WITH CHECK (private.is_org_admin(organization_id));
+CREATE POLICY custom_form_definitions_read ON public.custom_form_definitions
+  FOR SELECT TO authenticated
+  USING (
+    private.is_org_admin(organization_id)
+    OR ((status = 'published') AND private.is_org_member(organization_id))
+  );
+CREATE POLICY custom_form_definitions_update ON public.custom_form_definitions
+  FOR UPDATE TO authenticated
+  USING (private.is_org_admin(organization_id))
+  WITH CHECK (private.is_org_admin(organization_id));
+
+DROP POLICY IF EXISTS custom_form_versions_delete ON public.custom_form_versions;
+DROP POLICY IF EXISTS custom_form_versions_insert ON public.custom_form_versions;
+DROP POLICY IF EXISTS custom_form_versions_read ON public.custom_form_versions;
+DROP POLICY IF EXISTS custom_form_versions_update ON public.custom_form_versions;
+CREATE POLICY custom_form_versions_delete ON public.custom_form_versions
+  FOR DELETE TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.custom_form_definitions f
+      WHERE f.id = custom_form_versions.form_id
+        AND private.is_org_admin(f.organization_id)
+    )
+  );
+CREATE POLICY custom_form_versions_insert ON public.custom_form_versions
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.custom_form_definitions f
+      WHERE f.id = custom_form_versions.form_id
+        AND private.is_org_admin(f.organization_id)
+    )
+  );
+CREATE POLICY custom_form_versions_read ON public.custom_form_versions
+  FOR SELECT TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.custom_form_definitions f
+      WHERE f.id = custom_form_versions.form_id
+        AND (
+          private.is_org_admin(f.organization_id)
+          OR ((f.status = 'published') AND private.is_org_member(f.organization_id))
+        )
+    )
+  );
+CREATE POLICY custom_form_versions_update ON public.custom_form_versions
+  FOR UPDATE TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.custom_form_definitions f
+      WHERE f.id = custom_form_versions.form_id
+        AND private.is_org_admin(f.organization_id)
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.custom_form_definitions f
+      WHERE f.id = custom_form_versions.form_id
+        AND private.is_org_admin(f.organization_id)
+    )
+  );
+
+-- Team directory access is limited to the owning organization, self, or the user's supervisor.
+DROP POLICY IF EXISTS organization_team_members_select ON public.organization_team_members;
+CREATE POLICY organization_team_members_select ON public.organization_team_members
+  FOR SELECT TO authenticated
+  USING (
+    private.is_org_admin(organization_id)
+    OR user_id = (SELECT auth.uid())
+    OR EXISTS (
+      SELECT 1 FROM public.organization_teams t
+      WHERE t.id = organization_team_members.team_id
+        AND t.supervisor_user_id = (SELECT auth.uid())
+        AND t.organization_id = organization_team_members.organization_id
+    )
+  );
+
+DROP POLICY IF EXISTS organization_teams_select ON public.organization_teams;
+CREATE POLICY organization_teams_select ON public.organization_teams
+  FOR SELECT TO authenticated
+  USING (
+    private.is_org_admin(organization_id)
+    OR EXISTS (
+      SELECT 1 FROM public.organization_team_members tm
+      WHERE tm.team_id = organization_teams.id
+        AND tm.user_id = (SELECT auth.uid())
+        AND tm.status = 'active'
+    )
+  );
+
+-- These company operation tables no longer receive the platform-wide bypass.
+CREATE POLICY call_center_tasks_org_admin_all ON public.call_center_tasks
+  FOR ALL TO authenticated
+  USING (private.is_org_admin(organization_id))
+  WITH CHECK (private.is_org_admin(organization_id));
+CREATE POLICY call_logs_org_admin_all ON public.call_logs
+  FOR ALL TO authenticated
+  USING (private.is_org_admin(organization_id))
+  WITH CHECK (private.is_org_admin(organization_id));
+CREATE POLICY documents_org_admin_all ON public.documents
+  FOR ALL TO authenticated
+  USING (private.is_org_admin(organization_id))
+  WITH CHECK (private.is_org_admin(organization_id));
+CREATE POLICY prospect_activities_org_admin_all ON public.prospect_activities
+  FOR ALL TO authenticated
+  USING (private.is_org_admin(organization_id))
+  WITH CHECK (private.is_org_admin(organization_id));
+CREATE POLICY prospect_assignments_org_admin_all ON public.prospect_assignments
+  FOR ALL TO authenticated
+  USING (private.is_org_admin(organization_id))
+  WITH CHECK (private.is_org_admin(organization_id));
+CREATE POLICY prospect_followups_org_admin_all ON public.prospect_followups
+  FOR ALL TO authenticated
+  USING (private.is_org_admin(organization_id))
+  WITH CHECK (private.is_org_admin(organization_id));
+CREATE POLICY prospect_status_history_org_admin_all ON public.prospect_status_history
+  FOR ALL TO authenticated
+  USING (private.is_org_admin(organization_id))
+  WITH CHECK (private.is_org_admin(organization_id));
 
 -- Business settings and reviews are private to their own organization.
 DROP POLICY IF EXISTS super_admin_full_access ON public.company_settings;
