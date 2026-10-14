@@ -1,9 +1,10 @@
+/* eslint-disable prettier/prettier */
 "use client";
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { JDV_LOCALES, messages, type JdvLocale, type TranslationKey } from "@/lib/i18n/messages";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { JDV_LOCALES, messages, type JdvLocale, type TranslationKey } from '@/lib/i18n/messages';
 
-const STORAGE_KEY = "jdv-crm-language-v1";
+const STORAGE_KEY = 'jdv-crm-language-v1';
 type LanguageContextValue = {
   locale: JdvLocale;
   setLocale: (locale: JdvLocale) => void;
@@ -15,7 +16,7 @@ type LanguageContextValue = {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<JdvLocale>("fr");
+  const [locale, setLocaleState] = useState<JdvLocale>('fr');
 
   useEffect(() => {
     try {
@@ -26,14 +27,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       }
       const browserLanguage = navigator.language;
       const match = JDV_LOCALES.find((item) => item.code.toLowerCase() === browserLanguage.toLowerCase())
-        ?? JDV_LOCALES.find((item) => item.code === browserLanguage.split("-")[0]);
+        ?? JDV_LOCALES.find((item) => item.code === browserLanguage.split('-')[0]);
       if (match) setLocaleState(match.code);
     } catch { /* Storage may be disabled; the in-memory preference still works. */ }
   }, []);
 
   useEffect(() => {
     document.documentElement.lang = locale;
-    document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = locale === 'ar' ? "rtl" : "ltr";
   }, [locale]);
 
   const setLocale = useCallback((next: JdvLocale) => {
@@ -55,6 +56,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
 export function useLanguage() {
   const context = useContext(LanguageContext);
-  if (!context) throw new Error("useLanguage must be used inside LanguageProvider");
+  if (!context) throw new Error('useLanguage must be used inside LanguageProvider');
   return context;
 }
