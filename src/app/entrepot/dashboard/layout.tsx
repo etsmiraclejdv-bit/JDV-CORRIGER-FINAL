@@ -17,6 +17,7 @@ import {
   Store,
   Lock,
   BookOpen,
+  Tag,
 } from 'lucide-react';
 import AppLogo from '@/components/ui/AppLogo';
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
@@ -35,6 +36,7 @@ const NAV = [
     label: 'Expéditions prospecteurs',
     icon: ScanBarcode,
   },
+  { href: '/entrepot/dashboard/codes-produits', label: 'Codes produits', icon: Tag },
   { href: '/entrepot/dashboard/tracabilite', label: 'Traçabilité', icon: Search },
   { href: '/entrepot/dashboard/fin-de-service', label: 'Fin de service', icon: ClipboardCheck },
   { href: '/entrepot/dashboard/cloture-stock', label: 'Clôture de stock', icon: Lock },

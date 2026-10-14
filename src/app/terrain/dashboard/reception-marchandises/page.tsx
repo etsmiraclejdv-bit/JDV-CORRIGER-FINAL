@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Camera, CheckCircle2, ScanBarcode, RefreshCw, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { getMyProspecteurContext } from '@/lib/services/prospecteurSupplyService';
+import { confirmUnitCodeReceipt, getShipmentUnitCounts } from '@/lib/services/unitCodesService';
+import { codeListProblem, friendlyRpcError, parseCodeList } from '@/lib/unitCodes/helpers';
 
 type ShipmentItem = {
   id: string;
@@ -35,6 +37,9 @@ export default function ReceptionMarchandisesPage() {
   const [damaged, setDamaged] = useState<Record<string, number>>({});
   const [scannedCodes, setScannedCodes] = useState<Record<string, string>>({});
   const [manualCode, setManualCode] = useState('');
+  const [unitCounts, setUnitCounts] = useState<Record<string, number>>({});
+  const [receivedText, setReceivedText] = useState('');
+  const [damagedText, setDamagedText] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -66,7 +71,9 @@ export default function ReceptionMarchandisesPage() {
       .eq('status', 'dispatched')
       .order('dispatched_at', { ascending: false });
     if (error) setMessage(error.message);
-    setShipments((data ?? []) as unknown as Shipment[]);
+    const loaded = (data ?? []) as unknown as Shipment[];
+    setShipments(loaded);
+    setUnitCounts(await getShipmentUnitCounts(loaded.map((x) => x.id)));
     setLoading(false);
   }, []);
 
@@ -81,6 +88,50 @@ export default function ReceptionMarchandisesPage() {
   );
 
   const shipment = shipments.find((item) => item.id === selectedId);
+  const codeMode = shipment ? (unitCounts[shipment.id] ?? 0) > 0 : false;
+
+  async function confirmByCodes() {
+    if (!shipment) return;
+    const received = parseCodeList(receivedText);
+    const damagedList = parseCodeList(damagedText);
+    const problem = codeListProblem(received) ?? codeListProblem(damagedList);
+    if (problem) {
+      setMessage(problem);
+      return;
+    }
+    if (received.codes.length === 0 && damagedList.codes.length === 0) {
+      setMessage('Saisissez les codes imprimés sur les produits reçus.');
+      return;
+    }
+    setBusy(true);
+    const { data, error } = await confirmUnitCodeReceipt({
+      shipmentId: shipment.id,
+      codes: received.codes,
+      damagedCodes: damagedList.codes,
+      notes,
+    });
+    setBusy(false);
+    if (error) {
+      setMessage('Réception non enregistrée : ' + friendlyRpcError(error.message));
+      return;
+    }
+    setMessage(
+      'Réception enregistrée pour ' +
+        (data?.shipment_number ?? shipment.shipment_number) +
+        ' — reçus : ' +
+        (data?.units_received ?? 0) +
+        ', abîmés : ' +
+        (data?.units_damaged ?? 0) +
+        ', manquants : ' +
+        (data?.units_missing ?? 0) +
+        '.'
+    );
+    setSelectedId('');
+    setReceivedText('');
+    setDamagedText('');
+    setNotes('');
+    void load();
+  }
 
   function matchCode(codeRaw: string, device: 'phone_camera' | 'manual' = 'manual') {
     const code = codeRaw.trim();
@@ -300,7 +351,53 @@ export default function ReceptionMarchandisesPage() {
               ))}
             </select>
           </section>
-          {shipment && (
+          {shipment && codeMode && (
+            <section className="rounded-2xl border border-[#D4AF37]/20 bg-[#0F2347] p-4 space-y-3">
+              <h2 className="font-semibold">{shipment.shipment_number}</h2>
+              <p className="text-sm text-slate-300">
+                Ce bon contient {unitCounts[shipment.id]} produit(s) suivis par code unique.
+                Saisissez le code imprimé sur chaque produit reçu en bon état (un par ligne).
+              </p>
+              <textarea
+                value={receivedText}
+                onChange={(e) => setReceivedText(e.target.value)}
+                rows={6}
+                placeholder="Codes reçus en bon état"
+                className="w-full rounded-xl border border-white/10 bg-[#08152f] p-3 font-mono"
+              />
+              <p className="text-xs text-slate-400">
+                {parseCodeList(receivedText).codes.length} code(s) saisi(s) sur{' '}
+                {unitCounts[shipment.id]} attendu(s)
+              </p>
+              <label className="block text-sm text-slate-300">
+                Codes reçus abîmés (facultatif)
+              </label>
+              <textarea
+                value={damagedText}
+                onChange={(e) => setDamagedText(e.target.value)}
+                rows={3}
+                className="w-full rounded-xl border border-white/10 bg-[#08152f] p-3 font-mono"
+              />
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+                placeholder="Observation (facultatif)"
+                className="w-full rounded-xl border border-white/10 bg-[#08152f] p-3"
+              />
+              <button
+                disabled={busy}
+                onClick={() => void confirmByCodes()}
+                className="w-full rounded-xl bg-[#D4AF37] p-3 font-semibold text-[#08152f] disabled:opacity-50"
+              >
+                {busy ? 'Confirmation…' : 'Confirmer la réception'}
+              </button>
+              <p className="text-xs text-slate-500">
+                Les codes non saisis seront signalés comme manquants.
+              </p>
+            </section>
+          )}
+          {shipment && !codeMode && (
             <>
               <section className="rounded-2xl border border-[#D4AF37]/20 bg-[#0F2347] p-4 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
