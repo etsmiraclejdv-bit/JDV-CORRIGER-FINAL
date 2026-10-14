@@ -8,6 +8,8 @@ import '../styles/theme.css';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import JdvLoadingScreen from '@/app/components/JdvLoadingScreen';
 import ThemeCustomizer from '@/components/theme/ThemeCustomizer';
+import { LanguageProvider } from '@/lib/i18n/LanguageProvider';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -54,12 +56,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
       <body>
+        <LanguageProvider>
         <Suspense fallback={null}>
           <GoogleAnalytics />
         </Suspense>
         <JdvLoadingScreen />
         {children}
         <ThemeCustomizer />
+        <LanguageSwitcher />
         <Toaster
           position="top-right"
           toastOptions={{
@@ -71,6 +75,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             },
           }}
         />
+        </LanguageProvider>
       </body>
     </html>
   );
