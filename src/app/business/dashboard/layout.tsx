@@ -41,7 +41,8 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
-import { useLanguage, type TranslationKey } from '@/lib/i18n/LanguageContext';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TranslationKey } from '@/lib/i18n/messages';
 import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 import OrganizationAmbience from '@/components/OrganizationAmbience';
 
