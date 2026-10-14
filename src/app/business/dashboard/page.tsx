@@ -14,6 +14,7 @@ import { fetchClients } from '@/lib/services/clientsService';
 import { fetchSales } from '@/lib/services/salesService';
 import Link from 'next/link';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 interface DashboardStats {
   clients: number;
@@ -23,6 +24,7 @@ interface DashboardStats {
 }
 
 export default function BusinessDashboardPage() {
+  const { t, locale } = useLanguage();
   const [orgName, setOrgName] = useState('');
   const [orgId, setOrgId] = useState<string | null>(null);
   const [stats, setStats] = useState<DashboardStats>({
@@ -103,22 +105,22 @@ export default function BusinessDashboardPage() {
 
   const kpis = [
     {
-      label: 'Clients',
+      label: t('clients'),
       value: stats.clients,
       icon: <Users size={20} />,
       color: 'text-[#63B3ED]',
       href: '/business/dashboard/clients',
     },
     {
-      label: 'Ventes',
+      label: t('sales'),
       value: stats.sales,
       icon: <ShoppingCart size={20} />,
       color: 'text-[#D4AF37]',
       href: '/business/dashboard/ventes',
     },
     {
-      label: "Chiffre d'affaires",
-      value: new Intl.NumberFormat('fr-FR', {
+      label: t('revenue'),
+      value: new Intl.NumberFormat(locale, {
         style: 'currency',
         currency: 'XOF',
         maximumFractionDigits: 0,
@@ -128,7 +130,7 @@ export default function BusinessDashboardPage() {
       href: '/business/dashboard/ventes',
     },
     {
-      label: 'Clients en retard',
+      label: t('overdueClients'),
       value: stats.overdue,
       icon: <AlertTriangle size={20} />,
       color: 'text-red-400',
@@ -139,7 +141,7 @@ export default function BusinessDashboardPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Tableau de bord</h1>
+        <h1 className="text-2xl font-bold text-white">{t('businessDashboard')}</h1>
         {orgName && <p className="text-sm text-[#A0AEC0] mt-1">{orgName}</p>}
       </div>
 
@@ -162,46 +164,46 @@ export default function BusinessDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           {
-            label: 'Gérer les clients',
+            label: t('manageClients'),
             href: '/business/dashboard/clients',
             icon: <Users size={16} />,
-            desc: 'Voir et gérer vos clients',
+            desc: t('manageClients'),
           },
           {
-            label: 'Voir les ventes',
+            label: t('viewSales'),
             href: '/business/dashboard/ventes',
             icon: <ShoppingCart size={16} />,
-            desc: 'Historique des ventes',
+            desc: t('salesHistory'),
           },
           {
-            label: 'Catalogue articles',
+            label: t('productCatalog'),
             href: '/business/dashboard/catalogue',
             icon: <TrendingUp size={16} />,
-            desc: 'Gérer vos produits',
+            desc: t('manageProducts'),
           },
           {
-            label: 'Voir ma vitrine publique',
+            label: t('publicShowcase'),
             href: orgId ? `/vitrine/${orgId}` : '/business/dashboard',
             icon: <Globe size={16} />,
-            desc: 'Partager votre vitrine, les avis et les actualités',
+            desc: t('shareShowcase'),
           },
           {
-            label: 'Rapports',
+            label: t('reports'),
             href: '/business/dashboard/reports',
             icon: <TrendingUp size={16} />,
-            desc: 'Analyses et statistiques',
+            desc: t('analyticsStatistics'),
           },
           {
-            label: "Journal d'audit",
+            label: t('auditLog'),
             href: '/business/dashboard/audit',
             icon: <UserCheck size={16} />,
-            desc: 'Traçabilité des actions',
+            desc: t('actionTraceability'),
           },
           {
-            label: 'Paramètres',
+            label: t('settings'),
             href: '/business/dashboard/settings',
             icon: <UserCheck size={16} />,
-            desc: "Configuration de l'organisation",
+            desc: t('organizationSettings'),
           },
         ].map((link) => (
           <Link
