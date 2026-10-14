@@ -33,7 +33,7 @@ export default function LanguageSwitcher({ variant = 'floating' }: { variant?: '
       <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open}
         aria-label={t("selectLanguage")} className={styles.trigger}>
         <Globe size={15} aria-hidden="true" />
-        <span><span className={styles.languageLabel}>Language / Langue</span> · {current?.nativeName ?? locale}</span>
+        <span><span className={styles.languageLabel}>{t("language")}</span> · {current?.nativeName ?? locale}</span>
       </button>
       {open && (
         <>
