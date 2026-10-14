@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import styles from "./LanguageSwitcher.module.css";
 
-export default function LanguageSwitcher() {
+export default function LanguageSwitcher({ variant = 'floating' }: { variant?: 'floating' | 'inline' }) {
   const [open, setOpen] = useState(false);
   const { locale, setLocale, locales, t } = useLanguage();
 
@@ -25,11 +25,11 @@ export default function LanguageSwitcher() {
 
   const current = locales.find((item) => item.code === locale);
   return (
-    <div className={styles.menu}>
+    <div className={`${styles.menu} ${variant === "inline" ? styles.inlineMenu : ""}`}>
       <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open}
         aria-label={t("selectLanguage")} className={styles.trigger}>
         <Globe size={15} aria-hidden="true" />
-        <span>{current?.nativeName ?? locale}</span>
+        <span><span className={styles.languageLabel}>Language / Langue</span> · {current?.nativeName ?? locale}</span>
       </button>
       {open && (
         <>
