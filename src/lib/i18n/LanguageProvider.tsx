@@ -19,17 +19,40 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<JdvLocale>('fr');
 
   useEffect(() => {
+    let cancelled = false;
+    let hasLocalPreference = false;
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved && JDV_LOCALES.some((item) => item.code === saved)) {
+        hasLocalPreference = true;
         setLocaleState(saved as JdvLocale);
-        return;
+      } else {
+        const browserLanguage = navigator.language;
+        const match = JDV_LOCALES.find((item) => item.code.toLowerCase() === browserLanguage.toLowerCase())
+          ?? JDV_LOCALES.find((item) => item.code === browserLanguage.split('-')[0]);
+        if (match) setLocaleState(match.code);
       }
-      const browserLanguage = navigator.language;
-      const match = JDV_LOCALES.find((item) => item.code.toLowerCase() === browserLanguage.toLowerCase())
-        ?? JDV_LOCALES.find((item) => item.code === browserLanguage.split('-')[0]);
-      if (match) setLocaleState(match.code);
     } catch { /* Storage may be disabled; the in-memory preference still works. */ }
+
+    // Restore the account preference on a new device, but never override a local choice.
+    if (!hasLocalPreference) {
+      void import('@/lib/supabase/client').then(async ({ supabase }) => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user || cancelled) return;
+          const { data } = await supabase
+            .from('profiles')
+            .select('preferred_language')
+            .eq('id', user.id)
+            .maybeSingle();
+          const saved = data?.preferred_language;
+          if (cancelled || typeof saved !== 'string' || !JDV_LOCALES.some((item) => item.code === saved)) return;
+          setLocaleState(saved as JdvLocale);
+          try { window.localStorage.setItem(STORAGE_KEY, saved); } catch { /* Storage may be disabled. */ }
+        } catch { /* Keep the browser/default language when the profile preference is unavailable. */ }
+      });
+    }
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
