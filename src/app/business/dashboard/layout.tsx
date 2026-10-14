@@ -46,7 +46,13 @@ import type { TranslationKey } from '@/lib/i18n/messages';
 import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 import OrganizationAmbience from '@/components/OrganizationAmbience';
 
-const navItems: { id: string; label: TranslationKey; icon: React.ReactNode; href: string; group: TranslationKey }[] = [
+const navItems: {
+  id: string;
+  label: TranslationKey;
+  icon: React.ReactNode;
+  href: string;
+  group: TranslationKey;
+}[] = [
   {
     id: 'overview',
     label: 'dashboard',
@@ -272,7 +278,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
           <OrganizationAmbience />
           <aside
             data-jdv-design="sidebar"
-            className={`relative z-10 h-full md:h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${mobilePreview ? (mobileMenuOpen ? 'absolute inset-y-0 left-0 z-30 flex w-72 shadow-2xl' : 'hidden') : mobileMenuOpen ? 'fixed inset-y-0 left-0 z-30 flex w-72 shadow-2xl md:relative md:inset-auto md:shadow-none md:z-10' : 'hidden md:flex'} ${collapsed ? 'md:w-16' : 'md:w-60'}`}
+            className={`relative z-10 h-full md:h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${mobilePreview ? (mobileMenuOpen ? 'abs[...]`"` : '...')}`}
           >
             <div
               className={`h-16 flex items-center border-b border-[#D4AF37]/10 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
@@ -316,7 +322,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                           href={item.href}
                           onClick={() => setMobileMenuOpen(false)}
                           title={collapsed ? t(item.label) : undefined}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37][...]' : 'text-[#A0AEC0]'}`}
                         >
                           <span className="flex-shrink-0">{item.icon}</span>
                           {!collapsed && <span className="flex-1 truncate">{t(item.label)}</span>}
@@ -330,8 +336,8 @@ export default function BusinessDashboardLayout({ children }: { children: React.
               <div className={`flex ${collapsed ? 'flex-col gap-1 items-center' : 'gap-2'}`}>
                 <button
                   onClick={() => setProfileOpen(true)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-white hover:bg-[#0F2347] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-1'}`}
-                  title={t("profile")}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-white hover:bg-[#0F2347] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-[...]'}`}
+                  title={t('profile')}
                 >
                   <User size={16} />
                   {!collapsed && <span>{t('profile')}</span>}
@@ -339,7 +345,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                 <button
                   onClick={handleLogout}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-red-400 transition-all text-sm ${collapsed ? 'justify-center w-full' : ''}`}
-                  title={t("logout")}
+                  title={t('logout')}
                 >
                   <LogOut size={16} />
                   {!collapsed && <span>{t('quit')}</span>}
@@ -358,7 +364,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
           {mobileMenuOpen && !mobilePreview && (
             <button
               type="button"
-              aria-label={t("closeMenu")}
+              aria-label={t('closeMenu')}
               onClick={() => setMobileMenuOpen(false)}
               className="fixed inset-0 z-20 bg-black/60 md:hidden"
             />
@@ -371,7 +377,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                   onClick={() => setMobileMenuOpen((open) => !open)}
                   aria-label={mobileMenuOpen ? t('closeMenu') : t('openMenu')}
                   className="inline-flex md:hidden items-center justify-center rounded-lg p-2 text-white hover:bg-[#0F2347]"
-                  title={t("mobileMenu")}
+                  title={t('mobileMenu')}
                 >
                   {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
@@ -391,9 +397,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                   }}
                   aria-pressed={mobilePreview}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-[#D4AF37]/30 px-2 py-2 text-xs font-semibold text-[#D4AF37] hover:bg-[#D4AF37]/10"
-                  title={
-                    mobilePreview ? t('returnDesktop') : t('activateMobilePreview')
-                  }
+                  title={mobilePreview ? t('returnDesktop') : t('activateMobilePreview')}
                 >
                   {mobilePreview ? <Monitor size={16} /> : <Smartphone size={16} />}
                   <span className="hidden sm:inline">

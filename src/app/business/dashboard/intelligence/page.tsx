@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import {
-  AlertTriangle,
   CheckCircle2,
   Clock3,
   Package,
