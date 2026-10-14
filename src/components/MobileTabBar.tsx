@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export type MobileTabItem = {
   href: string;
@@ -23,6 +24,7 @@ type Props = {
  */
 export default function MobileTabBar({ items, rootHref, primaryCount = 4 }: Props) {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const isActive = (href: string) =>
     href === rootHref ? pathname === href : pathname.startsWith(href);
@@ -37,12 +39,12 @@ export default function MobileTabBar({ items, rootHref, primaryCount = 4 }: Prop
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-2 flex items-center justify-between px-2">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#718096]">Menu</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#718096]">{t("menu")}</p>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 className="rounded-lg p-2 text-[#A0AEC0]"
-                aria-label="Fermer le menu"
+                aria-label={`${t("close")} ${t("menu")}`}
               >
                 <X size={18} />
               </button>
@@ -63,7 +65,7 @@ export default function MobileTabBar({ items, rootHref, primaryCount = 4 }: Prop
       )}
       <nav
         className="fixed inset-x-0 bottom-0 z-50 flex border-t border-[#D4AF37]/20 bg-[#08152f] pb-[env(safe-area-inset-bottom)]"
-        aria-label="Navigation principale"
+        aria-label={t("mainNavigation")}
       >
         {primary.map((item) => (
           <Link
@@ -81,7 +83,7 @@ export default function MobileTabBar({ items, rootHref, primaryCount = 4 }: Prop
           className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium ${open ? 'text-[#D4AF37]' : 'text-[#A0AEC0]'}`}
         >
           <Menu size={20} />
-          <span>Plus</span>
+          <span>{t("more")}</span>
         </button>
       </nav>
     </div>
