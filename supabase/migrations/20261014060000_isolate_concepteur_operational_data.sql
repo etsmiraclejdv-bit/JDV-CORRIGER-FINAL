@@ -1,6 +1,43 @@
 -- Separate the platform's super-admin role from organization-level operational access.
 -- This migration is intentionally reviewed through GitHub first and is NOT applied to production here.
 
+CREATE OR REPLACE FUNCTION private.current_org_id()
+RETURNS uuid
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path TO ''
+AS $function$
+  SELECT COALESCE(
+    (
+      SELECT o.id
+      FROM public.organizations o
+      JOIN public.super_admins sa ON sa.user_id = o.owner_user_id
+      WHERE sa.user_id = (SELECT auth.uid())
+        AND sa.status = 'active'
+        AND COALESCE(sa.actif, true) = true
+      ORDER BY o.created_at
+      LIMIT 1
+    ),
+    (
+      SELECT om.organization_id
+      FROM public.organization_members om
+      WHERE om.user_id = (SELECT auth.uid())
+        AND om.status = 'active'
+      ORDER BY om.created_at
+      LIMIT 1
+    ),
+    (
+      SELECT p.organization_id
+      FROM public.prospecteurs p
+      WHERE p.user_id = (SELECT auth.uid())
+        AND p.status = 'active'
+      ORDER BY p.created_at
+      LIMIT 1
+    )
+  );
+$function$;
+
 CREATE OR REPLACE FUNCTION private.is_org_member(p_org_id uuid)
 RETURNS boolean
 LANGUAGE sql
@@ -48,6 +85,7 @@ BEGIN
         'article_categories',
         'article_serial_assignments',
         'articles',
+        'audit_events',
         'commissions',
         'daily_tokens',
         'field_visits',
@@ -246,6 +284,72 @@ CREATE POLICY admin_full_access ON public.warehouses
   USING (private.is_org_admin(organization_id))
   WITH CHECK (private.is_org_admin(organization_id));
 
+-- Daily usage counters are scoped to the user's organization and own prospecteur.
+DROP POLICY IF EXISTS daily_tokens_insert ON public.daily_tokens;
+DROP POLICY IF EXISTS daily_tokens_select ON public.daily_tokens;
+DROP POLICY IF EXISTS daily_tokens_update ON public.daily_tokens;
+
+CREATE POLICY daily_tokens_insert ON public.daily_tokens
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    private.is_org_admin(organization_id)
+    OR (
+      private.is_prospecteur(organization_id)
+      AND EXISTS (
+        SELECT 1 FROM public.prospecteurs p
+        WHERE p.id = daily_tokens.prospecteur_id
+          AND p.organization_id = daily_tokens.organization_id
+          AND p.user_id = (SELECT auth.uid())
+          AND p.status = 'active'
+      )
+    )
+  );
+
+CREATE POLICY daily_tokens_select ON public.daily_tokens
+  FOR SELECT TO authenticated
+  USING (
+    private.is_org_admin(organization_id)
+    OR (
+      private.is_prospecteur(organization_id)
+      AND EXISTS (
+        SELECT 1 FROM public.prospecteurs p
+        WHERE p.id = daily_tokens.prospecteur_id
+          AND p.organization_id = daily_tokens.organization_id
+          AND p.user_id = (SELECT auth.uid())
+          AND p.status = 'active'
+      )
+    )
+  );
+
+CREATE POLICY daily_tokens_update ON public.daily_tokens
+  FOR UPDATE TO authenticated
+  USING (
+    private.is_org_admin(organization_id)
+    OR (
+      private.is_prospecteur(organization_id)
+      AND EXISTS (
+        SELECT 1 FROM public.prospecteurs p
+        WHERE p.id = daily_tokens.prospecteur_id
+          AND p.organization_id = daily_tokens.organization_id
+          AND p.user_id = (SELECT auth.uid())
+          AND p.status = 'active'
+      )
+    )
+  )
+  WITH CHECK (
+    private.is_org_admin(organization_id)
+    OR (
+      private.is_prospecteur(organization_id)
+      AND EXISTS (
+        SELECT 1 FROM public.prospecteurs p
+        WHERE p.id = daily_tokens.prospecteur_id
+          AND p.organization_id = daily_tokens.organization_id
+          AND p.user_id = (SELECT auth.uid())
+          AND p.status = 'active'
+      )
+    )
+  );
+
 -- Business settings and reviews are private to their own organization.
 DROP POLICY IF EXISTS super_admin_full_access ON public.company_settings;
 CREATE POLICY company_settings_org_admin ON public.company_settings
@@ -319,5 +423,10 @@ CREATE POLICY audit_select ON public.audit_logs
   FOR SELECT TO authenticated
   USING (private.is_org_admin(organization_id));
 
--- The concepteur keeps platform/account/subscription administration through the platform
+DROP POLICY IF EXISTS super_admin_full_access ON public.audit_events;
+CREATE POLICY audit_events_org_admin_select ON public.audit_events
+  FOR SELECT TO authenticated
+  USING (private.is_org_admin(organization_id));
+
+-- The concepteur keeps platform/account/subscription administration through platform
 -- metadata tables, but does not receive global RLS access to company operations.
