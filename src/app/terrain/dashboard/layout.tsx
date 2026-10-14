@@ -27,6 +27,7 @@ import Modal from '@/components/ui/Modal';
 import { supabase } from '@/lib/supabase/client';
 import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
+import MobileTabBar from '@/components/MobileTabBar';
 
 const navItems = [
   {
@@ -129,7 +130,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
       <IntelligencePresenceTracker />
       <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
         <aside
-          className={`h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-56'}`}
+          className={`hidden md:flex h-screen flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-56'}`}
         >
           <div
             className={`h-16 flex items-center border-b border-[#D4AF37]/10 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
@@ -212,14 +213,18 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
         </aside>
         <div className="flex-1 flex flex-col overflow-hidden">
           <ConcepteurBranchBar />
-          <div className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
+          <div className="h-16 flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
             <h1 className="text-base font-semibold text-white">Portail Terrain</h1>
             <div className="flex items-center gap-3">
               <NotificationBell />
             </div>
           </div>
-          <main className="flex-1 overflow-y-auto">{children}</main>
+          <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
         </div>
+        <MobileTabBar
+          rootHref="/terrain/dashboard"
+          items={navItems.map((i) => ({ href: i.href, label: i.label, icon: i.icon }))}
+        />
         <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="" size="sm">
           <UserProfilePanel onClose={() => setProfileOpen(false)} />
         </Modal>

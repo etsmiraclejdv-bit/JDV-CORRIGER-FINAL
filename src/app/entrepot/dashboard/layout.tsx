@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import AppLogo from '@/components/ui/AppLogo';
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
+import MobileTabBar from '@/components/MobileTabBar';
 import { supabase } from '@/lib/supabase/client';
 import { WarehouseProvider, useWarehouse } from '@/components/entrepot/WarehouseContext';
 
@@ -80,7 +81,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const isAdmin = current.access_role === 'admin';
   return (
     <div className="flex h-screen bg-[#0B1B3D] text-white overflow-hidden">
-      <aside className="w-64 flex-shrink-0 flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10">
+      <aside className="hidden md:flex w-64 flex-shrink-0 flex-col bg-[#08152f] border-r border-[#D4AF37]/10">
         <div className="h-16 flex items-center gap-2 px-4 border-b border-[#D4AF37]/10">
           <AppLogo size={26} />
           <span className="font-bold text-sm">
@@ -144,20 +145,51 @@ function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 flex-shrink-0">
-          <h1 className="text-base font-semibold">
+        <div className="h-16 flex items-center justify-between gap-3 px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#D4AF37]/10 bg-[#08152f]/80 flex-shrink-0">
+          <h1 className="min-w-0 truncate text-base font-semibold">
             {current.name}
             {current.city ? (
               <span className="text-slate-400 font-normal"> · {current.city}</span>
             ) : null}
           </h1>
-          <span className="text-xs text-slate-400">
+          <span className="hidden sm:inline text-xs text-slate-400">
             {isAdmin ? 'Accès administrateur' : 'Chef d’agence'}
           </span>
+          <button
+            onClick={logout}
+            className="md:hidden rounded-lg p-2 text-[#A0AEC0] hover:text-red-400"
+            aria-label="Quitter"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
+        {warehouses.length > 1 && (
+          <div className="md:hidden border-b border-[#D4AF37]/10 bg-[#08152f] p-2">
+            <select
+              value={current.warehouse_id}
+              onChange={(e) => setCurrentId(e.target.value)}
+              className="w-full rounded-lg bg-[#0F2347] border border-white/10 p-2 text-sm"
+            >
+              {warehouses.map((w) => (
+                <option key={w.warehouse_id} value={w.warehouse_id}>
+                  {w.name}
+                  {w.city ? ` - ${w.city}` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <ConcepteurBranchBar />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
       </div>
+      <MobileTabBar
+        rootHref="/entrepot/dashboard"
+        items={NAV.map(({ href, label, icon: Icon }) => ({
+          href,
+          label,
+          icon: <Icon size={20} />,
+        }))}
+      />
     </div>
   );
 }
