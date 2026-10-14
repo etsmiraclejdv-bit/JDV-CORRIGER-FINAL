@@ -58,25 +58,25 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body>
         <LanguageProvider>
-        <Suspense fallback={null}>
-          <GoogleAnalytics />
-        </Suspense>
-        <JdvLoadingScreen />
-        {children}
-        <ThemeCustomizer />
-        <LanguageSwitcher />
-        <ServiceWorkerRegister />
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              background: 'var(--card)',
-              border: '1px solid var(--border)',
-              color: 'var(--foreground)',
-              fontFamily: 'var(--font-plus-jakarta-sans), Arial, sans-serif',
-            },
-          }}
-        />
+          <Suspense fallback={null}>
+            <GoogleAnalytics />
+          </Suspense>
+          <JdvLoadingScreen />
+          {children}
+          <ThemeCustomizer />
+          <LanguageSwitcher />
+          <ServiceWorkerRegister />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                color: 'var(--foreground)',
+                fontFamily: 'var(--font-plus-jakarta-sans), Arial, sans-serif',
+              },
+            }}
+          />
         </LanguageProvider>
       </body>
     </html>
