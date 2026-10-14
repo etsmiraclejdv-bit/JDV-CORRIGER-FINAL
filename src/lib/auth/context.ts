@@ -6,6 +6,10 @@ import { supabase } from '@/lib/supabase/client';
  *  - rattachement à l'entreprise et rôle : table `organization_members`
  *  - prospecteur terrain : table `prospecteurs`
  *  - repli : entreprise dont l'utilisateur est propriétaire (`organizations.owner_user_id`)
+ *
+ * Important : le concepteur utilise son organisation propre pour les branches
+ * opérationnelles. Son rôle plateforme ne doit pas faire sélectionner par défaut
+ * l'organisation d'un client dont il serait aussi membre.
  */
 export interface AuthContextData {
   userId: string;
@@ -34,14 +38,13 @@ export async function getAuthContext(): Promise<AuthContextData | null> {
       .select('organization_id, role')
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .order('created_at', { ascending: true })
-      .limit(1),
+      .order('created_at', { ascending: true }),
     supabase
       .from('prospecteurs')
       .select('id, organization_id')
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .limit(1),
+      .order('created_at', { ascending: true }),
     supabase
       .from('profiles')
       .select('display_name, first_name, last_name')
@@ -57,9 +60,24 @@ export async function getAuthContext(): Promise<AuthContextData | null> {
 
   const sa = superRes.data as { status?: string; actif?: boolean | null } | null;
   const isSuperAdmin = !!sa && sa.status === 'active' && sa.actif !== false;
-  const member = ((memberRes.data ?? []) as { organization_id: string; role: string }[])[0] ?? null;
-  const prosp = ((prospRes.data ?? []) as { id: string; organization_id: string }[])[0] ?? null;
+  const memberRows = (memberRes.data ?? []) as { organization_id: string; role: string }[];
+  const prospecteurRows = (prospRes.data ?? []) as {
+    id: string;
+    organization_id: string;
+  }[];
   const owned = ((ownedRes.data ?? []) as { id: string }[])[0] ?? null;
+
+  // Un concepteur doit travailler dans son propre portefeuille, pas dans la
+  // première organisation cliente trouvée dans ses adhésions.
+  const organizationId =
+    isSuperAdmin && owned
+      ? owned.id
+      : (memberRows[0]?.organization_id ??
+        prospecteurRows[0]?.organization_id ??
+        owned?.id ??
+        null);
+  const member = memberRows.find((row) => row.organization_id === organizationId) ?? null;
+  const prosp = prospecteurRows.find((row) => row.organization_id === organizationId) ?? null;
   const profile = profileRes.data as {
     display_name?: string | null;
     first_name?: string | null;
@@ -70,14 +88,14 @@ export async function getAuthContext(): Promise<AuthContextData | null> {
     `${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim() ||
     user.email ||
     'Utilisateur';
-  const ownerFallback = !member && !prosp && !!owned;
+  const ownerFallback = !member && !prosp && !!owned && organizationId === owned.id;
 
   return {
     userId: user.id,
     email: user.email ?? null,
     displayName,
     isSuperAdmin,
-    organizationId: member?.organization_id ?? prosp?.organization_id ?? owned?.id ?? null,
+    organizationId,
     orgRole: member?.role ?? (ownerFallback ? 'business_admin' : null),
     isOrgAdmin: (!!member && ORG_ADMIN_ROLES.includes(member.role.toLowerCase())) || ownerFallback,
     prospecteurId: prosp?.id ?? null,
