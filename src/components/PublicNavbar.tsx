@@ -82,7 +82,7 @@ export default function PublicNavbar() {
             href="/business/login"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 py-2"
           >
-            Connexion
+            {t("login")}
           </Link>
           <a
             href="#register"
