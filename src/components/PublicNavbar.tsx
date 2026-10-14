@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function PublicNavbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -60,6 +61,7 @@ export default function PublicNavbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
+          <LanguageSwitcher variant="inline" />
           <Link
             href="/business/login"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 py-2"
@@ -97,6 +99,9 @@ export default function PublicNavbar() {
                 {link?.label}
               </a>
             ))}
+            <div className="pt-1">
+              <LanguageSwitcher variant="inline" />
+            </div>
             <hr className="divider-gold" />
             <Link
               href="/business/login"
