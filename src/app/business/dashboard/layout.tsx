@@ -41,205 +41,207 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TranslationKey } from '@/lib/i18n/messages';
 import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 import OrganizationAmbience from '@/components/OrganizationAmbience';
 
-const navItems = [
+const navItems: { id: string; label: TranslationKey; icon: React.ReactNode; href: string; group: TranslationKey }[] = [
   {
     id: 'overview',
-    label: "Vue d'ensemble",
+    label: 'dashboard',
     icon: <LayoutDashboard size={18} />,
     href: '/business/dashboard',
-    group: 'Principal',
+    group: 'primaryGroup',
   },
   {
     id: 'intelligence',
-    label: 'Intelligence JDV',
+    label: 'intelligenceJdv',
     icon: <AlertTriangle size={18} />,
     href: '/business/dashboard/intelligence',
-    group: 'Principal',
+    group: 'primaryGroup',
   },
   {
     id: 'prospects',
-    label: 'Prospects',
+    label: 'prospects',
     icon: <UserCheck size={18} />,
     href: '/business/dashboard/prospects',
-    group: 'CRM',
+    group: 'crmGroup',
   },
   {
     id: 'clients',
-    label: 'Clients',
+    label: 'clients',
     icon: <Users size={18} />,
     href: '/business/dashboard/clients',
-    group: 'CRM',
+    group: 'crmGroup',
   },
   {
     id: 'ventes',
-    label: 'Ventes',
+    label: 'sales',
     icon: <ShoppingCart size={18} />,
     href: '/business/dashboard/ventes',
-    group: 'Commercial',
+    group: 'commercialGroup',
   },
   {
     id: 'relances',
-    label: 'Relances & impayés',
+    label: 'followUps',
     icon: <AlertTriangle size={18} />,
     href: '/business/dashboard/relances',
-    group: 'Commercial',
+    group: 'commercialGroup',
   },
   {
     id: 'retours',
-    label: 'Retours de marchandise',
+    label: 'merchandiseReturns',
     icon: <Undo2 size={18} />,
     href: '/business/dashboard/retours',
-    group: 'Commercial',
+    group: 'commercialGroup',
   },
   {
     id: 'catalogue',
-    label: 'Catalogue',
+    label: 'productCatalogNav',
     icon: <BookOpen size={18} />,
     href: '/business/dashboard/catalogue',
-    group: 'Commercial',
+    group: 'commercialGroup',
   },
   {
     id: 'prospecteurs',
-    label: 'Prospecteurs',
+    label: 'prospectorsNav',
     icon: <UserCheck size={18} />,
     href: '/business/dashboard/prospecteurs',
-    group: 'Équipe',
+    group: 'teamGroup',
   },
   {
     id: 'visites',
-    label: 'Visites terrain',
+    label: 'fieldVisits',
     icon: <MapPin size={18} />,
     href: '/business/dashboard/visites',
-    group: 'Équipe',
+    group: 'teamGroup',
   },
   {
     id: 'suivi-prospecteurs',
-    label: 'Suivi prospecteurs',
+    label: 'prospectorTracking',
     icon: <Users size={18} />,
     href: '/business/dashboard/suivi-prospecteurs',
-    group: 'Équipe',
+    group: 'teamGroup',
   },
   {
     id: 'fournisseurs',
-    label: 'Fournisseurs',
+    label: 'suppliers',
     icon: <Truck size={18} />,
     href: '/business/dashboard/fournisseurs',
-    group: 'Logistique',
+    group: 'logisticsGroup',
   },
   {
     id: 'achats',
-    label: 'Achats',
+    label: 'purchases',
     icon: <ClipboardList size={18} />,
     href: '/business/dashboard/achats',
-    group: 'Logistique',
+    group: 'logisticsGroup',
   },
   {
     id: 'stock',
-    label: 'Stock',
+    label: 'stock',
     icon: <Package size={18} />,
     href: '/business/dashboard/stock',
-    group: 'Logistique',
+    group: 'logisticsGroup',
   },
   {
     id: 'entrepots',
-    label: 'Entrepôts & zones',
+    label: 'warehousesZones',
     icon: <Warehouse size={18} />,
     href: '/business/dashboard/entrepots',
-    group: 'Logistique',
+    group: 'logisticsGroup',
   },
   {
     id: 'sous-branches',
-    label: 'Sous-branches entrepôt',
+    label: 'warehouseBranches',
     icon: <Store size={18} />,
     href: '/business/dashboard/sous-branches',
-    group: 'Logistique',
+    group: 'logisticsGroup',
   },
   {
     id: 'mouvements-stock',
-    label: 'Mouvements de stock',
+    label: 'stockMovements',
     icon: <ArrowLeftRight size={18} />,
     href: '/business/dashboard/mouvements-stock',
-    group: 'Logistique',
+    group: 'logisticsGroup',
   },
   {
     id: 'logistique',
-    label: 'Centre de contrôle logistique',
+    label: 'logisticsControlCenter',
     icon: <Network size={18} />,
     href: '/business/dashboard/logistique',
-    group: 'Logistique',
+    group: 'logisticsGroup',
   },
   {
     id: 'finances',
-    label: 'Finances & commissions',
+    label: 'financesCommissions',
     icon: <Wallet size={18} />,
     href: '/business/dashboard/finances',
-    group: 'Analyse',
+    group: 'analysisGroup',
   },
   {
     id: 'commissions',
-    label: 'Règles de commissions',
+    label: 'commissionRules',
     icon: <Percent size={18} />,
     href: '/business/dashboard/commissions',
-    group: 'Analyse',
+    group: 'analysisGroup',
   },
   {
     id: 'rapports',
-    label: 'Rapports',
+    label: 'reports',
     icon: <FileText size={18} />,
     href: '/business/dashboard/reports',
-    group: 'Analyse',
+    group: 'analysisGroup',
   },
   {
     id: 'audit',
-    label: "Journal d'audit",
+    label: 'auditLog',
     icon: <ClipboardList size={18} />,
     href: '/business/dashboard/audit',
-    group: 'Analyse',
+    group: 'analysisGroup',
   },
   {
     id: 'guide',
-    label: "Guide d'utilisation",
+    label: 'userGuide',
     icon: <HelpCircle size={18} />,
     href: '/guide-onboarding',
-    group: 'Système',
+    group: 'systemGroup',
   },
   {
     id: 'formulaires',
-    label: 'Formulaires',
+    label: 'formsNav',
     icon: <FilePlus2 size={18} />,
     href: '/business/dashboard/formulaires',
-    group: 'Système',
+    group: 'systemGroup',
   },
   {
     id: 'ambiance',
-    label: 'Ambiance & fonds',
+    label: 'ambienceBackgrounds',
     icon: <Sparkles size={18} />,
     href: '/business/dashboard/ambiance',
-    group: 'Système',
+    group: 'systemGroup',
   },
   {
     id: 'veille',
-    label: 'Google & actualités',
+    label: 'googleNews',
     icon: <Globe size={18} />,
     href: '/business/dashboard/veille',
-    group: 'Principal',
+    group: 'primaryGroup',
   },
   {
     id: 'avis-clients',
-    label: 'Avis clients',
+    label: 'customerReviews',
     icon: <MessageSquareQuote size={18} />,
     href: '/business/dashboard/avis-clients',
-    group: 'CRM',
+    group: 'crmGroup',
   },
   {
     id: 'settings',
-    label: 'Paramètres',
+    label: 'settings',
     icon: <Settings size={18} />,
     href: '/business/dashboard/settings',
-    group: 'Système',
+    group: 'systemGroup',
   },
 ];
 
@@ -248,6 +250,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobilePreview, setMobilePreview] = useState(false);
+  const { t } = useLanguage();
   const pathname = usePathname();
   const router = useRouter();
   const groups = Array.from(new Set(navItems.map((i) => i.group)));
@@ -297,7 +300,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                 <div key={group} className="mb-4">
                   {!collapsed && (
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-[#718096] px-3 mb-2">
-                      {group}
+                      {t(group)}
                     </p>
                   )}
                   {navItems
@@ -312,11 +315,11 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                           key={item.id}
                           href={item.href}
                           onClick={() => setMobileMenuOpen(false)}
-                          title={collapsed ? item.label : undefined}
+                          title={collapsed ? t(item.label) : undefined}
                           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
                         >
                           <span className="flex-shrink-0">{item.icon}</span>
-                          {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+                          {!collapsed && <span className="flex-1 truncate">{t(item.label)}</span>}
                         </Link>
                       );
                     })}
@@ -328,18 +331,18 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                 <button
                   onClick={() => setProfileOpen(true)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-white hover:bg-[#0F2347] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-1'}`}
-                  title="Mon profil"
+                  title={t("profile")}
                 >
                   <User size={16} />
-                  {!collapsed && <span>Mon profil</span>}
+                  {!collapsed && <span>{t('profile')}</span>}
                 </button>
                 <button
                   onClick={handleLogout}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-red-400 transition-all text-sm ${collapsed ? 'justify-center w-full' : ''}`}
-                  title="Déconnexion"
+                  title={t("logout")}
                 >
                   <LogOut size={16} />
-                  {!collapsed && <span>Quitter</span>}
+                  {!collapsed && <span>{t('quit')}</span>}
                 </button>
               </div>
               {collapsed && (
@@ -355,7 +358,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
           {mobileMenuOpen && !mobilePreview && (
             <button
               type="button"
-              aria-label="Fermer le menu"
+              aria-label={t("closeMenu")}
               onClick={() => setMobileMenuOpen(false)}
               className="fixed inset-0 z-20 bg-black/60 md:hidden"
             />
@@ -366,9 +369,9 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen((open) => !open)}
-                  aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+                  aria-label={mobileMenuOpen ? t('closeMenu') : t('openMenu')}
                   className="inline-flex md:hidden items-center justify-center rounded-lg p-2 text-white hover:bg-[#0F2347]"
-                  title="Menu mobile"
+                  title={t("mobileMenu")}
                 >
                   {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
@@ -376,7 +379,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                   data-jdv-design="page-title"
                   className="truncate text-sm sm:text-base font-semibold text-white"
                 >
-                  Portail Entreprise
+                  {t('companyPortal')}
                 </h1>
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
@@ -389,12 +392,12 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                   aria-pressed={mobilePreview}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-[#D4AF37]/30 px-2 py-2 text-xs font-semibold text-[#D4AF37] hover:bg-[#D4AF37]/10"
                   title={
-                    mobilePreview ? 'Revenir à l’affichage ordinateur' : 'Activer l’aperçu mobile'
+                    mobilePreview ? t('returnDesktop') : t('activateMobilePreview')
                   }
                 >
                   {mobilePreview ? <Monitor size={16} /> : <Smartphone size={16} />}
                   <span className="hidden sm:inline">
-                    {mobilePreview ? 'Mode ordinateur' : 'Aperçu mobile'}
+                    {mobilePreview ? t('desktopMode') : t('mobilePreview')}
                   </span>
                 </button>
                 <NotificationBell />
