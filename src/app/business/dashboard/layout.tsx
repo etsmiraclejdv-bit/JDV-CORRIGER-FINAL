@@ -300,7 +300,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                 <div key={group} className="mb-4">
                   {!collapsed && (
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-[#718096] px-3 mb-2">
-                      {group}
+                      {t(group)}
                     </p>
                   )}
                   {navItems
