@@ -158,7 +158,11 @@ export default function JdvLoadingScreen() {
             <div className="jdv-loading__orbit jdv-loading__orbit--outer" />
             <div className="jdv-loading__orbit jdv-loading__orbit--inner" />
             <div className="jdv-loading__logo-card">
-              <img src="/assets/images/image_a5395bef-1789678648033.jpg" alt="JDV CRM" className="jdv-loading__logo" />
+              <img
+                src="/assets/images/image_a5395bef-1789678648033.jpg"
+                alt="JDV CRM"
+                className="jdv-loading__logo"
+              />
             </div>
           </div>
           <div className="jdv-loading__name">
