@@ -18,16 +18,21 @@ const jakarta = Plus_Jakarta_Sans({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#08152f',
 };
 
 export const metadata: Metadata = {
   title: 'JDV CRM — Gestion Crédit & Prospecteurs Terrain',
   description:
     'JDV CRM aide les entreprises ouest-africaines à gérer la vente à crédit, les paiements journaliers, les prospecteurs terrain et le recouvrement depuis un seul tableau de bord.',
+  applicationName: 'JDV CRM',
+  appleWebApp: { capable: true, title: 'JDV CRM', statusBarStyle: 'black-translucent' },
+  formatDetection: { telephone: false },
   icons: {
     icon: [{ url: '/assets/images/image_a5395bef-1789678648033.jpg', type: 'image/jpeg' }],
     shortcut: '/assets/images/image_a5395bef-1789678648033.jpg',
-    apple: [{ url: '/assets/images/image_a5395bef-1789678648033.jpg', type: 'image/jpeg' }],
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
 };
 
