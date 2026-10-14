@@ -12,18 +12,150 @@ export default function PublicNavbar() {
   const { locale, t } = useLanguage();
 
   const copy = {
-    fr: ['Accueil', 'Services', 'Fonctionnalités', 'Actualités', 'Avis', 'Contact', 'Tarifs', 'Le concepteur', 'Essai gratuit', 'Démarrer l’essai gratuit'],
-    en: ['Home', 'Services', 'Features', 'News', 'Reviews', 'Contact', 'Pricing', 'About the creator', 'Free trial', 'Start free trial'],
-    es: ['Inicio', 'Servicios', 'Funciones', 'Noticias', 'Opiniones', 'Contacto', 'Precios', 'El creador', 'Prueba gratis', 'Iniciar prueba gratis'],
-    fil: ['Home', 'Mga serbisyo', 'Mga feature', 'Balita', 'Mga review', 'Makipag-ugnayan', 'Presyo', 'Tungkol sa gumawa', 'Libreng pagsubok', 'Simulan ang libreng pagsubok'],
-    it: ['Home', 'Servizi', 'Funzionalità', 'Notizie', 'Recensioni', 'Contatti', 'Prezzi', 'Il creatore', 'Prova gratuita', 'Inizia la prova gratuita'],
-    'zh-CN': ['首页', '服务', '功能', '新闻', '评价', '联系', '价格', '关于创作者', '免费试用', '开始免费试用'],
-    'zh-TW': ['首頁', '服務', '功能', '新聞', '評價', '聯絡', '價格', '關於創作者', '免費試用', '開始免費試用'],
-    pt: ['Início', 'Serviços', 'Funcionalidades', 'Notícias', 'Avaliações', 'Contacto', 'Preços', 'Sobre o criador', 'Teste grátis', 'Começar teste grátis'],
-    de: ['Startseite', 'Dienste', 'Funktionen', 'Neuigkeiten', 'Bewertungen', 'Kontakt', 'Preise', 'Über den Entwickler', 'Kostenlos testen', 'Kostenlos testen starten'],
-    ar: ['الرئيسية', 'الخدمات', 'الميزات', 'الأخبار', 'التقييمات', 'اتصل بنا', 'الأسعار', 'عن المطور', 'تجربة مجانية', 'ابدأ التجربة المجانية'],
-    sw: ['Mwanzo', 'Huduma', 'Vipengele', 'Habari', 'Maoni', 'Mawasiliano', 'Bei', 'Kuhusu mtengenezaji', 'Jaribio la bure', 'Anza jaribio la bure'],
-  }[locale] ?? ['Accueil', 'Services', 'Fonctionnalités', 'Actualités', 'Avis', 'Contact', 'Tarifs', 'Le concepteur', 'Essai gratuit', 'Démarrer l’essai gratuit'];
+    fr: [
+      'Accueil',
+      'Services',
+      'Fonctionnalités',
+      'Actualités',
+      'Avis',
+      'Contact',
+      'Tarifs',
+      'Le concepteur',
+      'Essai gratuit',
+      'Démarrer l’essai gratuit',
+    ],
+    en: [
+      'Home',
+      'Services',
+      'Features',
+      'News',
+      'Reviews',
+      'Contact',
+      'Pricing',
+      'About the creator',
+      'Free trial',
+      'Start free trial',
+    ],
+    es: [
+      'Inicio',
+      'Servicios',
+      'Funciones',
+      'Noticias',
+      'Opiniones',
+      'Contacto',
+      'Precios',
+      'El creador',
+      'Prueba gratis',
+      'Iniciar prueba gratis',
+    ],
+    fil: [
+      'Home',
+      'Mga serbisyo',
+      'Mga feature',
+      'Balita',
+      'Mga review',
+      'Makipag-ugnayan',
+      'Presyo',
+      'Tungkol sa gumawa',
+      'Libreng pagsubok',
+      'Simulan ang libreng pagsubok',
+    ],
+    it: [
+      'Home',
+      'Servizi',
+      'Funzionalità',
+      'Notizie',
+      'Recensioni',
+      'Contatti',
+      'Prezzi',
+      'Il creatore',
+      'Prova gratuita',
+      'Inizia la prova gratuita',
+    ],
+    'zh-CN': [
+      '首页',
+      '服务',
+      '功能',
+      '新闻',
+      '评价',
+      '联系',
+      '价格',
+      '关于创作者',
+      '免费试用',
+      '开始免费试用',
+    ],
+    'zh-TW': [
+      '首頁',
+      '服務',
+      '功能',
+      '新聞',
+      '評價',
+      '聯絡',
+      '價格',
+      '關於創作者',
+      '免費試用',
+      '開始免費試用',
+    ],
+    pt: [
+      'Início',
+      'Serviços',
+      'Funcionalidades',
+      'Notícias',
+      'Avaliações',
+      'Contacto',
+      'Preços',
+      'Sobre o criador',
+      'Teste grátis',
+      'Começar teste grátis',
+    ],
+    de: [
+      'Startseite',
+      'Dienste',
+      'Funktionen',
+      'Neuigkeiten',
+      'Bewertungen',
+      'Kontakt',
+      'Preise',
+      'Über den Entwickler',
+      'Kostenlos testen',
+      'Kostenlos testen starten',
+    ],
+    ar: [
+      'الرئيسية',
+      'الخدمات',
+      'الميزات',
+      'الأخبار',
+      'التقييمات',
+      'اتصل بنا',
+      'الأسعار',
+      'عن المطور',
+      'تجربة مجانية',
+      'ابدأ التجربة المجانية',
+    ],
+    sw: [
+      'Mwanzo',
+      'Huduma',
+      'Vipengele',
+      'Habari',
+      'Maoni',
+      'Mawasiliano',
+      'Bei',
+      'Kuhusu mtengenezaji',
+      'Jaribio la bure',
+      'Anza jaribio la bure',
+    ],
+  }[locale] ?? [
+    'Accueil',
+    'Services',
+    'Fonctionnalités',
+    'Actualités',
+    'Avis',
+    'Contact',
+    'Tarifs',
+    'Le concepteur',
+    'Essai gratuit',
+    'Démarrer l’essai gratuit',
+  ];
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -82,7 +214,7 @@ export default function PublicNavbar() {
             href="/business/login"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 py-2"
           >
-            {t("login")}
+            {t('login')}
           </Link>
           <a
             href="#register"
@@ -96,7 +228,7 @@ export default function PublicNavbar() {
         <button
           className="md:hidden p-2 text-muted-foreground hover:text-foreground"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={t("languageSettings")}
+          aria-label={t('languageSettings')}
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -124,7 +256,7 @@ export default function PublicNavbar() {
               className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 text-center"
               onClick={() => setMobileOpen(false)}
             >
-              {t("login")}
+              {t('login')}
             </Link>
             <a
               href="#register"
