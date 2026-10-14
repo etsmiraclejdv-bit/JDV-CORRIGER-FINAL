@@ -25,7 +25,9 @@ export const metadata: Metadata = {
   description:
     'JDV CRM aide les entreprises ouest-africaines à gérer la vente à crédit, les paiements journaliers, les prospecteurs terrain et le recouvrement depuis un seul tableau de bord.',
   icons: {
-    icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
+    icon: [{ url: '/assets/images/image_a5395bef-1789678648033.jpg', type: 'image/jpeg' }],
+    shortcut: '/assets/images/image_a5395bef-1789678648033.jpg',
+    apple: [{ url: '/assets/images/image_a5395bef-1789678648033.jpg', type: 'image/jpeg' }],
   },
 };
 
