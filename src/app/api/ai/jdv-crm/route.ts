@@ -253,6 +253,33 @@ export async function POST(req: NextRequest) {
       }),
     });
     const json = await response.json();
+    const webSources: Array<{ title: string; url: string }> = [];
+    if (webSearchEnabled && Array.isArray(json.output)) {
+      for (const item of json.output) {
+        for (const part of Array.isArray(item?.content) ? item.content : []) {
+          for (const annotation of Array.isArray(part?.annotations) ? part.annotations : []) {
+            if (
+              annotation?.type === 'url_citation' &&
+              typeof annotation.url === 'string' &&
+              annotation.url.startsWith('https://') &&
+              !webSources.some((source) => source.url === annotation.url)
+            ) {
+              webSources.push({
+                title: typeof annotation.title === 'string' ? annotation.title : annotation.url,
+                url: annotation.url,
+              });
+            }
+          }
+        }
+      }
+    }
+    const answerText = typeof json.output_text === 'string' ? json.output_text : '';
+    const answerWithSources = webSources.length
+      ? answerText +
+        '\\n\\nSources consultées :\\n' +
+        webSources.slice(0, 6).map((source, index) => `[${index + 1}] ${source.title} — ${source.url}`).join('\\n')
+      : answerText;
+
     if (!response.ok || !json.output_text) {
       // Une clé invalide, un modèle non disponible ou une panne OpenAI ne doit pas
       // rendre l’assistant muet : on revient au guide métier JDV sans inventer de données.
@@ -270,7 +297,8 @@ export async function POST(req: NextRequest) {
       });
     }
     return NextResponse.json({
-      content: json.output_text,
+      content: answerWithSources,
+      sources: webSources.slice(0, 6),
       synchronized_at: liveContext.synchronized_at,
       mode: webSearchEnabled ? 'openai_web_search' : 'openai',
     });
