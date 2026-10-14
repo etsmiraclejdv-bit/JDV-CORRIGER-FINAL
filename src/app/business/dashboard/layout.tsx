@@ -46,7 +46,13 @@ import type { TranslationKey } from '@/lib/i18n/messages';
 import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 import OrganizationAmbience from '@/components/OrganizationAmbience';
 
-const navItems: { id: string; label: TranslationKey; icon: React.ReactNode; href: string; group: TranslationKey }[] = [
+const navItems: {
+  id: string;
+  label: TranslationKey;
+  icon: React.ReactNode;
+  href: string;
+  group: TranslationKey;
+}[] = [
   {
     id: 'overview',
     label: 'dashboard',
@@ -331,7 +337,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                 <button
                   onClick={() => setProfileOpen(true)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-white hover:bg-[#0F2347] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-1'}`}
-                  title={t("profile")}
+                  title={t('profile')}
                 >
                   <User size={16} />
                   {!collapsed && <span>{t('profile')}</span>}
@@ -339,7 +345,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                 <button
                   onClick={handleLogout}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-red-400 transition-all text-sm ${collapsed ? 'justify-center w-full' : ''}`}
-                  title={t("logout")}
+                  title={t('logout')}
                 >
                   <LogOut size={16} />
                   {!collapsed && <span>{t('quit')}</span>}
@@ -358,7 +364,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
           {mobileMenuOpen && !mobilePreview && (
             <button
               type="button"
-              aria-label={t("closeMenu")}
+              aria-label={t('closeMenu')}
               onClick={() => setMobileMenuOpen(false)}
               className="fixed inset-0 z-20 bg-black/60 md:hidden"
             />
@@ -371,7 +377,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                   onClick={() => setMobileMenuOpen((open) => !open)}
                   aria-label={mobileMenuOpen ? t('closeMenu') : t('openMenu')}
                   className="inline-flex md:hidden items-center justify-center rounded-lg p-2 text-white hover:bg-[#0F2347]"
-                  title={t("mobileMenu")}
+                  title={t('mobileMenu')}
                 >
                   {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
