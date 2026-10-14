@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import OfflineRetryButton from '@/components/OfflineRetryButton';
 
 export const metadata = {
   title: 'JDV CRM — Mode hors ligne',
@@ -23,13 +24,7 @@ export default function OfflinePage() {
           <li>Ne considérez pas une opération comme validée tant que JDV CRM ne l’a pas confirmée.</li>
         </ul>
         <div className="mt-7 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            className="rounded-xl bg-[#D4AF37] px-5 py-3 font-semibold text-[#08152f]"
-          >
-            Réessayer
-          </button>
+          <OfflineRetryButton />
           <Link href="/" className="rounded-xl border border-white/20 px-5 py-3 font-semibold text-white">
             Page d’accueil
           </Link>
