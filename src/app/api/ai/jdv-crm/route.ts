@@ -277,7 +277,10 @@ export async function POST(req: NextRequest) {
     const answerWithSources = webSources.length
       ? answerText +
         '\n\nSources consultées :\n' +
-        webSources.slice(0, 6).map((source, index) => `[${index + 1}] ${source.title} — ${source.url}`).join('\n')
+        webSources
+          .slice(0, 6)
+          .map((source, index) => `[${index + 1}] ${source.title} — ${source.url}`)
+          .join('\n')
       : answerText;
 
     if (!response.ok || !json.output_text) {
