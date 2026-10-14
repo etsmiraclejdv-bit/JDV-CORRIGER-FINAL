@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Building2, MapPin, ShieldCheck, LayoutGrid } from 'lucide-react';
+import { Building2, MapPin, ShieldCheck, LayoutGrid, Warehouse } from 'lucide-react';
 import { getAuthContext } from '@/lib/auth/context';
 
 const BRANCHES = [
   { code: 'admin', label: 'Admin · Entreprise', href: '/business/dashboard', icon: Building2 },
   { code: 'terrain', label: 'Terrain · Prospecteurs', href: '/terrain/dashboard', icon: MapPin },
+  { code: 'agence', label: 'Agence · Entrepôts', href: '/entrepot/dashboard', icon: Warehouse },
   {
     code: 'concepteur',
     label: 'Concepteur · Plateforme',

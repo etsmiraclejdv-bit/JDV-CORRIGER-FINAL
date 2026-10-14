@@ -19,6 +19,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import AppLogo from '@/components/ui/AppLogo';
+import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
 import { supabase } from '@/lib/supabase/client';
 import { WarehouseProvider, useWarehouse } from '@/components/entrepot/WarehouseContext';
 
@@ -152,6 +153,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             {isAdmin ? 'Accès administrateur' : 'Chef d’agence'}
           </span>
         </div>
+        <ConcepteurBranchBar />
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </div>

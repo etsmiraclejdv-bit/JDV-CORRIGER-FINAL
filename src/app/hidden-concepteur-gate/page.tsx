@@ -3,17 +3,31 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Building2, MapPin, ShieldCheck } from 'lucide-react';
+import { Building2, MapPin, ShieldCheck, Warehouse } from 'lucide-react';
 import { checkCurrentSuperAdmin } from '@/lib/auth/super-admin';
 import { supabase } from '@/lib/supabase/client';
 
 type Branch = { branch_code: string; branch_label: string; route: string };
-const ICONS = { admin: Building2, prospecteur: MapPin, concepteur: ShieldCheck } as const;
+const ICONS = {
+  admin: Building2,
+  prospecteur: MapPin,
+  agence: Warehouse,
+  concepteur: ShieldCheck,
+} as const;
+// L'espace agence est ajouté côté application : il s'appuie sur les droits concepteur existants
+// (un super admin peut gérer toutes les agences) et ne dépend pas de la fonction de base.
+const AGENCE_BRANCH: Branch = {
+  branch_code: 'agence',
+  branch_label: 'AGENCE / ENTREPÔTS',
+  route: '/entrepot/dashboard',
+};
 const DESCRIPTIONS: Record<string, string> = {
   admin:
     'Gérer l’entreprise, les entrepôts, le stock, les prospecteurs, les ventes, paiements, commissions et retours.',
   prospecteur:
     'Suivre le terrain : prospecteurs, prospects, clients, visites, ventes, encaissements et commissions.',
+  agence:
+    'Suivre les agences et entrepôts : stock, expéditions vers les prospecteurs, réceptions, traçabilité et clôtures.',
   concepteur:
     'Piloter la plateforme, les entreprises, utilisateurs, abonnements, plans, audit, maintenance et configuration globale.',
 };
@@ -58,7 +72,17 @@ export default function ConcepteurGatePage() {
         setState('error');
         return;
       }
-      setBranches(rows);
+      // Ordre d'affichage : Admin, Terrain, Agence, Concepteur.
+      const withAgence = [...rows];
+      if (!withAgence.some((r) => r.branch_code === 'agence')) {
+        const conceptorIndex = withAgence.findIndex((r) => r.branch_code === 'concepteur');
+        withAgence.splice(
+          conceptorIndex === -1 ? withAgence.length : conceptorIndex,
+          0,
+          AGENCE_BRANCH
+        );
+      }
+      setBranches(withAgence);
       setState('ready');
     })();
     return () => {
@@ -82,12 +106,12 @@ export default function ConcepteurGatePage() {
           </p>
           <h1 className="mt-3 text-3xl md:text-5xl font-bold">Espace Concepteur</h1>
           <p className="mt-3 text-slate-300 max-w-3xl">
-            Trois branches : Admin (gestion d’entreprise), Terrain (gestion des prospecteurs) et
-            Concepteur (gestion de la plateforme). Accès libre, sans abonnement, sans essai ni
-            paywall.
+            Quatre branches : Admin (gestion d’entreprise), Terrain (gestion des prospecteurs),
+            Agence (entrepôts et expéditions) et Concepteur (gestion de la plateforme). Accès
+            libre, sans abonnement, sans essai ni paywall.
           </p>
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {branches.map((branch) => {
             const Icon = ICONS[branch.branch_code as keyof typeof ICONS] ?? ShieldCheck;
             return (
@@ -109,7 +133,7 @@ export default function ConcepteurGatePage() {
           })}
         </div>
         <div className="mt-8 rounded-2xl border border-[#D4AF37]/20 bg-[#D4AF37]/5 p-5 text-sm text-slate-200">
-          <strong className="text-[#D4AF37]">Règle Concepteur :</strong> accès illimité aux trois
+          <strong className="text-[#D4AF37]">Règle Concepteur :</strong> accès illimité aux quatre
           branches. Les contrôles d’abonnement concernent uniquement les entreprises clientes de la
           plateforme.
         </div>

@@ -60,6 +60,7 @@ export default function PublicFooter() {
                 { label: "Guide d'utilisation", href: '/guide-onboarding' },
                 { label: 'Espace entreprise', href: '/business/login' },
                 { label: 'Espace prospecteur', href: '/terrain/login' },
+                { label: 'Espace agence', href: '/entrepot/login' },
               ].map((item) => (
                 <li key={`footer-support-${item.label}`}>
                   <Link
