@@ -107,8 +107,8 @@ export default function ConcepteurGatePage() {
           <h1 className="mt-3 text-3xl md:text-5xl font-bold">Espace Concepteur</h1>
           <p className="mt-3 text-slate-300 max-w-3xl">
             Quatre branches : Admin (gestion d’entreprise), Terrain (gestion des prospecteurs),
-            Agence (entrepôts et expéditions) et Concepteur (gestion de la plateforme). Accès
-            libre, sans abonnement, sans essai ni paywall.
+            Agence (entrepôts et expéditions) et Concepteur (gestion de la plateforme). Accès libre,
+            sans abonnement, sans essai ni paywall.
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
