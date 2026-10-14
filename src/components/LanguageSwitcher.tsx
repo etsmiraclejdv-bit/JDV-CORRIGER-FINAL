@@ -1,68 +1,45 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { Globe, Check } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
-import { SUPPORTED_LANGUAGES, Language } from '@/lib/i18n';
+"use client";
 
-interface LanguageSwitcherProps {
-  currentLanguage?: Language;
-  onLanguageChange?: (lang: Language) => void;
-}
+import React, { useState } from "react";
+import { Globe, Check } from "lucide-react";
+import { supabase } from "@/lib/supabase/client";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import styles from "./LanguageSwitcher.module.css";
 
-export default function LanguageSwitcher({
-  currentLanguage = 'fr',
-  onLanguageChange,
-}: LanguageSwitcherProps) {
+export default function LanguageSwitcher() {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState<Language>(currentLanguage);
+  const { locale, setLocale, locales, t } = useLanguage();
 
-  async function handleSelect(lang: Language) {
-    setSelected(lang);
+  async function handleSelect(lang: typeof locale) {
+    setLocale(lang);
     setOpen(false);
-    onLanguageChange?.(lang);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ preferred_language: lang } as never)
-        .eq('id', user.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from("profiles").update({ preferred_language: lang } as never).eq("id", user.id);
+      }
+    } catch {
+      // Local preference remains available even when the profile cannot be updated.
     }
   }
 
-  const current = SUPPORTED_LANGUAGES.find((l) => l.code === selected);
-
+  const current = locales.find((item) => item.code === locale);
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#0A1628] border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm transition-all"
-      >
-        <Globe size={14} />
-        <span>
-          {current?.flag} {current?.code.toUpperCase()}
-        </span>
+    <div className={styles.menu}>
+      <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open}
+        aria-label={t("selectLanguage")} className={styles.trigger}>
+        <Globe size={15} aria-hidden="true" />
+        <span>{current?.nativeName ?? locale}</span>
       </button>
-
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-1 w-40 bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl shadow-2xl z-50 overflow-hidden">
-            {SUPPORTED_LANGUAGES.map((lang) => (
-              <button
-                key={lang.code}
-                onClick={() => handleSelect(lang.code)}
-                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-                  selected === lang.code
-                    ? 'text-[#D4AF37] bg-[#D4AF37]/10'
-                    : 'text-[#A0AEC0] hover:text-white hover:bg-[#0A1628]'
-                }`}
-              >
-                <span>
-                  {lang.flag} {lang.label}
-                </span>
-                {selected === lang.code && <Check size={12} />}
+          <button type="button" aria-label={t("close")} className={styles.backdrop} onClick={() => setOpen(false)} />
+          <div role="listbox" aria-label={t("selectLanguage")} className={styles.options}>
+            {locales.map((item) => (
+              <button type="button" role="option" aria-selected={locale === item.code} key={item.code}
+                onClick={() => void handleSelect(item.code)} className={styles.option}>
+                <span>{item.nativeName}</span>
+                {locale === item.code && <Check size={14} aria-hidden="true" />}
               </button>
             ))}
           </div>
