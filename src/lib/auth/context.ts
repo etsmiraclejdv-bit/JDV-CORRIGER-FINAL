@@ -69,9 +69,13 @@ export async function getAuthContext(): Promise<AuthContextData | null> {
 
   // Un concepteur doit travailler dans son propre portefeuille, pas dans la
   // première organisation cliente trouvée dans ses adhésions.
-  const organizationId = isSuperAdmin && owned
-    ? owned.id
-    : memberRows[0]?.organization_id ?? prospecteurRows[0]?.organization_id ?? owned?.id ?? null;
+  const organizationId =
+    isSuperAdmin && owned
+      ? owned.id
+      : (memberRows[0]?.organization_id ??
+        prospecteurRows[0]?.organization_id ??
+        owned?.id ??
+        null);
   const member = memberRows.find((row) => row.organization_id === organizationId) ?? null;
   const prosp = prospecteurRows.find((row) => row.organization_id === organizationId) ?? null;
   const profile = profileRes.data as {
