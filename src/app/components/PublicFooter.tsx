@@ -1,9 +1,28 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import AppLogo from '@/components/ui/AppLogo';
 import { SITE } from '@/lib/siteConfig';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TranslationKey } from '@/lib/i18n/messages';
 
 export default function PublicFooter() {
+  const { t } = useLanguage();
+  const productLinks: Array<{ key: TranslationKey; href: string }> = [
+    { key: 'services', href: '/#services' },
+    { key: 'features', href: '/#features' },
+    { key: 'advantages', href: '/#avantages' },
+    { key: 'pricing', href: '/#pricing' },
+    { key: 'freeTrial', href: '/#register' },
+  ];
+  const supportLinks: Array<{ key: TranslationKey; href: string }> = [
+    { key: 'contact', href: '/#contact' },
+    { key: 'userGuide', href: '/guide-onboarding' },
+    { key: 'companySpace', href: '/business/login' },
+    { key: 'prospectorSpace', href: '/terrain/login' },
+    { key: 'agencySpace', href: '/entrepot/login' },
+  ];
   return (
     <footer id="about" className="border-t border-border py-12 mt-8">
       <div className="max-w-screen-xl mx-auto px-6 lg:px-10">
@@ -25,22 +44,16 @@ export default function PublicFooter() {
               className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4"
               style={{ letterSpacing: '0.08em' }}
             >
-              Produit
+              {t('product')}
             </p>
             <ul className="space-y-2">
-              {[
-                { label: 'Services', href: '/#services' },
-                { label: 'Fonctionnalités', href: '/#features' },
-                { label: 'Avantages', href: '/#avantages' },
-                { label: 'Tarifs', href: '/#pricing' },
-                { label: 'Essai gratuit', href: '/#register' },
-              ].map((item) => (
-                <li key={`footer-product-${item.label}`}>
+              {productLinks.map((item) => (
+                <li key={`footer-product-${item.key}`}>
                   <Link
                     href={item.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {item.label}
+                    {t(item.key)}
                   </Link>
                 </li>
               ))}
@@ -52,22 +65,16 @@ export default function PublicFooter() {
               className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4"
               style={{ letterSpacing: '0.08em' }}
             >
-              Support
+              {t('support')}
             </p>
             <ul className="space-y-2">
-              {[
-                { label: 'Contact', href: '/#contact' },
-                { label: "Guide d'utilisation", href: '/guide-onboarding' },
-                { label: 'Espace entreprise', href: '/business/login' },
-                { label: 'Espace prospecteur', href: '/terrain/login' },
-                { label: 'Espace agence', href: '/entrepot/login' },
-              ].map((item) => (
-                <li key={`footer-support-${item.label}`}>
+              {supportLinks.map((item) => (
+                <li key={`footer-support-${item.key}`}>
                   <Link
                     href={item.href}
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {item.label}
+                    {t(item.key)}
                   </Link>
                 </li>
               ))}
@@ -76,25 +83,25 @@ export default function PublicFooter() {
         </div>
 
         <div className="border-t border-border pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">© 2026 JDV CRM. Tous droits réservés.</p>
+          <p className="text-xs text-muted-foreground">{t('rights')}</p>
           <div className="flex gap-6">
             <Link
               href="/legal#confidentialite"
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              Confidentialité
+              {t('privacy')}
             </Link>
             <Link
               href="/legal#conditions"
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              Conditions
+              {t('terms')}
             </Link>
             <Link
               href="/legal#mentions"
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
-              Mentions légales
+              {t('legalNotice')}
             </Link>
           </div>
         </div>

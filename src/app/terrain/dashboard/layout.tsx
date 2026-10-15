@@ -28,94 +28,110 @@ import { supabase } from '@/lib/supabase/client';
 import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
 import MobileTabBar from '@/components/MobileTabBar';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TranslationKey } from '@/lib/i18n/messages';
 
-const navItems = [
+const GROUP_KEYS: Record<string, TranslationKey> = {
+  Principal: 'primaryGroup',
+  Stock: 'stock',
+  Activité: 'activityGroup',
+  Aide: 'help',
+};
+
+const navItems: Array<{
+  id: string;
+  labelKey: TranslationKey;
+  icon: React.ReactNode;
+  href: string;
+  group: string;
+}> = [
   {
     id: 'dashboard',
-    label: 'Mon tableau de bord',
+    labelKey: 'myDashboard',
     icon: <LayoutDashboard size={18} />,
     href: '/terrain/dashboard',
     group: 'Principal',
   },
   {
     id: 'intelligence',
-    label: 'Mon assistant IA',
+    labelKey: 'myAssistant',
     icon: <AlertTriangle size={18} />,
     href: '/terrain/dashboard/intelligence',
     group: 'Principal',
   },
   {
     id: 'approvisionnement',
-    label: 'Mon approvisionnement',
+    labelKey: 'mySupply',
     icon: <Warehouse size={18} />,
     href: '/terrain/dashboard/approvisionnement',
     group: 'Stock',
   },
   {
     id: 'reception-marchandises',
-    label: 'Réception marchandises',
+    labelKey: 'goodsReceipt',
     icon: <PackageCheck size={18} />,
     href: '/terrain/dashboard/reception-marchandises',
     group: 'Stock',
   },
   {
     id: 'ventes',
-    label: 'Mes ventes',
+    labelKey: 'mySales',
     icon: <ShoppingCart size={18} />,
     href: '/terrain/dashboard/ventes',
     group: 'Activité',
   },
   {
     id: 'prospects',
-    label: 'Mes prospects',
+    labelKey: 'myProspects',
     icon: <Users size={18} />,
     href: '/terrain/dashboard/prospects',
     group: 'Activité',
   },
   {
     id: 'clients',
-    label: 'Mes clients',
+    labelKey: 'myClients',
     icon: <UserCheck size={18} />,
     href: '/terrain/dashboard/clients',
     group: 'Activité',
   },
   {
     id: 'visites',
-    label: 'Mes visites',
+    labelKey: 'myVisits',
     icon: <MapPin size={18} />,
     href: '/terrain/dashboard/visites',
     group: 'Activité',
   },
   {
     id: 'relances',
-    label: 'Mes relances',
+    labelKey: 'myFollowUps',
     icon: <AlertTriangle size={18} />,
     href: '/terrain/dashboard/relances',
     group: 'Activité',
   },
   {
     id: 'commission',
-    label: 'Ma commission',
+    labelKey: 'myCommission',
     icon: <Wallet size={18} />,
     href: '/terrain/dashboard/commission',
     group: 'Activité',
   },
   {
     id: 'personnalisation',
-    label: 'Personnaliser mon écran',
+    labelKey: 'customizeScreen',
     icon: <Palette size={18} />,
     href: '/terrain/dashboard/personnalisation',
     group: 'Aide',
   },
   {
     id: 'guide',
-    label: "Guide d'utilisation",
+    labelKey: 'userGuide',
     icon: <HelpCircle size={18} />,
     href: '/guide-onboarding',
     group: 'Aide',
   },
 ];
 export default function TerrainDashboardLayout({ children }: { children: React.ReactNode }) {
+  const { t } = useLanguage();
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const pathname = usePathname();
@@ -158,7 +174,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
               <div key={group} className="mb-4">
                 {!collapsed && (
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-[#718096] px-3 mb-2">
-                    {group}
+                    {t(GROUP_KEYS[group] ?? 'menu')}
                   </p>
                 )}
                 {navItems
@@ -171,11 +187,11 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
                       <Link
                         key={item.id}
                         href={item.href}
-                        title={collapsed ? item.label : undefined}
+                        title={collapsed ? t(item.labelKey) : undefined}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
                       >
                         <span className="flex-shrink-0">{item.icon}</span>
-                        {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+                        {!collapsed && <span className="flex-1 truncate">{t(item.labelKey)}</span>}
                       </Link>
                     );
                   })}
@@ -187,18 +203,18 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
               <button
                 onClick={() => setProfileOpen(true)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-white hover:bg-[#0F2347] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-1'}`}
-                title="Mon profil"
+                title={t('profile')}
               >
                 <User size={16} />
-                {!collapsed && <span>Mon profil</span>}
+                {!collapsed && <span>{t('profile')}</span>}
               </button>
               <button
                 onClick={handleLogout}
                 className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-red-400 transition-all text-sm ${collapsed ? 'justify-center w-full' : ''}`}
-                title="Déconnexion"
+                title={t('logout')}
               >
                 <LogOut size={16} />
-                {!collapsed && <span>Quitter</span>}
+                {!collapsed && <span>{t('quit')}</span>}
               </button>
             </div>
             {collapsed && (
@@ -214,7 +230,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
         <div className="flex-1 flex flex-col overflow-hidden">
           <ConcepteurBranchBar />
           <div className="h-16 flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
-            <h1 className="text-base font-semibold text-white">Portail Terrain</h1>
+            <h1 className="text-base font-semibold text-white">{t('terrainPortal')}</h1>
             <div className="flex items-center gap-3">
               <NotificationBell />
             </div>
@@ -223,7 +239,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
         </div>
         <MobileTabBar
           rootHref="/terrain/dashboard"
-          items={navItems.map((i) => ({ href: i.href, label: i.label, icon: i.icon }))}
+          items={navItems.map((i) => ({ href: i.href, label: t(i.labelKey), icon: i.icon }))}
         />
         <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="" size="sm">
           <UserProfilePanel onClose={() => setProfileOpen(false)} />
