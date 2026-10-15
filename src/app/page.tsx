@@ -18,8 +18,8 @@ import PublicAccountBanner from './components/PublicAccountBanner';
 export default function PublicSitePage() {
   return (
     <div className="min-h-screen bg-background">
-      <PublicNavbar />
       <PublicAccountBanner />
+      <PublicNavbar />
       <PublicExperience />
       <PublicNewsPanel />
       <PlatformUpdateBanner />
