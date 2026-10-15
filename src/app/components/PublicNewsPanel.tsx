@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ExternalLink, Newspaper, X } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type NewsItem = {
   title: string;
@@ -11,6 +12,7 @@ type NewsItem = {
 };
 
 export default function PublicNewsPanel() {
+  const { t, locale } = useLanguage();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -22,14 +24,14 @@ export default function PublicNewsPanel() {
     setLoading(true);
     fetch('/api/public-news')
       .then(async (response) => {
-        if (!response.ok) throw new Error('Le flux d’actualités est momentanément indisponible.');
+        if (!response.ok) throw new Error(t('news.errFeed'));
         return response.json();
       })
       .then((data: { items?: NewsItem[] }) => {
         if (active) setItems(Array.isArray(data.items) ? data.items : []);
       })
       .catch((reason: unknown) => {
-        if (active) setError(reason instanceof Error ? reason.message : 'Chargement impossible.');
+        if (active) setError(reason instanceof Error ? reason.message : t('news.errLoad'));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -44,7 +46,7 @@ export default function PublicNewsPanel() {
       <section
         id="actualites"
         className="mx-auto max-w-screen-xl scroll-mt-28 px-6 py-8 lg:px-10"
-        aria-label="Actualités"
+        aria-label={t('news.aria')}
       >
         <button
           type="button"
@@ -60,12 +62,8 @@ export default function PublicNewsPanel() {
               <span className="block text-xs font-semibold uppercase tracking-widest text-[#D4AF37]">
                 Google Actualités
               </span>
-              <span className="mt-1 block text-lg font-bold text-white">
-                L’actualité à portée de clic
-              </span>
-              <span className="mt-1 block text-sm text-slate-300">
-                Consultez les dernières informations dans une fenêtre dédiée.
-              </span>
+              <span className="mt-1 block text-lg font-bold text-white">{t('news.headline')}</span>
+              <span className="mt-1 block text-sm text-slate-300">{t('news.sub')}</span>
             </span>
           </span>
           <ExternalLink
@@ -96,13 +94,13 @@ export default function PublicNewsPanel() {
                   <h2 id="jdv-news-title" className="font-bold">
                     Google Actualités
                   </h2>
-                  <p className="text-xs text-slate-400">Flux public d’actualités</p>
+                  <p className="text-xs text-slate-400">{t('news.feed')}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                aria-label="Fermer les actualités"
+                aria-label={t('news.close')}
                 className="rounded-lg p-2 text-slate-300 hover:bg-white/10"
               >
                 <X size={20} />
@@ -110,9 +108,7 @@ export default function PublicNewsPanel() {
             </header>
             <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
               {loading && (
-                <p className="py-8 text-center text-sm text-slate-300">
-                  Chargement des actualités…
-                </p>
+                <p className="py-8 text-center text-sm text-slate-300">{t('news.loading')}</p>
               )}
               {error && (
                 <div className="rounded-xl border border-amber-300/20 bg-amber-300/10 p-4 text-sm text-amber-100">
@@ -124,14 +120,12 @@ export default function PublicNewsPanel() {
                       setItems([]);
                     }}
                   >
-                    Réessayer
+                    {t('news.retry')}
                   </button>
                 </div>
               )}
               {!loading && !error && items.length === 0 && (
-                <p className="py-8 text-center text-sm text-slate-300">
-                  Aucun article disponible pour le moment.
-                </p>
+                <p className="py-8 text-center text-sm text-slate-300">{t('news.empty')}</p>
               )}
               <div className="space-y-3">
                 {items.map((item, index) => (
@@ -143,7 +137,7 @@ export default function PublicNewsPanel() {
                     <p className="mt-2 text-xs text-slate-400">
                       {item.source}
                       {item.publishedAt
-                        ? ' · ' + new Date(item.publishedAt).toLocaleString('fr-FR')
+                        ? ' · ' + new Date(item.publishedAt).toLocaleString(locale)
                         : ''}
                     </p>
                     <a
