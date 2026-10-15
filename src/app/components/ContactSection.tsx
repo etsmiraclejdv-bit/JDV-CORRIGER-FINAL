@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react';
 import { CheckCircle2, Clock, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { SITE } from '@/lib/siteConfig';
 import PlatformTestimonialsPanel from './PlatformTestimonialsPanel';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 const field = 'input-navy w-full px-4 py-3 text-sm';
 const label = 'mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground';
@@ -13,6 +14,7 @@ export default function ContactSection() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
   const c = SITE.contact;
+  const { t } = useLanguage();
 
   const channels = [
     c.whatsapp && {
@@ -24,7 +26,7 @@ export default function ContactSection() {
     ...(Array.isArray(c.phones) && c.phones.length
       ? c.phones.map((phone) => ({
           icon: Phone,
-          title: 'Téléphone direct du concepteur',
+          title: t('contact.ch.designerPhone'),
           value: phone,
           href: `tel:${phone.replace(/[^+\d]/g, '')}`,
         }))
@@ -32,15 +34,25 @@ export default function ContactSection() {
         ? [
             {
               icon: Phone,
-              title: 'Téléphone',
+              title: t('contact.ch.phone'),
               value: c.phone,
               href: `tel:${c.phone.replace(/[^+\\d]/g, '')}`,
             },
           ]
         : []),
-    c.email && { icon: Mail, title: 'E-mail', value: c.email, href: `mailto:${c.email}` },
-    c.address && { icon: MapPin, title: 'Adresse', value: c.address, href: undefined },
-    c.hours && { icon: Clock, title: 'Horaires', value: c.hours, href: undefined },
+    c.email && {
+      icon: Mail,
+      title: t('contact.ch.email'),
+      value: c.email,
+      href: `mailto:${c.email}`,
+    },
+    c.address && {
+      icon: MapPin,
+      title: t('contact.ch.address'),
+      value: c.address,
+      href: undefined,
+    },
+    c.hours && { icon: Clock, title: t('contact.ch.hours'), value: c.hours, href: undefined },
   ].filter(Boolean) as { icon: typeof Mail; title: string; value: string; href?: string }[];
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
@@ -55,10 +67,10 @@ export default function ContactSection() {
         body: JSON.stringify(Object.fromEntries(f.entries())),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || 'Envoi impossible. Réessayez plus tard.');
+      if (!res.ok) throw new Error(data?.error || t('contact.sendFail'));
       setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Envoi impossible.');
+      setError(err instanceof Error ? err.message : t('contact.sendFailShort'));
     } finally {
       setSending(false);
     }
@@ -72,15 +84,12 @@ export default function ContactSection() {
             className="mb-3 text-xs font-semibold uppercase tracking-widest"
             style={{ color: 'var(--brand-text)' }}
           >
-            Contact
+            {t('contact.kicker')}
           </p>
           <h2 className="text-3xl font-extrabold text-foreground lg:text-4xl">
-            Parlons de votre activité
+            {t('contact.title')}
           </h2>
-          <p className="mt-4 text-muted-foreground">
-            Une question, une démonstration, un besoin particulier ? Écrivez-nous, nous vous
-            répondons rapidement.
-          </p>
+          <p className="mt-4 text-muted-foreground">{t('contact.intro')}</p>
         </div>
 
         <div className="grid items-stretch gap-6 lg:grid-cols-2 lg:gap-8">
@@ -126,10 +135,10 @@ export default function ContactSection() {
                     className="mx-auto"
                     style={{ color: 'var(--brand-text)' }}
                   />
-                  <h3 className="mt-4 text-xl font-bold text-foreground">Message envoyé</h3>
-                  <p className="mt-2 text-muted-foreground">
-                    Merci. Nous vous répondrons dès que possible.
-                  </p>
+                  <h3 className="mt-4 text-xl font-bold text-foreground">
+                    {t('contact.sentTitle')}
+                  </h3>
+                  <p className="mt-2 text-muted-foreground">{t('contact.sentText')}</p>
                 </div>
               ) : (
                 <form onSubmit={onSubmit} className="space-y-4">
@@ -138,7 +147,7 @@ export default function ContactSection() {
                     style={{ position: 'absolute', left: '-9999px', height: 0, overflow: 'hidden' }}
                   >
                     <label>
-                      Ne pas remplir
+                      {t('contact.honeypot')}
                       <input name="website" tabIndex={-1} autoComplete="off" />
                     </label>
                   </div>
@@ -150,7 +159,7 @@ export default function ContactSection() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <label className={label} htmlFor="c-name">
-                        Nom complet *
+                        {t('contact.f.name')}
                       </label>
                       <input
                         id="c-name"
@@ -163,19 +172,19 @@ export default function ContactSection() {
                     </div>
                     <div>
                       <label className={label} htmlFor="c-subject">
-                        Sujet
+                        {t('contact.f.subject')}
                       </label>
                       <input
                         id="c-subject"
                         name="subject"
                         maxLength={160}
                         className={field}
-                        placeholder="Démonstration, tarifs, partenariat…"
+                        placeholder={t('contact.ph.subject')}
                       />
                     </div>
                     <div>
                       <label className={label} htmlFor="c-email">
-                        E-mail
+                        {t('contact.f.email')}
                       </label>
                       <input
                         id="c-email"
@@ -187,14 +196,14 @@ export default function ContactSection() {
                     </div>
                     <div>
                       <label className={label} htmlFor="c-phone">
-                        Téléphone / WhatsApp
+                        {t('contact.f.phone')}
                       </label>
                       <input id="c-phone" name="phone" maxLength={40} className={field} />
                     </div>
                   </div>
                   <div>
                     <label className={label} htmlFor="c-message">
-                      Message *
+                      {t('contact.f.message')}
                     </label>
                     <textarea
                       id="c-message"
@@ -206,15 +215,12 @@ export default function ContactSection() {
                       className={field}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Indiquez au moins une adresse e-mail ou un numéro de téléphone pour que nous
-                    puissions vous répondre.
-                  </p>
+                  <p className="text-xs text-muted-foreground">{t('contact.hint')}</p>
                   <button
                     disabled={sending}
                     className="btn-gold w-full rounded-xl py-3.5 font-bold disabled:opacity-60"
                   >
-                    {sending ? 'Envoi…' : 'Envoyer le message'}
+                    {sending ? t('contact.sending') : t('contact.send')}
                   </button>
                 </form>
               )}
