@@ -60,11 +60,7 @@ export default function LanguageSwitcher({
             className={styles.backdrop}
             onClick={() => setOpen(false)}
           />
-          <div
-            role="listbox"
-            aria-label={t('selectLanguage')}
-            className={styles.options}
-          >
+          <div role="listbox" aria-label={t('selectLanguage')} className={styles.options}>
             {locales.map((item) => (
               <button
                 type="button"
