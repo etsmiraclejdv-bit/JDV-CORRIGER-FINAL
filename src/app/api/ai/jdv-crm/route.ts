@@ -314,8 +314,10 @@ export async function POST(req: NextRequest) {
       mode: webSearchEnabled ? 'openai_web_search' : 'openai',
     });
   } catch (e) {
+    // Keep technical details in server logs; do not expose database/provider errors to clients.
+    console.error('[JDV AI] Request failed:', e);
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Erreur inattendue.' },
+      { error: 'Une erreur est survenue pendant le traitement. Réessayez dans quelques instants.' },
       { status: 500 }
     );
   }
