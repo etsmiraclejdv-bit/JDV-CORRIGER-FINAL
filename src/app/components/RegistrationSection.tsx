@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { LandingKey } from '@/lib/i18n/landing';
 
 type FormData = {
   organizationName: string;
@@ -52,46 +54,48 @@ type FormData = {
   termsAccepted: boolean;
 };
 
-const countries = [
-  'Bénin',
-  'Togo',
-  'Côte d’Ivoire',
-  'Sénégal',
-  'Ghana',
-  'Mali',
-  'Burkina Faso',
-  'Niger',
-  'Guinée',
-  'Cameroun',
-  'Nigeria',
-  'Autre',
+// La valeur envoyée reste en français (stockée en base) ; seul le libellé affiché est traduit.
+const countries: [string, LandingKey][] = [
+  ['Bénin', 'reg.c.benin'],
+  ['Togo', 'reg.c.togo'],
+  ['Côte d’Ivoire', 'reg.c.civ'],
+  ['Sénégal', 'reg.c.senegal'],
+  ['Ghana', 'reg.c.ghana'],
+  ['Mali', 'reg.c.mali'],
+  ['Burkina Faso', 'reg.c.burkina'],
+  ['Niger', 'reg.c.niger'],
+  ['Guinée', 'reg.c.guinea'],
+  ['Cameroun', 'reg.c.cameroon'],
+  ['Nigeria', 'reg.c.nigeria'],
+  ['Autre', 'reg.other'],
 ];
-const natures = [
-  ['sole_proprietorship', 'Entreprise individuelle'],
-  ['company', 'Société'],
-  ['association', 'Association / organisation'],
-  ['cooperative', 'Coopérative'],
-  ['public_company', 'Entreprise publique'],
-  ['state_entity', 'Organisme d’État'],
-  ['ngo', 'ONG'],
-  ['other', 'Autre'],
+const natures: [string, LandingKey][] = [
+  ['sole_proprietorship', 'reg.sole'],
+  ['company', 'reg.n.company'],
+  ['association', 'reg.n.association'],
+  ['cooperative', 'reg.coop'],
+  ['public_company', 'reg.n.public'],
+  ['state_entity', 'reg.n.state'],
+  ['ngo', 'reg.ngo'],
+  ['other', 'reg.other'],
 ];
-const legalForms = [
-  'Entreprise individuelle',
-  'SARL',
-  'SA',
-  'SAS',
-  'SASU',
-  'GIE',
-  'Coopérative',
-  'Association',
-  'ONG',
-  'Établissement public',
-  'Autre',
+const legalForms: [string, LandingKey | null][] = [
+  ['Entreprise individuelle', 'reg.sole'],
+  ['SARL', null],
+  ['SA', null],
+  ['SAS', null],
+  ['SASU', null],
+  ['GIE', null],
+  ['Coopérative', 'reg.coop'],
+  ['Association', 'reg.lf.association'],
+  ['ONG', 'reg.ngo'],
+  ['Établissement public', 'reg.lf.public'],
+  ['Autre', 'reg.other'],
 ];
 
 export default function RegistrationSection() {
   const router = useRouter();
+  const { t } = useLanguage();
   const defaultSectors = [
     ['3000fa16-cca6-4ccc-bda3-31ff9c23949c', 'Industrie & fabrication'],
     ['8b10e093-7a4e-4b18-bfcf-729be2ef6b67', 'Énergie & électricité'],
@@ -162,12 +166,16 @@ export default function RegistrationSection() {
 
   const sectorOptions = useMemo(
     () =>
-      sectors.map((s) => (
-        <option key={s.id} value={s.id}>
-          {s.name}
-        </option>
-      )),
-    [sectors]
+      sectors.map((s) => {
+        const index = defaultSectors.findIndex(([id]) => id === s.id);
+        return (
+          <option key={s.id} value={s.id}>
+            {index >= 0 ? t(('sector.' + (index + 1)) as LandingKey) : s.name}
+          </option>
+        );
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sectors, t]
   );
 
   async function onSubmit(d: FormData) {
@@ -216,7 +224,7 @@ export default function RegistrationSection() {
         localStorage.removeItem('jdv_pending_company_application');
         setHasSession(true);
         setSubmitted(true);
-        toast.success('Dossier créé. Passons à la vérification de votre entreprise.');
+        toast.success(t('reg.toast.created'));
         router.push('/business/validation');
         return;
       }
@@ -239,16 +247,13 @@ export default function RegistrationSection() {
           email: d.professionalEmail,
           password: d.password,
         });
-        if (loginError)
-          throw new Error(
-            'Cette adresse est déjà enregistrée. Connectez-vous avec le mot de passe de ce compte, ou utilisez une autre adresse email.'
-          );
+        if (loginError) throw new Error(t('reg.err.exists'));
         authData = { user: loginData.user, session: loginData.session };
         authError = null;
       }
 
       if (authError) throw authError;
-      if (!authData.user) throw new Error('Impossible de créer ou récupérer le compte.');
+      if (!authData.user) throw new Error(t('reg.err.account'));
 
       localStorage.setItem('jdv_pending_company_application', JSON.stringify(payload));
       if (authData.session) {
@@ -260,14 +265,12 @@ export default function RegistrationSection() {
         localStorage.removeItem('jdv_pending_company_application');
         setHasSession(true);
         setSubmitted(true);
-        toast.success('Dossier créé. Passons à la vérification de votre entreprise.');
+        toast.success(t('reg.toast.created'));
         router.push('/business/validation');
         return;
       }
       setSubmitted(true);
-      toast.success(
-        'Compte créé. Confirmez votre email puis connectez-vous pour finaliser le dossier.'
-      );
+      toast.success(t('reg.toast.account'));
     } catch (e) {
       const err = e as {
         message?: string;
@@ -277,7 +280,8 @@ export default function RegistrationSection() {
         hint?: string;
       } | null;
       const rawMessage = err?.message || err?.error_description || '';
-      const m = rawMessage || (err?.code ? 'Erreur ' + err.code : 'Une erreur est survenue');
+      const m =
+        rawMessage || (err?.code ? t('reg.err.code') + ' ' + err.code : t('reg.err.generic'));
       console.error('[registration] erreur inscription dossier entreprise', {
         code: err?.code,
         message: rawMessage,
@@ -297,17 +301,15 @@ export default function RegistrationSection() {
         <div className="max-w-xl mx-auto px-6">
           <div className="card-navy rounded-3xl p-10 text-center">
             <CheckCircle size={52} className="mx-auto mb-5 text-[#D4AF37]" />
-            <h3 className="text-2xl font-bold text-foreground">Dossier d’entreprise créé</h3>
+            <h3 className="text-2xl font-bold text-foreground">{t('reg.done.title')}</h3>
             <p className="text-muted-foreground mt-3 leading-relaxed">
-              {hasSession
-                ? 'Redirection vers la vérification de votre entreprise…'
-                : 'Votre compte est créé. Connectez-vous pour terminer la vérification de votre entreprise.'}
+              {hasSession ? t('reg.done.redirect') : t('reg.done.account')}
             </p>
             <Link
               href={hasSession ? '/business/validation' : '/business/login'}
               className="btn-gold inline-flex mt-7 px-6 py-3 rounded-xl font-semibold"
             >
-              Continuer
+              {t('reg.done.continue')}
             </Link>
           </div>
         </div>
@@ -322,16 +324,12 @@ export default function RegistrationSection() {
       <div className="max-w-screen-xl mx-auto px-6 lg:px-10">
         <div className="mb-10 max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
-            Création sécurisée d’entreprise
+            {t('reg.kicker')}
           </p>
           <h2 className="text-3xl lg:text-4xl font-extrabold text-foreground">
-            Votre dossier professionnel <span className="gold-gradient-text">JDV CRM</span>
+            {t('reg.title')} <span className="gold-gradient-text">JDV CRM</span>
           </h2>
-          <p className="text-muted-foreground mt-4">
-            Une seule inscription pour constituer votre identité d’entreprise, son représentant
-            légal, son secteur d’activité et les informations nécessaires à la validation par le
-            Concepteur.
-          </p>
+          <p className="text-muted-foreground mt-4">{t('reg.intro')}</p>
         </div>
         {error && (
           <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
@@ -343,90 +341,95 @@ export default function RegistrationSection() {
             <div className="flex items-center gap-3 mb-6">
               <Building2 className="text-[#D4AF37]" />
               <div>
-                <h3 className="text-lg font-bold">1. Identité de l’entreprise</h3>
-                <p className="text-xs text-muted-foreground">
-                  Informations juridiques et commerciales
-                </p>
+                <h3 className="text-lg font-bold">1. {t('reg.s1.title')}</h3>
+                <p className="text-xs text-muted-foreground">{t('reg.s1.sub')}</p>
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-5">
-              <Field label="Nom commercial *" error={errors.organizationName?.message}>
+              <Field label={t('reg.f.tradeName')} error={errors.organizationName?.message}>
                 <input
-                  {...register('organizationName', { required: 'Nom requis' })}
+                  {...register('organizationName', { required: t('reg.e.name') })}
                   className={input}
-                  placeholder="Ex. JDV Distribution"
+                  placeholder={t('reg.ph.tradeName')}
                 />
               </Field>
-              <Field label="Dénomination sociale">
+              <Field label={t('reg.f.legalName')}>
                 <input
                   {...register('legalName')}
                   className={input}
-                  placeholder="Dénomination légale"
+                  placeholder={t('reg.ph.legalName')}
                 />
               </Field>
-              <Field label="Forme juridique *" error={errors.legalForm?.message}>
+              <Field label={t('reg.f.legalForm')} error={errors.legalForm?.message}>
                 <select
-                  {...register('legalForm', { required: 'Forme juridique requise' })}
+                  {...register('legalForm', { required: t('reg.e.legalForm') })}
                   className={input}
                 >
-                  <option value="">Choisir...</option>
-                  {legalForms.map((x) => (
-                    <option key={x}>{x}</option>
-                  ))}
-                </select>
-              </Field>
-              <Field label="Nature de l’entité *">
-                <select
-                  {...register('companyNature', { required: 'Nature requise' })}
-                  className={input}
-                >
-                  <option value="">Choisir...</option>
-                  {natures.map(([v, l]) => (
-                    <option value={v} key={v}>
-                      {l}
+                  <option value="">{t('reg.choose')}</option>
+                  {legalForms.map(([v, k]) => (
+                    <option key={v} value={v}>
+                      {k ? t(k) : v}
                     </option>
                   ))}
                 </select>
               </Field>
-              <Field label="Statut juridique">
+              <Field label={t('reg.f.nature')}>
+                <select
+                  {...register('companyNature', { required: t('reg.e.nature') })}
+                  className={input}
+                >
+                  <option value="">{t('reg.choose')}</option>
+                  {natures.map(([v, l]) => (
+                    <option value={v} key={v}>
+                      {t(l)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label={t('reg.f.legalStatus')}>
                 <input
                   {...register('legalStatus')}
                   className={input}
-                  placeholder="Ex. société en activité"
+                  placeholder={t('reg.ph.legalStatus')}
                 />
               </Field>
-              <Field label="RCCM / registre de commerce">
+              <Field label={t('reg.f.rccm')}>
                 <input {...register('registrationNumber')} className={input} />
               </Field>
-              <Field label="IFU / identifiant fiscal">
+              <Field label={t('reg.f.ifu')}>
                 <input {...register('taxNumber')} className={input} />
               </Field>
-              <Field label="Email professionnel *" error={errors.professionalEmail?.message}>
+              <Field label={t('reg.f.email')} error={errors.professionalEmail?.message}>
                 <input
                   type="email"
-                  {...register('professionalEmail', { required: 'Email professionnel requis' })}
+                  {...register('professionalEmail', { required: t('reg.e.email') })}
                   className={input}
                   placeholder="contact@entreprise.com"
                 />
               </Field>
-              <Field label="Téléphone professionnel">
+              <Field label={t('reg.f.phone')}>
                 <input {...register('phone')} className={input} />
               </Field>
-              <Field label="Pays *">
-                <select {...register('country', { required: 'Pays requis' })} className={input}>
-                  <option value="">Choisir...</option>
-                  {countries.map((x) => (
-                    <option key={x}>{x}</option>
+              <Field label={t('reg.f.country')}>
+                <select
+                  {...register('country', { required: t('reg.e.country') })}
+                  className={input}
+                >
+                  <option value="">{t('reg.choose')}</option>
+                  {countries.map(([v, k]) => (
+                    <option key={v} value={v}>
+                      {t(k)}
+                    </option>
                   ))}
                 </select>
               </Field>
-              <Field label="Ville">
+              <Field label={t('reg.f.city')}>
                 <input {...register('city')} className={input} />
               </Field>
-              <Field label="Adresse complète">
+              <Field label={t('reg.f.address')}>
                 <input {...register('address')} className={input} />
               </Field>
-              <Field label="Site web">
+              <Field label={t('reg.f.website')}>
                 <input {...register('website')} className={input} placeholder="https://" />
               </Field>
             </div>
@@ -436,17 +439,15 @@ export default function RegistrationSection() {
             <div className="flex items-center gap-3 mb-6">
               <Briefcase className="text-[#D4AF37]" />
               <div>
-                <h3 className="text-lg font-bold">2. Secteur d’activité</h3>
-                <p className="text-xs text-muted-foreground">
-                  Sélectionnez le domaine principal de votre entreprise.
-                </p>
+                <h3 className="text-lg font-bold">2. {t('reg.s2.title')}</h3>
+                <p className="text-xs text-muted-foreground">{t('reg.s2.sub')}</p>
               </div>
             </div>
             <select
-              {...register('primarySectorId', { required: 'Secteur obligatoire' })}
+              {...register('primarySectorId', { required: t('reg.e.sector') })}
               className={input}
             >
-              <option value="">Choisir votre secteur d’activité...</option>
+              <option value="">{t('reg.s2.choose')}</option>
               {sectorOptions}
             </select>
             {errors.primarySectorId && (
@@ -458,39 +459,37 @@ export default function RegistrationSection() {
             <div className="flex items-center gap-3 mb-6">
               <UserRound className="text-[#D4AF37]" />
               <div>
-                <h3 className="text-lg font-bold">3. Représentant légal / responsable</h3>
-                <p className="text-xs text-muted-foreground">
-                  La personne responsable de l’entreprise.
-                </p>
+                <h3 className="text-lg font-bold">3. {t('reg.s3.title')}</h3>
+                <p className="text-xs text-muted-foreground">{t('reg.s3.sub')}</p>
               </div>
             </div>
             <div className="grid md:grid-cols-2 gap-5">
-              <Field label="Nom *">
+              <Field label={t('reg.f.lastName')}>
                 <input
-                  {...register('representativeLastName', { required: 'Nom requis' })}
+                  {...register('representativeLastName', { required: t('reg.e.name') })}
                   className={input}
                 />
               </Field>
-              <Field label="Prénoms *">
+              <Field label={t('reg.f.firstName')}>
                 <input
-                  {...register('representativeFirstName', { required: 'Prénoms requis' })}
+                  {...register('representativeFirstName', { required: t('reg.e.firstName') })}
                   className={input}
                 />
               </Field>
-              <Field label="Fonction *">
+              <Field label={t('reg.f.role')}>
                 <input
-                  {...register('representativeRole', { required: 'Fonction requise' })}
+                  {...register('representativeRole', { required: t('reg.e.role') })}
                   className={input}
-                  placeholder="Gérant, Directeur, Président..."
+                  placeholder={t('reg.ph.role')}
                 />
               </Field>
-              <Field label="Nationalité">
+              <Field label={t('reg.f.nationality')}>
                 <input {...register('representativeNationality')} className={input} />
               </Field>
-              <Field label="Date de naissance">
+              <Field label={t('reg.f.birth')}>
                 <input type="date" {...register('representativeBirthDate')} className={input} />
               </Field>
-              <Field label="Téléphone">
+              <Field label={t('reg.f.phoneShort')}>
                 <input {...register('representativePhone')} className={input} />
               </Field>
             </div>
@@ -500,27 +499,26 @@ export default function RegistrationSection() {
             <div className="flex items-center gap-3 mb-6">
               <FileText className="text-[#D4AF37]" />
               <div>
-                <h3 className="text-lg font-bold">5. Documents de vérification</h3>
-                <p className="text-xs text-muted-foreground">
-                  Les documents seront demandés dans l’espace de finalisation après confirmation de
-                  votre compte.
-                </p>
+                <h3 className="text-lg font-bold">5. {t('reg.s5.title')}</h3>
+                <p className="text-xs text-muted-foreground">{t('reg.s5.sub')}</p>
               </div>
             </div>
             <div className="grid md:grid-cols-3 gap-4">
-              {[
-                'Pièce d’identité du représentant',
-                'RCCM / registre de commerce',
-                'IFU / document fiscal',
-                'Statuts / acte constitutif',
-                'Mandat ou pouvoir si nécessaire',
-                'Justificatif d’adresse',
-              ].map((x) => (
+              {(
+                [
+                  'reg.doc1',
+                  'reg.doc2',
+                  'reg.doc3',
+                  'reg.doc4',
+                  'reg.doc5',
+                  'reg.doc6',
+                ] as LandingKey[]
+              ).map((x) => (
                 <div
                   key={x}
                   className="rounded-xl border border-[#D4AF37]/15 bg-[#0A1628] p-4 text-sm text-muted-foreground"
                 >
-                  {x}
+                  {t(x)}
                 </div>
               ))}
             </div>
@@ -528,13 +526,13 @@ export default function RegistrationSection() {
 
           <div className="card-navy rounded-3xl p-7">
             <div className="grid md:grid-cols-2 gap-5">
-              <Field label="Mot de passe *">
+              <Field label={t('reg.f.password')}>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     {...register('password', {
-                      required: 'Mot de passe requis',
-                      minLength: { value: 8, message: 'Minimum 8 caractères' },
+                      required: t('reg.e.password'),
+                      minLength: { value: 8, message: t('reg.e.min8') },
                     })}
                     className={input + ' pr-11'}
                   />
@@ -547,13 +545,13 @@ export default function RegistrationSection() {
                   </button>
                 </div>
               </Field>
-              <Field label="Confirmation *" error={errors.confirmPassword?.message}>
+              <Field label={t('reg.f.confirm')} error={errors.confirmPassword?.message}>
                 <div className="relative">
                   <input
                     type={showConfirm ? 'text' : 'password'}
                     {...register('confirmPassword', {
-                      required: 'Confirmation requise',
-                      validate: (v) => v === password || 'Mots de passe différents',
+                      required: t('reg.e.confirm'),
+                      validate: (v) => v === password || t('reg.e.mismatch'),
                     })}
                     className={input + ' pr-11'}
                   />
@@ -570,13 +568,10 @@ export default function RegistrationSection() {
             <label className="flex items-start gap-3 mt-6 text-xs text-muted-foreground">
               <input
                 type="checkbox"
-                {...register('termsAccepted', { required: 'Acceptation obligatoire' })}
+                {...register('termsAccepted', { required: t('reg.e.terms') })}
                 className="mt-0.5"
               />
-              <span>
-                J’accepte les conditions d’utilisation et la politique de confidentialité de JDV
-                CRM.
-              </span>
+              <span>{t('reg.terms')}</span>
             </label>
             {errors.termsAccepted && (
               <p className="text-xs text-danger mt-1">{errors.termsAccepted.message}</p>
@@ -585,7 +580,7 @@ export default function RegistrationSection() {
               disabled={loading}
               className="btn-gold w-full mt-7 py-4 rounded-xl font-bold disabled:opacity-60"
             >
-              {loading ? 'Création du dossier...' : 'Créer mon dossier d’entreprise'}
+              {loading ? t('reg.submitting') : t('reg.submit')}
             </button>
           </div>
         </form>
