@@ -143,7 +143,7 @@ export function buildKnowledgeAnswer(input: {
   const qn = norm(input.question);
 
   // Capacités de coaching minimales disponibles même sans fournisseur IA externe.
-  const greetingOnly = /^(bonjour|bonsoir|salut|hello|coucou|bon matin|bonne soiree)[!.\\s]*$/i.test(
+  const greetingOnly = /^(bonjour|bonsoir|salut|hello|coucou|bon matin|bonne soiree)[!.\s]*$/i.test(
     input.question.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   );
   if (greetingOnly) {
