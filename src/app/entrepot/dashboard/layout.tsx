@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ElementType } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -22,32 +22,35 @@ import {
 import AppLogo from '@/components/ui/AppLogo';
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
 import MobileTabBar from '@/components/MobileTabBar';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TranslationKey } from '@/lib/i18n/messages';
 import { supabase } from '@/lib/supabase/client';
 import { WarehouseProvider, useWarehouse } from '@/components/entrepot/WarehouseContext';
 
-const NAV = [
-  { href: '/entrepot/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
-  { href: '/entrepot/dashboard/stock', label: 'Stock de l’entrepôt', icon: Package },
-  { href: '/entrepot/dashboard/sous-entrepots', label: 'Sous-entrepôts', icon: Store },
-  { href: '/entrepot/dashboard/prospecteurs', label: 'Prospecteurs & retours', icon: Users },
-  { href: '/entrepot/dashboard/appels', label: 'Appels & plaintes', icon: Headphones },
-  { href: '/entrepot/dashboard/approvisionnement', label: 'Approvisionnement', icon: Truck },
+const NAV: Array<{ href: string; labelKey: TranslationKey; icon: ElementType }> = [
+  { href: '/entrepot/dashboard', labelKey: 'dashboard', icon: LayoutDashboard },
+  { href: '/entrepot/dashboard/stock', labelKey: 'warehouseStockNav', icon: Package },
+  { href: '/entrepot/dashboard/sous-entrepots', labelKey: 'subWarehouses', icon: Store },
+  { href: '/entrepot/dashboard/prospecteurs', labelKey: 'prospectorsReturns', icon: Users },
+  { href: '/entrepot/dashboard/appels', labelKey: 'callsComplaints', icon: Headphones },
+  { href: '/entrepot/dashboard/approvisionnement', labelKey: 'supplyNav', icon: Truck },
   {
     href: '/entrepot/dashboard/expeditions-prospecteurs',
-    label: 'Expéditions prospecteurs',
+    labelKey: 'prospectorShipments',
     icon: ScanBarcode,
   },
-  { href: '/entrepot/dashboard/codes-produits', label: 'Codes produits', icon: Tag },
-  { href: '/entrepot/dashboard/tracabilite', label: 'Traçabilité', icon: Search },
-  { href: '/entrepot/dashboard/fin-de-service', label: 'Fin de service', icon: ClipboardCheck },
-  { href: '/entrepot/dashboard/cloture-stock', label: 'Clôture de stock', icon: Lock },
-  { href: '/entrepot/dashboard/journal-stock', label: 'Journal de stock', icon: BookOpen },
+  { href: '/entrepot/dashboard/codes-produits', labelKey: 'productCodes', icon: Tag },
+  { href: '/entrepot/dashboard/tracabilite', labelKey: 'traceability', icon: Search },
+  { href: '/entrepot/dashboard/fin-de-service', labelKey: 'endOfService', icon: ClipboardCheck },
+  { href: '/entrepot/dashboard/cloture-stock', labelKey: 'stockClosing', icon: Lock },
+  { href: '/entrepot/dashboard/journal-stock', labelKey: 'stockJournal', icon: BookOpen },
 ];
 
 function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { warehouses, current, setCurrentId, loading, error } = useWarehouse();
+  const { t } = useLanguage();
   const [checked, setChecked] = useState(false);
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -85,7 +88,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="h-16 flex items-center gap-2 px-4 border-b border-[#D4AF37]/10">
           <AppLogo size={26} />
           <span className="font-bold text-sm">
-            JDV <span className="text-[#D4AF37]">Agence</span>
+            JDV <span className="text-[#D4AF37]">{t('agencyBrand')}</span>
           </span>
         </div>
         <div className="p-3 border-b border-[#D4AF37]/10">
@@ -110,7 +113,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           )}
         </div>
         <nav className="flex-1 overflow-y-auto p-2">
-          {NAV.map(({ href, label, icon: Icon }) => {
+          {NAV.map(({ href, labelKey, icon: Icon }) => {
             const active =
               href === '/entrepot/dashboard' ? pathname === href : pathname.startsWith(href);
             return (
@@ -120,7 +123,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${active ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'}`}
               >
                 <Icon size={18} />
-                {label}
+                {t(labelKey)}
               </Link>
             );
           })}
@@ -132,7 +135,7 @@ function Shell({ children }: { children: React.ReactNode }) {
               className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]"
             >
               <ArrowLeft size={16} />
-              Retour espace admin
+              {t('backToAdmin')}
             </Link>
           )}
           <button
@@ -140,7 +143,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-[#A0AEC0] hover:text-red-400 hover:bg-[#0F2347]"
           >
             <LogOut size={16} />
-            Quitter
+            {t('quit')}
           </button>
         </div>
       </aside>
@@ -153,12 +156,12 @@ function Shell({ children }: { children: React.ReactNode }) {
             ) : null}
           </h1>
           <span className="hidden sm:inline text-xs text-slate-400">
-            {isAdmin ? 'Accès administrateur' : 'Chef d’agence'}
+            {isAdmin ? t('adminAccess') : t('agencyManager')}
           </span>
           <button
             onClick={logout}
             className="md:hidden rounded-lg p-2 text-[#A0AEC0] hover:text-red-400"
-            aria-label="Quitter"
+            aria-label={t('quit')}
           >
             <LogOut size={18} />
           </button>
@@ -184,9 +187,9 @@ function Shell({ children }: { children: React.ReactNode }) {
       </div>
       <MobileTabBar
         rootHref="/entrepot/dashboard"
-        items={NAV.map(({ href, label, icon: Icon }) => ({
+        items={NAV.map(({ href, labelKey, icon: Icon }) => ({
           href,
-          label,
+          label: t(labelKey),
           icon: <Icon size={20} />,
         }))}
       />
