@@ -143,8 +143,8 @@ export function buildKnowledgeAnswer(input: {
   const qn = norm(input.question);
 
   // Capacités de coaching minimales disponibles même sans fournisseur IA externe.
-  const greetingOnly = /^(bonjour|bonsoir|salut|sallut|hello|coucou|bon matin|bonne soiree)[!.\\s]*$/i.test(
-    norm(input.question).replace(/[^a-z0-9!?.\\s]/g, '').trim()
+  const greetingOnly = /^(bonjour|bonsoir|salut|sallut|hello|coucou|bon matin|bonne soiree)[!.\s]*$/i.test(
+    norm(input.question).replace(/[^a-z0-9!?.\s]/g, '').trim()
   );
   if (greetingOnly) {
     return "Salut ! Je suis GPT-IA, ton assistant JDV CRM. Je peux t’aider à utiliser les fonctionnalités du CRM, à organiser tes activités commerciales ou à résoudre un problème de prospection. Qu’aimerais-tu faire aujourd’hui ?";
