@@ -318,21 +318,71 @@ export default function ThemeCustomizer() {
           aria-hidden="true"
           data-jdv-platform-background
           className={`pointer-events-none fixed inset-0 z-[1] overflow-hidden mix-blend-soft-light ${backgroundAnimation === 'slow-pan' ? 'jdv-platform-bg-pan' : ''} ${backgroundAnimation === 'float' ? 'jdv-platform-bg-float' : ''} ${backgroundAnimation === 'gradient' ? 'jdv-platform-bg-gradient' : ''}`}
-          style={{ opacity: prefs.reduceMotion ? Math.min(backgroundOpacity, 0.08) : backgroundOpacity }}
+          style={{
+            opacity: prefs.reduceMotion ? Math.min(backgroundOpacity, 0.08) : backgroundOpacity,
+          }}
         >
           {backgroundIsVideo ? (
-            <video src={backgroundUrl} autoPlay muted loop playsInline preload="metadata" className="h-full w-full object-cover" />
+            <video
+              src={backgroundUrl}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              className="h-full w-full object-cover"
+            />
           ) : (
-            <div className="h-full w-full bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${JSON.stringify(backgroundUrl)})` }} />
+            <div
+              className="h-full w-full bg-cover bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${JSON.stringify(backgroundUrl)})` }}
+            />
           )}
           <style jsx global>{`
-            @keyframes jdv-platform-pan { from { transform: scale(1); background-position: 45% 50%; } to { transform: scale(1.08); background-position: 55% 50%; } }
-            @keyframes jdv-platform-float { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(0,-1.2%,0) scale(1.03); } }
-            @keyframes jdv-platform-gradient { 0%,100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(18deg); } }
-            .jdv-platform-bg-pan { animation: jdv-platform-pan 50s ease-in-out infinite alternate; }
-            .jdv-platform-bg-float { animation: jdv-platform-float 32s ease-in-out infinite; }
-            .jdv-platform-bg-gradient { animation: jdv-platform-gradient 28s ease-in-out infinite; }
-            @media (prefers-reduced-motion: reduce) { .jdv-platform-bg-pan,.jdv-platform-bg-float,.jdv-platform-bg-gradient { animation: none !important; } }
+            @keyframes jdv-platform-pan {
+              from {
+                transform: scale(1);
+                background-position: 45% 50%;
+              }
+              to {
+                transform: scale(1.08);
+                background-position: 55% 50%;
+              }
+            }
+            @keyframes jdv-platform-float {
+              0%,
+              100% {
+                transform: translate3d(0, 0, 0) scale(1);
+              }
+              50% {
+                transform: translate3d(0, -1.2%, 0) scale(1.03);
+              }
+            }
+            @keyframes jdv-platform-gradient {
+              0%,
+              100% {
+                filter: hue-rotate(0deg);
+              }
+              50% {
+                filter: hue-rotate(18deg);
+              }
+            }
+            .jdv-platform-bg-pan {
+              animation: jdv-platform-pan 50s ease-in-out infinite alternate;
+            }
+            .jdv-platform-bg-float {
+              animation: jdv-platform-float 32s ease-in-out infinite;
+            }
+            .jdv-platform-bg-gradient {
+              animation: jdv-platform-gradient 28s ease-in-out infinite;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .jdv-platform-bg-pan,
+              .jdv-platform-bg-float,
+              .jdv-platform-bg-gradient {
+                animation: none !important;
+              }
+            }
           `}</style>
         </div>
       )}
