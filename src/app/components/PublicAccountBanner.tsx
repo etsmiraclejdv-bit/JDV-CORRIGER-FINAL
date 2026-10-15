@@ -8,7 +8,7 @@ import { useLanguage } from '@/lib/i18n/LanguageProvider';
 export default function PublicAccountBanner() {
   const { t } = useLanguage();
   return (
-    <div className="bg-[#08152f] border-b border-[#D4AF37]/20 py-3 px-4">
+    <div className="relative z-[60] bg-[#08152f] border-b border-[#D4AF37]/20 py-3 px-4">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-4 text-sm sm:flex-row">
         <span className="text-[#A0AEC0]">{t('alreadyHaveAccount')}</span>
         <div className="flex flex-wrap items-center justify-center gap-3">
