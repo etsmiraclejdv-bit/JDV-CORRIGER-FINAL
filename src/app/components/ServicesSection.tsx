@@ -1,39 +1,44 @@
+'use client';
+
 import { BarChart3, Boxes, CreditCard, HandCoins, MapPin, Users } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { LandingKey } from '@/lib/i18n/landing';
 
 const services = [
   {
     icon: Users,
-    title: 'Gestion commerciale',
-    text: 'Prospects, clients, ventes et historique de chaque relation dans un seul dossier.',
+    title: 'services.s1.title' as LandingKey,
+    text: 'services.s1.text' as LandingKey,
   },
   {
     icon: CreditCard,
-    title: 'Vente à crédit',
-    text: 'Échéanciers, paiements journaliers et suivi de chaque échéance jusqu’au dernier paiement.',
+    title: 'services.s2.title' as LandingKey,
+    text: 'services.s2.text' as LandingKey,
   },
   {
     icon: MapPin,
-    title: 'Prospection terrain',
-    text: 'Vos prospecteurs enregistrent leurs visites et leurs prospects depuis leur téléphone.',
+    title: 'services.s3.title' as LandingKey,
+    text: 'services.s3.text' as LandingKey,
   },
   {
     icon: Boxes,
-    title: 'Stock et agences',
-    text: 'Entrepôts, sous-entrepôts, chefs d’agence, approvisionnements, clôtures et journal de stock.',
+    title: 'services.s4.title' as LandingKey,
+    text: 'services.s4.text' as LandingKey,
   },
   {
     icon: HandCoins,
-    title: 'Recouvrement',
-    text: 'Relances, impayés, retours de marchandise et commissions des prospecteurs.',
+    title: 'services.s5.title' as LandingKey,
+    text: 'services.s5.text' as LandingKey,
   },
   {
     icon: BarChart3,
-    title: 'Pilotage et assistant IA',
-    text: 'Rapports, alertes et un assistant qui répond à vos questions sur le logiciel et vos données.',
+    title: 'services.s6.title' as LandingKey,
+    text: 'services.s6.text' as LandingKey,
   },
 ];
 
 export default function ServicesSection() {
+  const { t } = useLanguage();
   return (
     <section id="services" className="py-20">
       <div className="mx-auto max-w-screen-xl px-6 lg:px-10">
@@ -42,10 +47,10 @@ export default function ServicesSection() {
             className="mb-3 text-xs font-semibold uppercase tracking-widest"
             style={{ color: 'var(--brand-text)' }}
           >
-            Nos services
+            {t('services.kicker')}
           </p>
           <h2 className="text-3xl font-extrabold text-foreground lg:text-4xl">
-            Tout ce qu’il faut pour vendre, encaisser et piloter
+            {t('services.title')}
           </h2>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -60,8 +65,8 @@ export default function ServicesSection() {
               >
                 <Icon size={22} style={{ color: 'var(--brand-text)' }} />
               </span>
-              <h3 className="mt-4 text-lg font-bold text-foreground">{title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{text}</p>
+              <h3 className="mt-4 text-lg font-bold text-foreground">{t(title)}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{t(text)}</p>
             </div>
           ))}
         </div>

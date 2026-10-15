@@ -1,39 +1,44 @@
+'use client';
+
 import { Gauge, Lock, Rocket, Smartphone, Wallet, Workflow } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { LandingKey } from '@/lib/i18n/landing';
 
 const advantages = [
   {
     icon: Workflow,
-    title: 'Un outil, tout le parcours',
-    text: 'De la prospection au recouvrement, sans changer de logiciel ni ressaisir une information.',
+    title: 'adv.a1.title' as LandingKey,
+    text: 'adv.a1.text' as LandingKey,
   },
   {
     icon: Wallet,
-    title: 'Pensé pour votre région',
-    text: 'Montants en FCFA, paiements par mobile money et organisation en agences et sous-agences.',
+    title: 'adv.a2.title' as LandingKey,
+    text: 'adv.a2.text' as LandingKey,
   },
   {
     icon: Smartphone,
-    title: 'Le terrain d’abord',
-    text: 'Vos prospecteurs travaillent depuis leur téléphone, même en déplacement.',
+    title: 'adv.a3.title' as LandingKey,
+    text: 'adv.a3.text' as LandingKey,
   },
   {
     icon: Gauge,
-    title: 'Une vue claire en temps réel',
-    text: 'Stock, ventes, impayés et activité de l’équipe sur un seul tableau de bord.',
+    title: 'adv.a4.title' as LandingKey,
+    text: 'adv.a4.text' as LandingKey,
   },
   {
     icon: Lock,
-    title: 'Vos données protégées',
-    text: 'Chaque entreprise a son espace isolé, et chaque utilisateur n’accède qu’à ce que son rôle permet.',
+    title: 'adv.a5.title' as LandingKey,
+    text: 'adv.a5.text' as LandingKey,
   },
   {
     icon: Rocket,
-    title: 'Démarrage rapide',
-    text: 'Un essai gratuit de 14 jours pour découvrir l’outil avec votre propre activité.',
+    title: 'adv.a6.title' as LandingKey,
+    text: 'adv.a6.text' as LandingKey,
   },
 ];
 
 export default function AdvantagesSection() {
+  const { t } = useLanguage();
   return (
     <section id="avantages" className="py-20">
       <div className="mx-auto max-w-screen-xl px-6 lg:px-10">
@@ -42,11 +47,9 @@ export default function AdvantagesSection() {
             className="mb-3 text-xs font-semibold uppercase tracking-widest"
             style={{ color: 'var(--brand-text)' }}
           >
-            Pourquoi JDV CRM
+            {t('adv.kicker')}
           </p>
-          <h2 className="text-3xl font-extrabold text-foreground lg:text-4xl">
-            Les avantages qui font la différence
-          </h2>
+          <h2 className="text-3xl font-extrabold text-foreground lg:text-4xl">{t('adv.title')}</h2>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {advantages.map(({ icon: Icon, title, text }) => (
@@ -58,8 +61,8 @@ export default function AdvantagesSection() {
                 <Icon size={19} />
               </span>
               <div>
-                <p className="font-semibold text-foreground">{title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{text}</p>
+                <p className="font-semibold text-foreground">{t(title)}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t(text)}</p>
               </div>
             </div>
           ))}

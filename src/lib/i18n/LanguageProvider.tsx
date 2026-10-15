@@ -3,12 +3,13 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { JDV_LOCALES, messages, type JdvLocale, type TranslationKey } from '@/lib/i18n/messages';
+import { landingMessages, type LandingKey } from '@/lib/i18n/landing';
 
 const STORAGE_KEY = 'jdv-crm-language-v1';
 type LanguageContextValue = {
   locale: JdvLocale;
   setLocale: (locale: JdvLocale) => void;
-  t: (key: TranslationKey) => string;
+  t: (key: TranslationKey | LandingKey) => string;
   formatDate: (value: Date | string | number, options?: Intl.DateTimeFormatOptions) => string;
   formatNumber: (value: number, options?: Intl.NumberFormatOptions) => string;
   locales: typeof JDV_LOCALES;
@@ -68,7 +69,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<LanguageContextValue>(() => ({
     locale,
     setLocale,
-    t: (key) => messages[locale][key] ?? messages.fr[key] ?? key,
+    t: (key) => {
+      if (key in landingMessages) {
+        const entry = landingMessages[key as LandingKey];
+        return entry[locale] ?? entry.fr;
+      }
+      return messages[locale][key as TranslationKey] ?? messages.fr[key as TranslationKey] ?? key;
+    },
     formatDate: (value, options) => new Intl.DateTimeFormat(locale, options).format(new Date(value)),
     formatNumber: (value, options) => new Intl.NumberFormat(locale, options).format(value),
     locales: JDV_LOCALES,
