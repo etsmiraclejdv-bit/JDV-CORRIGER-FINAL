@@ -397,9 +397,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                   }}
                   aria-pressed={mobilePreview}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-[#D4AF37]/30 px-2 py-2 text-xs font-semibold text-[#D4AF37] hover:bg-[#D4AF37]/10"
-                  title={
-                    mobilePreview ? t('returnDesktop') : t('activateMobilePreview')
-                  }
+                  title={mobilePreview ? t('returnDesktop') : t('activateMobilePreview')}
                 >
                   {mobilePreview ? <Monitor size={16} /> : <Smartphone size={16} />}
                   <span className="hidden sm:inline">
