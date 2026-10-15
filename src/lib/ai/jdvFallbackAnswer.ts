@@ -142,6 +142,30 @@ export function buildKnowledgeAnswer(input: {
   const parts: string[] = [];
   const qn = norm(input.question);
 
+  // Capacités de coaching minimales disponibles même sans fournisseur IA externe.
+  const greetingOnly = /^(bonjour|bonsoir|salut|hello|coucou|bon matin|bonne soiree)[!.\\s]*$/i.test(
+    input.question.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '')
+  );
+  if (greetingOnly) {
+    parts.unshift(
+      "Bonjour et bienvenue ! Je peux vous aider à utiliser JDV CRM, préparer une prospection, analyser une difficulté commerciale ou organiser vos prochaines actions. Dites-moi ce que vous cherchez à accomplir."
+    );
+  }
+
+  const asksForCoaching =
+    /refus|refuse|rejette|rejet|ecoute|objection|difficile|probleme|bloque|convaincre|prospect|client/.test(qn);
+  if (asksForCoaching && !greetingOnly) {
+    parts.push(
+      "Méthode de coaching :\\n" +
+        "1. Séparez les faits observés de votre interprétation ; un refus ne signifie pas toujours un manque d’intérêt définitif.\\n" +
+        "2. Cherchez une cause possible sans la supposer certaine : mauvais moment, besoin mal compris, offre peu pertinente, manque de confiance ou contrainte de budget.\\n" +
+        "3. Posez une seule question ouverte et respectueuse, par exemple : « Est-ce le moment qui ne convient pas, ou le sujet n’est-il pas pertinent pour vous ? »\\n" +
+        "4. Proposez une prochaine étape simple et sans pression ; si la personne n’est pas intéressée, remerciez-la et respectez sa décision.\\n" +
+        "5. Notez le résultat et choisissez une relance uniquement si elle est appropriée.\\n" +
+        "Pour affiner le conseil, précisez ce que la personne a dit exactement et à quel moment de l’échange le refus est survenu."
+    );
+  }
+
   if (scored.length) {
     for (const { r } of scored) {
       const body = String(r.content ?? '').trim();
