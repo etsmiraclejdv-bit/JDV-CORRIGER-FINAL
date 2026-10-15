@@ -50,3 +50,22 @@ test('les langues autres que le français ne reprennent pas le texte français s
     );
   }
 });
+
+import { landingMessages } from '../src/lib/i18n/landing.ts';
+
+test('catalogue page publique : 11 langues non vides pour chaque clé', () => {
+  for (const [key, entry] of Object.entries(landingMessages)) {
+    for (const { code } of JDV_LOCALES) {
+      assert.ok(
+        typeof entry[code] === 'string' && entry[code].trim() !== '',
+        'landing.' + key + ' sans traduction ' + code
+      );
+    }
+  }
+});
+
+test('catalogue page publique : pas de chevauchement avec le catalogue principal', () => {
+  for (const key of Object.keys(landingMessages)) {
+    assert.ok(!(key in messages.fr), key + ' existe déjà dans messages.ts');
+  }
+});

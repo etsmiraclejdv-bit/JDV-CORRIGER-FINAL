@@ -1,75 +1,80 @@
+'use client';
+
 import React from 'react';
 import { Check, Zap } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { LandingKey } from '@/lib/i18n/landing';
 
 const plans = [
   {
     id: 'plan-mensuel',
-    name: 'Mensuel',
+    name: 'pricing.monthly' as LandingKey,
     price: '50',
     currency: 'USD',
-    duration: '30 jours',
+    duration: '30',
     popular: false,
     features: [
-      "Jusqu'à 5 prospecteurs",
-      'Gestion clients & prospects',
-      'Ventes à crédit illimitées',
-      'Rapports de base',
-      'Support email',
+      'pricing.m1' as LandingKey,
+      'pricing.m2' as LandingKey,
+      'pricing.m3' as LandingKey,
+      'pricing.m4' as LandingKey,
+      'pricing.m5' as LandingKey,
     ],
   },
   {
     id: 'plan-trimestriel',
-    name: 'Trimestriel',
+    name: 'pricing.quarterly' as LandingKey,
     price: '150',
     currency: 'USD',
-    duration: '90 jours',
+    duration: '90',
     popular: false,
     features: [
-      "Jusqu'à 15 prospecteurs",
-      'Gestion stock complète',
-      'Transferts terrain',
-      'Commissions automatiques',
-      'Rapports avancés',
-      'Support prioritaire',
+      'pricing.q1' as LandingKey,
+      'pricing.q2' as LandingKey,
+      'pricing.q3' as LandingKey,
+      'pricing.q4' as LandingKey,
+      'pricing.q5' as LandingKey,
+      'pricing.q6' as LandingKey,
     ],
   },
   {
     id: 'plan-semestriel',
-    name: 'Semestriel',
+    name: 'pricing.semiannual' as LandingKey,
     price: '300',
     currency: 'USD',
-    duration: '180 jours',
+    duration: '180',
     popular: true,
     features: [
-      "Jusqu'à 30 prospecteurs",
-      'Toutes fonctionnalités',
-      'Bons de commande fournisseurs',
-      'Recouvrement avancé',
-      'Export comptable',
-      'Support dédié',
-      'Formation équipe incluse',
+      'pricing.s1' as LandingKey,
+      'pricing.s2' as LandingKey,
+      'pricing.s3' as LandingKey,
+      'pricing.s4' as LandingKey,
+      'pricing.s5' as LandingKey,
+      'pricing.s6' as LandingKey,
+      'pricing.s7' as LandingKey,
     ],
   },
   {
     id: 'plan-annuel',
-    name: 'Annuel',
+    name: 'pricing.annual' as LandingKey,
     price: '600',
     currency: 'USD',
-    duration: '365 jours',
+    duration: '365',
     popular: false,
     features: [
-      'Prospecteurs illimités',
-      'Toutes fonctionnalités',
-      'API dédiée',
-      'Tableau de bord personnalisé',
-      'SLA 99.9%',
-      'Gestionnaire de compte dédié',
-      'Intégration comptable',
+      'pricing.y1' as LandingKey,
+      'pricing.y2' as LandingKey,
+      'pricing.y3' as LandingKey,
+      'pricing.y4' as LandingKey,
+      'pricing.y5' as LandingKey,
+      'pricing.y6' as LandingKey,
+      'pricing.y7' as LandingKey,
     ],
   },
 ];
 
 export default function PricingSection() {
+  const { t } = useLanguage();
   return (
     <section id="pricing" className="py-20">
       <div className="max-w-screen-xl mx-auto px-6 lg:px-10">
@@ -78,14 +83,14 @@ export default function PricingSection() {
             className="text-xs font-semibold uppercase tracking-widest text-primary mb-3"
             style={{ letterSpacing: '0.12em' }}
           >
-            Tarifs
+            {t('pricing.kicker')}
           </p>
           <h2 className="text-3xl lg:text-4xl font-extrabold text-foreground mb-4">
-            Des prix <span className="gold-gradient-text">transparents</span>, sans surprise
+            {t('pricing.titleBefore')}
+            <span className="gold-gradient-text">{t('pricing.titleHighlight')}</span>
+            {t('pricing.titleAfter')}
           </h2>
-          <p className="text-base text-muted-foreground max-w-xl mx-auto">
-            Essai gratuit inclus à l&apos;inscription. Aucune carte bancaire requise pour démarrer.
-          </p>
+          <p className="text-base text-muted-foreground max-w-xl mx-auto">{t('pricing.intro')}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -100,13 +105,13 @@ export default function PricingSection() {
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                   <span className="btn-gold text-xs font-bold px-4 py-1.5 rounded-full flex items-center gap-1.5">
                     <Zap size={11} />
-                    Populaire
+                    {t('pricing.popular')}
                   </span>
                 </div>
               )}
 
               <div className="mb-6">
-                <p className="text-sm font-semibold text-muted-foreground mb-2">{plan?.name}</p>
+                <p className="text-sm font-semibold text-muted-foreground mb-2">{t(plan.name)}</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-extrabold text-foreground stat-number">
                     {plan?.price}
@@ -114,7 +119,7 @@ export default function PricingSection() {
                   <span className="text-lg font-bold text-primary">$</span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  {plan?.duration} · renouvelable
+                  {plan?.duration} {t('pricing.days')} · {t('pricing.renewable')}
                 </p>
               </div>
 
@@ -125,7 +130,7 @@ export default function PricingSection() {
                     className="flex items-start gap-2 text-sm text-muted-foreground"
                   >
                     <Check size={14} className="text-success mt-0.5 flex-shrink-0" />
-                    {feature}
+                    {t(feature)}
                   </li>
                 ))}
               </ul>
@@ -136,15 +141,13 @@ export default function PricingSection() {
                   plan?.popular ? 'btn-gold' : 'btn-outline-gold'
                 }`}
               >
-                {plan?.popular ? 'Choisir ce plan' : 'Commencer'}
+                {plan?.popular ? t('pricing.choose') : t('pricing.start')}
               </a>
             </div>
           ))}
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-8">
-          Tous les prix sont en USD. Paiement possible en CFA via mobile money ou virement bancaire.
-        </p>
+        <p className="text-center text-xs text-muted-foreground mt-8">{t('pricing.note')}</p>
       </div>
     </section>
   );
