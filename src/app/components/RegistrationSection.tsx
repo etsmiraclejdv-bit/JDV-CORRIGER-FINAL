@@ -167,7 +167,7 @@ export default function RegistrationSection() {
   const sectorOptions = useMemo(
     () =>
       sectors.map((s) => {
-        const index = defaultSectors.findIndex(([id]) => id === s.id);
+        const index = defaultSectors.findIndex(({ id }) => id === s.id);
         return (
           <option key={s.id} value={s.id}>
             {index >= 0 ? t(('sector.' + (index + 1)) as LandingKey) : s.name}
