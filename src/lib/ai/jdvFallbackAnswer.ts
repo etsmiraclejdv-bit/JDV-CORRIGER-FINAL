@@ -143,24 +143,29 @@ export function buildKnowledgeAnswer(input: {
   const qn = norm(input.question);
 
   // Capacités de coaching minimales disponibles même sans fournisseur IA externe.
-  const greetingOnly = /^(bonjour|bonsoir|salut|sallut|hello|coucou|bon matin|bonne soiree)[!.\s]*$/i.test(
-    norm(input.question).replace(/[^a-z0-9!?.\s]/g, '').trim()
-  );
+  const greetingOnly =
+    /^(bonjour|bonsoir|salut|sallut|hello|coucou|bon matin|bonne soiree)[!.\s]*$/i.test(
+      norm(input.question)
+        .replace(/[^a-z0-9!?.\s]/g, '')
+        .trim()
+    );
   if (greetingOnly) {
-    return "Salut ! Je suis GPT-IA, ton assistant JDV CRM. Je peux t’aider à utiliser les fonctionnalités du CRM, à organiser tes activités commerciales ou à résoudre un problème de prospection. Qu’aimerais-tu faire aujourd’hui ?";
+    return 'Salut ! Je suis GPT-IA, ton assistant JDV CRM. Je peux t’aider à utiliser les fonctionnalités du CRM, à organiser tes activités commerciales ou à résoudre un problème de prospection. Qu’aimerais-tu faire aujourd’hui ?';
   }
 
   const asksForCoaching =
-    /refus|refuse|rejette|rejet|ecoute|objection|difficile|probleme|bloque|convaincre|prospect|client/.test(qn);
+    /refus|refuse|rejette|rejet|ecoute|objection|difficile|probleme|bloque|convaincre|prospect|client/.test(
+      qn
+    );
   if (asksForCoaching && !greetingOnly) {
     parts.push(
-      "Méthode de coaching :\n" +
-        "1. Séparez les faits observés de votre interprétation ; un refus ne signifie pas toujours un manque d’intérêt définitif.\n" +
-        "2. Cherchez une cause possible sans la supposer certaine : mauvais moment, besoin mal compris, offre peu pertinente, manque de confiance ou contrainte de budget.\n" +
-        "3. Posez une seule question ouverte et respectueuse, par exemple : « Est-ce le moment qui ne convient pas, ou le sujet n’est-il pas pertinent pour vous ? »\n" +
-        "4. Proposez une prochaine étape simple et sans pression ; si la personne n’est pas intéressée, remerciez-la et respectez sa décision.\n" +
-        "5. Notez le résultat et choisissez une relance uniquement si elle est appropriée.\n" +
-        "Pour affiner le conseil, précisez ce que la personne a dit exactement et à quel moment de l’échange le refus est survenu."
+      'Méthode de coaching :\n' +
+        '1. Séparez les faits observés de votre interprétation ; un refus ne signifie pas toujours un manque d’intérêt définitif.\n' +
+        '2. Cherchez une cause possible sans la supposer certaine : mauvais moment, besoin mal compris, offre peu pertinente, manque de confiance ou contrainte de budget.\n' +
+        '3. Posez une seule question ouverte et respectueuse, par exemple : « Est-ce le moment qui ne convient pas, ou le sujet n’est-il pas pertinent pour vous ? »\n' +
+        '4. Proposez une prochaine étape simple et sans pression ; si la personne n’est pas intéressée, remerciez-la et respectez sa décision.\n' +
+        '5. Notez le résultat et choisissez une relance uniquement si elle est appropriée.\n' +
+        'Pour affiner le conseil, précisez ce que la personne a dit exactement et à quel moment de l’échange le refus est survenu.'
     );
   }
 
@@ -239,8 +244,6 @@ export function buildKnowledgeAnswer(input: {
   );
   if (next) parts.push(`Étape suivante : ${next[1]}`);
 
-  parts.push(
-    '(Mode guide : réponse fondée sur la base de connaissances JDV CRM.)'
-  );
+  parts.push('(Mode guide : réponse fondée sur la base de connaissances JDV CRM.)');
   return parts.join('\n\n');
 }
