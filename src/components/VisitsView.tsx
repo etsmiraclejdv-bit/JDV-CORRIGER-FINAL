@@ -23,18 +23,17 @@ import {
   type VisitRecord,
 } from '@/lib/services/visitsService';
 import {
-  VISIT_RESULTS,
   fromDatetimeLocal,
   mapsUrl,
   prospectsDueForFollowUp,
   summarizeVisits,
   toDatetimeLocal,
   validateVisit,
-  visitResultLabel,
 } from '@/lib/visits/helpers';
-import { formatDateTimeFr } from '@/lib/platform/paymentsHelpers';
 import { toTelHref } from '@/lib/relances/helpers';
 import { inputClass, labelClass } from '@/lib/ui/forms';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 import Modal from '@/components/ui/Modal';
 import MetricCard from '@/components/ui/MetricCard';
 import LoadingState from '@/components/ui/LoadingState';
@@ -44,6 +43,15 @@ interface VisitsViewProps {
   /** « terrain » : le prospecteur saisit et consulte ses visites ; « business » : l'administrateur consulte toutes les visites. */
   mode: 'terrain' | 'business';
 }
+
+const VISIT_RESULTS: { value: string; label: TerrainKey }[] = [
+  { value: 'interested', label: 'tvi.rInterested' },
+  { value: 'to_follow_up', label: 'tvi.rFollow' },
+  { value: 'sold', label: 'tvi.rSold' },
+  { value: 'not_interested', label: 'tvi.rNot' },
+  { value: 'absent', label: 'tvi.rAbsent' },
+  { value: 'other', label: 'tvi.rOther' },
+];
 
 const RESULT_CLASSES: Record<string, string> = {
   sold: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -81,6 +89,24 @@ const emptyForm = (prospectId = ''): FormState => ({
 
 export default function VisitsView({ mode }: VisitsViewProps) {
   const isTerrain = mode === 'terrain';
+  const { t, locale } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const formatDateTime = (iso: string | null | undefined) => {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '—';
+    return new Intl.DateTimeFormat(locale, { dateStyle: 'short', timeStyle: 'short' })
+      .format(d)
+      .replace(',', '');
+  };
+  const resultLabel = (value: string | null | undefined) => {
+    const found = VISIT_RESULTS.find((r) => r.value === value);
+    return found ? t(found.label) : value || '—';
+  };
   const [orgId, setOrgId] = useState<string | null>(null);
   const [prospecteurId, setProspecteurId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,12 +130,12 @@ export default function VisitsView({ mode }: VisitsViewProps) {
     if (isTerrain) {
       const ctx = await getAuthContext();
       if (!ctx) {
-        setError("Vous n'êtes pas connecté.");
+        setError(t('tvi.notLogged'));
         setLoading(false);
         return;
       }
       if (!ctx.prospecteurId || !ctx.prospecteurOrganizationId) {
-        setError('Aucun profil prospecteur actif pour ce compte.');
+        setError(t('tvi.noOrgField'));
         setLoading(false);
         return;
       }
@@ -125,7 +151,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
     } else {
       const { orgId: org, error: guardError } = await getAdminOrganization();
       if (!org) {
-        setError(guardError ?? 'Accès impossible.');
+        setError(guardError ?? t('tvi.noAccess'));
         setLoading(false);
         return;
       }
@@ -136,7 +162,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
       setNames(n);
     }
     setLoading(false);
-  }, [isTerrain]);
+  }, [isTerrain, t]);
 
   useEffect(() => {
     void load();
@@ -170,7 +196,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
 
   function locate() {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      setFormError("La géolocalisation n'est pas disponible sur cet appareil.");
+      setFormError(t('tvi.noGeo'));
       return;
     }
     setLocating(true);
@@ -186,9 +212,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
       },
       () => {
         setLocating(false);
-        setFormError(
-          'Position introuvable. Autorisez la localisation dans votre navigateur, ou laissez ce champ vide.'
-        );
+        setFormError(t('tvi.noPos'));
       },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 }
     );
@@ -218,16 +242,15 @@ export default function VisitsView({ mode }: VisitsViewProps) {
       setFormError(err);
       return;
     }
-    toast.success('Visite enregistrée. La fiche du prospect a été mise à jour.');
+    toast.success(t('tvi.saved'));
     setOpen(false);
     void load();
   }
 
-  if (loading && visits.length === 0 && !error)
-    return <LoadingState message="Chargement des visites…" />;
+  if (loading && visits.length === 0 && !error) return <LoadingState message={t('tvi.loading')} />;
   if (error && visits.length === 0 && prospects.length === 0 && !orgId) {
     return (
-      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+      <ErrorState message={error} action={{ label: t('tvi.retry'), onClick: () => void load() }} />
     );
   }
 
@@ -238,23 +261,21 @@ export default function VisitsView({ mode }: VisitsViewProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white">
-            {isTerrain ? 'Mes visites' : 'Visites terrain'}
+            {isTerrain ? t('tvi.titleField') : t('tvi.titleBusiness')}
           </h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {isTerrain
-              ? 'Enregistrez vos visites chez les prospects et suivez vos relances'
-              : 'Activité de visite de vos prospecteurs'}
+            {isTerrain ? t('tvi.subField') : t('tvi.subBusiness')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => void load()}
             disabled={loading}
-            aria-label="Actualiser la liste"
+            aria-label={t('tvi.refreshAria')}
             className="flex items-center gap-2 btn-outline-gold px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            Actualiser
+            {t('tvi.refresh')}
           </button>
           {isTerrain && (
             <button
@@ -262,7 +283,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
               className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
             >
               <Plus size={14} />
-              Nouvelle visite
+              {t('tvi.new')}
             </button>
           )}
         </div>
@@ -280,31 +301,31 @@ export default function VisitsView({ mode }: VisitsViewProps) {
         className={`grid grid-cols-1 sm:grid-cols-2 ${isTerrain ? 'xl:grid-cols-4' : 'xl:grid-cols-3'} gap-4`}
       >
         <MetricCard
-          title="Visites ce mois"
+          title={t('tvi.mMonth')}
           value={String(summary.thisMonth)}
-          subtitle={`${summary.total} au total`}
+          subtitle={fill('tvi.totalSub', { n: summary.total })}
           icon={<MapPin size={18} />}
           variant="gold"
         />
         <MetricCard
-          title="7 derniers jours"
+          title={t('tvi.m7')}
           value={String(summary.last7Days)}
-          subtitle="visites récentes"
+          subtitle={t('tvi.recent')}
           icon={<Calendar size={18} />}
           variant="default"
         />
         <MetricCard
-          title="Personnes visitées"
+          title={t('tvi.mPeople')}
           value={String(summary.distinctProspects)}
-          subtitle="prospects différents"
+          subtitle={t('tvi.distinct')}
           icon={<Users size={18} />}
           variant="default"
         />
         {isTerrain && (
           <MetricCard
-            title="À relancer"
+            title={t('tvi.mDue')}
             value={String(due.length)}
-            subtitle="relances échues"
+            subtitle={t('tvi.dueSub')}
             icon={<Clock size={18} />}
             variant={due.length > 0 ? 'warning' : 'success'}
           />
@@ -315,13 +336,13 @@ export default function VisitsView({ mode }: VisitsViewProps) {
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-[#D4AF37]/10 flex items-center gap-2">
             <Clock size={16} className="text-[#D4AF37]" />
-            <h2 className="text-sm font-semibold text-white">Prospects à relancer</h2>
+            <h2 className="text-sm font-semibold text-white">{t('tvi.dueTitle')}</h2>
             <span className="text-xs text-[#718096]">({due.length})</span>
           </div>
           {due.length === 0 ? (
             <div className="py-8 text-center px-6">
               <CheckCircle size={26} className="mx-auto mb-2 text-[#68D391] opacity-70" />
-              <p className="text-sm text-[#A0AEC0]">Aucune relance en retard.</p>
+              <p className="text-sm text-[#A0AEC0]">{t('tvi.noDue')}</p>
             </div>
           ) : (
             <ul className="divide-y divide-[#D4AF37]/5">
@@ -335,7 +356,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                     <div>
                       <p className="text-sm text-white">{p.name}</p>
                       <p className="text-xs text-[#718096]">
-                        Relance prévue le {formatDateTimeFr(p.next_follow_up_at)}
+                        {fill('tvi.plannedOn', { d: formatDateTime(p.next_follow_up_at) })}
                         {p.city ? ` · ${p.city}` : ''}
                       </p>
                     </div>
@@ -343,7 +364,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                       {tel && (
                         <a
                           href={tel}
-                          aria-label={`Appeler ${p.name}`}
+                          aria-label={fill('tvi.callAria', { n: p.name })}
                           className="p-2 rounded-lg bg-[#0B1B3D] border border-[#D4AF37]/20 text-[#D4AF37] hover:bg-[#D4AF37]/10"
                         >
                           <Phone size={14} />
@@ -353,7 +374,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                         onClick={() => openCreate(p.id)}
                         className="px-3 py-2 rounded-lg text-xs font-semibold bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/20"
                       >
-                        Enregistrer une visite
+                        {t('tvi.logVisit')}
                       </button>
                     </div>
                   </li>
@@ -371,21 +392,21 @@ export default function VisitsView({ mode }: VisitsViewProps) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un nom, un numéro, un lieu ou une note…"
-            aria-label="Rechercher une visite"
+            placeholder={t('tvi.searchPh')}
+            aria-label={t('tvi.searchAria')}
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
         <select
           value={resultFilter}
           onChange={(e) => setResultFilter(e.target.value)}
-          aria-label="Filtrer par résultat"
+          aria-label={t('tvi.filterResultAria')}
           className={`${inputClass} lg:w-56`}
         >
-          <option value="">Tous les résultats</option>
+          <option value="">{t('tvi.allResults')}</option>
           {VISIT_RESULTS.map((r) => (
             <option key={r.value} value={r.value}>
-              {r.label}
+              {t(r.label)}
             </option>
           ))}
         </select>
@@ -393,13 +414,13 @@ export default function VisitsView({ mode }: VisitsViewProps) {
           <select
             value={prospecteurFilter}
             onChange={(e) => setProspecteurFilter(e.target.value)}
-            aria-label="Filtrer par prospecteur"
+            aria-label={t('tvi.filterProsAria')}
             className={`${inputClass} lg:w-56`}
           >
-            <option value="">Tous les prospecteurs</option>
+            <option value="">{t('tvi.allPros')}</option>
             {prospecteurIds.map((id) => (
               <option key={id} value={id}>
-                {names[id] || 'Prospecteur'}
+                {names[id] || t('tvi.prospector')}
               </option>
             ))}
           </select>
@@ -411,14 +432,14 @@ export default function VisitsView({ mode }: VisitsViewProps) {
           <div className="py-16 text-center px-6">
             <MapPin size={32} className="mx-auto mb-3 text-[#D4AF37] opacity-60" />
             <p className="text-white text-sm font-semibold mb-1">
-              {visits.length === 0 ? 'Aucune visite enregistrée' : 'Aucun résultat'}
+              {visits.length === 0 ? t('tvi.noVisit') : t('tvi.noResult')}
             </p>
             <p className="text-[#A0AEC0] text-sm">
               {visits.length === 0
                 ? isTerrain
-                  ? 'Enregistrez votre première visite avec « Nouvelle visite ».'
-                  : 'Les visites saisies par vos prospecteurs apparaîtront ici.'
-                : 'Modifiez la recherche ou les filtres.'}
+                  ? t('tvi.firstVisit')
+                  : t('tvi.willAppear')
+                : t('tvi.changeFilters')}
             </p>
           </div>
         ) : (
@@ -427,13 +448,13 @@ export default function VisitsView({ mode }: VisitsViewProps) {
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
                   {[
-                    'Date',
-                    'Contact',
-                    ...(isTerrain ? [] : ['Prospecteur']),
-                    'Résultat',
-                    'Notes',
-                    'Prochaine relance',
-                    'Lieu',
+                    t('tvi.thDate'),
+                    t('tvi.thContact'),
+                    ...(isTerrain ? [] : [t('tvi.prospector')]),
+                    t('tvi.thResult'),
+                    t('tvi.thNotes'),
+                    t('tvi.thNext'),
+                    t('tvi.thPlace'),
                   ].map((h) => (
                     <th key={h} className={TH}>
                       {h}
@@ -448,7 +469,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                   return (
                     <tr key={v.id} className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50">
                       <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
-                        {formatDateTimeFr(v.visit_date)}
+                        {formatDateTime(v.visit_date)}
                       </td>
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium text-white">{v.contact_name}</p>
@@ -470,14 +491,14 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                         <span
                           className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${RESULT_CLASSES[v.result ?? 'other'] ?? RESULT_CLASSES.other}`}
                         >
-                          {visitResultLabel(v.result)}
+                          {resultLabel(v.result)}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-xs text-[#A0AEC0] max-w-xs break-words">
                         {v.notes || '—'}
                       </td>
                       <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
-                        {v.next_follow_up_at ? formatDateTimeFr(v.next_follow_up_at) : '—'}
+                        {v.next_follow_up_at ? formatDateTime(v.next_follow_up_at) : '—'}
                       </td>
                       <td className="px-4 py-3 text-sm whitespace-nowrap">
                         {map ? (
@@ -487,7 +508,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-[#D4AF37] hover:underline"
                           >
-                            <MapPin size={12} /> Carte
+                            <MapPin size={12} /> {t('tvi.map')}
                           </a>
                         ) : (
                           <span className="text-[#A0AEC0]">{v.address || '—'}</span>
@@ -503,12 +524,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
       </div>
 
       {isTerrain && (
-        <Modal
-          open={open}
-          onClose={() => !saving && setOpen(false)}
-          title="Nouvelle visite"
-          size="xl"
-        >
+        <Modal open={open} onClose={() => !saving && setOpen(false)} title={t('tvi.new')} size="xl">
           <div className="space-y-4">
             {formError && (
               <div
@@ -520,13 +536,12 @@ export default function VisitsView({ mode }: VisitsViewProps) {
             )}
             {prospects.length === 0 && (
               <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
-                Vous n&apos;avez aucun prospect. Ajoutez-en un dans « Mes prospects » avant
-                d&apos;enregistrer une visite.
+                {t('tvi.noProspects')}
               </div>
             )}
             <div>
               <label className={labelClass} htmlFor="v-prospect">
-                Prospect visité *
+                {t('tvi.fProspect')}
               </label>
               <select
                 id="v-prospect"
@@ -534,7 +549,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                 onChange={(e) => setForm((f) => ({ ...f, prospect_id: e.target.value }))}
                 className={inputClass}
               >
-                <option value="">Choisir…</option>
+                <option value="">{t('tvi.choose')}</option>
                 {prospects.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.phone ? `${p.name} — ${p.phone}` : p.name}
@@ -545,7 +560,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass} htmlFor="v-date">
-                  Date et heure *
+                  {t('tvi.fDate')}
                 </label>
                 <input
                   id="v-date"
@@ -557,7 +572,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
               </div>
               <div>
                 <label className={labelClass} htmlFor="v-result">
-                  Résultat *
+                  {t('tvi.fResult')}
                 </label>
                 <select
                   id="v-result"
@@ -565,10 +580,10 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                   onChange={(e) => setForm((f) => ({ ...f, result: e.target.value }))}
                   className={inputClass}
                 >
-                  <option value="">Choisir…</option>
+                  <option value="">{t('tvi.choose')}</option>
                   {VISIT_RESULTS.map((r) => (
                     <option key={r.value} value={r.value}>
-                      {r.label}
+                      {t(r.label)}
                     </option>
                   ))}
                 </select>
@@ -576,7 +591,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
             </div>
             <div>
               <label className={labelClass} htmlFor="v-notes">
-                Notes
+                {t('tvi.fNotes')}
               </label>
               <textarea
                 id="v-notes"
@@ -590,7 +605,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass} htmlFor="v-next">
-                  Prochaine relance
+                  {t('tvi.fNext')}
                 </label>
                 <input
                   id="v-next"
@@ -602,7 +617,7 @@ export default function VisitsView({ mode }: VisitsViewProps) {
               </div>
               <div>
                 <label className={labelClass} htmlFor="v-address">
-                  Lieu de la visite
+                  {t('tvi.fPlace')}
                 </label>
                 <input
                   id="v-address"
@@ -620,23 +635,21 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                 disabled={locating}
                 className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 disabled:opacity-50"
               >
-                <MapPin size={14} /> {locating ? 'Localisation…' : 'Enregistrer ma position'}
+                <MapPin size={14} /> {locating ? t('tvi.locating') : t('tvi.savePos')}
               </button>
               {form.latitude !== null && form.longitude !== null && (
                 <span className="text-xs text-[#A0AEC0]">
-                  Position : {form.latitude}, {form.longitude}{' '}
+                  {t('tvi.position')} {form.latitude}, {form.longitude}{' '}
                   <button
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, latitude: null, longitude: null }))}
                     className="underline ml-1"
                   >
-                    Retirer
+                    {t('tvi.remove')}
                   </button>
                 </span>
               )}
-              <span className="text-xs text-[#718096]">
-                Facultatif : votre navigateur vous demandera l&apos;autorisation.
-              </span>
+              <span className="text-xs text-[#718096]">{t('tvi.optional')}</span>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -644,14 +657,14 @@ export default function VisitsView({ mode }: VisitsViewProps) {
                 disabled={saving}
                 className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white disabled:opacity-50"
               >
-                Annuler
+                {t('tvi.cancel')}
               </button>
               <button
                 onClick={() => void handleSave()}
                 disabled={saving || prospects.length === 0}
                 className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
               >
-                {saving ? 'Enregistrement…' : 'Enregistrer la visite'}
+                {saving ? t('tvi.saving') : t('tvi.saveVisit')}
               </button>
             </div>
           </div>
