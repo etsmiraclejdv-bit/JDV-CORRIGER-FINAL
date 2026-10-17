@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import {
   Package,
   Warehouse,
@@ -25,14 +26,14 @@ import {
   returnProspecteurStock,
 } from '@/lib/services/prospecteurSupplyService';
 
-const money = (v: number) =>
-  new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'XOF',
-    maximumFractionDigits: 0,
-  }).format(Number(v) || 0);
-
 export default function ApprovisionnementPage() {
+  const { t, locale } = useLanguage();
+  const money = (v: number) =>
+    new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'XOF',
+      maximumFractionDigits: 0,
+    }).format(Number(v) || 0);
   const [ctx, setCtx] = useState<any>();
   const [wh, setWh] = useState<any>();
   const [catalog, setCatalog] = useState<any[]>([]);
@@ -94,7 +95,7 @@ export default function ApprovisionnementPage() {
 
   async function submit() {
     if (blocked) {
-      setMsg('Approvisionnement bloqué : une marchandise doit être retournée à l’entrepôt.');
+      setMsg(t('ta.blockedMsg'));
       setTab('stock');
       return;
     }
@@ -108,9 +109,7 @@ export default function ApprovisionnementPage() {
       return;
     }
     setSelected({});
-    setMsg(
-      'Demande transmise à l’entrepôt. Le stock sera crédité après expédition scannée et confirmation de réception.'
-    );
+    setMsg(t('ta.requestSent'));
     await load();
     setTab('demandes');
   }
@@ -124,9 +123,7 @@ export default function ApprovisionnementPage() {
       setMsg(r.error.message);
       return;
     }
-    setMsg(
-      'Retour enregistré : la quantité non vendue a été réintégrée dans le stock de l’entrepôt. Aucune commission n’est créée.'
-    );
+    setMsg(t('ta.returnDone'));
     await load();
   }
 
@@ -134,11 +131,9 @@ export default function ApprovisionnementPage() {
     <div className="p-5 lg:p-8 space-y-6">
       <div className="flex justify-between">
         <div>
-          <p className="text-xs uppercase tracking-widest text-[#D4AF37]">Terrain</p>
-          <h1 className="text-2xl font-bold text-white">Mon approvisionnement</h1>
-          <p className="text-sm text-[#A0AEC0]">
-            Entrepôt, stock personnel, délais de retour et historique des ventes.
-          </p>
+          <p className="text-xs uppercase tracking-widest text-[#D4AF37]">{t('ta.field')}</p>
+          <h1 className="text-2xl font-bold text-white">{t('mySupply')}</h1>
+          <p className="text-sm text-[#A0AEC0]">{t('ta.sub')}</p>
         </div>
         <button onClick={load} className="p-2.5 rounded-xl bg-[#0F2347] text-[#A0AEC0]">
           <RefreshCw size={17} />
@@ -150,14 +145,12 @@ export default function ApprovisionnementPage() {
         </div>
       )}
       {loading ? (
-        <div className="p-10 text-center text-[#A0AEC0]">Chargement…</div>
+        <div className="p-10 text-center text-[#A0AEC0]">{t('loading')}</div>
       ) : !wh ? (
         <div className="p-6 bg-[#0F2347] rounded-2xl border border-amber-500/30">
           <AlertTriangle className="text-amber-400" />
-          <h2 className="text-white font-semibold mt-2">Aucun entrepôt affecté</h2>
-          <p className="text-sm text-[#A0AEC0]">
-            L’administrateur doit affecter ce prospecteur à un entrepôt.
-          </p>
+          <h2 className="text-white font-semibold mt-2">{t('ta.noWarehouse')}</h2>
+          <p className="text-sm text-[#A0AEC0]">{t('ta.noWarehouseText')}</p>
         </div>
       ) : (
         <>
@@ -165,11 +158,11 @@ export default function ApprovisionnementPage() {
             <div className="flex gap-3">
               <Warehouse className="text-[#D4AF37]" />
               <div>
-                <p className="text-xs text-[#718096]">Mon entrepôt</p>
+                <p className="text-xs text-[#718096]">{t('ta.myWarehouse')}</p>
                 <h2 className="text-lg font-bold text-white">{wh.warehouses?.name}</h2>
                 <p className="text-sm text-[#A0AEC0]">
-                  {wh.warehouses?.code} · {wh.department || 'Département non renseigné'} ·{' '}
-                  {wh.warehouses?.city || wh.city || 'Ville non renseignée'}
+                  {wh.warehouses?.code} · {wh.department || t('ta.noDept')} ·{' '}
+                  {wh.warehouses?.city || wh.city || t('ta.noCity')}
                 </p>
                 {wh.warehouses?.address && (
                   <p className="text-xs text-[#718096] mt-2">
@@ -181,26 +174,25 @@ export default function ApprovisionnementPage() {
           </div>
           {blocked && (
             <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/40 text-red-200 text-sm">
-              <b>Approvisionnement bloqué.</b> Une marchandise a dépassé le délai de retour de 10
-              jours. Retournez-la avant toute nouvelle demande.
+              <b>{t('ta.blocked')}.</b> {t('ta.blockedLong')}
             </div>
           )}
           <div className="grid grid-cols-4 gap-2">
             {[
-              ['catalogue', 'Catalogue', Package, catalog.length],
+              ['catalogue', t('productCatalogNav'), Package, catalog.length],
               [
                 'stock',
-                'Mon stock',
+                t('ta.tabStock'),
                 Warehouse,
                 stock.reduce((n, x) => n + Number(x.quantity || 0), 0),
               ],
               [
                 'ventes',
-                'Vendus',
+                t('ta.tabSold'),
                 ShoppingCart,
                 sales.reduce((n, x) => n + Number(x.quantity || 0), 0),
               ],
-              ['demandes', 'Historique', Truck, requests.length],
+              ['demandes', t('ta.tabHistory'), Truck, requests.length],
             ].map((x: any) => {
               const Icon = x[2];
               return (
@@ -224,18 +216,18 @@ export default function ApprovisionnementPage() {
           {tab === 'catalogue' && (
             <section>
               <div className="flex justify-between items-center mb-3">
-                <h2 className="font-semibold text-white">Articles disponibles</h2>
+                <h2 className="font-semibold text-white">{t('ta.available')}</h2>
                 <button
                   disabled={!chosen.length || saving || blocked}
                   onClick={submit}
                   className="btn-gold px-4 py-2 rounded-xl text-sm disabled:opacity-50"
                 >
-                  {blocked ? 'Retour obligatoire' : `Envoyer la demande (${chosen.length})`}
+                  {blocked ? t('ta.mustReturn') : `${t('ta.sendRequest')} (${chosen.length})`}
                 </button>
               </div>
               <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
                 {catalog.length === 0 ? (
-                  <Empty text="Aucun article disponible dans cet entrepôt." />
+                  <Empty text={t('ta.noItems')} />
                 ) : (
                   catalog.map((r: any) => {
                     const a = r.articles;
@@ -251,22 +243,22 @@ export default function ApprovisionnementPage() {
                       >
                         <p className="font-semibold text-white">{a.name}</p>
                         <p className="text-xs text-[#718096]">
-                          {a.code} · {available} disponibles
+                          {a.code} · {available} {t('ta.availableCount')}
                         </p>
                         <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
                           <span className="text-[#A0AEC0]">
-                            Comptant
+                            {t('ta.cashPrice')}
                             <br />
                             <b className="text-white">{money(a.cash_price || a.fixed_price)}</b>
                           </span>
                           <span className="text-[#A0AEC0]">
-                            Crédit
+                            {t('ta.creditPrice')}
                             <br />
                             <b className="text-white">{money(a.credit_price || a.fixed_price)}</b>
                           </span>
                         </div>
                         <div className="flex justify-between items-center mt-4">
-                          <span className="text-xs text-[#A0AEC0]">À prendre</span>
+                          <span className="text-xs text-[#A0AEC0]">{t('ta.toTake')}</span>
                           <div className="flex gap-2 items-center">
                             <button
                               disabled={!q}
@@ -297,8 +289,8 @@ export default function ApprovisionnementPage() {
           {tab === 'stock' && (
             <section>
               <div className="flex justify-between items-center mb-3">
-                <h2 className="font-semibold text-white">Mon stock personnel</h2>
-                {blocked && <span className="text-xs text-red-300">Approvisionnement bloqué</span>}
+                <h2 className="font-semibold text-white">{t('ta.myStock')}</h2>
+                {blocked && <span className="text-xs text-red-300">{t('ta.blocked')}</span>}
               </div>
               <div className="space-y-2">
                 {stock.length ? (
@@ -315,12 +307,10 @@ export default function ApprovisionnementPage() {
                     </div>
                   ))
                 ) : (
-                  <Empty text="Votre stock est vide." />
+                  <Empty text={t('ta.stockEmpty')} />
                 )}
               </div>
-              <h3 className="font-semibold text-white mt-6 mb-3">
-                Marchandises affectées et délais de retour
-              </h3>
+              <h3 className="font-semibold text-white mt-6 mb-3">{t('ta.holdings')}</h3>
               <div className="space-y-3">
                 {holdings.length ? (
                   holdings.map((h: any) => {
@@ -339,7 +329,7 @@ export default function ApprovisionnementPage() {
                           <div>
                             <b className="text-white">{h.articles?.name}</b>
                             <p className="text-xs text-[#718096]">
-                              {h.articles?.code} · Quantité restante : {h.remaining_quantity}
+                              {h.articles?.code} · {t('ta.remaining')} {h.remaining_quantity}
                             </p>
                             <p
                               className={
@@ -347,9 +337,9 @@ export default function ApprovisionnementPage() {
                               }
                             >
                               {overdue
-                                ? 'Retour obligatoire depuis ' + Math.abs(left) + ' jour(s)'
-                                : `Retour dans ${left} jour(s)`}{' '}
-                              · limite absolue J+20 (${hard} jours)
+                                ? `${t('ta.overdueSince')} ${Math.abs(left)} ${t('ta.daysUnit')}`
+                                : `${t('ta.returnIn')} ${left} ${t('ta.daysUnit')}`}{' '}
+                              · {t('ta.hardLimit')} ({hard} {t('ta.daysUnit')})
                             </p>
                           </div>
                           <button
@@ -358,21 +348,21 @@ export default function ApprovisionnementPage() {
                             className="px-3 py-2 rounded-lg bg-amber-500/10 text-amber-300 text-xs disabled:opacity-50"
                           >
                             <RotateCcw size={14} className="inline mr-1" />
-                            Retourner
+                            {t('ta.return')}
                           </button>
                         </div>
                       </div>
                     );
                   })
                 ) : (
-                  <Empty text="Aucune marchandise affectée à retourner." />
+                  <Empty text={t('ta.noHoldings')} />
                 )}
               </div>
             </section>
           )}
           {tab === 'ventes' && (
             <section>
-              <h2 className="font-semibold text-white mb-3">Articles vendus et clients</h2>
+              <h2 className="font-semibold text-white mb-3">{t('ta.soldTitle')}</h2>
               <div className="space-y-2">
                 {sales.length ? (
                   sales.map((s: any) => (
@@ -381,25 +371,26 @@ export default function ApprovisionnementPage() {
                         <b className="text-white">{s.article?.name}</b>
                         <p className="text-xs text-[#A0AEC0]">
                           {s.client?.first_name} {s.client?.last_name} ·{' '}
-                          {s.client?.phone || 'Sans téléphone'}
+                          {s.client?.phone || t('ta.noPhone')}
                         </p>
                         <p className="text-xs text-[#718096]">
-                          {s.sale_number} · {s.sale_type === 'credit' ? 'À crédit' : 'Comptant'} ·{' '}
-                          {new Date(s.sale_date).toLocaleDateString('fr-FR')}
+                          {s.sale_number} ·{' '}
+                          {s.sale_type === 'credit' ? t('td.credit') : t('td.cash')} ·{' '}
+                          {new Date(s.sale_date).toLocaleDateString(locale)}
                         </p>
                       </div>
                       <b className="text-white">× {s.quantity}</b>
                     </div>
                   ))
                 ) : (
-                  <Empty text="Aucune vente enregistrée." />
+                  <Empty text={t('ta.noSales')} />
                 )}
               </div>
             </section>
           )}
           {tab === 'demandes' && (
             <section>
-              <h2 className="font-semibold text-white mb-3">Historique des approvisionnements</h2>
+              <h2 className="font-semibold text-white mb-3">{t('ta.historyTitle')}</h2>
               <div className="space-y-2">
                 {requests.length ? (
                   requests.map((r: any) => (
@@ -411,24 +402,24 @@ export default function ApprovisionnementPage() {
                             .join(' · ')}
                         </b>
                         <p className="text-xs text-[#718096]">
-                          {new Date(r.requested_at).toLocaleString('fr-FR')}
+                          {new Date(r.requested_at).toLocaleString(locale)}
                         </p>
                       </div>
                       <span className="text-xs text-amber-300">
                         {r.shipment_id
-                          ? 'Expédiée · réception à confirmer'
+                          ? t('ta.shipped')
                           : r.status === 'approved'
-                            ? 'Traitée'
+                            ? t('ta.processed')
                             : r.status === 'rejected'
-                              ? 'Refusée'
+                              ? t('ta.rejected')
                               : r.status === 'cancelled'
-                                ? 'Annulée'
-                                : 'En attente de préparation'}
+                                ? t('ta.cancelled')
+                                : t('ta.waiting')}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <Empty text="Aucun approvisionnement." />
+                  <Empty text={t('ta.none')} />
                 )}
               </div>
             </section>
