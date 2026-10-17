@@ -52,6 +52,7 @@ test('les langues autres que le français ne reprennent pas le texte français s
 });
 
 import { landingMessages } from '../src/lib/i18n/landing.ts';
+import { terrainMessages } from '../src/lib/i18n/terrain.ts';
 
 test('catalogue page publique : 11 langues non vides pour chaque clé', () => {
   for (const [key, entry] of Object.entries(landingMessages)) {
@@ -67,5 +68,17 @@ test('catalogue page publique : 11 langues non vides pour chaque clé', () => {
 test('catalogue page publique : pas de chevauchement avec le catalogue principal', () => {
   for (const key of Object.keys(landingMessages)) {
     assert.ok(!(key in messages.fr), key + ' existe déjà dans messages.ts');
+  }
+});
+
+test('catalogue terrain : 11 langues non vides et clés uniques', () => {
+  for (const [key, entry] of Object.entries(terrainMessages)) {
+    assert.ok(!(key in messages.fr) && !(key in landingMessages), key + ' est en double');
+    for (const { code } of JDV_LOCALES) {
+      assert.ok(
+        typeof entry[code] === 'string' && entry[code].trim() !== '',
+        'terrain.' + key + ' sans traduction ' + code
+      );
+    }
   }
 });

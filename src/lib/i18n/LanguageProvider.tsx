@@ -4,12 +4,13 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { JDV_LOCALES, messages, type JdvLocale, type TranslationKey } from '@/lib/i18n/messages';
 import { landingMessages, type LandingKey } from '@/lib/i18n/landing';
+import { terrainMessages, type TerrainKey } from '@/lib/i18n/terrain';
 
 const STORAGE_KEY = 'jdv-crm-language-v1';
 type LanguageContextValue = {
   locale: JdvLocale;
   setLocale: (locale: JdvLocale) => void;
-  t: (key: TranslationKey | LandingKey) => string;
+  t: (key: TranslationKey | LandingKey | TerrainKey) => string;
   formatDate: (value: Date | string | number, options?: Intl.DateTimeFormatOptions) => string;
   formatNumber: (value: number, options?: Intl.NumberFormatOptions) => string;
   locales: typeof JDV_LOCALES;
@@ -70,6 +71,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     locale,
     setLocale,
     t: (key) => {
+      if (key in terrainMessages) {
+        const entry = terrainMessages[key as TerrainKey];
+        return entry[locale] ?? entry.fr;
+      }
       if (key in landingMessages) {
         const entry = landingMessages[key as LandingKey];
         return entry[locale] ?? entry.fr;
