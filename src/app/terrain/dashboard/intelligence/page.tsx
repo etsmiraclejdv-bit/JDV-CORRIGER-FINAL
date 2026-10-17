@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type AlertRow = {
   id: string;
@@ -32,6 +33,7 @@ const severityClass: Record<string, string> = {
 };
 
 export default function IntelligencePage() {
+  const { t, locale } = useLanguage();
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -108,26 +110,24 @@ export default function IntelligencePage() {
         <div>
           <div className="flex items-center gap-2">
             <Sparkles className="text-[#D4AF37]" size={22} />
-            <h1 className="text-2xl font-bold text-white">Intelligence JDV</h1>
+            <h1 className="text-2xl font-bold text-white">{t('intelligenceJdv')}</h1>
           </div>
-          <p className="text-sm text-[#A0AEC0] mt-1">
-            Relances, stocks, retours et activité analysés automatiquement.
-          </p>
+          <p className="text-sm text-[#A0AEC0] mt-1">{t('ti.sub')}</p>
         </div>
         <button
           onClick={load}
           className="p-2 rounded-xl border border-[#D4AF37]/20 text-[#D4AF37] hover:bg-[#D4AF37]/10"
-          title="Actualiser"
+          title={t('refresh')}
         >
           <RefreshCw size={17} />
         </button>
       </div>
 
       {loading ? (
-        <div className="text-sm text-[#A0AEC0]">Analyse en cours…</div>
+        <div className="text-sm text-[#A0AEC0]">{t('ti.analyzing')}</div>
       ) : alerts.length === 0 ? (
         <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 text-emerald-300">
-          Aucune alerte active.
+          {t('ti.none')}
         </div>
       ) : (
         <div className="space-y-3">
@@ -142,13 +142,13 @@ export default function IntelligencePage() {
                   <div className="flex items-center justify-between gap-3">
                     <h2 className="font-semibold">{alert.title}</h2>
                     <span className="text-[11px] opacity-70">
-                      {new Date(alert.created_at).toLocaleString('fr-FR')}
+                      {new Date(alert.created_at).toLocaleString(locale)}
                     </span>
                   </div>
                   <p className="text-sm mt-1">{alert.message}</p>
                   {alert.recommendation && (
                     <p className="text-xs mt-2 opacity-90">
-                      <strong>Suggestion :</strong> {alert.recommendation}
+                      <strong>{t('ti.suggestion')}</strong> {alert.recommendation}
                     </p>
                   )}
                   <div className="flex gap-2 mt-3">
@@ -156,13 +156,13 @@ export default function IntelligencePage() {
                       onClick={() => acknowledge(alert.id)}
                       className="px-3 py-1.5 rounded-lg bg-white/5 text-xs"
                     >
-                      Prendre en compte
+                      {t('ti.acknowledge')}
                     </button>
                     <button
                       onClick={() => resolve(alert.id)}
                       className="px-3 py-1.5 rounded-lg bg-white/10 text-xs flex items-center gap-1"
                     >
-                      <CheckCircle2 size={13} /> Résoudre
+                      <CheckCircle2 size={13} /> {t('ti.resolve')}
                     </button>
                   </div>
                 </div>
@@ -173,9 +173,7 @@ export default function IntelligencePage() {
       )}
 
       <div className="rounded-2xl border border-[#D4AF37]/20 bg-[#0F2347] p-4 text-xs text-[#A0AEC0]">
-        Le moteur applique les règles opérationnelles du CRM (J+14, J+10/J+20, seuils de stock et
-        inactivité). L&apos;IA générative pourra ensuite enrichir ces alertes avec une explication
-        et une recommandation contextualisée.
+        {t('ti.footer')}
       </div>
     </div>
   );
