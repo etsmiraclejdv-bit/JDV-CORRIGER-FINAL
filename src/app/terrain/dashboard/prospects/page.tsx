@@ -17,6 +17,8 @@ import Modal from '@/components/ui/Modal';
 import { toast } from 'sonner';
 import { fetchOrgProfile } from '@/lib/auth/context';
 import { getMyPortfolioId, convertProspectToClient } from '@/lib/services/portfolioService';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 interface Prospect {
   id: string;
@@ -77,13 +79,22 @@ const TEMP_COLORS: Record<string, string> = {
   cold: 'bg-[#63B3ED]/20 text-[#63B3ED] border-[#63B3ED]/30',
 };
 
-const TEMP_LABELS: Record<string, string> = { hot: 'Chaud', warm: 'Tiède', cold: 'Froid' };
+const TEMP_LABELS: Record<string, TerrainKey> = {
+  hot: 'tpr.hot',
+  warm: 'tpr.warm',
+  cold: 'tpr.cold',
+};
 
-const INTEREST_LABELS: Record<string, string> = { low: 'Faible', medium: 'Moyen', high: 'Élevé' };
+const INTEREST_LABELS: Record<string, TerrainKey> = {
+  low: 'tpr.low',
+  medium: 'tpr.medium',
+  high: 'tpr.high',
+};
 
 type FilterType = 'all' | 'hot' | 'warm' | 'cold' | 'today' | 'appointment_today' | 'no_contact';
 
 export default function TerrainProspectsPage() {
+  const { t, locale } = useLanguage();
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -156,7 +167,8 @@ export default function TerrainProspectsPage() {
       ((data ?? []) as Record<string, unknown>[]).map((r) => ({
         id: r.id as string,
         full_name:
-          `${(r.first_name as string) ?? ''} ${(r.last_name as string) ?? ''}`.trim() || 'Sans nom',
+          `${(r.first_name as string) ?? ''} ${(r.last_name as string) ?? ''}`.trim() ||
+          t('tpr.noName'),
         phone: (r.phone as string) ?? undefined,
         city: (r.city as string) ?? undefined,
         address: (r.address as string) ?? undefined,
@@ -204,7 +216,7 @@ export default function TerrainProspectsPage() {
     const pf = await getMyPortfolioId(orgId);
     if (!pf.id) {
       setSubmitting(false);
-      toast.error(pf.error ?? 'Portefeuille introuvable');
+      toast.error(pf.error ?? t('tpr.noPortfolio'));
       return;
     }
     const { error } = await supabase.from('prospects').insert({
@@ -230,7 +242,7 @@ export default function TerrainProspectsPage() {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Prospect ajouté avec succès');
+      toast.success(t('tpr.added'));
       setModalOpen(false);
       setForm({
         full_name: '',
@@ -270,7 +282,7 @@ export default function TerrainProspectsPage() {
     e.preventDefault();
     if (!orgId || !userId || !appointmentProspect) return;
     if (!appointmentForm.date) {
-      toast.error('Choisissez la nouvelle date du rendez-vous');
+      toast.error(t('tpr.pickDate'));
       return;
     }
     setSavingAppointment(true);
@@ -283,7 +295,7 @@ export default function TerrainProspectsPage() {
       .single();
     if (readError || !current) {
       setSavingAppointment(false);
-      toast.error(readError?.message ?? 'Prospect introuvable');
+      toast.error(readError?.message ?? t('tpr.notFound'));
       return;
     }
     const previousDate =
@@ -314,10 +326,10 @@ export default function TerrainProspectsPage() {
       .eq('prospecteur_id', userId);
     setSavingAppointment(false);
     if (error) {
-      toast.error(`Impossible de reprogrammer le rendez-vous : ${error.message}`);
+      toast.error(t('tpr.reschFail') + error.message);
       return;
     }
-    toast.success('Rendez-vous reprogrammé avec succès');
+    toast.success(t('tpr.reschOk'));
     setAppointmentModalOpen(false);
     setAppointmentProspect(null);
     loadProspects(orgId, userId);
@@ -330,7 +342,7 @@ export default function TerrainProspectsPage() {
       toast.error(error);
       return;
     }
-    toast.success('Prospect converti en client');
+    toast.success(t('tpr.converted'));
     loadProspects(orgId, userId);
   }
 
@@ -373,30 +385,30 @@ export default function TerrainProspectsPage() {
   });
 
   const filterButtons: { id: FilterType; label: string; count?: number }[] = [
-    { id: 'all', label: 'Tous', count: prospects.length },
+    { id: 'all', label: t('tpr.fAll'), count: prospects.length },
     {
       id: 'hot',
-      label: '🔥 Chauds',
+      label: t('tpr.fHot'),
       count: prospects.filter((p) => p.temperature === 'hot').length,
     },
     {
       id: 'warm',
-      label: '🌤 Tièdes',
+      label: t('tpr.fWarm'),
       count: prospects.filter((p) => p.temperature === 'warm').length,
     },
     {
       id: 'cold',
-      label: '❄️ Froids',
+      label: t('tpr.fCold'),
       count: prospects.filter((p) => p.temperature === 'cold').length,
     },
     {
       id: 'today',
-      label: 'À relancer',
+      label: t('tpr.fToday'),
       count: prospects.filter((p) => p.next_contact_date === today).length,
     },
     {
       id: 'appointment_today',
-      label: "RDV aujourd'hui",
+      label: t('tpr.fAppt'),
       count: prospects.filter((p) => p.appointment_date === today).length,
     },
   ];
@@ -405,9 +417,9 @@ export default function TerrainProspectsPage() {
     <div className="p-5 lg:p-8 space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Mes prospects</h1>
+          <h1 className="text-2xl font-bold text-white">{t('myProspects')}</h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {prospects.length} prospect{prospects.length !== 1 ? 's' : ''}
+            {prospects.length} {t(prospects.length !== 1 ? 'tpr.countN' : 'tpr.count1')}
           </p>
         </div>
         <button
@@ -415,7 +427,7 @@ export default function TerrainProspectsPage() {
           className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
         >
           <Plus size={14} />
-          Nouveau
+          {t('tpr.new')}
         </button>
       </div>
 
@@ -450,7 +462,7 @@ export default function TerrainProspectsPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher par nom, téléphone, article..."
+          placeholder={t('tpr.search')}
           className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
         />
       </div>
@@ -458,11 +470,11 @@ export default function TerrainProspectsPage() {
       {/* Prospect list */}
       <div className="space-y-2">
         {loading ? (
-          <div className="py-16 text-center text-[#A0AEC0] text-sm">Chargement...</div>
+          <div className="py-16 text-center text-[#A0AEC0] text-sm">{t('tv.loading')}</div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
             <Users size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
-            <p className="text-[#A0AEC0] text-sm">Aucun prospect</p>
+            <p className="text-[#A0AEC0] text-sm">{t('tpr.none')}</p>
           </div>
         ) : (
           filtered.map((p) => (
@@ -486,7 +498,7 @@ export default function TerrainProspectsPage() {
                     <span
                       className={`text-xs px-2 py-0.5 rounded-lg border ${TEMP_COLORS[p.temperature] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}
                     >
-                      {TEMP_LABELS[p.temperature] ?? p.temperature}
+                      {TEMP_LABELS[p.temperature] ? t(TEMP_LABELS[p.temperature]) : p.temperature}
                     </span>
                   )}
                   <button
@@ -506,7 +518,7 @@ export default function TerrainProspectsPage() {
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg text-blue-400 text-xs font-medium hover:bg-blue-500/20 transition-colors"
                   >
                     <Phone size={12} />
-                    Appeler
+                    {t('tpr.call')}
                   </button>
                 )}
                 {p.phone && (
@@ -523,22 +535,22 @@ export default function TerrainProspectsPage() {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-lg text-[#D4AF37] text-xs font-medium hover:bg-[#D4AF37]/20 transition-colors"
                 >
                   <UserCheck size={12} />
-                  Convertir en client
+                  {t('tpr.convert')}
                 </button>
                 {p.appointment_date && (
                   <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-lg text-[#D4AF37] text-xs">
                     <Calendar size={12} />
-                    RDV {new Date(p.appointment_date).toLocaleDateString('fr-FR')}
-                    {p.appointment_time ? ` à ${p.appointment_time.slice(0, 5)}` : ''}
+                    {t('tpr.apptShort')} {new Date(p.appointment_date).toLocaleDateString(locale)}
+                    {p.appointment_time ? ` ${t('tpr.at')} ${p.appointment_time.slice(0, 5)}` : ''}
                   </div>
                 )}
                 <button
                   onClick={() => openAppointmentEditor(p)}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-lg text-purple-300 text-xs font-medium hover:bg-purple-500/20 transition-colors"
-                  title="Modifier la date, l'heure ou le lieu du rendez-vous"
+                  title={t('tpr.apptTitle')}
                 >
                   <Calendar size={12} />
-                  {p.appointment_date ? 'Reprogrammer RDV' : 'Planifier RDV'}
+                  {p.appointment_date ? t('tpr.reschedule') : t('tpr.schedule')}
                 </button>
               </div>
 
@@ -548,7 +560,7 @@ export default function TerrainProspectsPage() {
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {p.desired_product && (
                       <div>
-                        <span className="text-[#718096]">Article désiré : </span>
+                        <span className="text-[#718096]">{t('tpr.desiredArticle')} </span>
                         <span className="text-white">{p.desired_product}</span>
                         {p.desired_quantity && p.desired_quantity > 1 && (
                           <span className="text-[#A0AEC0]"> × {p.desired_quantity}</span>
@@ -557,9 +569,9 @@ export default function TerrainProspectsPage() {
                     )}
                     {p.proposed_price && p.proposed_price > 0 && (
                       <div>
-                        <span className="text-[#718096]">Prix proposé : </span>
+                        <span className="text-[#718096]">{t('tpr.proposedPrice')} </span>
                         <span className="text-[#D4AF37] font-semibold">
-                          {new Intl.NumberFormat('fr-FR', {
+                          {new Intl.NumberFormat(locale, {
                             style: 'currency',
                             currency: 'XOF',
                             maximumFractionDigits: 0,
@@ -569,15 +581,17 @@ export default function TerrainProspectsPage() {
                     )}
                     {p.interest_level && (
                       <div>
-                        <span className="text-[#718096]">Intérêt : </span>
+                        <span className="text-[#718096]">{t('tpr.interest')} </span>
                         <span className="text-white">
-                          {INTEREST_LABELS[p.interest_level] ?? p.interest_level}
+                          {INTEREST_LABELS[p.interest_level]
+                            ? t(INTEREST_LABELS[p.interest_level])
+                            : p.interest_level}
                         </span>
                       </div>
                     )}
                     {p.city && (
                       <div>
-                        <span className="text-[#718096]">Ville : </span>
+                        <span className="text-[#718096]">{t('tpr.cityLabel')} </span>
                         <span className="text-white">
                           {p.city}
                           {p.quartier ? `, ${p.quartier}` : ''}
@@ -586,34 +600,35 @@ export default function TerrainProspectsPage() {
                     )}
                     {p.lieu_rencontre && (
                       <div>
-                        <span className="text-[#718096]">Lieu rencontre : </span>
+                        <span className="text-[#718096]">{t('tpr.meetPlaceLabel')} </span>
                         <span className="text-white">{p.lieu_rencontre}</span>
                       </div>
                     )}
                     {p.next_contact_date && (
                       <div>
-                        <span className="text-[#718096]">Prochain contact : </span>
+                        <span className="text-[#718096]">{t('tpr.nextContact')} </span>
                         <span
                           className={`font-medium ${p.next_contact_date === today ? 'text-[#D4AF37]' : 'text-white'}`}
                         >
-                          {new Date(p.next_contact_date).toLocaleDateString('fr-FR')}
-                          {p.next_contact_date === today && " (Aujourd'hui)"}
+                          {new Date(p.next_contact_date).toLocaleDateString(locale)}
+                          {p.next_contact_date === today && ` ${t('tpr.todayParen')}`}
                         </span>
                       </div>
                     )}
                     {p.appointment_date && (
                       <div>
-                        <span className="text-[#718096]">RDV : </span>
+                        <span className="text-[#718096]">{t('tpr.apptLabel')} </span>
                         <span className="text-white">
-                          {new Date(p.appointment_date).toLocaleDateString('fr-FR')}
-                          {p.appointment_time && ` à ${p.appointment_time.slice(0, 5)}`}
+                          {new Date(p.appointment_date).toLocaleDateString(locale)}
+                          {p.appointment_time &&
+                            ` ${t('tpr.at')} ${p.appointment_time.slice(0, 5)}`}
                           {p.appointment_location && ` — ${p.appointment_location}`}
                         </span>
                       </div>
                     )}
                     {p.phone2 && (
                       <div>
-                        <span className="text-[#718096]">Tél 2 : </span>
+                        <span className="text-[#718096]">{t('tpr.phone2Label')} </span>
                         <span className="text-white">{p.phone2}</span>
                       </div>
                     )}
@@ -634,20 +649,17 @@ export default function TerrainProspectsPage() {
       <Modal
         open={appointmentModalOpen}
         onClose={() => setAppointmentModalOpen(false)}
-        title="Reprogrammer le rendez-vous"
+        title={t('tpr.reschTitle')}
         size="md"
       >
         <form onSubmit={handleRescheduleAppointment} className="space-y-4 p-1">
           <div className="rounded-xl border border-[#D4AF37]/20 bg-[#0A1628] p-3">
             <p className="text-sm font-semibold text-white">{appointmentProspect?.full_name}</p>
-            <p className="mt-1 text-xs text-[#A0AEC0]">
-              Modifiez le programme convenu avec le client. L&apos;ancienne date est conservée dans
-              l&apos;historique des notes.
-            </p>
+            <p className="mt-1 text-xs text-[#A0AEC0]">{t('tpr.reschInfo')}</p>
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-[#A0AEC0]">
-              Nouvelle date du rendez-vous *
+              {t('tpr.newDate')}
             </label>
             <input
               type="date"
@@ -659,7 +671,9 @@ export default function TerrainProspectsPage() {
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[#A0AEC0]">Heure</label>
+              <label className="mb-1.5 block text-xs font-medium text-[#A0AEC0]">
+                {t('tpr.time')}
+              </label>
               <input
                 type="time"
                 value={appointmentForm.time}
@@ -668,25 +682,27 @@ export default function TerrainProspectsPage() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-medium text-[#A0AEC0]">Lieu</label>
+              <label className="mb-1.5 block text-xs font-medium text-[#A0AEC0]">
+                {t('tpr.place')}
+              </label>
               <input
                 type="text"
                 value={appointmentForm.location}
                 onChange={(e) => setAppointmentForm((v) => ({ ...v, location: e.target.value }))}
-                placeholder="Lieu du rendez-vous"
+                placeholder={t('tpr.apptPlacePh')}
                 className="w-full rounded-xl border border-[#D4AF37]/20 bg-[#0A1628] px-3 py-2.5 text-sm text-white focus:border-[#D4AF37]/60 focus:outline-none"
               />
             </div>
           </div>
           <div>
             <label className="mb-1.5 block text-xs font-medium text-[#A0AEC0]">
-              Motif du changement (facultatif)
+              {t('tpr.reason')}
             </label>
             <textarea
               value={appointmentForm.reason}
               onChange={(e) => setAppointmentForm((v) => ({ ...v, reason: e.target.value }))}
               rows={2}
-              placeholder="Ex. : le client n'est pas disponible à la date prévue"
+              placeholder={t('tpr.reasonPh')}
               className="w-full resize-none rounded-xl border border-[#D4AF37]/20 bg-[#0A1628] px-3 py-2.5 text-sm text-white focus:border-[#D4AF37]/60 focus:outline-none"
             />
           </div>
@@ -696,14 +712,14 @@ export default function TerrainProspectsPage() {
               onClick={() => setAppointmentModalOpen(false)}
               className="flex-1 rounded-xl border border-[#D4AF37]/20 py-2.5 text-sm text-[#A0AEC0] transition-colors hover:text-white"
             >
-              Annuler
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={savingAppointment}
               className="btn-gold flex-1 rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60"
             >
-              {savingAppointment ? 'Enregistrement...' : 'Enregistrer le nouveau RDV'}
+              {savingAppointment ? t('td.saving') : t('tpr.saveAppt')}
             </button>
           </div>
         </form>
@@ -713,19 +729,19 @@ export default function TerrainProspectsPage() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Nouveau prospect"
+        title={t('tpr.modalTitle')}
         size="lg"
       >
         <form onSubmit={handleCreate} className="space-y-4 p-1 max-h-[70vh] overflow-y-auto">
           {/* Identity */}
           <div>
             <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-3">
-              Identité
+              {t('tpr.identity')}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                  Nom complet *
+                  {t('tpr.fullName')}
                 </label>
                 <input
                   type="text"
@@ -733,12 +749,12 @@ export default function TerrainProspectsPage() {
                   onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
                   required
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
-                  placeholder="Nom et prénom"
+                  placeholder={t('tpr.namePh')}
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                  Téléphone principal
+                  {t('tpr.mainPhone')}
                 </label>
                 <input
                   type="tel"
@@ -750,7 +766,7 @@ export default function TerrainProspectsPage() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                  Téléphone 2
+                  {t('tpr.phone2')}
                 </label>
                 <input
                   type="tel"
@@ -761,7 +777,9 @@ export default function TerrainProspectsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Ville</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  {t('tcl.city')}
+                </label>
                 <input
                   type="text"
                   value={form.city}
@@ -771,7 +789,9 @@ export default function TerrainProspectsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Quartier</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  {t('tpr.quartier')}
+                </label>
                 <input
                   type="text"
                   value={form.quartier}
@@ -782,14 +802,14 @@ export default function TerrainProspectsPage() {
               </div>
               <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                  Lieu de rencontre
+                  {t('tpr.meetPlace')}
                 </label>
                 <input
                   type="text"
                   value={form.lieu_rencontre}
                   onChange={(e) => setForm((f) => ({ ...f, lieu_rencontre: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
-                  placeholder="Marché, boutique, domicile..."
+                  placeholder={t('tpr.meetPh')}
                 />
               </div>
             </div>
@@ -798,23 +818,25 @@ export default function TerrainProspectsPage() {
           {/* Commercial info */}
           <div>
             <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-3">
-              Informations commerciales
+              {t('tpr.commercial')}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                  Article désiré
+                  {t('tpr.desiredArticleF')}
                 </label>
                 <input
                   type="text"
                   value={form.desired_product}
                   onChange={(e) => setForm((f) => ({ ...f, desired_product: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
-                  placeholder="Nom de l'article"
+                  placeholder={t('tpr.articleName')}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Quantité</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  {t('tpr.quantity')}
+                </label>
                 <input
                   type="number"
                   value={form.desired_quantity}
@@ -827,7 +849,7 @@ export default function TerrainProspectsPage() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                  Prix proposé (XOF)
+                  {t('tpr.proposedPriceF')}
                 </label>
                 <input
                   type="number"
@@ -842,35 +864,35 @@ export default function TerrainProspectsPage() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                  Niveau d&apos;intérêt
+                  {t('tpr.interestLevel')}
                 </label>
                 <select
                   value={form.interest_level}
                   onChange={(e) => setForm((f) => ({ ...f, interest_level: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                 >
-                  <option value="low">Faible</option>
-                  <option value="medium">Moyen</option>
-                  <option value="high">Élevé</option>
+                  <option value="low">{t('tpr.low')}</option>
+                  <option value="medium">{t('tpr.medium')}</option>
+                  <option value="high">{t('tpr.high')}</option>
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                  Température
+                  {t('tpr.temperature')}
                 </label>
                 <select
                   value={form.temperature}
                   onChange={(e) => setForm((f) => ({ ...f, temperature: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
                 >
-                  <option value="cold">❄️ Froid</option>
-                  <option value="warm">🌤 Tiède</option>
-                  <option value="hot">🔥 Chaud</option>
+                  <option value="cold">❄️ {t('tpr.cold')}</option>
+                  <option value="warm">🌤 {t('tpr.warm')}</option>
+                  <option value="hot">🔥 {t('tpr.hot')}</option>
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                  Prochain contact
+                  {t('tpr.nextContactF')}
                 </label>
                 <input
                   type="date"
@@ -885,11 +907,13 @@ export default function TerrainProspectsPage() {
           {/* Appointment */}
           <div>
             <p className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider mb-3">
-              Rendez-vous
+              {t('tpr.apptSection')}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Date RDV</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  {t('tpr.apptDate')}
+                </label>
                 <input
                   type="date"
                   value={form.appointment_date}
@@ -898,7 +922,9 @@ export default function TerrainProspectsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Heure RDV</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  {t('tpr.apptTime')}
+                </label>
                 <input
                   type="time"
                   value={form.appointment_time}
@@ -907,13 +933,15 @@ export default function TerrainProspectsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Lieu RDV</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  {t('tpr.apptPlace')}
+                </label>
                 <input
                   type="text"
                   value={form.appointment_location}
                   onChange={(e) => setForm((f) => ({ ...f, appointment_location: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
-                  placeholder="Lieu du rendez-vous"
+                  placeholder={t('tpr.apptPlacePh')}
                 />
               </div>
             </div>
@@ -922,14 +950,14 @@ export default function TerrainProspectsPage() {
           {/* Notes */}
           <div>
             <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-              Observations / Besoin du client
+              {t('tpr.notesLabel')}
             </label>
             <textarea
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
               rows={3}
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60 resize-none"
-              placeholder="Besoin du client, observations, remarques..."
+              placeholder={t('tpr.notesPh')}
             />
           </div>
 
@@ -939,14 +967,14 @@ export default function TerrainProspectsPage() {
               onClick={() => setModalOpen(false)}
               className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors"
             >
-              Annuler
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting}
               className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
             >
-              {submitting ? 'Enregistrement...' : 'Ajouter le prospect'}
+              {submitting ? t('td.saving') : t('tpr.add')}
             </button>
           </div>
         </form>
