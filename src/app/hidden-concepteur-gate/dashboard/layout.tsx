@@ -17,6 +17,7 @@ import {
   CreditCard,
   FileCheck,
   Palette,
+  BarChart3,
   MessageSquareQuote,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -92,6 +93,13 @@ const navItems = [
     icon: <HelpCircle size={18} />,
     href: '/guide-onboarding',
     group: 'Système',
+  },
+  {
+    id: 'marketing-growth',
+    label: 'Croissance marketing',
+    icon: <BarChart3 size={18} />,
+    href: '/hidden-concepteur-gate/dashboard/croissance-marketing',
+    group: 'Gestion',
   },
   {
     id: 'design-studio',
