@@ -77,7 +77,7 @@ Utiliser le logo officiel JDV CRM (pas une image de stock à la place du logo) s
 - Ne pas inclure de chiffres de performance, témoignages, logos partenaires ou fonctionnalités non vérifiés.
 - Texte alternatif suggéré : « JDV CRM — Connecter, développer et réussir grâce aux outils numériques de gestion et de développement commercial. »
 
-**État du visuel :** direction artistique décrite ; aucun fichier image final n’est inclus dans ce document.
+**État du visuel :** une maquette SVG bleu nuit et or est ajoutée au dépôt dans `public/marketing/jdv-crm-lancement.svg`. Elle utilise une marque typographique provisoire et doit être vérifiée/remplacée par le logo officiel avant diffusion.
 
 ## 5. Calendrier éditorial suggéré (14 jours)
 
@@ -102,6 +102,6 @@ Utiliser le logo officiel JDV CRM (pas une image de stock à la place du logo) s
 
 ## 7. Limites techniques constatées
 
-Le Centre de croissance marketing actuel permet de créer un brouillon **en mémoire de la session uniquement**. Le code inspecté indique explicitement que le brouillon n’est pas enregistré en base et que la publication réelle attend l’intégration des sources, des autorisations et d’une validation humaine.
+Le Centre de croissance marketing est adapté dans cette branche pour préremplir le kit de lancement et conserver le brouillon dans le stockage local du navigateur (`localStorage`). Cela permet de retrouver le brouillon sur le même navigateur, mais ne le synchronise pas entre appareils et ne constitue pas un enregistrement dans Supabase.
 
-Ce fichier constitue donc un support éditorial versionné dans le dépôt. Il ne signifie pas que la campagne est enregistrée dans la base JDV CRM, visible sur la vitrine publique, programmée ou publiée sur un réseau social.
+Ce fichier, le visuel et le code de la branche constituent une préparation versionnée. La campagne n’est pas enregistrée dans la base JDV CRM, automatiquement affichée sur la vitrine publique, programmée ou publiée sur un réseau social. La connexion à Supabase exige encore une conception et une vérification des droits RLS adaptées ; la publication exige les comptes, autorisations et une validation humaine.
