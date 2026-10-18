@@ -1,12 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import {
   Activity,
-  ArrowDownRight,
-  ArrowUpRight,
   BadgeCheck,
-  BarChart3,
   CalendarDays,
   CheckCircle2,
   ChevronRight,
@@ -135,7 +132,7 @@ export default function MarketingGrowthPage() {
     [],
   );
 
-  function createLocalDraft(event: React.FormEvent<HTMLFormElement>) {
+  function createLocalDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const parsedBudget = Number(budget);
     const parsedDuration = Number(duration);
