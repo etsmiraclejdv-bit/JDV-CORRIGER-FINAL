@@ -12,3 +12,4 @@ src/lib/i18n/messages.ts
 
 # Catalogue de la page publique (traductions positionnelles compactes).
 src/lib/i18n/landing.ts
+src/lib/i18n/terrain.ts

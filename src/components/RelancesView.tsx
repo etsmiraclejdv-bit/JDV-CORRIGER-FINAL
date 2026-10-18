@@ -27,12 +27,10 @@ import {
   type ReminderStatus,
 } from '@/lib/services/relancesService';
 import {
-  STATUS_LABELS,
   buildReminderMessage,
   displayStatus,
   filterFollowups,
   formatDateFr,
-  formatXof,
   summarize,
   toNumber,
   toTelHref,
@@ -40,6 +38,8 @@ import {
   type Followup,
   type FollowupFilter,
 } from '@/lib/relances/helpers';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 import MetricCard from '@/components/ui/MetricCard';
 import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
@@ -49,12 +49,18 @@ interface RelancesViewProps {
   mode: 'business' | 'terrain';
 }
 
-const FILTERS: { id: FollowupFilter; label: string }[] = [
-  { id: 'all', label: 'Tous' },
-  { id: 'overdue', label: 'En retard' },
-  { id: 'partial', label: 'Partiels' },
-  { id: 'upcoming', label: 'À venir' },
+const FILTERS: { id: FollowupFilter; label: TerrainKey }[] = [
+  { id: 'all', label: 'trl.fAll' },
+  { id: 'overdue', label: 'trl.fOverdue' },
+  { id: 'partial', label: 'trl.fPartial' },
+  { id: 'upcoming', label: 'trl.fUpcoming' },
 ];
+
+const STATUS_KEYS = {
+  overdue: 'trl.sOverdue',
+  partial: 'trl.sPartial',
+  upcoming: 'trl.sUpcoming',
+} as const satisfies Record<string, TerrainKey>;
 
 const BADGE_CLASSES = {
   overdue: 'bg-red-500/20 text-red-400 border-red-500/30',
@@ -67,6 +73,14 @@ const PHONE_PREFIX = process.env.NEXT_PUBLIC_PHONE_PREFIX ?? '';
 
 export default function RelancesView({ mode }: RelancesViewProps) {
   const isBusiness = mode === 'business';
+  const { t, locale } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const formatXof = (value: unknown) =>
+    `${new Intl.NumberFormat(locale).format(Math.round(toNumber(value)))} XOF`;
   const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -83,17 +97,13 @@ export default function RelancesView({ mode }: RelancesViewProps) {
     setError('');
     const ctx = await getAuthContext();
     if (!ctx) {
-      setError("Vous n'êtes pas connecté.");
+      setError(t('trl.notLogged'));
       setLoading(false);
       return;
     }
     const org = isBusiness ? ctx.organizationId : ctx.prospecteurOrganizationId;
     if (!org) {
-      setError(
-        isBusiness
-          ? 'Aucune entreprise associée à ce compte.'
-          : 'Aucun profil prospecteur actif pour ce compte.'
-      );
+      setError(isBusiness ? t('trl.noOrgBusiness') : t('trl.noOrgField'));
       setLoading(false);
       return;
     }
@@ -108,7 +118,7 @@ export default function RelancesView({ mode }: RelancesViewProps) {
     setReminders(r.data);
     setNames(n);
     setLoading(false);
-  }, [isBusiness]);
+  }, [isBusiness, t]);
 
   useEffect(() => {
     void load();
@@ -129,11 +139,7 @@ export default function RelancesView({ mode }: RelancesViewProps) {
       toast.error(err);
       return;
     }
-    toast.success(
-      created > 0
-        ? `${created} rappel(s) créé(s) pour les clients en impayé.`
-        : "Aucun nouveau rappel : tout est déjà à jour pour aujourd'hui."
-    );
+    toast.success(created > 0 ? fill('trl.created', { n: created }) : t('trl.upToDate'));
     void load();
   }
 
@@ -148,10 +154,10 @@ export default function RelancesView({ mode }: RelancesViewProps) {
     setReminders((prev) => prev.filter((r) => r.id !== id));
   }
 
-  if (loading) return <LoadingState message="Chargement des impayés…" />;
+  if (loading) return <LoadingState message={t('trl.loading')} />;
   if (error && followups.length === 0 && reminders.length === 0) {
     return (
-      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+      <ErrorState message={error} action={{ label: t('trl.retry'), onClick: () => void load() }} />
     );
   }
 
@@ -161,36 +167,30 @@ export default function RelancesView({ mode }: RelancesViewProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white">
-            {isBusiness ? 'Relances et impayés' : 'Mes relances'}
+            {isBusiness ? t('trl.titleBusiness') : t('trl.titleField')}
           </h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {isBusiness
-              ? 'Échéances à encaisser et clients à relancer dans votre entreprise'
-              : 'Échéances à encaisser sur vos propres ventes'}
+            {isBusiness ? t('trl.subBusiness') : t('trl.subField')}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => void load()}
             className="flex items-center gap-2 btn-outline-gold px-4 py-2.5 rounded-xl text-sm font-semibold"
-            aria-label="Actualiser la liste"
+            aria-label={t('trl.refreshAria')}
           >
             <RefreshCw size={14} />
-            Actualiser
+            {t('trl.refresh')}
           </button>
           {isBusiness && (
             <button
               onClick={() => void handleGenerate()}
               disabled={generating || summary.overdueCount === 0}
               className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-              title={
-                summary.overdueCount === 0
-                  ? 'Aucun impayé à relancer'
-                  : 'Crée un rappel par client en impayé'
-              }
+              title={summary.overdueCount === 0 ? t('trl.noOverdueTitle') : t('trl.createTitle')}
             >
               <Bell size={14} />
-              {generating ? 'Création…' : 'Générer les rappels du jour'}
+              {generating ? t('trl.creating') : t('trl.generate')}
             </button>
           )}
         </div>
@@ -208,34 +208,32 @@ export default function RelancesView({ mode }: RelancesViewProps) {
       {/* Indicateurs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <MetricCard
-          title="Reste à encaisser"
+          title={t('trl.mRemaining')}
           value={formatXof(summary.totalRemaining)}
-          subtitle={`${summary.count} échéance(s) ouverte(s)`}
+          subtitle={fill('trl.openCount', { n: summary.count })}
           icon={<Wallet size={18} />}
           variant="gold"
         />
         <MetricCard
-          title="En retard"
+          title={t('trl.mOverdue')}
           value={formatXof(summary.overdueRemaining)}
-          subtitle={`${summary.overdueCount} échéance(s)`}
+          subtitle={fill('trl.overdueCount', { n: summary.overdueCount })}
           icon={<AlertTriangle size={18} />}
           variant={summary.overdueCount > 0 ? 'danger' : 'success'}
         />
         <MetricCard
-          title="Clients concernés"
+          title={t('trl.mClients')}
           value={String(summary.clients)}
-          subtitle="avec au moins une échéance ouverte"
+          subtitle={t('trl.mClientsSub')}
           icon={<Users size={18} />}
           variant="default"
         />
         <MetricCard
-          title="Plus gros retard"
-          value={summary.maxDaysLate > 0 ? `${summary.maxDaysLate} jour(s)` : 'Aucun'}
-          subtitle={
-            summary.maxDaysLate > 0
-              ? 'depuis la date d\u2019échéance'
-              : 'tous les paiements sont à jour'
+          title={t('trl.mMaxLate')}
+          value={
+            summary.maxDaysLate > 0 ? fill('trl.daysN', { n: summary.maxDaysLate }) : t('trl.none')
           }
+          subtitle={summary.maxDaysLate > 0 ? t('trl.sinceDue') : t('trl.allPaid')}
           icon={<Clock size={18} />}
           variant={
             summary.maxDaysLate > 30 ? 'danger' : summary.maxDaysLate > 0 ? 'warning' : 'success'
@@ -251,12 +249,12 @@ export default function RelancesView({ mode }: RelancesViewProps) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un client ou un numéro…"
-            aria-label="Rechercher un client ou un numéro"
+            placeholder={t('trl.searchPh')}
+            aria-label={t('trl.searchAria')}
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer par statut">
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t('trl.filterAria')}>
           {FILTERS.map((f) => (
             <button
               key={f.id}
@@ -268,7 +266,7 @@ export default function RelancesView({ mode }: RelancesViewProps) {
                   : 'bg-[#0F2347] text-[#A0AEC0] border-[#D4AF37]/20 hover:text-white'
               }`}
             >
-              {f.label}
+              {t(f.label)}
             </button>
           ))}
         </div>
@@ -280,12 +278,10 @@ export default function RelancesView({ mode }: RelancesViewProps) {
           <div className="py-16 text-center px-6">
             <CheckCircle size={32} className="mx-auto mb-3 text-[#68D391] opacity-70" />
             <p className="text-white text-sm font-semibold mb-1">
-              {followups.length === 0 ? 'Aucun impayé' : 'Aucun résultat pour ces filtres'}
+              {followups.length === 0 ? t('trl.noDebt') : t('trl.noResult')}
             </p>
             <p className="text-[#A0AEC0] text-sm">
-              {followups.length === 0
-                ? 'Toutes les échéances sont à jour, ou aucune vente à crédit n\u2019a encore été enregistrée.'
-                : 'Modifiez la recherche ou le filtre de statut.'}
+              {followups.length === 0 ? t('trl.allUpToDate') : t('trl.changeFilter')}
             </p>
           </div>
         ) : (
@@ -294,12 +290,12 @@ export default function RelancesView({ mode }: RelancesViewProps) {
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
                   {[
-                    'Client',
-                    'Échéance',
-                    'Reste à payer',
-                    'Statut',
-                    ...(isBusiness ? ['Responsable'] : []),
-                    'Actions',
+                    t('trl.thClient'),
+                    t('trl.thDue'),
+                    t('trl.thRemaining'),
+                    t('trl.thStatus'),
+                    ...(isBusiness ? [t('trl.thOwner')] : []),
+                    t('trl.thActions'),
                   ].map((h) => (
                     <th
                       key={h}
@@ -322,10 +318,10 @@ export default function RelancesView({ mode }: RelancesViewProps) {
                     >
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium text-white">
-                          {f.client_name?.trim() || 'Client sans nom'}
+                          {f.client_name?.trim() || t('trl.noName')}
                         </p>
                         <p className="text-xs text-[#718096]">
-                          {f.client_phone || 'Téléphone non renseigné'}
+                          {f.client_phone || t('trl.noPhone')}
                         </p>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
@@ -337,7 +333,7 @@ export default function RelancesView({ mode }: RelancesViewProps) {
                             href={`/business/dashboard/ventes/${f.sale_id}`}
                             className="text-xs text-[#D4AF37] hover:underline"
                           >
-                            Voir la vente
+                            {t('trl.viewSale')}
                           </Link>
                         )}
                       </td>
@@ -346,15 +342,19 @@ export default function RelancesView({ mode }: RelancesViewProps) {
                           {formatXof(f.remaining_amount)}
                         </p>
                         <p className="text-xs text-[#718096]">
-                          {formatXof(f.paid_amount)} payés sur {formatXof(f.expected_amount)}
+                          {fill('trl.paidOf', {
+                            a: formatXof(f.paid_amount),
+                            b: formatXof(f.expected_amount),
+                          })}
                         </p>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${BADGE_CLASSES[status]}`}
                         >
-                          {STATUS_LABELS[status]}
-                          {status === 'overdue' && ` · ${toNumber(f.days_late)} j`}
+                          {t(STATUS_KEYS[status])}
+                          {status === 'overdue' &&
+                            ` · ${toNumber(f.days_late)} ${t('trl.dayShort')}`}
                         </span>
                       </td>
                       {isBusiness && (
@@ -367,7 +367,9 @@ export default function RelancesView({ mode }: RelancesViewProps) {
                           {tel ? (
                             <a
                               href={tel}
-                              aria-label={`Appeler ${f.client_name ?? 'le client'}`}
+                              aria-label={fill('trl.callAria', {
+                                n: f.client_name ?? t('trl.theClient'),
+                              })}
                               className="p-2 rounded-lg bg-[#0B1B3D] border border-[#D4AF37]/20 text-[#D4AF37] hover:bg-[#D4AF37]/10"
                             >
                               <Phone size={14} />
@@ -378,7 +380,9 @@ export default function RelancesView({ mode }: RelancesViewProps) {
                               href={wa}
                               target="_blank"
                               rel="noopener noreferrer"
-                              aria-label={`Envoyer un message WhatsApp à ${f.client_name ?? 'le client'}`}
+                              aria-label={fill('trl.waAria', {
+                                n: f.client_name ?? t('trl.theClient'),
+                              })}
                               className="p-2 rounded-lg bg-[#0B1B3D] border border-[#D4AF37]/20 text-[#68D391] hover:bg-[#68D391]/10"
                             >
                               <MessageCircle size={14} />
@@ -400,14 +404,13 @@ export default function RelancesView({ mode }: RelancesViewProps) {
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-[#D4AF37]/10 flex items-center gap-2">
           <Bell size={16} className="text-[#D4AF37]" />
-          <h2 className="text-sm font-semibold text-white">Rappels en attente</h2>
+          <h2 className="text-sm font-semibold text-white">{t('trl.pending')}</h2>
           <span className="text-xs text-[#718096]">({reminders.length})</span>
         </div>
         {reminders.length === 0 ? (
           <p className="px-5 py-8 text-sm text-[#A0AEC0] text-center">
-            Aucun rappel en attente.
-            {isBusiness &&
-              ' Utilisez « Générer les rappels du jour » pour en créer à partir des impayés.'}
+            {t('trl.noPending')}
+            {isBusiness && t('trl.useGenerate')}
           </p>
         ) : (
           <ul className="divide-y divide-[#D4AF37]/5">
@@ -417,8 +420,10 @@ export default function RelancesView({ mode }: RelancesViewProps) {
                 className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
               >
                 <div className="min-w-0">
-                  <p className="text-sm text-white">{r.client_name ?? 'Client'}</p>
-                  <p className="text-xs text-[#A0AEC0] break-words">{r.message ?? 'Rappel'}</p>
+                  <p className="text-sm text-white">{r.client_name ?? t('trl.customer')}</p>
+                  <p className="text-xs text-[#A0AEC0] break-words">
+                    {r.message ?? t('trl.reminder')}
+                  </p>
                   <p className="text-xs text-[#718096] mt-0.5">{formatDateFr(r.reminder_at)}</p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -428,16 +433,16 @@ export default function RelancesView({ mode }: RelancesViewProps) {
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#68D391]/10 text-[#68D391] border border-[#68D391]/30 hover:bg-[#68D391]/20 disabled:opacity-50"
                   >
                     <Check size={12} />
-                    Fait
+                    {t('trl.done')}
                   </button>
                   <button
                     onClick={() => void handleReminder(r.id, 'cancelled')}
                     disabled={busyReminder === r.id}
-                    aria-label="Annuler ce rappel"
+                    aria-label={t('trl.cancelAria')}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white disabled:opacity-50"
                   >
                     <X size={12} />
-                    Annuler
+                    {t('trl.cancel')}
                   </button>
                 </div>
               </li>

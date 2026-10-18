@@ -7,29 +7,31 @@ import Modal from '@/components/ui/Modal';
 import { fetchOrgProfile } from '@/lib/auth/context';
 import { fetchClients, createClient } from '@/lib/services/clientsService';
 import { getMyPortfolioId } from '@/lib/services/portfolioService';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Row = Record<string, unknown>;
 
-const fmt = (cents: number) =>
-  new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'XOF',
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-
-const STATUS: Record<string, { label: string; cls: string }> = {
-  a_jour: { label: 'À jour', cls: 'bg-green-500/15 text-green-400 border-green-500/30' },
+const STATUS: Record<string, { label: TerrainKey; cls: string }> = {
+  a_jour: { label: 'tcl.upToDate', cls: 'bg-green-500/15 text-green-400 border-green-500/30' },
   a_surveiller: {
-    label: 'À surveiller',
+    label: 'tcl.watch',
     cls: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
   },
-  en_retard: { label: 'En retard', cls: 'bg-red-500/15 text-red-400 border-red-500/30' },
+  en_retard: { label: 'tcl.late', cls: 'bg-red-500/15 text-red-400 border-red-500/30' },
 };
 
 const inputCls =
   'w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60';
 
 export default function TerrainClientsPage() {
+  const { t, locale } = useLanguage();
+  const fmt = (cents: number) =>
+    new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'XOF',
+      maximumFractionDigits: 0,
+    }).format(cents / 100);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [pid, setPid] = useState<string | null>(null);
   const [clients, setClients] = useState<Row[]>([]);
@@ -60,20 +62,14 @@ export default function TerrainClientsPage() {
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
-    if (!orgId)
-      return toast.error(
-        'Entreprise introuvable pour ce compte. Vérifiez votre rattachement à l’entreprise, puis reconnectez-vous.'
-      );
-    if (!pid)
-      return toast.error(
-        'Profil prospecteur introuvable. Votre compte doit être rattaché à un prospecteur autorisé avant de créer un client.'
-      );
-    if (!form.full_name.trim()) return toast.error('Le nom est requis');
+    if (!orgId) return toast.error(t('tcl.e.noOrg'));
+    if (!pid) return toast.error(t('tcl.e.noProspector'));
+    if (!form.full_name.trim()) return toast.error(t('tcl.e.name'));
     setSaving(true);
     const pf = await getMyPortfolioId(orgId);
     if (!pf.id) {
       setSaving(false);
-      return toast.error(pf.error ?? 'Portefeuille introuvable');
+      return toast.error(pf.error ?? t('tcl.e.noPortfolio'));
     }
     const { error } = await createClient({
       organization_id: orgId,
@@ -87,19 +83,17 @@ export default function TerrainClientsPage() {
     } as never);
     setSaving(false);
     if (error) {
-      const message = error.message || 'Erreur inconnue';
+      const message = error.message || t('tcl.e.unknown');
       if (
         ('code' in error && error.code === '42501') ||
         message.toLowerCase().includes('permission denied') ||
         message.toLowerCase().includes('row-level security')
       ) {
-        return toast.error(
-          'Création refusée par les autorisations. Vérifiez que votre compte prospecteur est bien affecté à cette entreprise et à son portefeuille.'
-        );
+        return toast.error(t('tcl.e.denied'));
       }
-      return toast.error('Impossible de créer le client : ' + message);
+      return toast.error(t('tcl.e.createFail') + message);
     }
-    toast.success('Client ajouté');
+    toast.success(t('tcl.added'));
     setOpen(false);
     setForm({ full_name: '', phone: '', city: '', address: '' });
     load(orgId, pid);
@@ -116,9 +110,9 @@ export default function TerrainClientsPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Mes clients</h1>
+          <h1 className="text-2xl font-bold text-white">{t('myClients')}</h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {clients.length} client{clients.length !== 1 ? 's' : ''} dans votre portefeuille
+            {clients.length} {t(clients.length !== 1 ? 'tcl.countN' : 'tcl.count1')}
           </p>
         </div>
         <button
@@ -126,7 +120,7 @@ export default function TerrainClientsPage() {
           className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
         >
           <Plus size={14} />
-          Nouveau client
+          {t('tcl.new')}
         </button>
       </div>
 
@@ -135,25 +129,23 @@ export default function TerrainClientsPage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher un client..."
+          placeholder={t('tcl.search')}
           className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
         />
       </div>
 
       {loading ? (
-        <div className="py-16 text-center text-[#A0AEC0] text-sm">Chargement...</div>
+        <div className="py-16 text-center text-[#A0AEC0] text-sm">{t('tv.loading')}</div>
       ) : !pid ? (
-        <div className="py-16 text-center text-red-400 text-sm">
-          Accès réservé aux prospecteurs.
-        </div>
+        <div className="py-16 text-center text-red-400 text-sm">{t('tcl.restricted')}</div>
       ) : filtered.length === 0 ? (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl py-16 text-center">
           <UserCheck size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
-          <p className="text-[#A0AEC0] text-sm">Aucun client pour l’instant</p>
+          <p className="text-[#A0AEC0] text-sm">{t('tcl.none')}</p>
           <p className="text-xs text-[#718096] mt-1">
-            Ajoutez un client ou{' '}
+            {t('tcl.addOr')}{' '}
             <Link href="/terrain/dashboard/prospects" className="text-[#D4AF37] hover:underline">
-              convertissez un prospect
+              {t('tcl.convert')}
             </Link>
             .
           </p>
@@ -175,11 +167,11 @@ export default function TerrainClientsPage() {
                     </p>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-lg border ${st.cls}`}>
-                    {st.label}
+                    {t(st.label)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-[#A0AEC0]">Reste à payer</span>
+                  <span className="text-[#A0AEC0]">{t('tcl.balance')}</span>
                   <span className="font-bold text-[#D4AF37]">
                     {fmt(Number(c.balance_cents) || 0)}
                   </span>
@@ -198,10 +190,12 @@ export default function TerrainClientsPage() {
         </div>
       )}
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Nouveau client" size="md">
+      <Modal open={open} onClose={() => setOpen(false)} title={t('tcl.new')} size="md">
         <form onSubmit={handleCreate} className="space-y-4 p-1">
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Nom complet *</label>
+            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              {t('tcl.fullName')}
+            </label>
             <input
               required
               value={form.full_name}
@@ -211,7 +205,9 @@ export default function TerrainClientsPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Téléphone</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                {t('phone')}
+              </label>
               <input
                 value={form.phone}
                 onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
@@ -219,7 +215,9 @@ export default function TerrainClientsPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Ville</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                {t('tcl.city')}
+              </label>
               <input
                 value={form.city}
                 onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
@@ -228,7 +226,9 @@ export default function TerrainClientsPage() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Adresse</label>
+            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              {t('address')}
+            </label>
             <input
               value={form.address}
               onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
@@ -241,14 +241,14 @@ export default function TerrainClientsPage() {
               onClick={() => setOpen(false)}
               className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors"
             >
-              Annuler
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
             >
-              {saving ? 'Enregistrement...' : 'Enregistrer'}
+              {saving ? t('td.saving') : t('save')}
             </button>
           </div>
         </form>

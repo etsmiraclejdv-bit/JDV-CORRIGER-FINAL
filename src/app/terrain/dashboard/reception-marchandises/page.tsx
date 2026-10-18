@@ -5,6 +5,8 @@ import { Camera, CheckCircle2, ScanBarcode, RefreshCw, AlertTriangle } from 'luc
 import { supabase } from '@/lib/supabase/client';
 import { getMyProspecteurContext } from '@/lib/services/prospecteurSupplyService';
 import { confirmUnitCodeReceipt, getShipmentUnitCounts } from '@/lib/services/unitCodesService';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 import { codeListProblem, friendlyRpcError, parseCodeList } from '@/lib/unitCodes/helpers';
 
 type ShipmentItem = {
@@ -30,6 +32,12 @@ type Shipment = {
 type Detector = { detect: (source: HTMLVideoElement) => Promise<Array<{ rawValue: string }>> };
 
 export default function ReceptionMarchandisesPage() {
+  const { t, locale } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
   const [prospecteurId, setProspecteurId] = useState('');
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [selectedId, setSelectedId] = useState('');
@@ -57,7 +65,7 @@ export default function ReceptionMarchandisesPage() {
     setLoading(true);
     const context = await getMyProspecteurContext();
     if (context.error || !context.data?.id) {
-      setMessage(context.error?.message ?? 'Compte prospecteur introuvable.');
+      setMessage(context.error?.message ?? t('tr.noProspector'));
       setLoading(false);
       return;
     }
@@ -100,7 +108,7 @@ export default function ReceptionMarchandisesPage() {
       return;
     }
     if (received.codes.length === 0 && damagedList.codes.length === 0) {
-      setMessage('Saisissez les codes imprimés sur les produits reçus.');
+      setMessage(t('tr.enterCodes'));
       return;
     }
     setBusy(true);
@@ -112,19 +120,16 @@ export default function ReceptionMarchandisesPage() {
     });
     setBusy(false);
     if (error) {
-      setMessage('Réception non enregistrée : ' + friendlyRpcError(error.message));
+      setMessage(t('tr.notSaved') + friendlyRpcError(error.message));
       return;
     }
     setMessage(
-      'Réception enregistrée pour ' +
-        (data?.shipment_number ?? shipment.shipment_number) +
-        ' — reçus : ' +
-        (data?.units_received ?? 0) +
-        ', abîmés : ' +
-        (data?.units_damaged ?? 0) +
-        ', manquants : ' +
-        (data?.units_missing ?? 0) +
-        '.'
+      fill('tr.savedCodes', {
+        n: data?.shipment_number ?? shipment.shipment_number,
+        r: data?.units_received ?? 0,
+        d: data?.units_damaged ?? 0,
+        m: data?.units_missing ?? 0,
+      })
     );
     setSelectedId('');
     setReceivedText('');
@@ -140,15 +145,13 @@ export default function ReceptionMarchandisesPage() {
       (line) => line.barcode_snapshot === code || line.article_code_snapshot === code
     );
     if (!item) {
-      setMessage('Code non prévu sur ce bon : ' + code + '. Vérifiez avec l’entrepôt.');
+      setMessage(fill('tr.unexpectedCode', { c: code }));
       setManualCode('');
       return;
     }
     const current = scannedRef.current[item.article_id] ?? 0;
     if (current + 1 > item.quantity_dispatched) {
-      setMessage(
-        'La quantité scannée dépasse la quantité expédiée pour ' + item.article_name_snapshot + '.'
-      );
+      setMessage(fill('tr.overQty', { a: item.article_name_snapshot }));
       setManualCode('');
       return;
     }
@@ -157,25 +160,21 @@ export default function ReceptionMarchandisesPage() {
     setScanned(next);
     setScannedCodes((prev) => ({ ...prev, [item.article_id]: code }));
     setScanDevices((prev) => ({ ...prev, [item.article_id]: device }));
-    setMessage('Article reconnu : ' + item.article_name_snapshot);
+    setMessage(fill('tr.recognized', { a: item.article_name_snapshot }));
     setManualCode('');
   }
 
   async function startCamera() {
     setCameraError('');
     if (!navigator.mediaDevices?.getUserMedia) {
-      setCameraError(
-        'Caméra indisponible. Utilisez la saisie manuelle ou un appareil compatible en HTTPS.'
-      );
+      setCameraError(t('tr.camUnavailable'));
       return;
     }
     const BarcodeDetectorCtor = (
       window as unknown as { BarcodeDetector?: new (options?: { formats?: string[] }) => Detector }
     ).BarcodeDetector;
     if (!BarcodeDetectorCtor) {
-      setCameraError(
-        'Ce navigateur ne prend pas en charge le décodage natif. Utilisez la saisie manuelle ou ajoutez une bibliothèque de scan validée.'
-      );
+      setCameraError(t('tr.noDecoder'));
       return;
     }
     try {
@@ -218,9 +217,7 @@ export default function ReceptionMarchandisesPage() {
         void scanFrame();
       }, 250);
     } catch {
-      setCameraError(
-        'Autorisation caméra refusée ou caméra indisponible. Vous pouvez saisir le code manuellement.'
-      );
+      setCameraError(t('tr.camDenied'));
       setCameraOn(false);
     }
   }
@@ -236,9 +233,7 @@ export default function ReceptionMarchandisesPage() {
     if (!shipment) return;
     const allLines = shipment.prospecteur_supply_shipment_items;
     if (allLines.some((line) => scanned[line.article_id] === undefined)) {
-      setMessage(
-        'Renseignez chaque ligne du bon. Scannez les articles reçus ou utilisez « Déclarer absent » après vérification du colis.'
-      );
+      setMessage(t('tr.fillEveryLine'));
       return;
     }
     const items = allLines.map((line) => {
@@ -266,19 +261,16 @@ export default function ReceptionMarchandisesPage() {
         error.code === '42883' ||
         /could not find the function|function .* does not exist/i.test(error.message ?? '');
       setMessage(
-        missingRpc
-          ? 'La fonction de confirmation de réception est absente de Supabase. La migration 20261012195023_jdv_prospecteur_barcode_shipment_rpcs_v1.sql doit être appliquée et vérifiée avant de confirmer ce bon.'
-          : 'Réception non enregistrée : ' + (error.message || 'erreur inconnue')
+        missingRpc ? t('tr.missingRpc') : t('tr.notSaved') + (error.message || t('tr.unknownError'))
       );
       return;
     }
     const result = data as { status?: string; shipment_number?: string };
     setMessage(
-      'Réception enregistrée pour ' +
-        (result.shipment_number ?? shipment.shipment_number) +
-        ' — statut : ' +
-        (result.status ?? 'confirmé') +
-        '.'
+      fill('tr.savedShipment', {
+        n: result.shipment_number ?? shipment.shipment_number,
+        s: result.status ?? t('tr.confirmed'),
+      })
     );
     stopCamera();
     setSelectedId('');
@@ -295,17 +287,14 @@ export default function ReceptionMarchandisesPage() {
     <div className="p-5 lg:p-8 space-y-6 text-white">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-widest text-[#D4AF37]">Stock</p>
-          <h1 className="text-2xl font-bold">Réception des marchandises</h1>
-          <p className="text-sm text-[#A0AEC0]">
-            Le code de traçabilité JDV est créé par l’entreprise. Saisissez-le manuellement ou
-            scannez-le pour confirmer que l’article expédié est bien reçu.
-          </p>
+          <p className="text-xs uppercase tracking-widest text-[#D4AF37]">{t('tr.kicker')}</p>
+          <h1 className="text-2xl font-bold">{t('tr.title')}</h1>
+          <p className="text-sm text-[#A0AEC0]">{t('tr.intro')}</p>
         </div>
         <button
           onClick={() => void load()}
           className="rounded-xl bg-[#0F2347] p-3 text-slate-300"
-          aria-label="Actualiser"
+          aria-label={t('tr.refresh')}
         >
           <RefreshCw size={17} />
         </button>
@@ -316,19 +305,17 @@ export default function ReceptionMarchandisesPage() {
         </div>
       )}
       {loading ? (
-        <p className="text-slate-400">Chargement des bons en attente…</p>
+        <p className="text-slate-400">{t('tr.loading')}</p>
       ) : shipments.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-[#0F2347] p-6">
           <CheckCircle2 className="text-emerald-400" />
-          <h2 className="mt-2 font-semibold">Aucun bon en attente</h2>
-          <p className="text-sm text-slate-400">
-            Les bons expédiés par votre entrepôt apparaîtront ici.
-          </p>
+          <h2 className="mt-2 font-semibold">{t('tr.noneTitle')}</h2>
+          <p className="text-sm text-slate-400">{t('tr.noneText')}</p>
         </div>
       ) : (
         <>
           <section className="rounded-2xl border border-white/10 bg-[#0F2347] p-4">
-            <label className="mb-2 block text-sm text-slate-300">Bon de livraison</label>
+            <label className="mb-2 block text-sm text-slate-300">{t('tr.slip')}</label>
             <select
               className="w-full rounded-xl border border-white/10 bg-[#08152f] p-3"
               value={selectedId}
@@ -343,10 +330,10 @@ export default function ReceptionMarchandisesPage() {
                 setMessage('');
               }}
             >
-              <option value="">Choisir un bon à réceptionner</option>
+              <option value="">{t('tr.pickSlip')}</option>
               {shipments.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.shipment_number} · {new Date(s.dispatched_at ?? '').toLocaleString('fr-FR')}
+                  {s.shipment_number} · {new Date(s.dispatched_at ?? '').toLocaleString(locale)}
                 </option>
               ))}
             </select>
@@ -355,23 +342,22 @@ export default function ReceptionMarchandisesPage() {
             <section className="rounded-2xl border border-[#D4AF37]/20 bg-[#0F2347] p-4 space-y-3">
               <h2 className="font-semibold">{shipment.shipment_number}</h2>
               <p className="text-sm text-slate-300">
-                Ce bon contient {unitCounts[shipment.id]} produit(s) suivis par code unique.
-                Saisissez le code imprimé sur chaque produit reçu en bon état (un par ligne).
+                {fill('tr.codeModeInfo', { n: unitCounts[shipment.id] })}
               </p>
               <textarea
                 value={receivedText}
                 onChange={(e) => setReceivedText(e.target.value)}
                 rows={6}
-                placeholder="Codes reçus en bon état"
+                placeholder={t('tr.goodCodes')}
                 className="w-full rounded-xl border border-white/10 bg-[#08152f] p-3 font-mono"
               />
               <p className="text-xs text-slate-400">
-                {parseCodeList(receivedText).codes.length} code(s) saisi(s) sur{' '}
-                {unitCounts[shipment.id]} attendu(s)
+                {fill('tr.codesCount', {
+                  a: parseCodeList(receivedText).codes.length,
+                  b: unitCounts[shipment.id],
+                })}
               </p>
-              <label className="block text-sm text-slate-300">
-                Codes reçus abîmés (facultatif)
-              </label>
+              <label className="block text-sm text-slate-300">{t('tr.damagedCodes')}</label>
               <textarea
                 value={damagedText}
                 onChange={(e) => setDamagedText(e.target.value)}
@@ -382,7 +368,7 @@ export default function ReceptionMarchandisesPage() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
-                placeholder="Observation (facultatif)"
+                placeholder={t('tr.observation')}
                 className="w-full rounded-xl border border-white/10 bg-[#08152f] p-3"
               />
               <button
@@ -390,11 +376,9 @@ export default function ReceptionMarchandisesPage() {
                 onClick={() => void confirmByCodes()}
                 className="w-full rounded-xl bg-[#D4AF37] p-3 font-semibold text-[#08152f] disabled:opacity-50"
               >
-                {busy ? 'Confirmation…' : 'Confirmer la réception'}
+                {busy ? t('tr.confirming') : t('tr.confirm')}
               </button>
-              <p className="text-xs text-slate-500">
-                Les codes non saisis seront signalés comme manquants.
-              </p>
+              <p className="text-xs text-slate-500">{t('tr.missingNote')}</p>
             </section>
           )}
           {shipment && !codeMode && (
@@ -404,7 +388,7 @@ export default function ReceptionMarchandisesPage() {
                   <div>
                     <h2 className="font-semibold">{shipment.shipment_number}</h2>
                     <p className="text-xs text-slate-400">
-                      Quantité reçue : {Object.values(scanned).reduce((n, x) => n + x, 0)} /{' '}
+                      {t('tr.qtyReceived')} {Object.values(scanned).reduce((n, x) => n + x, 0)} /{' '}
                       {shipment.prospecteur_supply_shipment_items.reduce(
                         (n, x) => n + x.quantity_dispatched,
                         0
@@ -416,11 +400,11 @@ export default function ReceptionMarchandisesPage() {
                     className="rounded-xl bg-[#D4AF37] px-4 py-2 text-sm font-semibold text-[#08152f]"
                   >
                     {cameraOn ? (
-                      'Arrêter la caméra'
+                      t('tr.stopCam')
                     ) : (
                       <>
                         <Camera size={16} className="inline mr-2" />
-                        Ouvrir la caméra
+                        {t('tr.openCam')}
                       </>
                     )}
                   </button>
@@ -439,9 +423,7 @@ export default function ReceptionMarchandisesPage() {
                     className="max-h-72 w-full rounded-xl bg-black object-contain"
                   />
                 )}
-                <label className="block text-sm text-slate-300">
-                  Saisir le code de traçabilité JDV
-                </label>
+                <label className="block text-sm text-slate-300">{t('tr.enterTrace')}</label>
                 <div className="flex gap-2">
                   <input
                     value={manualCode}
@@ -452,20 +434,20 @@ export default function ReceptionMarchandisesPage() {
                         matchCode(manualCode);
                       }
                     }}
-                    placeholder="Ex. JDV-XXXXXXXXXXXX"
+                    placeholder={t('tr.example')}
                     className="min-w-0 flex-1 rounded-xl border border-white/10 bg-[#08152f] p-3"
                   />
                   <button
                     onClick={() => matchCode(manualCode)}
                     className="rounded-xl bg-[#D4AF37] px-3 text-[#08152f]"
-                    aria-label="Valider le code"
+                    aria-label={t('tr.validateCode')}
                   >
                     <ScanBarcode size={18} />
                   </button>
                 </div>
               </section>
               <section className="rounded-2xl border border-white/10 bg-[#0F2347] p-4">
-                <h2 className="mb-3 font-semibold">Récapitulatif de réception</h2>
+                <h2 className="mb-3 font-semibold">{t('tr.recap')}</h2>
                 <div className="space-y-3">
                   {shipment.prospecteur_supply_shipment_items.map((line) => (
                     <div
@@ -475,23 +457,18 @@ export default function ReceptionMarchandisesPage() {
                       <div>
                         <p className="text-sm font-medium">{line.article_name_snapshot}</p>
                         <p className="text-xs text-slate-400">
-                          Code JDV : {line.article_code_snapshot} · expédié{' '}
+                          {t('tr.jdvCode')} {line.article_code_snapshot} · {t('tr.shipped')}{' '}
                           {line.quantity_dispatched}
                           {line.barcode_snapshot ? (
                             <span className="block text-xs text-slate-500">
-                              Code fabricant : {line.barcode_snapshot}
+                              {t('tr.makerCode')} {line.barcode_snapshot}
                             </span>
                           ) : null}
                         </p>
                         <button
                           type="button"
                           onClick={() => {
-                            if (
-                              !window.confirm(
-                                'Confirmez-vous que cet article est totalement absent du colis ?'
-                              )
-                            )
-                              return;
+                            if (!window.confirm(t('tr.confirmAbsent'))) return;
                             const next = { ...scannedRef.current, [line.article_id]: 0 };
                             scannedRef.current = next;
                             setScanned(next);
@@ -503,22 +480,20 @@ export default function ReceptionMarchandisesPage() {
                             });
                             setScanDevices((prev) => ({ ...prev, [line.article_id]: 'manual' }));
                             setMessage(
-                              'Absence déclarée manuellement pour ' +
-                                line.article_name_snapshot +
-                                '. Vérifiez le colis avant de confirmer.'
+                              fill('tr.absentDeclared', { a: line.article_name_snapshot })
                             );
                           }}
                           className="mt-2 text-left text-xs font-medium text-amber-300 underline underline-offset-2"
                         >
-                          Déclarer absent
+                          {t('tr.declareAbsent')}
                         </button>
                       </div>
                       <div className="text-center">
-                        <p className="text-xs text-slate-400">Reçu</p>
+                        <p className="text-xs text-slate-400">{t('tr.received')}</p>
                         <p className="font-bold">{scanned[line.article_id] ?? 0}</p>
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400">Reçu réel</label>
+                        <label className="text-xs text-slate-400">{t('tr.actualReceived')}</label>
                         <input
                           type="number"
                           min="0"
@@ -566,7 +541,7 @@ export default function ReceptionMarchandisesPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-xs text-slate-400">Abîmés</label>
+                        <label className="text-xs text-slate-400">{t('tr.damaged')}</label>
                         <input
                           type="number"
                           min="0"
@@ -587,15 +562,13 @@ export default function ReceptionMarchandisesPage() {
                     </div>
                   ))}
                 </div>
-                <label className="mt-4 block text-sm text-slate-300">
-                  Observation (écart, colis abîmé, quantité manquante…)
-                </label>
+                <label className="mt-4 block text-sm text-slate-300">{t('tr.obsLong')}</label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
                   className="mt-2 w-full rounded-xl border border-white/10 bg-[#08152f] p-3"
-                  placeholder="Précisions sur la réception"
+                  placeholder={t('tr.details')}
                 />
                 <button
                   disabled={
@@ -607,17 +580,14 @@ export default function ReceptionMarchandisesPage() {
                   onClick={() => void confirmReceipt()}
                   className="mt-4 w-full rounded-xl bg-[#D4AF37] p-3 font-semibold text-[#08152f] disabled:opacity-50"
                 >
-                  {busy ? 'Confirmation…' : 'Confirmer la réception'}
+                  {busy ? t('tr.confirming') : t('tr.confirm')}
                 </button>
               </section>
             </>
           )}
         </>
       )}
-      <p className="text-xs text-slate-500">
-        La caméra exige un navigateur compatible et une connexion HTTPS. Si le décodage natif n’est
-        pas disponible, la saisie manuelle reste utilisable.
-      </p>
+      <p className="text-xs text-slate-500">{t('tr.cameraNote')}</p>
     </div>
   );
 }

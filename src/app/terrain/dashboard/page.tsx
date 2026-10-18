@@ -8,8 +8,10 @@ import { fetchProducts } from '@/lib/services/catalogueService';
 import Link from 'next/link';
 import Modal from '@/components/ui/Modal';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function TerrainDashboardPage() {
+  const { t, locale } = useLanguage();
   const [userName, setUserName] = useState('');
   const [salesCount, setSalesCount] = useState(0);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -117,18 +119,20 @@ export default function TerrainDashboardPage() {
     };
   }, []);
 
-  const firstName = userName?.split(' ')?.[0] || 'Prospecteur';
+  const firstName = userName?.split(' ')?.[0] || t('td.prospector');
 
   return (
     <div className="p-5 lg:p-8 space-y-6">
       {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Bonjour, {firstName} 👋</h1>
+        <h1 className="text-2xl font-bold text-white">
+          {t('td.hello')}, {firstName} 👋
+        </h1>
         <div className="flex items-center gap-4 mt-1">
           <div className="flex items-center gap-1 text-xs text-[#A0AEC0]">
             <Clock size={11} />
             <span>
-              {new Date()?.toLocaleDateString('fr-FR', {
+              {new Date()?.toLocaleDateString(locale, {
                 weekday: 'long',
                 day: 'numeric',
                 month: 'long',
@@ -143,19 +147,19 @@ export default function TerrainDashboardPage() {
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <ShoppingCart size={16} className="text-[#D4AF37]" />
-            <p className="text-xs text-[#A0AEC0]">Ventes aujourd&apos;hui</p>
+            <p className="text-xs text-[#A0AEC0]">{t('td.salesToday')}</p>
           </div>
           <p className="text-2xl font-bold text-white">{loading ? '—' : salesCount}</p>
         </div>
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Wallet size={16} className="text-[#D4AF37]" />
-            <p className="text-xs text-[#A0AEC0]">Encaissé aujourd&apos;hui</p>
+            <p className="text-xs text-[#A0AEC0]">{t('td.collectedToday')}</p>
           </div>
           <p className="text-2xl font-bold text-[#D4AF37]">
             {loading
               ? '—'
-              : new Intl.NumberFormat('fr-FR', {
+              : new Intl.NumberFormat(locale, {
                   style: 'currency',
                   currency: 'XOF',
                   maximumFractionDigits: 0,
@@ -165,7 +169,7 @@ export default function TerrainDashboardPage() {
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4 col-span-2">
           <div className="flex items-center gap-2 mb-2">
             <Users size={16} className="text-[#63B3ED]" />
-            <p className="text-xs text-[#A0AEC0]">Mes prospects</p>
+            <p className="text-xs text-[#A0AEC0]">{t('myProspects')}</p>
           </div>
           <p className="text-2xl font-bold text-[#63B3ED]">{loading ? '—' : prospectsCount}</p>
         </div>
@@ -178,14 +182,14 @@ export default function TerrainDashboardPage() {
           className="flex flex-col items-center gap-2 p-4 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl hover:bg-[#D4AF37]/20 transition-all"
         >
           <Plus size={20} className="text-[#D4AF37]" />
-          <span className="text-sm font-semibold text-white">Nouvelle vente</span>
+          <span className="text-sm font-semibold text-white">{t('td.newSale')}</span>
         </button>
         <Link
           href="/terrain/dashboard/prospects"
           className="flex flex-col items-center gap-2 p-4 bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl hover:bg-[#0A1628] transition-all"
         >
           <Users size={20} className="text-[#63B3ED]" />
-          <span className="text-sm font-semibold text-white">Mes prospects</span>
+          <span className="text-sm font-semibold text-white">{t('myProspects')}</span>
         </Link>
       </div>
 
@@ -197,7 +201,7 @@ export default function TerrainDashboardPage() {
         >
           <div className="flex items-center gap-3">
             <ShoppingCart size={16} className="text-[#D4AF37]" />
-            <span className="text-sm font-medium text-white">Mes ventes</span>
+            <span className="text-sm font-medium text-white">{t('mySales')}</span>
           </div>
           <span className="text-xs text-[#718096]">→</span>
         </Link>
@@ -207,7 +211,7 @@ export default function TerrainDashboardPage() {
         >
           <div className="flex items-center gap-3">
             <TrendingUp size={16} className="text-[#D4AF37]" />
-            <span className="text-sm font-medium text-white">Ma commission</span>
+            <span className="text-sm font-medium text-white">{t('myCommission')}</span>
           </div>
           <span className="text-xs text-[#718096]">→</span>
         </Link>
@@ -217,7 +221,7 @@ export default function TerrainDashboardPage() {
       <Modal
         open={saleModalOpen}
         onClose={() => setSaleModalOpen(false)}
-        title="Enregistrer une vente"
+        title={t('td.modalTitle')}
         size="md"
       >
         <form
@@ -227,20 +231,20 @@ export default function TerrainDashboardPage() {
             const oid = orgIdRef.current;
             const pid = prospecteurIdRef.current;
             if (!oid || !pid) {
-              setSubmitError('Compte prospecteur introuvable');
+              setSubmitError(t('td.e.account'));
               return;
             }
             const article = articles.find((a) => a.id === newSaleForm.article_id);
             if (!newSaleForm.client_id) {
-              setSubmitError('Choisissez un client');
+              setSubmitError(t('td.e.pickClient'));
               return;
             }
             if (!article) {
-              setSubmitError('Choisissez un article');
+              setSubmitError(t('td.e.pickArticle'));
               return;
             }
             if (newSaleForm.unit_price <= 0) {
-              setSubmitError('Le prix doit être supérieur à 0');
+              setSubmitError(t('td.e.price'));
               return;
             }
             setSubmitting(true);
@@ -265,7 +269,7 @@ export default function TerrainDashboardPage() {
             });
             setSubmitting(false);
             if (error || !data) {
-              setSubmitError(error?.message ?? 'Vente non enregistrée');
+              setSubmitError(error?.message ?? t('td.e.notSaved'));
               return;
             }
             setSaleModalOpen(false);
@@ -287,14 +291,16 @@ export default function TerrainDashboardPage() {
             </div>
           )}
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Client</label>
+            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              {t('td.client')}
+            </label>
             <select
               value={newSaleForm.client_id}
               onChange={(e) => setNewSaleForm((f) => ({ ...f, client_id: e.target.value }))}
               required
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
             >
-              <option value="">Choisir un client…</option>
+              <option value="">{t('td.pickClient')}</option>
               {clients.map((c) => (
                 <option key={c.id as string} value={c.id as string}>
                   {c.full_name as string}
@@ -302,13 +308,13 @@ export default function TerrainDashboardPage() {
               ))}
             </select>
             {clients.length === 0 && (
-              <p className="text-xs text-[#718096] mt-1">
-                Aucun client. Convertissez d&apos;abord un prospect.
-              </p>
+              <p className="text-xs text-[#718096] mt-1">{t('td.noClient')}</p>
             )}
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Article</label>
+            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              {t('td.article')}
+            </label>
             <select
               value={newSaleForm.article_id}
               onChange={(e) => {
@@ -326,7 +332,7 @@ export default function TerrainDashboardPage() {
               required
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
             >
-              <option value="">Choisir un article…</option>
+              <option value="">{t('td.pickArticle')}</option>
               {articles.map((a) => (
                 <option key={a.id as string} value={a.id as string}>
                   {a.name as string}
@@ -336,17 +342,19 @@ export default function TerrainDashboardPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Type</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                {t('td.type')}
+              </label>
               <select
                 value={newSaleForm.sale_type}
                 onChange={(e) => {
                   const a = articles.find((x) => x.id === newSaleForm.article_id);
-                  const t = e.target.value;
+                  const saleType = e.target.value;
                   setNewSaleForm((f) => ({
                     ...f,
-                    sale_type: t,
+                    sale_type: saleType,
                     unit_price: a
-                      ? (t === 'credit'
+                      ? (saleType === 'credit'
                           ? Number(a.credit_price) || Number(a.fixed_price)
                           : Number(a.cash_price) || Number(a.fixed_price)) || f.unit_price
                       : f.unit_price,
@@ -354,12 +362,14 @@ export default function TerrainDashboardPage() {
                 }}
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none"
               >
-                <option value="cash">Comptant</option>
-                <option value="credit">À crédit</option>
+                <option value="cash">{t('td.cash')}</option>
+                <option value="credit">{t('td.credit')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Quantité</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                {t('td.qty')}
+              </label>
               <input
                 type="number"
                 min={1}
@@ -377,7 +387,7 @@ export default function TerrainDashboardPage() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                Prix unitaire (XOF)
+                {t('td.unitPrice')}
               </label>
               <input
                 type="number"
@@ -395,7 +405,7 @@ export default function TerrainDashboardPage() {
             {newSaleForm.sale_type === 'credit' && (
               <div>
                 <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                  Acompte (XOF)
+                  {t('td.deposit')}
                 </label>
                 <input
                   type="number"
@@ -418,14 +428,14 @@ export default function TerrainDashboardPage() {
               onClick={() => setSaleModalOpen(false)}
               className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm"
             >
-              Annuler
+              {t('cancel')}
             </button>
             <button
               type="submit"
               disabled={submitting}
               className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
             >
-              {submitting ? 'Enregistrement...' : 'Enregistrer'}
+              {submitting ? t('td.saving') : t('save')}
             </button>
           </div>
         </form>
