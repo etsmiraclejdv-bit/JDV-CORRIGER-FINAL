@@ -189,7 +189,7 @@ export default function MarketingGrowthPage() {
     duration: number;
     socialCopy: string;
     storefrontCopy: string;
-    visualPaths: { title: string; path: string; description: string }[];
+    visualPaths: { title: string; path: string; fileName: string; description: string }[];
     updatedAt: string;
   } | null>(null);
 
