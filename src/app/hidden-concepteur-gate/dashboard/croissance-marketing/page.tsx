@@ -115,6 +115,15 @@ function RecommendationCard({ item, index }: { item: MarketingRecommendation; in
 
 export default function MarketingGrowthPage() {
   const [channel, setChannel] = useState<Channel>('organic');
+  const [organicTasksDone, setOrganicTasksDone] = useState<string[]>([]);
+  const organicTasks = [
+    { id: 'profile', title: 'Compléter la vitrine de l’entreprise', detail: 'Vérifier nom, coordonnées, horaires, services et zone desservie.' },
+    { id: 'photos', title: 'Ajouter des photos et le logo', detail: 'Utiliser des visuels réels, nets et représentatifs de l’activité.' },
+    { id: 'keywords', title: 'Améliorer le référencement local', detail: 'Décrire clairement les services et les mots que les clients utilisent.' },
+    { id: 'content', title: 'Préparer une publication utile', detail: 'Rédiger un conseil, une nouveauté ou une présentation de produit.' },
+    { id: 'reviews', title: 'Demander un avis client authentique', detail: 'Inviter un vrai client à donner librement son avis.' },
+    { id: 'referrals', title: 'Préparer une action de parrainage', detail: 'Définir le message de recommandation et demander le consentement.' },
+  ];
   const [showCampaignForm, setShowCampaignForm] = useState(false);
   const [campaignName, setCampaignName] = useState('');
   const [objective, setObjective] = useState<Objective>('leads');
@@ -239,6 +248,44 @@ export default function MarketingGrowthPage() {
                 <div className="rounded-xl border border-white/10 bg-[#0F2347] p-4"><p className="text-xs text-[#8FA2C1]">Avant lancement</p><p className="mt-2 text-sm font-semibold text-white">Audience · Budget · Validation</p><p className="mt-1 text-xs text-[#7186A8]">Validation humaine obligatoire</p></div>
               </div>
             </div>
+          )}
+          {channel === 'organic' && (
+            <section aria-labelledby="organic-checklist-title" className="rounded-xl border border-[#D4AF37]/20 bg-[#08152F] p-4 sm:p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 id="organic-checklist-title" className="text-sm font-semibold text-white">Plan d’action organique</h3>
+                  <p className="mt-1 text-xs leading-5 text-[#8FA2C1]">Cochez les étapes réalisées pour suivre votre préparation. Cette liste reste dans cette session et n’est pas encore enregistrée dans la base JDV CRM.</p>
+                </div>
+                <span className="rounded-full border border-[#D4AF37]/20 px-3 py-1 text-xs font-semibold text-[#F5D76E]">{organicTasksDone.length}/{organicTasks.length} étapes</span>
+              </div>
+              <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-[#D4AF37] transition-all" style={{ width: `${(organicTasksDone.length / organicTasks.length) * 100}%` }} />
+              </div>
+              <div className="mt-4 space-y-2">
+                {organicTasks.map((task) => {
+                  const done = organicTasksDone.includes(task.id);
+                  return (
+                    <label key={task.id} className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${done ? 'border-emerald-300/20 bg-emerald-300/5' : 'border-white/5 bg-[#0F2347]/60 hover:border-white/15'}`}>
+                      <input
+                        type="checkbox"
+                        checked={done}
+                        onChange={(event) => setOrganicTasksDone((current) => event.target.checked ? [...current, task.id] : current.filter((id) => id !== task.id))}
+                        className="mt-1 h-4 w-4 rounded border-white/20 bg-[#08152F] accent-[#D4AF37]"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className={`block text-sm font-medium ${done ? 'text-emerald-100 line-through' : 'text-white'}`}>{task.title}</span>
+                        <span className="mt-1 block text-xs leading-5 text-[#8FA2C1]">{task.detail}</span>
+                      </span>
+                      {done && <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-300" />}
+                    </label>
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs text-[#7186A8]">Les coches suivent votre progression, elles ne publient rien automatiquement.</p>
+                <button type="button" onClick={() => setOrganicTasksDone([])} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-[#C5D0E2] hover:bg-white/5">Réinitialiser la liste</button>
+              </div>
+            </section>
           )}
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
             <p className="flex items-center gap-2 text-xs text-[#7186A8]"><CircleHelp size={14} /> Les connexions aux plateformes seront ajoutées après audit des autorisations.</p>
