@@ -22,6 +22,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
 import {
   generateMarketingRecommendations,
   type MarketingMetrics,
@@ -33,6 +34,11 @@ type Objective = 'visibilite' | 'leads' | 'conversion' | 'fidelisation';
 
 const CAMPAIGN_STORAGE_KEY = 'jdvcrm:marketing:official-launch:v2';
 const ORGANIC_CHECKLIST_STORAGE_KEY = 'jdvcrm:marketing:organic-checklist:v1';
+const OFFICIAL_VISUALS = [
+  { title: '1. Lancement principal', path: '/marketing/JDV%20CRM%20_%20Votre%20partenaire%20de%20croissance.png', fileName: 'JDV CRM _ Votre partenaire de croissance.png', description: 'Visuel officiel de lancement : JDV CRM, partenaire de croissance.' },
+  { title: '2. Vitrine publique', path: '/marketing/JDV%20CRM%20_%20votre%20croissance%2C%20simplifi%C3%A9e%20(1).png', fileName: 'JDV CRM _ votre croissance, simplifiée (1).png', description: 'Visuel de présentation destiné à la vitrine publique.' },
+  { title: '3. Visuels complémentaires', path: '/marketing/JDV%20CRM%20_%20Connecter%2C%20D%C3%A9velopper%2C%20R%C3%A9ussir%20(1).png', fileName: 'JDV CRM _ Connecter, Développer, Réussir (1).png', description: 'Visuel complémentaire des fonctionnalités et de la signature de marque.' },
+] as const;
 const LAUNCH_SOCIAL_COPY = `🚀 JDV CRM : CONNECTER. DÉVELOPPER. RÉUSSIR.
 
 Les entreprises ont besoin de mieux s’organiser, de suivre leurs clients et de trouver de nouvelles possibilités de croissance.
@@ -152,6 +158,7 @@ function RecommendationCard({ item, index }: { item: MarketingRecommendation; in
 export default function MarketingGrowthPage() {
   const [channel, setChannel] = useState<Channel>('organic');
   const [organicTasksDone, setOrganicTasksDone] = useState<string[]>([]);
+  const [persistenceStatus, setPersistenceStatus] = useState('Connexion à la sauvegarde sécurisée…');
 
   useEffect(() => {
     try {
@@ -189,17 +196,59 @@ export default function MarketingGrowthPage() {
     duration: number;
     socialCopy: string;
     storefrontCopy: string;
+    id?: string;
     visualPaths: { title: string; path: string; fileName: string; description: string }[];
     updatedAt: string;
   } | null>(null);
 
   useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(CAMPAIGN_STORAGE_KEY);
-      if (stored) setCampaignDraft(JSON.parse(stored));
-    } catch {
-      // Keep the page usable if browser storage is unavailable or corrupted.
+    let active = true;
+    async function loadCampaign() {
+      try {
+        const { data, error } = await supabase
+          .from('jdv_marketing_campaigns')
+          .select('*')
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (error) throw error;
+        if (!active) return;
+        if (data) {
+          const draft = {
+            id: data.id,
+            name: data.name,
+            audience: data.audience,
+            channels: data.channels,
+            objective: data.objective as Objective,
+            channel: data.channel as Channel,
+            budget: Number(data.budget),
+            duration: data.duration_days,
+            socialCopy: data.social_copy,
+            storefrontCopy: data.storefront_copy,
+            visualPaths: data.visual_paths as unknown as typeof OFFICIAL_VISUALS[number][],
+            updatedAt: data.updated_at,
+          };
+          setCampaignDraft(draft);
+          setOrganicTasksDone(data.organic_tasks_done ?? []);
+          setPersistenceStatus('Campagne et progression synchronisées avec Supabase.');
+          try {
+            window.localStorage.setItem(CAMPAIGN_STORAGE_KEY, JSON.stringify(draft));
+            window.localStorage.setItem(ORGANIC_CHECKLIST_STORAGE_KEY, JSON.stringify(data.organic_tasks_done ?? []));
+          } catch { /* Supabase remains the durable source of truth. */ }
+          return;
+        }
+        setPersistenceStatus('Aucune campagne enregistrée. Créez un brouillon pour activer la sauvegarde sécurisée.');
+      } catch {
+        if (!active) return;
+        try {
+          const stored = window.localStorage.getItem(CAMPAIGN_STORAGE_KEY);
+          if (stored) setCampaignDraft(JSON.parse(stored));
+        } catch { /* Browser storage is optional fallback only. */ }
+        setPersistenceStatus('Supabase indisponible ou session non autorisée : brouillon local uniquement.');
+      }
     }
+    void loadCampaign();
+    return () => { active = false; };
   }, []);
 
   const recommendations = useMemo(
@@ -207,7 +256,7 @@ export default function MarketingGrowthPage() {
     [],
   );
 
-  function createLocalDraft(event: FormEvent<HTMLFormElement>) {
+  async function createLocalDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const parsedBudget = Number(budget);
     const parsedDuration = Number(duration);
@@ -223,21 +272,42 @@ export default function MarketingGrowthPage() {
       duration: parsedDuration,
       socialCopy: LAUNCH_SOCIAL_COPY,
       storefrontCopy: LAUNCH_STOREFRONT_COPY,
-      visualPaths: [
-        { title: '1. Lancement principal', path: '/marketing/JDV%20CRM%20_%20Votre%20partenaire%20de%20croissance.png', fileName: 'JDV CRM _ Votre partenaire de croissance.png', description: 'Visuel officiel de lancement : JDV CRM, partenaire de croissance.' },
-        { title: '2. Vitrine publique', path: '/marketing/JDV%20CRM%20_%20votre%20croissance%2C%20simplifi%C3%A9e%20(1).png', fileName: 'JDV CRM _ votre croissance, simplifiée (1).png', description: 'Visuel de présentation destiné à la vitrine publique.' },
-        { title: '3. Visuels complémentaires', path: '/marketing/JDV%20CRM%20_%20Connecter%2C%20D%C3%A9velopper%2C%20R%C3%A9ussir%20(1).png', fileName: 'JDV CRM _ Connecter, Développer, Réussir (1).png', description: 'Visuel complémentaire des fonctionnalités et de la signature de marque.' },
-      ],
+      visualPaths: [...OFFICIAL_VISUALS],
       updatedAt: new Date().toISOString(),
     };
     setCampaignDraft(draft);
     try {
       window.localStorage.setItem(CAMPAIGN_STORAGE_KEY, JSON.stringify(draft));
-    } catch {
-      // The UI still shows this draft for the current session if storage is blocked.
-    }
+    } catch { /* Local fallback is optional. */ }
     setShowCampaignForm(false);
     setCampaignName('');
+    setPersistenceStatus('Enregistrement sécurisé de la campagne…');
+    const { data, error } = await supabase
+      .from('jdv_marketing_campaigns')
+      .insert({
+        name: draft.name,
+        audience: draft.audience,
+        channels: draft.channels,
+        objective: draft.objective,
+        channel: draft.channel,
+        budget: draft.budget,
+        duration_days: draft.duration,
+        social_copy: draft.socialCopy,
+        storefront_copy: draft.storefrontCopy,
+        visual_paths: draft.visualPaths,
+        organic_tasks_done: organicTasksDone,
+        status: 'draft',
+      })
+      .select('id, updated_at')
+      .single();
+    if (error || !data) {
+      setPersistenceStatus('Échec de la sauvegarde Supabase. Vérifiez la session et appliquez la migration après validation; le brouillon local est conservé.');
+      return;
+    }
+    const savedDraft = { ...draft, id: data.id, updatedAt: data.updated_at };
+    setCampaignDraft(savedDraft);
+    try { window.localStorage.setItem(CAMPAIGN_STORAGE_KEY, JSON.stringify(savedDraft)); } catch { /* Supabase is the source of truth. */ }
+    setPersistenceStatus('Campagne enregistrée dans Supabase avec accès limité à votre compte.');
   }
 
   return (
@@ -275,6 +345,8 @@ export default function MarketingGrowthPage() {
           </button>
         </div>
       </header>
+
+      <p role="status" aria-live="polite" className="rounded-xl border border-white/10 bg-[#0B1B3D] px-4 py-3 text-xs text-[#A0AEC0]"><ShieldCheck size={14} className="mr-2 inline text-[#D4AF37]" />{persistenceStatus}</p>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Visites qualifiées" icon={Eye} description="Visites de vitrines attribuées à une source mesurée." />
@@ -351,11 +423,17 @@ export default function MarketingGrowthPage() {
                       <input
                         type="checkbox"
                         checked={done}
-                        onChange={(event) => setOrganicTasksDone((current) => {
-                          const next = event.target.checked ? [...current.filter((id) => id !== task.id), task.id] : current.filter((id) => id !== task.id);
-                          try { window.localStorage.setItem(ORGANIC_CHECKLIST_STORAGE_KEY, JSON.stringify(next)); } catch { /* Browser storage may be unavailable. */ }
-                          return next;
-                        })}
+                        onChange={(event) => {
+                          const next = event.target.checked ? [...organicTasksDone.filter((id) => id !== task.id), task.id] : organicTasksDone.filter((id) => id !== task.id);
+                          setOrganicTasksDone(next);
+                          try { window.localStorage.setItem(ORGANIC_CHECKLIST_STORAGE_KEY, JSON.stringify(next)); } catch { /* Browser storage is only a fallback. */ }
+                          if (campaignDraft?.id) {
+                            void supabase.from('jdv_marketing_campaigns')
+                              .update({ organic_tasks_done: next })
+                              .eq('id', campaignDraft.id)
+                              .then(({ error }) => setPersistenceStatus(error ? 'Progression non synchronisée; vos coches restent sur cet appareil.' : 'Campagne et progression synchronisées avec Supabase.'));
+                          }
+                        }}
                         className="mt-1 h-4 w-4 rounded border-white/20 bg-[#08152F] accent-[#D4AF37]"
                       />
                       <span className="min-w-0 flex-1">
@@ -422,9 +500,9 @@ export default function MarketingGrowthPage() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-300/10 text-emerald-200"><CheckCircle2 size={19} /></span>
-              <div><p className="text-sm font-semibold text-white">Brouillon sauvegardé dans ce navigateur</p><p className="mt-1 text-xs text-[#A0AEC0]">Il n’est pas enregistré en base, pas publié et ne dépense aucun budget.</p></div>
+              <div><p className="text-sm font-semibold text-white">{campaignDraft.id ? 'Brouillon enregistré dans Supabase' : 'Brouillon local'}</p><p className="mt-1 text-xs text-[#A0AEC0]">{campaignDraft.id ? 'Sauvegarde durable avec accès limité au compte connecté. Non publié et sans dépense.' : 'En attente de sauvegarde sécurisée. Non publié et sans dépense.'}</p></div>
             </div>
-            <button onClick={() => { setCampaignDraft(null); try { window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY); } catch { /* Storage may be unavailable. */ } }} aria-label="Supprimer le brouillon local" className="rounded-lg p-2 text-[#A0AEC0] hover:bg-white/5 hover:text-white"><X size={16} /></button>
+            <button onClick={() => { const id = campaignDraft.id; setCampaignDraft(null); try { window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY); } catch { /* Storage may be unavailable. */ } if (id) void supabase.from('jdv_marketing_campaigns').delete().eq('id', id).then(({ error }) => setPersistenceStatus(error ? 'Suppression distante refusée; contactez un administrateur.' : 'Campagne supprimée de Supabase.')); }} aria-label="Supprimer le brouillon local" className="rounded-lg p-2 text-[#A0AEC0] hover:bg-white/5 hover:text-white"><X size={16} /></button>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div><p className="text-xs text-[#7186A8]">Nom</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.name}</p></div>
