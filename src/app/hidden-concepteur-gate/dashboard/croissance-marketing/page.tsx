@@ -98,10 +98,12 @@ function MetricCard({
   label,
   icon: Icon,
   description,
+  missingSource,
 }: {
   label: string;
   icon: typeof Eye;
   description: string;
+  missingSource: string;
 }) {
   return (
     <article className="rounded-2xl border border-white/10 bg-[#0F2347] p-5">
@@ -109,13 +111,14 @@ function MetricCard({
         <span className="grid h-10 w-10 place-items-center rounded-xl border border-[#D4AF37]/20 bg-[#D4AF37]/10 text-[#F5D76E]">
           <Icon size={19} />
         </span>
-        <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#A0AEC0]">
-          À connecter
+        <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-200">
+          Source à connecter
         </span>
       </div>
       <p className="mt-5 text-sm font-medium text-white">{label}</p>
       <p className="mt-1 text-xs leading-5 text-[#8FA2C1]">{description}</p>
-      <p className="mt-4 text-lg font-semibold text-[#A0AEC0]">—</p>
+      <p className="mt-4 text-sm font-semibold text-[#F5D76E]">Donnée non disponible</p>
+      <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">{missingSource}</p>
     </article>
   );
 }
@@ -349,10 +352,30 @@ export default function MarketingGrowthPage() {
       <p role="status" aria-live="polite" className="rounded-xl border border-white/10 bg-[#0B1B3D] px-4 py-3 text-xs text-[#A0AEC0]"><ShieldCheck size={14} className="mr-2 inline text-[#D4AF37]" />{persistenceStatus}</p>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Visites qualifiées" icon={Eye} description="Visites de vitrines attribuées à une source mesurée." />
-        <MetricCard label="Prospects générés" icon={Users} description="Demandes de contact et prospects réellement enregistrés." />
-        <MetricCard label="Taux de conversion" icon={MousePointerClick} description="Conversions confirmées rapportées aux visites mesurées." />
-        <MetricCard label="Coût par résultat" icon={Wallet} description="Calcul disponible après connexion des dépenses publicitaires réelles." />
+        <MetricCard
+          label="Visites qualifiées"
+          icon={Eye}
+          description="Visites de vitrines attribuées à une source mesurée."
+          missingSource="Le suivi des visites de la vitrine publique n’est pas encore raccordé."
+        />
+        <MetricCard
+          label="Prospects générés"
+          icon={Users}
+          description="Demandes de contact et prospects réellement enregistrés."
+          missingSource="Les demandes de contact doivent être reliées à une période de mesure."
+        />
+        <MetricCard
+          label="Taux de conversion"
+          icon={MousePointerClick}
+          description="Conversions confirmées rapportées aux visites mesurées."
+          missingSource="Nécessite les visites mesurées et les conversions confirmées."
+        />
+        <MetricCard
+          label="Coût par résultat"
+          icon={Wallet}
+          description="Calcul disponible après connexion des dépenses publicitaires réelles."
+          missingSource="Les dépenses réelles et les résultats attribués ne sont pas encore connectés."
+        />
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(280px,0.8fr)]">
