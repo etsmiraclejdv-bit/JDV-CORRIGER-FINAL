@@ -224,9 +224,9 @@ export default function MarketingGrowthPage() {
       socialCopy: LAUNCH_SOCIAL_COPY,
       storefrontCopy: LAUNCH_STOREFRONT_COPY,
       visualPaths: [
-        { title: '1. Lancement officiel', path: '/marketing/jdv-crm-lancement.svg', description: 'Le message central et la signature JDV CRM.' },
-        { title: '2. Vitrine publique', path: '/marketing/jdv-crm-vitrine.svg', description: 'Une présentation de la plateforme pour la page publique.' },
-        { title: '3. Visuels complémentaires', path: '/marketing/jdv-crm-fonctionnalites.svg', description: 'Les familles de fonctionnalités à découvrir progressivement.' },
+        { title: '1. Lancement principal', path: '/marketing/JDV%20CRM%20_%20Votre%20partenaire%20de%20croissance.png', fileName: 'JDV CRM _ Votre partenaire de croissance.png', description: 'Visuel officiel de lancement : JDV CRM, partenaire de croissance.' },
+        { title: '2. Vitrine publique', path: '/marketing/JDV%20CRM%20_%20votre%20croissance%2C%20simplifi%C3%A9e%20(1).png', fileName: 'JDV CRM _ votre croissance, simplifiée (1).png', description: 'Visuel de présentation destiné à la vitrine publique.' },
+        { title: '3. Visuels complémentaires', path: '/marketing/JDV%20CRM%20_%20Connecter%2C%20D%C3%A9velopper%2C%20R%C3%A9ussir%20(1).png', fileName: 'JDV CRM _ Connecter, Développer, Réussir (1).png', description: 'Visuel complémentaire des fonctionnalités et de la signature de marque.' },
       ],
       updatedAt: new Date().toISOString(),
     };
@@ -442,12 +442,13 @@ export default function MarketingGrowthPage() {
                     <h3 className="text-sm font-semibold text-white">{visual.title}</h3>
                     <a href={visual.path} target="_blank" rel="noreferrer" className="shrink-0 text-xs font-semibold text-[#F5D76E] hover:text-white">Ouvrir</a>
                   </div>
-                  <img src={visual.path} alt={visual.title} className="mt-3 aspect-[4/3] w-full rounded-lg border border-white/10 object-cover" />
+                  <img src={visual.path} alt={visual.title} onError={(event) => { event.currentTarget.style.display = "none"; }} className="mt-3 aspect-[4/3] w-full rounded-lg border border-white/10 object-cover" />
+                  <p className="mt-2 break-words text-[11px] text-[#7186A8]">Fichier attendu : {visual.fileName}</p>
                   <p className="mt-2 text-xs leading-5 text-[#8FA2C1]">{visual.description}</p>
                 </article>
               ))}
             </div>
-            <p className="rounded-lg border border-amber-200/15 bg-amber-200/5 p-3 text-xs leading-5 text-[#B6C5DC]">Les trois maquettes graphiques sont séparées. Avant publication, remplacer ou intégrer le fichier du logo officiel fourni et vérifier les textes ainsi que les écrans illustratifs.</p>
+            <p className="rounded-lg border border-amber-200/15 bg-amber-200/5 p-3 text-xs leading-5 text-[#B6C5DC]">Les trois visuels de référence sont définis séparément par leur nom de fichier. Vérifier que les fichiers PNG correspondants sont présents dans public/marketing avant diffusion.</p>
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="rounded-xl border border-white/10 bg-[#08152F] p-4">
                 <h3 className="text-sm font-semibold text-white">Texte réseaux sociaux</h3>
