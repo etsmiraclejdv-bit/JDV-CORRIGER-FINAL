@@ -31,7 +31,7 @@ import {
 type Channel = 'organic' | 'paid';
 type Objective = 'visibilite' | 'leads' | 'conversion' | 'fidelisation';
 
-const CAMPAIGN_STORAGE_KEY = 'jdvcrm:marketing:official-launch:v1';
+const CAMPAIGN_STORAGE_KEY = 'jdvcrm:marketing:official-launch:v2';
 const ORGANIC_CHECKLIST_STORAGE_KEY = 'jdvcrm:marketing:organic-checklist:v1';
 const LAUNCH_SOCIAL_COPY = `🚀 JDV CRM : CONNECTER. DÉVELOPPER. RÉUSSIR.
 
