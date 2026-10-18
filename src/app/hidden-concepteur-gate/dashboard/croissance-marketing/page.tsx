@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   Activity,
   BadgeCheck,
@@ -30,6 +30,41 @@ import {
 
 type Channel = 'organic' | 'paid';
 type Objective = 'visibilite' | 'leads' | 'conversion' | 'fidelisation';
+
+const CAMPAIGN_STORAGE_KEY = 'jdvcrm:marketing:official-launch:v1';
+const LAUNCH_SOCIAL_COPY = `🚀 JDV CRM : CONNECTER. DÉVELOPPER. RÉUSSIR.
+
+Les entreprises ont besoin de mieux s’organiser, de suivre leurs clients et de trouver de nouvelles possibilités de croissance.
+
+C’est dans cet esprit que nous développons JDV CRM, une plateforme conçue pour réunir des outils de gestion et de développement commercial dans un environnement numérique.
+
+💼 Avec JDV CRM, notre ambition est de faciliter :
+🏢 L’organisation des activités de l’entreprise.
+🤝 Le suivi des prospects et des relations clients.
+📦 La gestion des approvisionnements et la traçabilité des opérations.
+🌍 La visibilité de l’entreprise et la préparation des actions marketing.
+📊 Le suivi de l’activité et l’amélioration des décisions commerciales.
+
+Notre vision est simple : rendre les outils numériques plus accessibles aux entreprises et accompagner leur développement.
+
+Nous construisons JDV CRM avec une ambition : proposer une solution utile, évolutive et adaptée aux réalités des professionnels.
+
+✨ JDV CRM — Connecter. Développer. Réussir.
+Suivez-nous pour découvrir la plateforme, ses évolutions et les possibilités qu’elle prépare.
+
+#JDVCRM #GestionEntreprise #InnovationNumérique #CRM #Entrepreneuriat #DéveloppementCommercial`;
+
+const LAUNCH_STOREFRONT_COPY = `Bienvenue dans JDV CRM
+Connecter. Développer. Réussir.
+
+JDV CRM ambitionne de simplifier la gestion et de soutenir le développement commercial des entreprises.
+
+Découvrez un environnement numérique conçu autour des besoins de gestion, du suivi des prospects, des opérations et de la croissance marketing.
+
+Notre ambition : mettre la technologie au service des professionnels, avec une plateforme évolutive qui accompagne leurs besoins.
+
+JDV CRM — Connecter. Développer. Réussir.
+Découvrez notre projet et suivez les prochaines évolutions de la plateforme.`;
 
 const EMPTY_METRICS: MarketingMetrics = {
   storefrontConversionRatePct: null,
@@ -125,17 +160,33 @@ export default function MarketingGrowthPage() {
     { id: 'referrals', title: 'Préparer une action de parrainage', detail: 'Définir le message de recommandation et demander le consentement.' },
   ];
   const [showCampaignForm, setShowCampaignForm] = useState(false);
-  const [campaignName, setCampaignName] = useState('');
-  const [objective, setObjective] = useState<Objective>('leads');
+  const [campaignName, setCampaignName] = useState('Lancement officiel JDV CRM');
+  const [objective, setObjective] = useState<Objective>('visibilite');
   const [budget, setBudget] = useState('0');
   const [duration, setDuration] = useState('14');
   const [campaignDraft, setCampaignDraft] = useState<{
     name: string;
+    audience: string;
+    channels: string[];
     objective: Objective;
     channel: Channel;
     budget: number;
     duration: number;
+    socialCopy: string;
+    storefrontCopy: string;
+    visualPath: string;
+    updatedAt: string;
   } | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(CAMPAIGN_STORAGE_KEY);
+      if (stored) setCampaignDraft(JSON.parse(stored));
+    } catch {
+      // Keep the page usable if browser storage is unavailable or corrupted.
+    }
+  }, []);
+
   const recommendations = useMemo(
     () => generateMarketingRecommendations(EMPTY_METRICS),
     [],
@@ -147,13 +198,25 @@ export default function MarketingGrowthPage() {
     const parsedDuration = Number(duration);
     if (!campaignName.trim() || !Number.isFinite(parsedBudget) || parsedBudget < 0 ||
       !Number.isInteger(parsedDuration) || parsedDuration < 1 || parsedDuration > 365) return;
-    setCampaignDraft({
+    const draft = {
       name: campaignName.trim(),
+      audience: 'Grand public, entrepreneurs et professionnels',
+      channels: ['Vitrine publique', 'Réseaux sociaux'],
       objective,
       channel,
       budget: parsedBudget,
       duration: parsedDuration,
-    });
+      socialCopy: LAUNCH_SOCIAL_COPY,
+      storefrontCopy: LAUNCH_STOREFRONT_COPY,
+      visualPath: '/marketing/jdv-crm-lancement.svg',
+      updatedAt: new Date().toISOString(),
+    };
+    setCampaignDraft(draft);
+    try {
+      window.localStorage.setItem(CAMPAIGN_STORAGE_KEY, JSON.stringify(draft));
+    } catch {
+      // The UI still shows this draft for the current session if storage is blocked.
+    }
     setShowCampaignForm(false);
     setCampaignName('');
   }
@@ -336,15 +399,38 @@ export default function MarketingGrowthPage() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-300/10 text-emerald-200"><CheckCircle2 size={19} /></span>
-              <div><p className="text-sm font-semibold text-white">Brouillon préparé dans cette session</p><p className="mt-1 text-xs text-[#A0AEC0]">Il n’est pas enregistré en base, pas publié et ne dépense aucun budget.</p></div>
+              <div><p className="text-sm font-semibold text-white">Brouillon sauvegardé dans ce navigateur</p><p className="mt-1 text-xs text-[#A0AEC0]">Il n’est pas enregistré en base, pas publié et ne dépense aucun budget.</p></div>
             </div>
-            <button onClick={() => setCampaignDraft(null)} aria-label="Fermer le brouillon" className="rounded-lg p-2 text-[#A0AEC0] hover:bg-white/5 hover:text-white"><X size={16} /></button>
+            <button onClick={() => { setCampaignDraft(null); try { window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY); } catch { /* Storage may be unavailable. */ } }} aria-label="Supprimer le brouillon local" className="rounded-lg p-2 text-[#A0AEC0] hover:bg-white/5 hover:text-white"><X size={16} /></button>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div><p className="text-xs text-[#7186A8]">Nom</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.name}</p></div>
-            <div><p className="text-xs text-[#7186A8]">Canal</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.channel === 'organic' ? 'Organique' : 'Payant'}</p></div>
+            <div><p className="text-xs text-[#7186A8]">Mode d’acquisition</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.channel === 'organic' ? 'Organique' : 'Payant'}</p></div>
             <div><p className="text-xs text-[#7186A8]">Objectif</p><p className="mt-1 text-sm font-medium text-white">{OBJECTIVES.find(o => o.value === campaignDraft.objective)?.label}</p></div>
+            <div><p className="text-xs text-[#7186A8]">Public cible</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.audience}</p></div>
+            <div><p className="text-xs text-[#7186A8]">Canaux prévus</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.channels.join(' + ')}</p></div>
             <div><p className="text-xs text-[#7186A8]">Budget indicatif / durée</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.budget.toLocaleString('fr-FR')} · {campaignDraft.duration} jours</p></div>
+          </div>
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            <div className="rounded-xl border border-white/10 bg-[#08152F] p-4">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-white">Visuel officiel de lancement</h3>
+                <a href={campaignDraft.visualPath} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#F5D76E] hover:text-white">Ouvrir le visuel</a>
+              </div>
+              <img src={campaignDraft.visualPath} alt="JDV CRM — Connecter. Développer. Réussir." className="mt-3 w-full rounded-lg border border-white/10" />
+              <p className="mt-2 text-xs text-[#8FA2C1]">Maquette créée pour la campagne ; vérifier le logo officiel avant diffusion.</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-[#08152F] p-4">
+              <h3 className="text-sm font-semibold text-white">Texte réseaux sociaux</h3>
+              <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-[#B6C5DC]">{campaignDraft.socialCopy}</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-[#08152F] p-4 lg:col-span-2">
+              <h3 className="text-sm font-semibold text-white">Texte de la vitrine publique</h3>
+              <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-[#B6C5DC]">{campaignDraft.storefrontCopy}</p>
+            </div>
+          </div>
+          <div className="mt-4 rounded-xl border border-amber-200/15 bg-amber-200/5 p-3">
+            <p className="text-xs leading-5 text-[#B6C5DC]">Ce brouillon est conservé dans le stockage local de ce navigateur. Il n’est pas encore enregistré dans Supabase, synchronisé entre appareils, ajouté automatiquement à la vitrine ni publié sur les réseaux sociaux.</p>
           </div>
         </section>
       )}
@@ -363,7 +449,7 @@ export default function MarketingGrowthPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowCampaignForm(false); }}>
           <section role="dialog" aria-modal="true" aria-labelledby="campaign-dialog-title" className="my-auto w-full max-w-xl rounded-2xl border border-[#D4AF37]/20 bg-[#0B1B3D] p-5 shadow-2xl sm:p-7">
             <div className="flex items-start justify-between gap-3">
-              <div><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#D4AF37]"><Megaphone size={14} /> Planification</p><h2 id="campaign-dialog-title" className="mt-2 text-xl font-bold text-white">Préparer une campagne</h2><p className="mt-1 text-sm text-[#8FA2C1]">Création d’un brouillon local uniquement.</p></div>
+              <div><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#D4AF37]"><Megaphone size={14} /> Planification</p><h2 id="campaign-dialog-title" className="mt-2 text-xl font-bold text-white">Préparer une campagne</h2><p className="mt-1 text-sm text-[#8FA2C1]">Le contenu de lancement est prérempli. Le brouillon sera conservé localement dans ce navigateur.</p></div>
               <button onClick={() => setShowCampaignForm(false)} aria-label="Fermer" className="rounded-lg p-2 text-[#A0AEC0] hover:bg-white/5 hover:text-white"><X size={17} /></button>
             </div>
             <form onSubmit={createLocalDraft} className="mt-6 space-y-4">
