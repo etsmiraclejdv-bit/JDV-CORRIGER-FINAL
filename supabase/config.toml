@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.resend-service-mail]
 verify_jwt = true
+
+[functions.social-automation-worker]
+verify_jwt = false
