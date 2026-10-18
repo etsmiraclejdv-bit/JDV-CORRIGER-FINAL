@@ -32,6 +32,7 @@ type Channel = 'organic' | 'paid';
 type Objective = 'visibilite' | 'leads' | 'conversion' | 'fidelisation';
 
 const CAMPAIGN_STORAGE_KEY = 'jdvcrm:marketing:official-launch:v1';
+const ORGANIC_CHECKLIST_STORAGE_KEY = 'jdvcrm:marketing:organic-checklist:v1';
 const LAUNCH_SOCIAL_COPY = `🚀 JDV CRM : CONNECTER. DÉVELOPPER. RÉUSSIR.
 
 Les entreprises ont besoin de mieux s’organiser, de suivre leurs clients et de trouver de nouvelles possibilités de croissance.
@@ -151,6 +152,20 @@ function RecommendationCard({ item, index }: { item: MarketingRecommendation; in
 export default function MarketingGrowthPage() {
   const [channel, setChannel] = useState<Channel>('organic');
   const [organicTasksDone, setOrganicTasksDone] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(ORGANIC_CHECKLIST_STORAGE_KEY);
+      if (stored) {
+        const parsed: unknown = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+          setOrganicTasksDone(parsed);
+        }
+      }
+    } catch {
+      // Checklist stays usable in this session if browser storage is unavailable.
+    }
+  }, []);
   const organicTasks = [
     { id: 'profile', title: 'Compléter la vitrine de l’entreprise', detail: 'Vérifier nom, coordonnées, horaires, services et zone desservie.' },
     { id: 'photos', title: 'Ajouter des photos et le logo', detail: 'Utiliser des visuels réels, nets et représentatifs de l’activité.' },
@@ -174,7 +189,7 @@ export default function MarketingGrowthPage() {
     duration: number;
     socialCopy: string;
     storefrontCopy: string;
-    visualPath: string;
+    visualPaths: { title: string; path: string; description: string }[];
     updatedAt: string;
   } | null>(null);
 
@@ -208,7 +223,11 @@ export default function MarketingGrowthPage() {
       duration: parsedDuration,
       socialCopy: LAUNCH_SOCIAL_COPY,
       storefrontCopy: LAUNCH_STOREFRONT_COPY,
-      visualPath: '/marketing/jdv-crm-lancement.svg',
+      visualPaths: [
+        { title: '1. Lancement officiel', path: '/marketing/jdv-crm-lancement.svg', description: 'Le message central et la signature JDV CRM.' },
+        { title: '2. Vitrine publique', path: '/marketing/jdv-crm-vitrine.svg', description: 'Une présentation de la plateforme pour la page publique.' },
+        { title: '3. Visuels complémentaires', path: '/marketing/jdv-crm-fonctionnalites.svg', description: 'Les familles de fonctionnalités à découvrir progressivement.' },
+      ],
       updatedAt: new Date().toISOString(),
     };
     setCampaignDraft(draft);
@@ -332,7 +351,11 @@ export default function MarketingGrowthPage() {
                       <input
                         type="checkbox"
                         checked={done}
-                        onChange={(event) => setOrganicTasksDone((current) => event.target.checked ? [...current, task.id] : current.filter((id) => id !== task.id))}
+                        onChange={(event) => setOrganicTasksDone((current) => {
+                          const next = event.target.checked ? [...current.filter((id) => id !== task.id), task.id] : current.filter((id) => id !== task.id);
+                          try { window.localStorage.setItem(ORGANIC_CHECKLIST_STORAGE_KEY, JSON.stringify(next)); } catch { /* Browser storage may be unavailable. */ }
+                          return next;
+                        })}
                         className="mt-1 h-4 w-4 rounded border-white/20 bg-[#08152F] accent-[#D4AF37]"
                       />
                       <span className="min-w-0 flex-1">
@@ -346,7 +369,7 @@ export default function MarketingGrowthPage() {
               </div>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs text-[#7186A8]">Les coches suivent votre progression, elles ne publient rien automatiquement.</p>
-                <button type="button" onClick={() => setOrganicTasksDone([])} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-[#C5D0E2] hover:bg-white/5">Réinitialiser la liste</button>
+                <button type="button" onClick={() => { setOrganicTasksDone([]); try { window.localStorage.removeItem(ORGANIC_CHECKLIST_STORAGE_KEY); } catch { /* Browser storage may be unavailable. */ } }} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-[#C5D0E2] hover:bg-white/5">Réinitialiser la liste</button>
               </div>
             </section>
           )}
@@ -411,22 +434,29 @@ export default function MarketingGrowthPage() {
             <div><p className="text-xs text-[#7186A8]">Canaux prévus</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.channels.join(' + ')}</p></div>
             <div><p className="text-xs text-[#7186A8]">Budget indicatif / durée</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.budget.toLocaleString('fr-FR')} · {campaignDraft.duration} jours</p></div>
           </div>
-          <div className="mt-5 grid gap-4 lg:grid-cols-2">
-            <div className="rounded-xl border border-white/10 bg-[#08152F] p-4">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-semibold text-white">Visuel officiel de lancement</h3>
-                <a href={campaignDraft.visualPath} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#F5D76E] hover:text-white">Ouvrir le visuel</a>
+          <div className="mt-5 space-y-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              {campaignDraft.visualPaths.map((visual) => (
+                <article key={visual.path} className="rounded-xl border border-white/10 bg-[#08152F] p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-sm font-semibold text-white">{visual.title}</h3>
+                    <a href={visual.path} target="_blank" rel="noreferrer" className="shrink-0 text-xs font-semibold text-[#F5D76E] hover:text-white">Ouvrir</a>
+                  </div>
+                  <img src={visual.path} alt={visual.title} className="mt-3 aspect-[4/3] w-full rounded-lg border border-white/10 object-cover" />
+                  <p className="mt-2 text-xs leading-5 text-[#8FA2C1]">{visual.description}</p>
+                </article>
+              ))}
+            </div>
+            <p className="rounded-lg border border-amber-200/15 bg-amber-200/5 p-3 text-xs leading-5 text-[#B6C5DC]">Les trois maquettes graphiques sont séparées. Avant publication, remplacer ou intégrer le fichier du logo officiel fourni et vérifier les textes ainsi que les écrans illustratifs.</p>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-xl border border-white/10 bg-[#08152F] p-4">
+                <h3 className="text-sm font-semibold text-white">Texte réseaux sociaux</h3>
+                <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-[#B6C5DC]">{campaignDraft.socialCopy}</p>
               </div>
-              <img src={campaignDraft.visualPath} alt="JDV CRM — Connecter. Développer. Réussir." className="mt-3 w-full rounded-lg border border-white/10" />
-              <p className="mt-2 text-xs text-[#8FA2C1]">Maquette créée pour la campagne ; vérifier le logo officiel avant diffusion.</p>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-[#08152F] p-4">
-              <h3 className="text-sm font-semibold text-white">Texte réseaux sociaux</h3>
-              <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-[#B6C5DC]">{campaignDraft.socialCopy}</p>
-            </div>
-            <div className="rounded-xl border border-white/10 bg-[#08152F] p-4 lg:col-span-2">
-              <h3 className="text-sm font-semibold text-white">Texte de la vitrine publique</h3>
-              <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-[#B6C5DC]">{campaignDraft.storefrontCopy}</p>
+              <div className="rounded-xl border border-white/10 bg-[#08152F] p-4">
+                <h3 className="text-sm font-semibold text-white">Texte de la vitrine publique</h3>
+                <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-[#B6C5DC]">{campaignDraft.storefrontCopy}</p>
+              </div>
             </div>
           </div>
           <div className="mt-4 rounded-xl border border-amber-200/15 bg-amber-200/5 p-3">
