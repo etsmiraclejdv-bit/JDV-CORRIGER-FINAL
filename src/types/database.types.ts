@@ -7000,6 +7000,63 @@ export type Database = {
         ]
       }
     }
+      jdv_marketing_campaigns: {
+        Row: {
+          id: string
+          created_by: string
+          name: string
+          audience: string
+          channels: string[]
+          objective: string
+          channel: string
+          budget: number
+          duration_days: number
+          social_copy: string
+          storefront_copy: string
+          visual_paths: Json
+          organic_tasks_done: string[]
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          created_by?: string
+          name: string
+          audience?: string
+          channels?: string[]
+          objective?: string
+          channel?: string
+          budget?: number
+          duration_days?: number
+          social_copy?: string
+          storefront_copy?: string
+          visual_paths?: Json
+          organic_tasks_done?: string[]
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          created_by?: string
+          name?: string
+          audience?: string
+          channels?: string[]
+          objective?: string
+          channel?: string
+          budget?: number
+          duration_days?: number
+          social_copy?: string
+          storefront_copy?: string
+          visual_paths?: Json
+          organic_tasks_done?: string[]
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     Views: {
       jdv_super_admin_modules: {
         Row: {

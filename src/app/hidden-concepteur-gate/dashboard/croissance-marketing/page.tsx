@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   Activity,
   BadgeCheck,
@@ -22,6 +22,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
 import {
   generateMarketingRecommendations,
   type MarketingMetrics,
@@ -30,6 +31,47 @@ import {
 
 type Channel = 'organic' | 'paid';
 type Objective = 'visibilite' | 'leads' | 'conversion' | 'fidelisation';
+
+const CAMPAIGN_STORAGE_KEY = 'jdvcrm:marketing:official-launch:v2';
+const ORGANIC_CHECKLIST_STORAGE_KEY = 'jdvcrm:marketing:organic-checklist:v1';
+const OFFICIAL_VISUALS = [
+  { title: '1. Lancement principal', path: '/marketing/JDV%20CRM%20_%20Votre%20partenaire%20de%20croissance.png', fileName: 'JDV CRM _ Votre partenaire de croissance.png', description: 'Visuel officiel de lancement : JDV CRM, partenaire de croissance.' },
+  { title: '2. Vitrine publique', path: '/marketing/JDV%20CRM%20_%20votre%20croissance%2C%20simplifi%C3%A9e%20(1).png', fileName: 'JDV CRM _ votre croissance, simplifiée (1).png', description: 'Visuel de présentation destiné à la vitrine publique.' },
+  { title: '3. Visuels complémentaires', path: '/marketing/JDV%20CRM%20_%20Connecter%2C%20D%C3%A9velopper%2C%20R%C3%A9ussir%20(1).png', fileName: 'JDV CRM _ Connecter, Développer, Réussir (1).png', description: 'Visuel complémentaire des fonctionnalités et de la signature de marque.' },
+] as const;
+const LAUNCH_SOCIAL_COPY = `🚀 JDV CRM : CONNECTER. DÉVELOPPER. RÉUSSIR.
+
+Les entreprises ont besoin de mieux s’organiser, de suivre leurs clients et de trouver de nouvelles possibilités de croissance.
+
+C’est dans cet esprit que nous développons JDV CRM, une plateforme conçue pour réunir des outils de gestion et de développement commercial dans un environnement numérique.
+
+💼 Avec JDV CRM, notre ambition est de faciliter :
+🏢 L’organisation des activités de l’entreprise.
+🤝 Le suivi des prospects et des relations clients.
+📦 La gestion des approvisionnements et la traçabilité des opérations.
+🌍 La visibilité de l’entreprise et la préparation des actions marketing.
+📊 Le suivi de l’activité et l’amélioration des décisions commerciales.
+
+Notre vision est simple : rendre les outils numériques plus accessibles aux entreprises et accompagner leur développement.
+
+Nous construisons JDV CRM avec une ambition : proposer une solution utile, évolutive et adaptée aux réalités des professionnels.
+
+✨ JDV CRM — Connecter. Développer. Réussir.
+Suivez-nous pour découvrir la plateforme, ses évolutions et les possibilités qu’elle prépare.
+
+#JDVCRM #GestionEntreprise #InnovationNumérique #CRM #Entrepreneuriat #DéveloppementCommercial`;
+
+const LAUNCH_STOREFRONT_COPY = `Bienvenue dans JDV CRM
+Connecter. Développer. Réussir.
+
+JDV CRM ambitionne de simplifier la gestion et de soutenir le développement commercial des entreprises.
+
+Découvrez un environnement numérique conçu autour des besoins de gestion, du suivi des prospects, des opérations et de la croissance marketing.
+
+Notre ambition : mettre la technologie au service des professionnels, avec une plateforme évolutive qui accompagne leurs besoins.
+
+JDV CRM — Connecter. Développer. Réussir.
+Découvrez notre projet et suivez les prochaines évolutions de la plateforme.`;
 
 const EMPTY_METRICS: MarketingMetrics = {
   storefrontConversionRatePct: null,
@@ -116,6 +158,21 @@ function RecommendationCard({ item, index }: { item: MarketingRecommendation; in
 export default function MarketingGrowthPage() {
   const [channel, setChannel] = useState<Channel>('organic');
   const [organicTasksDone, setOrganicTasksDone] = useState<string[]>([]);
+  const [persistenceStatus, setPersistenceStatus] = useState('Connexion à la sauvegarde sécurisée…');
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(ORGANIC_CHECKLIST_STORAGE_KEY);
+      if (stored) {
+        const parsed: unknown = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+          setOrganicTasksDone(parsed);
+        }
+      }
+    } catch {
+      // Checklist stays usable in this session if browser storage is unavailable.
+    }
+  }, []);
   const organicTasks = [
     { id: 'profile', title: 'Compléter la vitrine de l’entreprise', detail: 'Vérifier nom, coordonnées, horaires, services et zone desservie.' },
     { id: 'photos', title: 'Ajouter des photos et le logo', detail: 'Utiliser des visuels réels, nets et représentatifs de l’activité.' },
@@ -125,37 +182,132 @@ export default function MarketingGrowthPage() {
     { id: 'referrals', title: 'Préparer une action de parrainage', detail: 'Définir le message de recommandation et demander le consentement.' },
   ];
   const [showCampaignForm, setShowCampaignForm] = useState(false);
-  const [campaignName, setCampaignName] = useState('');
-  const [objective, setObjective] = useState<Objective>('leads');
+  const [campaignName, setCampaignName] = useState('Lancement officiel JDV CRM');
+  const [objective, setObjective] = useState<Objective>('visibilite');
   const [budget, setBudget] = useState('0');
   const [duration, setDuration] = useState('14');
   const [campaignDraft, setCampaignDraft] = useState<{
     name: string;
+    audience: string;
+    channels: string[];
     objective: Objective;
     channel: Channel;
     budget: number;
     duration: number;
+    socialCopy: string;
+    storefrontCopy: string;
+    id?: string;
+    visualPaths: { title: string; path: string; fileName: string; description: string }[];
+    updatedAt: string;
   } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    async function loadCampaign() {
+      try {
+        const { data, error } = await supabase
+          .from('jdv_marketing_campaigns')
+          .select('*')
+          .order('updated_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (error) throw error;
+        if (!active) return;
+        if (data) {
+          const draft = {
+            id: data.id,
+            name: data.name,
+            audience: data.audience,
+            channels: data.channels,
+            objective: data.objective as Objective,
+            channel: data.channel as Channel,
+            budget: Number(data.budget),
+            duration: data.duration_days,
+            socialCopy: data.social_copy,
+            storefrontCopy: data.storefront_copy,
+            visualPaths: data.visual_paths as unknown as typeof OFFICIAL_VISUALS[number][],
+            updatedAt: data.updated_at,
+          };
+          setCampaignDraft(draft);
+          setOrganicTasksDone(data.organic_tasks_done ?? []);
+          setPersistenceStatus('Campagne et progression synchronisées avec Supabase.');
+          try {
+            window.localStorage.setItem(CAMPAIGN_STORAGE_KEY, JSON.stringify(draft));
+            window.localStorage.setItem(ORGANIC_CHECKLIST_STORAGE_KEY, JSON.stringify(data.organic_tasks_done ?? []));
+          } catch { /* Supabase remains the durable source of truth. */ }
+          return;
+        }
+        setPersistenceStatus('Aucune campagne enregistrée. Créez un brouillon pour activer la sauvegarde sécurisée.');
+      } catch {
+        if (!active) return;
+        try {
+          const stored = window.localStorage.getItem(CAMPAIGN_STORAGE_KEY);
+          if (stored) setCampaignDraft(JSON.parse(stored));
+        } catch { /* Browser storage is optional fallback only. */ }
+        setPersistenceStatus('Supabase indisponible ou session non autorisée : brouillon local uniquement.');
+      }
+    }
+    void loadCampaign();
+    return () => { active = false; };
+  }, []);
+
   const recommendations = useMemo(
     () => generateMarketingRecommendations(EMPTY_METRICS),
     [],
   );
 
-  function createLocalDraft(event: FormEvent<HTMLFormElement>) {
+  async function createLocalDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const parsedBudget = Number(budget);
     const parsedDuration = Number(duration);
     if (!campaignName.trim() || !Number.isFinite(parsedBudget) || parsedBudget < 0 ||
       !Number.isInteger(parsedDuration) || parsedDuration < 1 || parsedDuration > 365) return;
-    setCampaignDraft({
+    const draft = {
       name: campaignName.trim(),
+      audience: 'Grand public, entrepreneurs et professionnels',
+      channels: ['Vitrine publique', 'Réseaux sociaux'],
       objective,
       channel,
       budget: parsedBudget,
       duration: parsedDuration,
-    });
+      socialCopy: LAUNCH_SOCIAL_COPY,
+      storefrontCopy: LAUNCH_STOREFRONT_COPY,
+      visualPaths: [...OFFICIAL_VISUALS],
+      updatedAt: new Date().toISOString(),
+    };
+    setCampaignDraft(draft);
+    try {
+      window.localStorage.setItem(CAMPAIGN_STORAGE_KEY, JSON.stringify(draft));
+    } catch { /* Local fallback is optional. */ }
     setShowCampaignForm(false);
     setCampaignName('');
+    setPersistenceStatus('Enregistrement sécurisé de la campagne…');
+    const { data, error } = await supabase
+      .from('jdv_marketing_campaigns')
+      .insert({
+        name: draft.name,
+        audience: draft.audience,
+        channels: draft.channels,
+        objective: draft.objective,
+        channel: draft.channel,
+        budget: draft.budget,
+        duration_days: draft.duration,
+        social_copy: draft.socialCopy,
+        storefront_copy: draft.storefrontCopy,
+        visual_paths: draft.visualPaths,
+        organic_tasks_done: organicTasksDone,
+        status: 'draft',
+      })
+      .select('id, updated_at')
+      .single();
+    if (error || !data) {
+      setPersistenceStatus('Échec de la sauvegarde Supabase. Vérifiez la session et appliquez la migration après validation; le brouillon local est conservé.');
+      return;
+    }
+    const savedDraft = { ...draft, id: data.id, updatedAt: data.updated_at };
+    setCampaignDraft(savedDraft);
+    try { window.localStorage.setItem(CAMPAIGN_STORAGE_KEY, JSON.stringify(savedDraft)); } catch { /* Supabase is the source of truth. */ }
+    setPersistenceStatus('Campagne enregistrée dans Supabase avec accès limité à votre compte.');
   }
 
   return (
@@ -193,6 +345,8 @@ export default function MarketingGrowthPage() {
           </button>
         </div>
       </header>
+
+      <p role="status" aria-live="polite" className="rounded-xl border border-white/10 bg-[#0B1B3D] px-4 py-3 text-xs text-[#A0AEC0]"><ShieldCheck size={14} className="mr-2 inline text-[#D4AF37]" />{persistenceStatus}</p>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Visites qualifiées" icon={Eye} description="Visites de vitrines attribuées à une source mesurée." />
@@ -269,7 +423,17 @@ export default function MarketingGrowthPage() {
                       <input
                         type="checkbox"
                         checked={done}
-                        onChange={(event) => setOrganicTasksDone((current) => event.target.checked ? [...current, task.id] : current.filter((id) => id !== task.id))}
+                        onChange={(event) => {
+                          const next = event.target.checked ? [...organicTasksDone.filter((id) => id !== task.id), task.id] : organicTasksDone.filter((id) => id !== task.id);
+                          setOrganicTasksDone(next);
+                          try { window.localStorage.setItem(ORGANIC_CHECKLIST_STORAGE_KEY, JSON.stringify(next)); } catch { /* Browser storage is only a fallback. */ }
+                          if (campaignDraft?.id) {
+                            void supabase.from('jdv_marketing_campaigns')
+                              .update({ organic_tasks_done: next })
+                              .eq('id', campaignDraft.id)
+                              .then(({ error }) => setPersistenceStatus(error ? 'Progression non synchronisée; vos coches restent sur cet appareil.' : 'Campagne et progression synchronisées avec Supabase.'));
+                          }
+                        }}
                         className="mt-1 h-4 w-4 rounded border-white/20 bg-[#08152F] accent-[#D4AF37]"
                       />
                       <span className="min-w-0 flex-1">
@@ -283,7 +447,7 @@ export default function MarketingGrowthPage() {
               </div>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-xs text-[#7186A8]">Les coches suivent votre progression, elles ne publient rien automatiquement.</p>
-                <button type="button" onClick={() => setOrganicTasksDone([])} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-[#C5D0E2] hover:bg-white/5">Réinitialiser la liste</button>
+                <button type="button" onClick={() => { setOrganicTasksDone([]); try { window.localStorage.removeItem(ORGANIC_CHECKLIST_STORAGE_KEY); } catch { /* Browser storage may be unavailable. */ } }} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-[#C5D0E2] hover:bg-white/5">Réinitialiser la liste</button>
               </div>
             </section>
           )}
@@ -336,15 +500,46 @@ export default function MarketingGrowthPage() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-300/10 text-emerald-200"><CheckCircle2 size={19} /></span>
-              <div><p className="text-sm font-semibold text-white">Brouillon préparé dans cette session</p><p className="mt-1 text-xs text-[#A0AEC0]">Il n’est pas enregistré en base, pas publié et ne dépense aucun budget.</p></div>
+              <div><p className="text-sm font-semibold text-white">{campaignDraft.id ? 'Brouillon enregistré dans Supabase' : 'Brouillon local'}</p><p className="mt-1 text-xs text-[#A0AEC0]">{campaignDraft.id ? 'Sauvegarde durable avec accès limité au compte connecté. Non publié et sans dépense.' : 'En attente de sauvegarde sécurisée. Non publié et sans dépense.'}</p></div>
             </div>
-            <button onClick={() => setCampaignDraft(null)} aria-label="Fermer le brouillon" className="rounded-lg p-2 text-[#A0AEC0] hover:bg-white/5 hover:text-white"><X size={16} /></button>
+            <button onClick={() => { const id = campaignDraft.id; setCampaignDraft(null); try { window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY); } catch { /* Storage may be unavailable. */ } if (id) void supabase.from('jdv_marketing_campaigns').delete().eq('id', id).then(({ error }) => setPersistenceStatus(error ? 'Suppression distante refusée; contactez un administrateur.' : 'Campagne supprimée de Supabase.')); }} aria-label="Supprimer le brouillon local" className="rounded-lg p-2 text-[#A0AEC0] hover:bg-white/5 hover:text-white"><X size={16} /></button>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div><p className="text-xs text-[#7186A8]">Nom</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.name}</p></div>
-            <div><p className="text-xs text-[#7186A8]">Canal</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.channel === 'organic' ? 'Organique' : 'Payant'}</p></div>
+            <div><p className="text-xs text-[#7186A8]">Mode d’acquisition</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.channel === 'organic' ? 'Organique' : 'Payant'}</p></div>
             <div><p className="text-xs text-[#7186A8]">Objectif</p><p className="mt-1 text-sm font-medium text-white">{OBJECTIVES.find(o => o.value === campaignDraft.objective)?.label}</p></div>
+            <div><p className="text-xs text-[#7186A8]">Public cible</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.audience}</p></div>
+            <div><p className="text-xs text-[#7186A8]">Canaux prévus</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.channels.join(' + ')}</p></div>
             <div><p className="text-xs text-[#7186A8]">Budget indicatif / durée</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.budget.toLocaleString('fr-FR')} · {campaignDraft.duration} jours</p></div>
+          </div>
+          <div className="mt-5 space-y-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              {campaignDraft.visualPaths.map((visual) => (
+                <article key={visual.path} className="rounded-xl border border-white/10 bg-[#08152F] p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-sm font-semibold text-white">{visual.title}</h3>
+                    <a href={visual.path} target="_blank" rel="noreferrer" className="shrink-0 text-xs font-semibold text-[#F5D76E] hover:text-white">Ouvrir</a>
+                  </div>
+                  <img src={visual.path} alt={visual.title} onError={(event) => { event.currentTarget.style.display = "none"; }} className="mt-3 aspect-[4/3] w-full rounded-lg border border-white/10 object-cover" />
+                  <p className="mt-2 break-words text-[11px] text-[#7186A8]">Fichier attendu : {visual.fileName}</p>
+                  <p className="mt-2 text-xs leading-5 text-[#8FA2C1]">{visual.description}</p>
+                </article>
+              ))}
+            </div>
+            <p className="rounded-lg border border-amber-200/15 bg-amber-200/5 p-3 text-xs leading-5 text-[#B6C5DC]">Les trois visuels de référence sont définis séparément par leur nom de fichier. Vérifier que les fichiers PNG correspondants sont présents dans public/marketing avant diffusion.</p>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-xl border border-white/10 bg-[#08152F] p-4">
+                <h3 className="text-sm font-semibold text-white">Texte réseaux sociaux</h3>
+                <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-[#B6C5DC]">{campaignDraft.socialCopy}</p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-[#08152F] p-4">
+                <h3 className="text-sm font-semibold text-white">Texte de la vitrine publique</h3>
+                <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-[#B6C5DC]">{campaignDraft.storefrontCopy}</p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 rounded-xl border border-amber-200/15 bg-amber-200/5 p-3">
+            <p className="text-xs leading-5 text-[#B6C5DC]">Ce brouillon est conservé dans le stockage local de ce navigateur. Il n’est pas encore enregistré dans Supabase, synchronisé entre appareils, ajouté automatiquement à la vitrine ni publié sur les réseaux sociaux.</p>
           </div>
         </section>
       )}
@@ -363,7 +558,7 @@ export default function MarketingGrowthPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/70 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setShowCampaignForm(false); }}>
           <section role="dialog" aria-modal="true" aria-labelledby="campaign-dialog-title" className="my-auto w-full max-w-xl rounded-2xl border border-[#D4AF37]/20 bg-[#0B1B3D] p-5 shadow-2xl sm:p-7">
             <div className="flex items-start justify-between gap-3">
-              <div><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#D4AF37]"><Megaphone size={14} /> Planification</p><h2 id="campaign-dialog-title" className="mt-2 text-xl font-bold text-white">Préparer une campagne</h2><p className="mt-1 text-sm text-[#8FA2C1]">Création d’un brouillon local uniquement.</p></div>
+              <div><p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#D4AF37]"><Megaphone size={14} /> Planification</p><h2 id="campaign-dialog-title" className="mt-2 text-xl font-bold text-white">Préparer une campagne</h2><p className="mt-1 text-sm text-[#8FA2C1]">Le contenu de lancement est prérempli. Le brouillon sera conservé localement dans ce navigateur.</p></div>
               <button onClick={() => setShowCampaignForm(false)} aria-label="Fermer" className="rounded-lg p-2 text-[#A0AEC0] hover:bg-white/5 hover:text-white"><X size={17} /></button>
             </div>
             <form onSubmit={createLocalDraft} className="mt-6 space-y-4">

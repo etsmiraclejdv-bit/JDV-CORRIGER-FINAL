@@ -77,18 +77,31 @@ Utiliser le logo officiel JDV CRM (pas une image de stock à la place du logo) s
 - Ne pas inclure de chiffres de performance, témoignages, logos partenaires ou fonctionnalités non vérifiés.
 - Texte alternatif suggéré : « JDV CRM — Connecter, développer et réussir grâce aux outils numériques de gestion et de développement commercial. »
 
-**État du visuel :** direction artistique décrite ; aucun fichier image final n’est inclus dans ce document.
+**État des visuels :** trois maquettes SVG distinctes sont ajoutées au dépôt :
+- `public/marketing/jdv-crm-lancement.svg` — visuel principal de lancement ;
+- `public/marketing/jdv-crm-vitrine.svg` — visuel pour la vitrine publique ;
+- `public/marketing/jdv-crm-fonctionnalites.svg` — visuel complémentaire présentant cinq familles de fonctions.
+
+Les maquettes sont des supports graphiques provisoires : elles utilisent une interprétation typographique de la marque, et non le fichier exact du logo fourni par le propriétaire. Intégrer le logo original, contrôler les écrans illustratifs et valider le texte avant diffusion.
 
 ## 5. Calendrier éditorial suggéré (14 jours)
 
 | Jour | Action | Canal |
 |---|---|---|
-| 1 | Présentation officielle de JDV CRM | Vitrine publique + réseaux sociaux |
-| 3 | Présenter la vision et les besoins auxquels le projet répond | Réseaux sociaux |
-| 5 | Montrer une capture réelle d’un écran vérifié | Réseaux sociaux |
-| 8 | Présenter un parcours fonctionnel vérifié, sans données personnelles | Vitrine + réseaux sociaux |
-| 11 | Partager une courte démonstration vérifiée | Réseaux sociaux |
-| 14 | Récapitulatif et invitation à suivre les prochaines évolutions | Vitrine + réseaux sociaux |
+| 1 | Publier le visuel principal et le message de lancement | Vitrine publique + réseaux sociaux |
+| 2 | Présenter la mission et les besoins professionnels visés | Réseaux sociaux |
+| 3 | Présenter la vitrine publique et inviter à découvrir le projet | Vitrine publique |
+| 4 | Mettre en avant l’organisation de l’entreprise | Réseaux sociaux |
+| 5 | Montrer une capture réelle d’un écran vérifié, sans données privées | Réseaux sociaux |
+| 6 | Expliquer le suivi des prospects avec un exemple non sensible | Réseaux sociaux |
+| 7 | Répondre aux questions reçues et noter les retours | Réseaux sociaux |
+| 8 | Présenter les opérations et la traçabilité, si vérifiées en production | Vitrine + réseaux sociaux |
+| 9 | Publier le visuel complémentaire des fonctionnalités | Réseaux sociaux |
+| 10 | Donner un conseil pratique de gestion commerciale | Réseaux sociaux |
+| 11 | Partager une courte démonstration vérifiée, sans données réelles visibles | Réseaux sociaux |
+| 12 | Présenter la vision de croissance marketing | Réseaux sociaux |
+| 13 | Répondre aux questions fréquentes et corriger les ambiguïtés | Vitrine publique |
+| 14 | Faire le bilan des publications et inviter à suivre les prochaines évolutions | Vitrine + réseaux sociaux |
 
 ## 6. Contrôles obligatoires avant publication
 
@@ -102,6 +115,6 @@ Utiliser le logo officiel JDV CRM (pas une image de stock à la place du logo) s
 
 ## 7. Limites techniques constatées
 
-Le Centre de croissance marketing actuel permet de créer un brouillon **en mémoire de la session uniquement**. Le code inspecté indique explicitement que le brouillon n’est pas enregistré en base et que la publication réelle attend l’intégration des sources, des autorisations et d’une validation humaine.
+Le Centre de croissance marketing est adapté dans cette branche pour préremplir le kit de lancement, présenter séparément les trois maquettes, et conserver le brouillon ainsi que la progression de la checklist organique dans le stockage local du navigateur (`localStorage`). Cela permet de retrouver ces éléments sur le même navigateur, mais ne les synchronise pas entre appareils et ne constitue pas un enregistrement dans Supabase.
 
-Ce fichier constitue donc un support éditorial versionné dans le dépôt. Il ne signifie pas que la campagne est enregistrée dans la base JDV CRM, visible sur la vitrine publique, programmée ou publiée sur un réseau social.
+Ce fichier, le visuel et le code de la branche constituent une préparation versionnée. La campagne n’est pas enregistrée dans la base JDV CRM, automatiquement affichée sur la vitrine publique, programmée ou publiée sur un réseau social. La connexion à Supabase exige encore une conception et une vérification des droits RLS adaptées ; la publication exige les comptes, autorisations et une validation humaine.
