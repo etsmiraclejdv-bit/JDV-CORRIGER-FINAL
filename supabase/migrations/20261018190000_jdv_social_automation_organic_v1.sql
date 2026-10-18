@@ -14,10 +14,10 @@ alter table public.jdv_marketing_campaigns
     check (approval_version >= 1);
 
 alter table public.jdv_marketing_campaigns
-  drop constraint if exists jdv_marketing_campaigns_channel_check;
+  drop constraint if exists jdv_marketing_campaigns_auto_14_days_organic_only_check;
 alter table public.jdv_marketing_campaigns
-  add constraint jdv_marketing_campaigns_channel_check
-  check (channel = 'organic' and budget = 0);
+  add constraint jdv_marketing_campaigns_auto_14_days_organic_only_check
+  check (automation_mode <> 'auto_14_days' or (channel = 'organic' and budget = 0));
 
 create table if not exists public.jdv_social_connections (
   id uuid primary key default gen_random_uuid(),
