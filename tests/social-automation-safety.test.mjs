@@ -31,5 +31,5 @@ test("migration protects OAuth tokens from browser roles", () => {
 });
 
 test("automatic mode is constrained to organic campaigns with zero budget", () => {
-  assert.match(migration, /automation_mode <> 'auto_14_days' or (channel = 'organic' and budget = 0)/);
+  assert.match(migration, /automation_mode <> 'auto_14_days' or \\(channel = 'organic' and budget = 0\\)/);
 });
