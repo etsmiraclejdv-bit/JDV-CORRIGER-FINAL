@@ -6999,7 +6999,6 @@ export type Database = {
           },
         ]
       }
-    }
       jdv_marketing_campaigns: {
         Row: {
           id: string
@@ -7057,6 +7056,7 @@ export type Database = {
         }
         Relationships: []
       }
+    }
     Views: {
       jdv_super_admin_modules: {
         Row: {
