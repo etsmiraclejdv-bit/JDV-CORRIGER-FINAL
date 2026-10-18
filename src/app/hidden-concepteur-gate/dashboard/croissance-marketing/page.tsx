@@ -166,6 +166,8 @@ export default function MarketingGrowthPage() {
   const [duration, setDuration] = useState('14');
   const [campaignDraft, setCampaignDraft] = useState<{
     name: string;
+    audience: string;
+    channels: string[];
     objective: Objective;
     channel: Channel;
     budget: number;
@@ -198,6 +200,8 @@ export default function MarketingGrowthPage() {
       !Number.isInteger(parsedDuration) || parsedDuration < 1 || parsedDuration > 365) return;
     const draft = {
       name: campaignName.trim(),
+      audience: 'Grand public, entrepreneurs et professionnels',
+      channels: ['Vitrine publique', 'Réseaux sociaux'],
       objective,
       channel,
       budget: parsedBudget,
@@ -395,14 +399,16 @@ export default function MarketingGrowthPage() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex gap-3">
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-emerald-300/10 text-emerald-200"><CheckCircle2 size={19} /></span>
-              <div><p className="text-sm font-semibold text-white">Brouillon préparé dans cette session</p><p className="mt-1 text-xs text-[#A0AEC0]">Il n’est pas enregistré en base, pas publié et ne dépense aucun budget.</p></div>
+              <div><p className="text-sm font-semibold text-white">Brouillon sauvegardé dans ce navigateur</p><p className="mt-1 text-xs text-[#A0AEC0]">Il n’est pas enregistré en base, pas publié et ne dépense aucun budget.</p></div>
             </div>
             <button onClick={() => { setCampaignDraft(null); try { window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY); } catch { /* Storage may be unavailable. */ } }} aria-label="Supprimer le brouillon local" className="rounded-lg p-2 text-[#A0AEC0] hover:bg-white/5 hover:text-white"><X size={16} /></button>
           </div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div><p className="text-xs text-[#7186A8]">Nom</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.name}</p></div>
-            <div><p className="text-xs text-[#7186A8]">Canal</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.channel === 'organic' ? 'Organique' : 'Payant'}</p></div>
+            <div><p className="text-xs text-[#7186A8]">Mode d’acquisition</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.channel === 'organic' ? 'Organique' : 'Payant'}</p></div>
             <div><p className="text-xs text-[#7186A8]">Objectif</p><p className="mt-1 text-sm font-medium text-white">{OBJECTIVES.find(o => o.value === campaignDraft.objective)?.label}</p></div>
+            <div><p className="text-xs text-[#7186A8]">Public cible</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.audience}</p></div>
+            <div><p className="text-xs text-[#7186A8]">Canaux prévus</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.channels.join(' + ')}</p></div>
             <div><p className="text-xs text-[#7186A8]">Budget indicatif / durée</p><p className="mt-1 text-sm font-medium text-white">{campaignDraft.budget.toLocaleString('fr-FR')} · {campaignDraft.duration} jours</p></div>
           </div>
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
