@@ -90,16 +90,10 @@ alter table public.jdv_social_posts force row level security;
 drop policy if exists jdv_social_connections_owner_select on public.jdv_social_connections;
 create policy jdv_social_connections_owner_select on public.jdv_social_connections
   for select to authenticated using (owner_user_id = (select auth.uid()));
+-- Connection status, scopes, and account identifiers are written only by verified server-side OAuth handlers.
 drop policy if exists jdv_social_connections_owner_insert on public.jdv_social_connections;
-create policy jdv_social_connections_owner_insert on public.jdv_social_connections
-  for insert to authenticated with check (owner_user_id = (select auth.uid()));
 drop policy if exists jdv_social_connections_owner_update on public.jdv_social_connections;
-create policy jdv_social_connections_owner_update on public.jdv_social_connections
-  for update to authenticated using (owner_user_id = (select auth.uid()))
-  with check (owner_user_id = (select auth.uid()));
 drop policy if exists jdv_social_connections_owner_delete on public.jdv_social_connections;
-create policy jdv_social_connections_owner_delete on public.jdv_social_connections
-  for delete to authenticated using (owner_user_id = (select auth.uid()));
 
 drop policy if exists jdv_social_posts_owner_select on public.jdv_social_posts;
 create policy jdv_social_posts_owner_select on public.jdv_social_posts
@@ -135,7 +129,7 @@ revoke all on public.jdv_social_connection_secrets from public;
 grant select, insert, update, delete on public.jdv_social_connection_secrets to service_role;
 revoke all on public.jdv_social_connections from anon;
 revoke all on public.jdv_social_posts from anon;
-grant select, insert, update, delete on public.jdv_social_connections to authenticated;
+grant select on public.jdv_social_connections to authenticated;
 grant select, insert, update, delete on public.jdv_social_posts to authenticated;
 
 comment on table public.jdv_social_connection_secrets is
