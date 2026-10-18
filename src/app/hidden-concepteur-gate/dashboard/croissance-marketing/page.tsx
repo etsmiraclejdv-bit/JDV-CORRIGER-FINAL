@@ -35,9 +35,9 @@ type Objective = 'visibilite' | 'leads' | 'conversion' | 'fidelisation';
 const CAMPAIGN_STORAGE_KEY = 'jdvcrm:marketing:official-launch:v2';
 const ORGANIC_CHECKLIST_STORAGE_KEY = 'jdvcrm:marketing:organic-checklist:v1';
 const OFFICIAL_VISUALS = [
-  { title: '1. Lancement principal', path: '/marketing/JDV%20CRM%20_%20Votre%20partenaire%20de%20croissance.png', fileName: 'JDV CRM _ Votre partenaire de croissance.png', description: 'Visuel officiel de lancement : JDV CRM, partenaire de croissance.' },
-  { title: '2. Vitrine publique', path: '/marketing/JDV%20CRM%20_%20votre%20croissance%2C%20simplifi%C3%A9e%20(1).png', fileName: 'JDV CRM _ votre croissance, simplifiée (1).png', description: 'Visuel de présentation destiné à la vitrine publique.' },
-  { title: '3. Visuels complémentaires', path: '/marketing/JDV%20CRM%20_%20Connecter%2C%20D%C3%A9velopper%2C%20R%C3%A9ussir%20(1).png', fileName: 'JDV CRM _ Connecter, Développer, Réussir (1).png', description: 'Visuel complémentaire des fonctionnalités et de la signature de marque.' },
+  { title: '1. Lancement principal', path: 'https://github.com/user-attachments/assets/9381e174-b676-41cc-ba51-034112c57d60', fileName: 'JDV CRM _ Votre partenaire de croissance.png', description: 'Visuel officiel de lancement : JDV CRM, partenaire de croissance.' },
+  { title: '2. Vitrine publique', path: 'https://github.com/user-attachments/assets/511aec49-e197-4925-8da6-b63d3640930b', fileName: 'JDV CRM _ votre croissance, simplifiée (1).png', description: 'Visuel de présentation destiné à la vitrine publique.' },
+  { title: '3. Visuels complémentaires', path: 'https://github.com/user-attachments/assets/e41a6222-f078-4fb9-a5d0-87f498eb8d23', fileName: 'JDV CRM _ Connecter, Développer, Réussir (1).png', description: 'Visuel complémentaire des fonctionnalités et de la signature de marque.' },
 ] as const;
 const LAUNCH_SOCIAL_COPY = `🚀 JDV CRM : CONNECTER. DÉVELOPPER. RÉUSSIR.
 
