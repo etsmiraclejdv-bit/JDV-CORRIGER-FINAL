@@ -1,14 +1,19 @@
-# JDV CRM marketing campaign assets
+# JDV CRM — archive des visuels officiels
 
-The growth-marketing page expects the three official PNG files below in this directory. The filenames are kept aligned with the campaign's `visual_paths` records in Supabase.
+Les visuels sont classés par rôle d'utilisation. **L'ordre officiel est toujours 1 → 2 → 3**.
 
-1. `JDV CRM _ Votre partenaire de croissance.png` — principal launch visual.
-2. `JDV CRM _ votre croissance, simplifiée (1).png` — public storefront visual.
-3. `JDV CRM _ Connecter, Développer, Réussir (1).png` — complementary visual.
+| Ordre | Rôle | Nom de fichier à conserver dans cette archive | Source d'origine |
+|---|---|---|---|
+| 01 | Lancement principal | `01-jdv-crm-lancement-principal.png` | [Visuel officiel 1](https://github.com/user-attachments/assets/9381e174-b676-41cc-ba51-034112c57d60) |
+| 02 | Vitrine publique | `02-jdv-crm-vitrine-publique.png` | [Visuel officiel 2](https://github.com/user-attachments/assets/511aec49-e197-4925-8da6-b63d3640930b) |
+| 03 | Visuels complémentaires | `03-jdv-crm-visuels-complementaires.png` | [Visuel officiel 3](https://github.com/user-attachments/assets/e41a6222-f078-4fb9-a5d0-87f498eb8d23) |
 
-**Asset status:** the source images were supplied in the ChatGPT conversation and packaged separately for transfer, but the binary originals are not committed here yet. Copy the three PNGs into `public/marketing/` before expecting image previews on the site. Do not replace them with generated substitutes or publish the campaign automatically.
+## État réel de l'archive
 
-The campaign remains a private draft. This directory is static public content once committed and deployed; never place confidential campaign drafts or customer data here.
-<img width="1536" height="1024" alt="JDV CRM _ Votre partenaire de croissance" src="https://github.com/user-attachments/assets/9381e174-b676-41cc-ba51-034112c57d60" />
-<img width="1536" height="1024" alt="JDV CRM _ votre croissance, simplifiée (1)" src="https://github.com/user-attachments/assets/511aec49-e197-4925-8da6-b63d3640930b" />
-<img width="1536" height="1024" alt="JDV CRM _ Connecter, Développer, Réussir (1)" src="https://github.com/user-attachments/assets/e41a6222-f078-4fb9-a5d0-87f498eb8d23" />
+À la dernière vérification, ce dossier contient les trois illustrations SVG de maquette (`jdv-crm-lancement.svg`, `jdv-crm-vitrine.svg`, `jdv-crm-fonctionnalites.svg`) et ce README. Les trois images PNG d'origine **ne sont pas encore des fichiers versionnés dans ce dossier** : les liens ci-dessus sont des pièces jointes hébergées par GitHub, pas des fichiers de l'archive Git.
+
+Pour finaliser correctement l'archive, il faut importer les trois fichiers PNG originaux dans ce dossier, en utilisant les trois noms numérotés du tableau. Ne pas recréer, recadrer ou remplacer les originaux par les SVG de maquette. Après l'import, vérifier l'aperçu des trois fichiers et mettre le tableau de campagne de l'interface concepteur à jour pour qu'il pointe vers les chemins locaux `/marketing/01-jdv-crm-lancement-principal.png`, `/marketing/02-jdv-crm-vitrine-publique.png` et `/marketing/03-jdv-crm-visuels-complementaires.png`.
+
+## Sécurité et publication
+
+Le dossier `public/` est servi publiquement une fois déployé. Il doit contenir uniquement les visuels approuvés, jamais les brouillons privés, données clients, jetons ou secrets. La campagne reste un brouillon : cet archivage ne publie rien sur les réseaux sociaux et n'autorise aucune dépense.
