@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">JDV CRM — Connecter. Développer. Réussir.</title>
+  <desc id="desc">Visuel de lancement bleu nuit et or présentant JDV CRM et sa vision des outils numériques pour les professionnels.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#102851"/><stop offset="1" stop-color="#06122A"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F8E7A1"/><stop offset="1" stop-color="#C79D2D"/></linearGradient>
+    <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse"><path d="M42 0H0V42" fill="none" stroke="#FFFFFF" stroke-opacity=".055" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="1200" height="675" rx="30" fill="url(#bg)"/>
+  <rect width="1200" height="675" rx="30" fill="url(#grid)"/>
+  <circle cx="1010" cy="150" r="180" fill="none" stroke="#D4AF37" stroke-opacity=".22" stroke-width="2"/>
+  <circle cx="1010" cy="150" r="132" fill="none" stroke="#D4AF37" stroke-opacity=".3" stroke-width="2"/>
+  <circle cx="1010" cy="150" r="83" fill="#D4AF37" fill-opacity=".08" stroke="#E8C85B" stroke-opacity=".7" stroke-width="2"/>
+  <path d="M965 151l30 30 61-67" fill="none" stroke="url(#gold)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(88 82)">
+    <rect width="70" height="70" rx="18" fill="#D4AF37"/>
+    <path d="M17 48V22h10l18 20V22h10v26H45L27 28v20z" fill="#07142D"/>
+    <text x="91" y="31" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" letter-spacing="4" fill="#E8C85B">JDV CRM</text>
+    <text x="91" y="55" font-family="Arial, Helvetica, sans-serif" font-size="13" letter-spacing="3" fill="#AFC1DD">GESTION · RELATION CLIENT · CROISSANCE</text>
+  </g>
+  <text x="88" y="300" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="800" fill="#FFFFFF">Connecter.</text>
+  <text x="88" y="376" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="800" fill="#FFFFFF">Développer.</text>
+  <text x="88" y="452" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="800" fill="url(#gold)">Réussir.</text>
+  <rect x="90" y="497" width="78" height="5" rx="2.5" fill="#D4AF37"/>
+  <text x="90" y="542" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#C6D3E7">Des outils numériques pour accompagner</text>
+  <text x="90" y="574" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#C6D3E7">le développement des professionnels.</text>
+  <text x="90" y="631" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="2" fill="#E8C85B">LA VISION JDV CRM</text>
+  <g transform="translate(890 400)" opacity=".85">
+    <rect width="220" height="138" rx="16" fill="#0B1B3D" stroke="#D4AF37" stroke-opacity=".45"/>
+    <rect x="18" y="18" width="78" height="9" rx="4.5" fill="#D4AF37" fill-opacity=".9"/>
+    <rect x="18" y="43" width="175" height="6" rx="3" fill="#9CB1D0" fill-opacity=".65"/>
+    <rect x="18" y="59" width="145" height="6" rx="3" fill="#9CB1D0" fill-opacity=".45"/>
+    <rect x="18" y="82" width="48" height="38" rx="8" fill="#D4AF37" fill-opacity=".18" stroke="#D4AF37" stroke-opacity=".5"/>
+    <rect x="77" y="82" width="48" height="38" rx="8" fill="#FFFFFF" fill-opacity=".05" stroke="#FFFFFF" stroke-opacity=".2"/>
+    <rect x="136" y="82" width="66" height="38" rx="8" fill="#FFFFFF" fill-opacity=".05" stroke="#FFFFFF" stroke-opacity=".2"/>
+  </g>
+</svg>
