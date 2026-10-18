@@ -77,7 +77,7 @@ Utiliser le logo officiel JDV CRM (pas une image de stock à la place du logo) s
 - Ne pas inclure de chiffres de performance, témoignages, logos partenaires ou fonctionnalités non vérifiés.
 - Texte alternatif suggéré : « JDV CRM — Connecter, développer et réussir grâce aux outils numériques de gestion et de développement commercial. »
 
-**État du visuel :** direction artistique décrite ; aucun fichier image final n’est inclus dans ce document.
+**État du visuel :** une maquette SVG bleu nuit et or est ajoutée au dépôt dans `public/marketing/jdv-crm-lancement.svg`. Elle utilise une marque typographique provisoire et doit être vérifiée/remplacée par le logo officiel avant diffusion.
 
 ## 5. Calendrier éditorial suggéré (14 jours)
 
