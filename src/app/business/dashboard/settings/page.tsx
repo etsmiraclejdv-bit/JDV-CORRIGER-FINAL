@@ -10,10 +10,12 @@ import {
 } from '@/lib/services/settingsService';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type Tab = 'general' | 'personalization' | 'advanced' | 'payment';
 
 export default function BusinessSettingsPage() {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<Tab>('general');
   const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -80,7 +82,7 @@ export default function BusinessSettingsPage() {
     setSaving(false);
     const err = e1 ?? e2;
     if (err) toast.error(err.message);
-    else toast.success('Personnalisation enregistrée');
+    else toast.success(t('bz.sSavedPers'));
   }
 
   async function handleSaveAdvanced() {
@@ -99,7 +101,7 @@ export default function BusinessSettingsPage() {
     });
     setSaving(false);
     if (error) toast.error(error.message);
-    else toast.success('Paramètres avancés enregistrés');
+    else toast.success(t('bz.sSavedAdv'));
   }
 
   async function handleSaveGeneral(e: React.FormEvent) {
@@ -115,23 +117,23 @@ export default function BusinessSettingsPage() {
     });
     setSaving(false);
     if (error) toast.error(error.message);
-    else toast.success('Paramètres enregistrés');
+    else toast.success(t('bz.sSavedGen'));
   }
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'general', label: 'Général', icon: <Building2 size={14} /> },
-    { id: 'personalization', label: 'Personnalisation', icon: <Palette size={14} /> },
-    { id: 'advanced', label: 'Avancés', icon: <Sliders size={14} /> },
-    { id: 'payment', label: 'Paiement en ligne', icon: <CreditCard size={14} /> },
+    { id: 'general', label: t('bz.sTabGen'), icon: <Building2 size={14} /> },
+    { id: 'personalization', label: t('bz.sTabPers'), icon: <Palette size={14} /> },
+    { id: 'advanced', label: t('bz.sTabAdv'), icon: <Sliders size={14} /> },
+    { id: 'payment', label: t('bz.sTabPay'), icon: <CreditCard size={14} /> },
   ];
 
-  if (loading) return <div className="p-8 text-center text-[#A0AEC0]">Chargement...</div>;
+  if (loading) return <div className="p-8 text-center text-[#A0AEC0]">{t('we.loading')}</div>;
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Paramètres</h1>
-        <p className="text-sm text-[#A0AEC0] mt-1">Configuration de votre organisation</p>
+        <h1 className="text-2xl font-bold text-white">{t('bz.sTitle')}</h1>
+        <p className="text-sm text-[#A0AEC0] mt-1">{t('bz.sSub')}</p>
       </div>
 
       {/* Tabs */}
@@ -155,11 +157,11 @@ export default function BusinessSettingsPage() {
       {/* General Tab */}
       {activeTab === 'general' && (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-5">Informations générales</h2>
+          <h2 className="text-lg font-semibold text-white mb-5">{t('bz.sGenTitle')}</h2>
           <form onSubmit={handleSaveGeneral} className="space-y-4 max-w-lg">
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                Nom de l&apos;organisation
+                {t('bz.sOrgName')}
               </label>
               <input
                 type="text"
@@ -169,7 +171,9 @@ export default function BusinessSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Téléphone</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                {t('bz.sPhone')}
+              </label>
               <input
                 type="tel"
                 value={(org.phone as string) ?? ''}
@@ -178,7 +182,9 @@ export default function BusinessSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Adresse</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                {t('bz.sAddress')}
+              </label>
               <input
                 type="text"
                 value={(org.address as string) ?? ''}
@@ -188,7 +194,9 @@ export default function BusinessSettingsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Ville</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  {t('bz.sCity')}
+                </label>
                 <input
                   type="text"
                   value={(org.city as string) ?? ''}
@@ -197,7 +205,9 @@ export default function BusinessSettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Devise</label>
+                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                  {t('bz.sCurrency')}
+                </label>
                 <select
                   value={(org.currency as string) ?? 'XOF'}
                   onChange={(e) => setOrg((o) => ({ ...o, currency: e.target.value }))}
@@ -217,7 +227,7 @@ export default function BusinessSettingsPage() {
               className="flex items-center gap-2 btn-gold px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
             >
               <Save size={14} />
-              {saving ? 'Enregistrement...' : 'Enregistrer'}
+              {saving ? t('bz.sSaving') : t('bz.sSave')}
             </button>
           </form>
         </div>
@@ -226,14 +236,12 @@ export default function BusinessSettingsPage() {
       {/* Personalization Tab */}
       {activeTab === 'personalization' && (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-5">Personnalisation</h2>
-          <p className="text-sm text-[#A0AEC0]">
-            Configurez les couleurs et l&apos;apparence de votre portail.
-          </p>
+          <h2 className="text-lg font-semibold text-white mb-5">{t('bz.sTabPers')}</h2>
+          <p className="text-sm text-[#A0AEC0]">{t('bz.sPersIntro')}</p>
           <div className="mt-4 space-y-4 max-w-lg">
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                Couleur principale
+                {t('bz.sColor')}
               </label>
               <div className="flex items-center gap-3">
                 <input
@@ -249,13 +257,13 @@ export default function BusinessSettingsPage() {
             </div>
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                Slogan entreprise
+                {t('bz.sSlogan')}
               </label>
               <input
                 type="text"
                 value={settings.slogan}
                 onChange={(e) => setSettings((s) => ({ ...s, slogan: e.target.value }))}
-                placeholder="Votre slogan..."
+                placeholder={t('bz.sSloganPh')}
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
               />
             </div>
@@ -266,7 +274,7 @@ export default function BusinessSettingsPage() {
               className="flex items-center gap-2 btn-gold px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
             >
               <Save size={14} />
-              {saving ? 'Enregistrement...' : 'Enregistrer'}
+              {saving ? t('bz.sSaving') : t('bz.sSave')}
             </button>
           </div>
         </div>
@@ -275,13 +283,13 @@ export default function BusinessSettingsPage() {
       {/* Advanced Tab */}
       {activeTab === 'advanced' && (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-5">Paramètres avancés</h2>
+          <h2 className="text-lg font-semibold text-white mb-5">{t('bz.sAdvTitle')}</h2>
           <div className="space-y-6 max-w-lg">
             <div>
-              <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">Notifications</h3>
+              <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">{t('bz.sNotif')}</h3>
               <div className="space-y-3">
                 <label className="flex items-center justify-between">
-                  <span className="text-sm text-[#A0AEC0]">Email en cas de paiement en retard</span>
+                  <span className="text-sm text-[#A0AEC0]">{t('bz.sEmailLate')}</span>
                   <input
                     type="checkbox"
                     checked={settings.email_on_late_payment}
@@ -292,7 +300,7 @@ export default function BusinessSettingsPage() {
                   />
                 </label>
                 <label className="flex items-center justify-between">
-                  <span className="text-sm text-[#A0AEC0]">SMS à chaque vente</span>
+                  <span className="text-sm text-[#A0AEC0]">{t('bz.sSmsSale')}</span>
                   <input
                     type="checkbox"
                     checked={settings.sms_on_sale}
@@ -303,12 +311,10 @@ export default function BusinessSettingsPage() {
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">Ventes</h3>
+              <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">{t('bz.sSales')}</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs text-[#A0AEC0] mb-1.5">
-                    Fréquence de paiement par défaut
-                  </label>
+                  <label className="block text-xs text-[#A0AEC0] mb-1.5">{t('bz.sFreq')}</label>
                   <select
                     value={settings.default_payment_frequency}
                     onChange={(e) =>
@@ -316,13 +322,13 @@ export default function BusinessSettingsPage() {
                     }
                     className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none"
                   >
-                    <option value="daily">Journalier</option>
-                    <option value="weekly">Hebdomadaire</option>
-                    <option value="monthly">Mensuel</option>
+                    <option value="daily">{t('bz.sDaily')}</option>
+                    <option value="weekly">{t('bz.sWeekly')}</option>
+                    <option value="monthly">{t('bz.sMonthly')}</option>
                   </select>
                 </div>
                 <label className="flex items-center justify-between">
-                  <span className="text-sm text-[#A0AEC0]">Acompte obligatoire</span>
+                  <span className="text-sm text-[#A0AEC0]">{t('bz.sDeposit')}</span>
                   <input
                     type="checkbox"
                     checked={settings.require_deposit}
@@ -335,11 +341,9 @@ export default function BusinessSettingsPage() {
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">Stock</h3>
+              <h3 className="text-sm font-semibold text-[#D4AF37] mb-3">{t('bz.sStock')}</h3>
               <div>
-                <label className="block text-xs text-[#A0AEC0] mb-1.5">
-                  Seuil d&apos;alerte stock bas (%)
-                </label>
+                <label className="block text-xs text-[#A0AEC0] mb-1.5">{t('bz.sLowStock')}</label>
                 <input
                   type="number"
                   value={settings.low_stock_alert_threshold_percent}
@@ -365,7 +369,7 @@ export default function BusinessSettingsPage() {
               className="flex items-center gap-2 btn-gold px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
             >
               <Save size={14} />
-              {saving ? 'Enregistrement...' : 'Enregistrer'}
+              {saving ? t('bz.sSaving') : t('bz.sSave')}
             </button>
           </div>
         </div>
@@ -374,14 +378,11 @@ export default function BusinessSettingsPage() {
       {/* Payment Tab */}
       {activeTab === 'payment' && (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-2">Paiement en ligne (FedaPay)</h2>
-          <p className="text-sm text-[#A0AEC0] mb-5">
-            Les clés FedaPay sont gérées par le concepteur de la plateforme. Elles ne sont jamais
-            saisies ni stockées depuis votre navigateur.
-          </p>
+          <h2 className="text-lg font-semibold text-white mb-2">{t('bz.sPayTitle')}</h2>
+          <p className="text-sm text-[#A0AEC0] mb-5">{t('bz.sPayIntro')}</p>
           <div className="space-y-3 max-w-lg text-sm">
             <div className="flex items-center justify-between rounded-xl bg-[#0A1628] border border-[#D4AF37]/10 px-4 py-3">
-              <span className="text-[#A0AEC0]">Abonnement</span>
+              <span className="text-[#A0AEC0]">{t('bz.sSubscription')}</span>
               <span className="font-semibold text-white">
                 {String(org.subscription_status ?? '—')}
               </span>
@@ -391,7 +392,7 @@ export default function BusinessSettingsPage() {
               className="inline-flex items-center gap-2 btn-gold px-5 py-2.5 rounded-xl font-semibold text-sm"
             >
               <CreditCard size={14} />
-              Gérer mon abonnement
+              {t('bz.sManageSub')}
             </Link>
           </div>
         </div>
