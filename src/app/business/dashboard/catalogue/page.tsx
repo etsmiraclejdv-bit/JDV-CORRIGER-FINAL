@@ -7,6 +7,7 @@ import { fetchProducts, updateProduct, createProduct } from '@/lib/services/cata
 import Modal from '@/components/ui/Modal';
 import { toast } from 'sonner';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 interface Product {
   id: string;
@@ -22,6 +23,7 @@ interface Product {
 }
 
 export default function CataloguePage() {
+  const { t, locale } = useLanguage();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,7 +71,7 @@ export default function CataloguePage() {
   function printBarcodeLabel(product: Product) {
     const code = product.sku?.trim();
     if (!code) {
-      toast.error('Enregistrez d’abord le code de traçabilité de cet article.');
+      toast.error(t('bz.ctNoSku'));
       return;
     }
     // Le code officiel JDV est imprimé en Code 128, indépendamment du code fabricant.
@@ -88,11 +90,11 @@ export default function CataloguePage() {
       );
     const popup = window.open('', '_blank', 'width=620,height=520');
     if (!popup) {
-      toast.error('Autorisez les fenêtres contextuelles pour imprimer l’étiquette.');
+      toast.error(t('bz.ctPopup'));
       return;
     }
     popup.document.write(
-      `<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Code de traçabilité JDV - ${escapeHtml(product.name)}</title><style>body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#111}.label{width:340px;min-height:170px;border:1px solid #ddd;padding:18px;text-align:center;margin:auto}.brand{font-weight:700;letter-spacing:2px;font-size:12px}.name{font-size:16px;font-weight:700;margin:12px 0 4px}.code{font:13px monospace;word-break:break-all}.barcode{display:block;max-width:100%;height:auto;margin:12px auto 4px}@media print{body{padding:0}.label{border:0;margin:0}}</style></head><body><section class="label"><div class="brand">JDV CRM</div><div class="name">${escapeHtml(product.name)}</div><img class="barcode" src="${barcodeImage}" alt="Code-barres ${escapeHtml(code)}"><div class="code">${escapeHtml(code)}</div><p style="font-size:10px;color:#555">Code officiel de traçabilité JDV — conserver le code lisible</p></section><script>window.onload=()=>setTimeout(()=>window.print(),500)</script></body></html>`
+      `<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><title>${escapeHtml(t('bz.ctLabelTitle'))} - ${escapeHtml(product.name)}</title><style>body{font-family:Arial,sans-serif;margin:0;padding:24px;color:#111}.label{width:340px;min-height:170px;border:1px solid #ddd;padding:18px;text-align:center;margin:auto}.brand{font-weight:700;letter-spacing:2px;font-size:12px}.name{font-size:16px;font-weight:700;margin:12px 0 4px}.code{font:13px monospace;word-break:break-all}.barcode{display:block;max-width:100%;height:auto;margin:12px auto 4px}@media print{body{padding:0}.label{border:0;margin:0}}</style></head><body><section class="label"><div class="brand">JDV CRM</div><div class="name">${escapeHtml(product.name)}</div><img class="barcode" src="${barcodeImage}" alt="${escapeHtml(t('bz.ctBarcodeAlt'))} ${escapeHtml(code)}"><div class="code">${escapeHtml(code)}</div><p style="font-size:10px;color:#555">${escapeHtml(t('bz.ctLabelNote'))}</p></section><script>window.onload=()=>setTimeout(()=>window.print(),500)</script></body></html>`
     );
     popup.document.close();
   }
@@ -126,7 +128,7 @@ export default function CataloguePage() {
 
     if (result.error) toast.error(result.error.message);
     else {
-      toast.success(editProduct ? 'Article mis à jour' : 'Article créé');
+      toast.success(editProduct ? t('bz.ctUpdated') : t('bz.ctCreated'));
       setModalOpen(false);
       await loadProducts(orgId);
     }
@@ -147,16 +149,14 @@ export default function CataloguePage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Catalogue Articles</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">
-            Le catalogue définit les articles. Le stock est géré dans Stock et Entrepôts.
-          </p>
+          <h1 className="text-2xl font-bold text-white">{t('bz.ctTitle')}</h1>
+          <p className="text-sm text-[#A0AEC0] mt-1">{t('bz.ctSub')}</p>
         </div>
         <button
           onClick={openCreate}
           className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
         >
-          <Plus size={14} /> Nouvel article
+          <Plus size={14} /> {t('bz.ctNew')}
         </button>
       </div>
 
@@ -165,31 +165,37 @@ export default function CataloguePage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher par nom, code..."
+          placeholder={t('bz.ctSearchPh')}
           className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
         />
       </div>
 
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-[#A0AEC0] text-sm">Chargement...</div>
+          <div className="py-16 text-center text-[#A0AEC0] text-sm">{t('we.loading')}</div>
         ) : error ? (
           <div className="py-16 text-center text-red-400 text-sm">{error}</div>
         ) : filtered.length === 0 ? (
-          <div className="py-16 text-center text-[#A0AEC0] text-sm">Aucun article trouvé</div>
+          <div className="py-16 text-center text-[#A0AEC0] text-sm">{t('bz.ctNone')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Code JDV</th>
-                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Article</th>
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">
-                    Code-barres
+                    {t('bz.ctColJdv')}
                   </th>
-                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">Prix</th>
                   <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">
-                    Stock entrepôts
+                    {t('bz.ctColItem')}
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">
+                    {t('bz.ctColBarcode')}
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">
+                    {t('bz.ctColPrice')}
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs text-[#718096] uppercase">
+                    {t('bz.ctColStock')}
                   </th>
                   <th className="px-4 py-3"></th>
                 </tr>
@@ -200,10 +206,10 @@ export default function CataloguePage() {
                     <td className="px-4 py-3 text-xs font-mono text-[#D4AF37]">{p.sku}</td>
                     <td className="px-4 py-3 text-sm font-medium text-white">{p.name}</td>
                     <td className="px-4 py-3 text-xs font-mono text-[#A0AEC0]">
-                      {p.barcode || 'Aucun code fabricant'}
+                      {p.barcode || t('bz.ctNoMaker')}
                     </td>
                     <td className="px-4 py-3 text-sm text-[#A0AEC0]">
-                      {new Intl.NumberFormat('fr-FR', {
+                      {new Intl.NumberFormat(locale, {
                         style: 'currency',
                         currency: 'XOF',
                         maximumFractionDigits: 0,
@@ -216,7 +222,7 @@ export default function CataloguePage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => openEdit(p)}
-                          title="Modifier le code JDV ou le code-barres fabricant"
+                          title={t('bz.ctEditTitle')}
                           className="p-1.5 rounded-lg text-[#718096] hover:text-[#D4AF37]"
                         >
                           <Edit2 size={14} />
@@ -224,7 +230,7 @@ export default function CataloguePage() {
                         {p.sku && (
                           <button
                             onClick={() => printBarcodeLabel(p)}
-                            title="Imprimer l’étiquette du code de traçabilité JDV"
+                            title={t('bz.ctPrintTitle')}
                             className="p-1.5 rounded-lg text-[#718096] hover:text-[#D4AF37]"
                           >
                             <Printer size={14} />
@@ -243,12 +249,12 @@ export default function CataloguePage() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editProduct ? "Modifier l'article" : 'Nouvel article'}
+        title={editProduct ? t('bz.ctModalEdit') : t('bz.ctNew')}
         size="md"
       >
         <form onSubmit={handleSave} className="space-y-4 p-1">
           <div>
-            <label className="block text-xs text-[#A0AEC0] mb-1.5">Nom de l’article</label>
+            <label className="block text-xs text-[#A0AEC0] mb-1.5">{t('bz.ctName')}</label>
             <input
               required
               value={form.name}
@@ -257,18 +263,16 @@ export default function CataloguePage() {
             />
           </div>
           <div>
-            <label className="block text-xs text-[#A0AEC0] mb-1.5">Code de traçabilité JDV</label>
+            <label className="block text-xs text-[#A0AEC0] mb-1.5">{t('bz.ctJdvCode')}</label>
             <input
               value={form.sku}
               onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))}
-              placeholder="Généré automatiquement si vide"
+              placeholder={t('bz.ctAutoPh')}
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs text-[#A0AEC0] mb-1.5">
-              Code-barres fabricant (facultatif)
-            </label>
+            <label className="block text-xs text-[#A0AEC0] mb-1.5">{t('bz.ctMakerBarcode')}</label>
             <input
               value={form.barcode}
               onChange={(e) => setForm((f) => ({ ...f, barcode: e.target.value }))}
@@ -281,35 +285,28 @@ export default function CataloguePage() {
                 onClick={generateInternalTraceabilityCode}
                 className="rounded-lg border border-[#D4AF37]/30 px-3 py-2 text-xs font-semibold text-[#D4AF37] hover:bg-[#D4AF37]/10"
               >
-                Générer le code de traçabilité JDV
+                {t('bz.ctGenerate')}
               </button>
-              <span className="text-xs text-[#718096]">
-                Le code JDV reste distinct du code fabricant.
-              </span>
+              <span className="text-xs text-[#718096]">{t('bz.ctDistinct')}</span>
             </div>
-            <label className="block text-xs text-[#A0AEC0] mt-3 mb-1.5">
-              Type du code-barres fabricant
-            </label>
+            <label className="block text-xs text-[#A0AEC0] mt-3 mb-1.5">{t('bz.ctBarType')}</label>
             <select
               value={form.barcode_type}
               onChange={(e) => setForm((f) => ({ ...f, barcode_type: e.target.value }))}
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
             >
-              <option value="internal">Code interne</option>
+              <option value="internal">{t('bz.ctInternal')}</option>
               <option value="ean13">EAN-13</option>
               <option value="ean8">EAN-8</option>
               <option value="upca">UPC-A</option>
               <option value="code128">Code 128</option>
               <option value="qr">QR</option>
-              <option value="other">Autre</option>
+              <option value="other">{t('bz.ctOther')}</option>
             </select>
-            <p className="text-xs text-[#718096] mt-1">
-              Le code JDV est la référence officielle de traçabilité. Le code-barres fabricant est
-              facultatif et reste distinct.
-            </p>
+            <p className="text-xs text-[#718096] mt-1">{t('bz.ctOfficial')}</p>
           </div>
           <div>
-            <label className="block text-xs text-[#A0AEC0] mb-1.5">Prix comptant (XOF)</label>
+            <label className="block text-xs text-[#A0AEC0] mb-1.5">{t('bz.ctCashPrice')}</label>
             <input
               type="number"
               min={0}
@@ -320,24 +317,21 @@ export default function CataloguePage() {
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
             />
           </div>
-          <p className="text-xs text-[#718096]">
-            Pour ajouter du stock, utilisez la page Stock. Cela garantit la traçabilité Stock
-            central → Entrepôt → Prospecteur.
-          </p>
+          <p className="text-xs text-[#718096]">{t('bz.ctAddStock')}</p>
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={() => setModalOpen(false)}
               className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0]"
             >
-              Annuler
+              {t('bz.puCancel')}
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex-1 btn-gold py-2.5 rounded-xl font-semibold disabled:opacity-60"
             >
-              {saving ? 'Enregistrement...' : 'Enregistrer'}
+              {saving ? t('bz.sSaving') : t('bz.sSave')}
             </button>
           </div>
         </form>
