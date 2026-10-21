@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase/client';
 import { fetchClients } from '@/lib/services/clientsService';
 import Link from 'next/link';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 interface Client {
   id: string;
@@ -24,13 +26,15 @@ const PAYMENT_STATUS_COLORS: Record<string, string> = {
   en_retard: 'bg-red-500/20 text-red-400 border-red-500/30',
 };
 
-const PAYMENT_STATUS_LABELS: Record<string, string> = {
-  a_jour: 'À jour',
-  a_surveiller: 'À surveiller',
-  en_retard: 'En retard',
-};
-
 export default function BusinessClientsPage() {
+  const { t, locale } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const statusLabel = (s: string) =>
+    ['a_jour', 'a_surveiller', 'en_retard'].includes(s) ? t(('bz.clPs.' + s) as TerrainKey) : s;
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -65,9 +69,9 @@ export default function BusinessClientsPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Clients</h1>
+          <h1 className="text-2xl font-bold text-white">{t('bz.clTitle')}</h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {clients.length} client{clients.length !== 1 ? 's' : ''} au total
+            {fill('bz.clTotalSub', { n: clients.length })}
           </p>
         </div>
       </div>
@@ -75,17 +79,17 @@ export default function BusinessClientsPage() {
       {/* KPI */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
-          <p className="text-xs text-[#A0AEC0] mb-1">Total clients</p>
+          <p className="text-xs text-[#A0AEC0] mb-1">{t('bz.clKpiTotal')}</p>
           <p className="text-2xl font-bold text-white">{clients.length}</p>
         </div>
         <div className="bg-[#0F2347] border border-green-500/20 rounded-2xl p-4">
-          <p className="text-xs text-[#A0AEC0] mb-1">À jour</p>
+          <p className="text-xs text-[#A0AEC0] mb-1">{statusLabel('a_jour')}</p>
           <p className="text-2xl font-bold text-green-400">
             {clients.filter((c) => c.payment_status === 'a_jour').length}
           </p>
         </div>
         <div className="bg-[#0F2347] border border-red-500/20 rounded-2xl p-4">
-          <p className="text-xs text-[#A0AEC0] mb-1">En retard</p>
+          <p className="text-xs text-[#A0AEC0] mb-1">{statusLabel('en_retard')}</p>
           <p className="text-2xl font-bold text-red-400">
             {clients.filter((c) => c.payment_status === 'en_retard').length}
           </p>
@@ -100,7 +104,7 @@ export default function BusinessClientsPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher par nom, téléphone..."
+            placeholder={t('bz.clSearchPh')}
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
@@ -109,28 +113,24 @@ export default function BusinessClientsPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#D4AF37]/60"
         >
-          <option value="">Tous les statuts</option>
-          <option value="a_jour">À jour</option>
-          <option value="a_surveiller">À surveiller</option>
-          <option value="en_retard">En retard</option>
+          <option value="">{t('bz.clAllStatus')}</option>
+          <option value="a_jour">{statusLabel('a_jour')}</option>
+          <option value="a_surveiller">{statusLabel('a_surveiller')}</option>
+          <option value="en_retard">{statusLabel('en_retard')}</option>
         </select>
       </div>
 
       {/* Table */}
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-[#A0AEC0] text-sm">Chargement des clients...</div>
+          <div className="py-16 text-center text-[#A0AEC0] text-sm">{t('bz.clLoading')}</div>
         ) : error ? (
           <div className="py-16 text-center text-red-400 text-sm">{error}</div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
             <Users size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
-            <p className="text-[#A0AEC0] text-sm">Aucun client visible</p>
-            <p className="text-xs text-[#718096] mt-2 max-w-md mx-auto">
-              Les clients et prospects sont privés : chaque prospecteur gère son propre portefeuille
-              depuis son espace terrain. Vous suivez ici les ventes, les paiements et les résultats
-              de l’équipe.
-            </p>
+            <p className="text-[#A0AEC0] text-sm">{t('bz.clNone')}</p>
+            <p className="text-xs text-[#718096] mt-2 max-w-md mx-auto">{t('bz.clPrivate')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -138,19 +138,19 @@ export default function BusinessClientsPage() {
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
-                    Client
+                    {t('bz.clColClient')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
-                    Téléphone
+                    {t('bz.sPhone')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
-                    Prospecteur
+                    {t('bz.fnProsp')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
-                    Solde
+                    {t('bz.clColBalance')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
-                    Statut paiement
+                    {t('bz.clColStatus')}
                   </th>
                   <th className="px-4 py-3"></th>
                 </tr>
@@ -169,7 +169,7 @@ export default function BusinessClientsPage() {
                       {client.profiles?.full_name ?? '—'}
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold text-[#D4AF37]">
-                      {new Intl.NumberFormat('fr-FR', {
+                      {new Intl.NumberFormat(locale, {
                         style: 'currency',
                         currency: 'XOF',
                         maximumFractionDigits: 0,
@@ -179,7 +179,7 @@ export default function BusinessClientsPage() {
                       <span
                         className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${PAYMENT_STATUS_COLORS[client.payment_status] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}
                       >
-                        {PAYMENT_STATUS_LABELS[client.payment_status] ?? client.payment_status}
+                        {statusLabel(client.payment_status)}
                       </span>
                     </td>
                     <td className="px-4 py-3">
