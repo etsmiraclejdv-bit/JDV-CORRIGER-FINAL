@@ -22,11 +22,12 @@ import {
   fetchDashboard,
   settleCommission,
 } from '@/lib/services/financeService';
-import { formatDateFr, formatXof } from '@/lib/relances/helpers';
+import { toNumber } from '@/lib/relances/helpers';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 import {
   PRESET_LABELS,
   canSettle,
-  commissionLabel,
   formatRate,
   isValidPeriod,
   percent,
@@ -53,6 +54,26 @@ const STATUS_CLASSES: Record<string, string> = {
 };
 
 export default function FinancesView() {
+  const { t, locale } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const formatXof = (value: unknown) =>
+    `${new Intl.NumberFormat(locale).format(Math.round(toNumber(value)))} XOF`;
+  const formatDateFr = (iso: string | null | undefined) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? '');
+    return m
+      ? new Intl.DateTimeFormat(locale, { timeZone: 'UTC' }).format(
+          new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])))
+        )
+      : '—';
+  };
+  const commissionLabel = (s: string) =>
+    ['pending', 'approved', 'paid', 'cancelled'].includes(s)
+      ? t(('bz.fnCSt.' + s) as TerrainKey)
+      : s;
   const initial = useMemo(() => periodForPreset('month', new Date()), []);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [preset, setPreset] = useState<PeriodPreset | 'custom'>('month');
@@ -76,12 +97,12 @@ export default function FinancesView() {
     if (!org) {
       const ctx = await getAuthContext();
       if (!ctx) {
-        setError("Vous n'êtes pas connecté.");
+        setError('bz.fnNotLogged');
         setLoading(false);
         return;
       }
       if (!ctx.organizationId || !ctx.isOrgAdmin) {
-        setError("Cette page est réservée à l'administrateur de l'entreprise.");
+        setError('bz.fnAdminOnly');
         setLoading(false);
         return;
       }
@@ -119,9 +140,7 @@ export default function FinancesView() {
 
   function applyCustom() {
     if (!isValidPeriod(start, end)) {
-      toast.error(
-        'Période invalide : la date de fin doit suivre la date de début (5 ans maximum).'
-      );
+      toast.error(t('bz.fnBadPeriod'));
       return;
     }
     setPreset('custom');
@@ -138,7 +157,7 @@ export default function FinancesView() {
       toast.error(err);
       return;
     }
-    toast.success('Commission marquée comme payée.');
+    toast.success(t('bz.fnSettled'));
     setCommissions((prev) =>
       prev.map((c) => (c.commission_id === id ? { ...c, status: 'paid', paid_at: paidAt } : c))
     );
@@ -152,14 +171,18 @@ export default function FinancesView() {
     [commissions, onlyUnpaid]
   );
   const prospecteurName = (id: string | null) =>
-    id ? names[id] || 'Prospecteur' : 'Sans prospecteur';
+    id ? names[id] || t('bz.fnProsp') : t('bz.fnNoProsp');
 
-  if (loading && !dashboard) return <LoadingState message="Chargement des chiffres…" />;
+  const showError = (s: string) => (s.startsWith('bz.') ? t(s as TerrainKey) : s);
+  if (loading && !dashboard) return <LoadingState message={t('bz.fnLoading')} />;
   if (error && !dashboard) {
     return (
       <ErrorState
-        message={error}
-        action={{ label: 'Réessayer', onClick: () => void load(orgId, range.start, range.end) }}
+        message={showError(error)}
+        action={{
+          label: t('bz.fnRetry'),
+          onClick: () => void load(orgId, range.start, range.end),
+        }}
       />
     );
   }
@@ -169,19 +192,19 @@ export default function FinancesView() {
       {/* En-tête */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Finances et commissions</h1>
+          <h1 className="text-2xl font-bold text-white">{t('bz.fnTitle')}</h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            Période du {formatDateFr(range.start)} au {formatDateFr(range.end)}
+            {fill('bz.fnPeriod', { a: formatDateFr(range.start), b: formatDateFr(range.end) })}
           </p>
         </div>
         <button
           onClick={() => void load(orgId, range.start, range.end)}
           disabled={loading}
           className="flex items-center gap-2 btn-outline-gold px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
-          aria-label="Actualiser les chiffres"
+          aria-label={t('bz.fnRefreshAria')}
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          Actualiser
+          {t('bz.fnRefresh')}
         </button>
       </div>
 
@@ -190,13 +213,13 @@ export default function FinancesView() {
           className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
           role="alert"
         >
-          {error}
+          {showError(error)}
         </div>
       )}
 
       {/* Période */}
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4 flex flex-col xl:flex-row xl:items-end gap-4">
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Période prédéfinie">
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t('bz.fnPresetAria')}>
           {PRESETS.map((p) => (
             <button
               key={p}
@@ -208,13 +231,13 @@ export default function FinancesView() {
                   : 'bg-[#0B1B3D] text-[#A0AEC0] border-[#D4AF37]/20 hover:text-white'
               }`}
             >
-              {PRESET_LABELS[p]}
+              {t(('bz.fnPreset.' + p) as TerrainKey)}
             </button>
           ))}
         </div>
         <div className="flex flex-wrap items-end gap-3 xl:ml-auto">
           <label className="text-xs text-[#A0AEC0]">
-            Du
+            {t('bz.fnFrom')}
             <input
               type="date"
               value={start}
@@ -223,7 +246,7 @@ export default function FinancesView() {
             />
           </label>
           <label className="text-xs text-[#A0AEC0]">
-            Au
+            {t('bz.fnTo')}
             <input
               type="date"
               value={end}
@@ -236,7 +259,7 @@ export default function FinancesView() {
             className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
           >
             <Calendar size={14} />
-            Appliquer
+            {t('bz.fnApply')}
           </button>
         </div>
       </div>
@@ -245,30 +268,30 @@ export default function FinancesView() {
       {dashboard && (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           <MetricCard
-            title="Ventes de la période"
+            title={t('bz.fnMSales')}
             value={formatXof(dashboard.salesTotal)}
-            subtitle={`${dashboard.salesCount} vente(s)`}
+            subtitle={fill('bz.fnSalesCount', { n: dashboard.salesCount })}
             icon={<ShoppingCart size={18} />}
             variant="gold"
           />
           <MetricCard
-            title="Encaissé sur la période"
+            title={t('bz.fnMCash')}
             value={formatXof(dashboard.cashCollected)}
-            subtitle="paiements réussis, toutes ventes confondues"
+            subtitle={t('bz.fnMCashSub')}
             icon={<TrendingUp size={18} />}
             variant="success"
           />
           <MetricCard
-            title="Crédit en cours"
+            title={t('bz.fnMCredit')}
             value={formatXof(dashboard.creditOutstanding)}
-            subtitle="restant dû sur les ventes à crédit ouvertes"
+            subtitle={t('bz.fnMCreditSub')}
             icon={<Wallet size={18} />}
             variant="default"
           />
           <MetricCard
-            title="Impayés en retard"
+            title={t('bz.fnMOverdue')}
             value={formatXof(dashboard.overdueAmount)}
-            subtitle={`${dashboard.overdueSchedules} échéance(s), état actuel`}
+            subtitle={fill('bz.fnOverdueSub', { n: dashboard.overdueSchedules })}
             icon={<AlertTriangle size={18} />}
             variant={dashboard.overdueSchedules > 0 ? 'danger' : 'success'}
           >
@@ -277,21 +300,21 @@ export default function FinancesView() {
                 href="/business/dashboard/relances"
                 className="text-xs text-[#D4AF37] hover:underline mt-2 inline-block"
               >
-                Voir les relances
+                {t('bz.fnSeeRelances')}
               </Link>
             )}
           </MetricCard>
           <MetricCard
-            title="Commissions à payer"
+            title={t('bz.fnMToPay')}
             value={formatXof(dashboard.commissionUnpaid)}
-            subtitle="en attente ou approuvées, état actuel"
+            subtitle={t('bz.fnMToPaySub')}
             icon={<Users size={18} />}
             variant={dashboard.commissionUnpaid > 0 ? 'warning' : 'success'}
           />
           <MetricCard
-            title="Commissions payées"
+            title={t('bz.fnMPaid')}
             value={formatXof(dashboard.commissionPaid)}
-            subtitle={`réglées sur la période (total généré : ${formatXof(dashboard.commissionTotal)})`}
+            subtitle={fill('bz.fnMPaidSub', { t: formatXof(dashboard.commissionTotal) })}
             icon={<CheckCircle size={18} />}
             variant="default"
           />
@@ -301,26 +324,24 @@ export default function FinancesView() {
       {/* Par prospecteur */}
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-[#D4AF37]/10">
-          <h2 className="text-sm font-semibold text-white">Résultats par prospecteur</h2>
+          <h2 className="text-sm font-semibold text-white">{t('bz.fnByProsp')}</h2>
         </div>
         {sortedRows.length === 0 ? (
-          <p className="px-5 py-10 text-sm text-[#A0AEC0] text-center">
-            Aucune vente sur cette période.
-          </p>
+          <p className="px-5 py-10 text-sm text-[#A0AEC0] text-center">{t('bz.fnNoSales')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
                   {[
-                    'Prospecteur',
-                    'Ventes',
-                    'Total',
-                    'Encaissé',
-                    'Reste',
-                    'Commission',
-                    'Payée',
-                    'À payer',
+                    t('bz.fnProsp'),
+                    t('bz.fnColSales'),
+                    t('bz.fnColTotal'),
+                    t('bz.fnColCollected'),
+                    t('bz.fnColRest'),
+                    t('bz.fnColComm'),
+                    t('bz.fnColPaid'),
+                    t('bz.fnColToPay'),
                   ].map((h) => (
                     <th
                       key={h}
@@ -373,7 +394,7 @@ export default function FinancesView() {
               </tbody>
               <tfoot>
                 <tr className="border-t border-[#D4AF37]/20 bg-[#0B1B3D]/40">
-                  <td className="px-4 py-3 text-sm font-bold text-white">Total</td>
+                  <td className="px-4 py-3 text-sm font-bold text-white">{t('bz.fnColTotal')}</td>
                   <td className="px-4 py-3 text-sm font-semibold text-white">
                     {totals.salesCount}
                   </td>
@@ -406,15 +427,15 @@ export default function FinancesView() {
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-[#D4AF37]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-semibold text-white">Commissions de la période</h2>
+            <h2 className="text-sm font-semibold text-white">{t('bz.fnCommTitle')}</h2>
             <p className="text-xs text-[#718096] mt-0.5">
-              Encore à payer dans cette liste : {formatXof(unpaidCommissionTotal(commissions))}
+              {fill('bz.fnCommLeft', { a: formatXof(unpaidCommissionTotal(commissions)) })}
             </p>
           </div>
-          <div className="flex gap-2" role="group" aria-label="Filtrer les commissions">
+          <div className="flex gap-2" role="group" aria-label={t('bz.fnFilterAria')}>
             {[
-              { v: true, label: 'À régler' },
-              { v: false, label: 'Toutes' },
+              { v: true, label: t('bz.fnToSettle') },
+              { v: false, label: t('bz.fnAll') },
             ].map((f) => (
               <button
                 key={String(f.v)}
@@ -435,9 +456,7 @@ export default function FinancesView() {
           <div className="py-12 text-center px-6">
             <CheckCircle size={30} className="mx-auto mb-3 text-[#68D391] opacity-70" />
             <p className="text-sm text-[#A0AEC0]">
-              {commissions.length === 0
-                ? 'Aucune commission sur cette période.'
-                : 'Aucune commission à régler : tout est payé.'}
+              {commissions.length === 0 ? t('bz.fnNoComm') : t('bz.fnAllPaid')}
             </p>
           </div>
         ) : (
@@ -445,16 +464,22 @@ export default function FinancesView() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  {['Prospecteur', 'Vente', 'Base', 'Taux', 'Commission', 'Statut', 'Action'].map(
-                    (h) => (
-                      <th
-                        key={h}
-                        className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
-                      >
-                        {h}
-                      </th>
-                    )
-                  )}
+                  {[
+                    t('bz.fnProsp'),
+                    t('bz.fnColSale'),
+                    t('bz.fnColBase'),
+                    t('bz.fnColRate'),
+                    t('bz.fnColComm'),
+                    t('bz.fnColStatus'),
+                    t('bz.fnColAction'),
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -472,7 +497,7 @@ export default function FinancesView() {
                           href={`/business/dashboard/ventes/${c.sale_id}`}
                           className="text-[#D4AF37] hover:underline"
                         >
-                          Voir la vente
+                          {t('bz.fnSeeSale')}
                         </Link>
                       ) : (
                         <span className="text-[#718096]">—</span>
@@ -495,7 +520,7 @@ export default function FinancesView() {
                       </span>
                       {c.status === 'paid' && c.paid_at && (
                         <p className="text-xs text-[#718096] mt-0.5">
-                          le {formatDateFr(c.paid_at)}
+                          {fill('bz.fnPaidOn', { d: formatDateFr(c.paid_at) })}
                         </p>
                       )}
                     </td>
@@ -509,12 +534,12 @@ export default function FinancesView() {
                               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#D4AF37] text-[#0B1B3D] hover:opacity-90 disabled:opacity-50"
                             >
                               <Check size={12} />
-                              {busyId === c.commission_id ? 'En cours…' : 'Confirmer'}
+                              {busyId === c.commission_id ? t('bz.fnBusy') : t('bz.fnConfirm')}
                             </button>
                             <button
                               onClick={() => setConfirmId(null)}
                               disabled={busyId === c.commission_id}
-                              aria-label="Annuler le règlement"
+                              aria-label={t('bz.fnCancelSettle')}
                               className="p-1.5 rounded-lg bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white"
                             >
                               <X size={12} />
@@ -525,7 +550,7 @@ export default function FinancesView() {
                             onClick={() => setConfirmId(c.commission_id)}
                             className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/30 hover:bg-[#D4AF37]/20"
                           >
-                            Marquer payée
+                            {t('bz.fnMarkPaid')}
                           </button>
                         )
                       ) : (
