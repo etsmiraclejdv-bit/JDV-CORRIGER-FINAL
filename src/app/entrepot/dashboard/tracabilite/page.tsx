@@ -10,10 +10,11 @@ import {
   inputCls,
   useBanner,
   useFormat,
+  useUnitCodeLabels,
 } from '@/components/entrepot/common';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import type { TerrainKey } from '@/lib/i18n/terrain';
-import { friendlyRpcError, unitCodeEventLabel, unitCodeStatusLabel } from '@/lib/unitCodes/helpers';
+import { friendlyRpcError } from '@/lib/unitCodes/helpers';
 import { traceUnitCode, type TraceUnit } from '@/lib/services/unitCodesService';
 type Row = {
   movement_id: string;
@@ -29,6 +30,7 @@ export default function TracabilitePage() {
   const { current } = useWarehouse();
   const { t } = useLanguage();
   const { dateFr, num } = useFormat();
+  const { statusLabel, eventLabel } = useUnitCodeLabels();
   const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
     Object.entries(vars).reduce(
       (text, [name, value]) => text.replace(`{${name}}`, String(value)),
@@ -87,7 +89,7 @@ export default function TracabilitePage() {
           <div key={u.unit_code_id} className="mt-4 rounded-xl border border-white/10 p-3 text-sm">
             <p className="font-mono font-semibold">{u.code}</p>
             <p className="text-slate-300">
-              {u.article_code} · {u.article_name} — {unitCodeStatusLabel(u.status)}
+              {u.article_code} · {u.article_name} — {statusLabel(u.status)}
             </p>
             <p className="text-slate-400">
               {fill('we.agencyPros', { a: u.warehouse_name ?? '—', b: u.prospecteur_name ?? '—' })}
@@ -95,7 +97,7 @@ export default function TracabilitePage() {
             <ul className="mt-2 space-y-1">
               {u.events.map((ev, i) => (
                 <li key={i}>
-                  {dateFr(ev.created_at)} — {unitCodeEventLabel(ev.event_type)}
+                  {dateFr(ev.created_at)} — {eventLabel(ev.event_type)}
                 </li>
               ))}
             </ul>
