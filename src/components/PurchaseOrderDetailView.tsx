@@ -3,6 +3,9 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle, Package, RefreshCw, Wallet, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
+import { usePurchaseLabels } from '@/lib/purchases/useLabels';
 import { getAdminOrganization } from '@/lib/auth/admin-org';
 import {
   cancelPurchaseOrder,
@@ -13,14 +16,11 @@ import {
 } from '@/lib/services/purchasesService';
 import {
   PAYMENT_METHODS,
-  PAYMENT_STATE_LABELS,
   canCancelOrder,
   canPay,
   canReceive,
   friendlyDbError,
-  orderStatusLabel,
   paidTotal,
-  paymentMethodLabel,
   paymentState,
   receiptProgress,
   receivedByArticle,
@@ -29,7 +29,7 @@ import {
   validatePaymentAmount,
   validateReceiptInputs,
 } from '@/lib/purchases/helpers';
-import { formatDateFr, formatXof } from '@/lib/relances/helpers';
+import { toNumber } from '@/lib/relances/helpers';
 import { inputClass, labelClass } from '@/lib/ui/forms';
 import Modal from '@/components/ui/Modal';
 import MetricCard from '@/components/ui/MetricCard';
@@ -50,6 +50,23 @@ const btnGhost =
   'px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white disabled:opacity-50';
 
 export default function PurchaseOrderDetailView({ orderId }: { orderId: string }) {
+  const { t, locale } = useLanguage();
+  const labels = usePurchaseLabels();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const formatXof = (value: unknown) =>
+    `${new Intl.NumberFormat(locale).format(Math.round(toNumber(value)))} XOF`;
+  const formatDateFr = (iso: string | null | undefined) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? '');
+    return m
+      ? new Intl.DateTimeFormat(locale, { timeZone: 'UTC' }).format(
+          new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])))
+        )
+      : '—';
+  };
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [detail, setDetail] = useState<OrderDetail | null>(null);
@@ -71,12 +88,12 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
     setError('');
     const { orgId, error: guardError } = await getAdminOrganization();
     if (!orgId) {
-      setError(guardError ?? 'Accès impossible.');
+      setError(guardError ?? 'bz.puNoAccess');
       setLoading(false);
       return;
     }
     const res = await fetchOrderDetail(orderId);
-    if (res.error || !res.data) setError(res.error ?? 'Commande introuvable.');
+    if (res.error || !res.data) setError(res.error ?? 'bz.pdNotFound');
     setDetail(res.data);
     setLoading(false);
   }, [orderId]);
@@ -126,17 +143,22 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
     if (!detail || !computed || busy) return;
     const v = validateReceiptInputs(computed.remaining, receiveInputs);
     if (v.error) {
-      setModalError(v.error);
+      setModalError(labels.helperError(v.error));
       return;
     }
     setBusy(true);
     const res = await receivePurchaseOrder(detail.id, v.items, receiveNotes);
     setBusy(false);
     if (res.error) {
-      setModalError(friendlyDbError(res.error, computed.names));
+      setModalError(
+        friendlyDbError(res.error, { ...computed.names }).replace(
+          /« cet article »|cet article/g,
+          t('bz.pdThisItem')
+        )
+      );
       return;
     }
-    toast.success(`Réception ${res.receiptNumber ?? ''} enregistrée : le stock a été mis à jour.`);
+    toast.success(fill('bz.pdReceived', { n: res.receiptNumber ?? '' }));
     setReceiveOpen(false);
     void load();
   }
@@ -155,7 +177,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
     if (!detail || !computed || busy) return;
     const v = validatePaymentAmount(payAmount, computed.toPay);
     if (v.error) {
-      setModalError(v.error);
+      setModalError(labels.helperError(v.error));
       return;
     }
     setBusy(true);
@@ -165,9 +187,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       setModalError(res.error);
       return;
     }
-    toast.success(
-      res.remaining === 0 ? 'Paiement enregistré : la commande est soldée.' : 'Paiement enregistré.'
-    );
+    toast.success(res.remaining === 0 ? t('bz.pdPaySettled') : t('bz.pdPaid'));
     setPayOpen(false);
     void load();
   }
@@ -181,15 +201,19 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       setModalError(res.error);
       return;
     }
-    toast.success('Commande annulée.');
+    toast.success(t('bz.pdCancelled'));
     setCancelOpen(false);
     void load();
   }
 
-  if (loading && !detail) return <LoadingState message="Chargement de la commande…" />;
+  const showError = (s: string) => (s.startsWith('bz.') ? t(s as TerrainKey) : s);
+  if (loading && !detail) return <LoadingState message={t('bz.pdLoading')} />;
   if (error && !detail) {
     return (
-      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+      <ErrorState
+        message={showError(error)}
+        action={{ label: t('bz.fnRetry'), onClick: () => void load() }}
+      />
     );
   }
   if (!detail || !computed) return null;
@@ -205,7 +229,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
         className="inline-flex items-center gap-1.5 text-sm text-[#A0AEC0] hover:text-white"
       >
         <ArrowLeft size={14} />
-        Retour aux achats
+        {t('bz.pdBack')}
       </Link>
 
       <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
@@ -215,13 +239,16 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
             <span
               className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[detail.status] ?? STATUS_CLASSES.closed}`}
             >
-              {orderStatusLabel(detail.status)}
+              {labels.orderStatus(detail.status)}
             </span>
           </div>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {detail.supplier_name} · commandée le {formatDateFr(detail.order_date)}
+            {fill('bz.pdOrderedOn', {
+              s: detail.supplier_name,
+              d: formatDateFr(detail.order_date),
+            })}
             {detail.expected_date
-              ? ` · livraison prévue le ${formatDateFr(detail.expected_date)}`
+              ? fill('bz.pdExpectedOn', { d: formatDateFr(detail.expected_date) })
               : ''}
           </p>
           {detail.notes && (
@@ -232,7 +259,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
           <button
             onClick={() => void load()}
             disabled={loading}
-            aria-label="Actualiser"
+            aria-label={t('bz.fnRefresh')}
             className="p-2.5 rounded-xl btn-outline-gold disabled:opacity-50"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -243,7 +270,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
               className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
             >
               <Package size={14} />
-              Réceptionner
+              {t('bz.pdReceive')}
             </button>
           )}
           {showPay && (
@@ -252,7 +279,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
               className="flex items-center gap-2 btn-outline-gold px-4 py-2.5 rounded-xl text-sm font-semibold"
             >
               <Wallet size={14} />
-              Enregistrer un paiement
+              {t('bz.pdPay')}
             </button>
           )}
           {showCancel && (
@@ -264,7 +291,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-500/10 text-red-300 border border-red-500/30 hover:bg-red-500/20"
             >
               <XCircle size={14} />
-              Annuler
+              {t('bz.pdCancel')}
             </button>
           )}
         </div>
@@ -275,36 +302,36 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
           className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
           role="alert"
         >
-          {error}
+          {showError(error)}
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <MetricCard
-          title="Montant de la commande"
+          title={t('bz.pdMAmount')}
           value={formatXof(detail.total_amount)}
-          subtitle={`${detail.items.length} article(s)`}
+          subtitle={fill('bz.pdItemsCount', { n: detail.items.length })}
           icon={<Wallet size={18} />}
           variant="gold"
         />
         <MetricCard
-          title="Déjà payé"
+          title={t('bz.pdMPaid')}
           value={formatXof(computed.paid)}
-          subtitle={PAYMENT_STATE_LABELS[computed.state]}
+          subtitle={labels.paymentState(computed.state)}
           icon={<CheckCircle size={18} />}
           variant="success"
         />
         <MetricCard
-          title="Reste à payer"
+          title={t('bz.puMToPay')}
           value={formatXof(computed.toPay)}
-          subtitle={computed.toPay > 0 ? 'à régler au fournisseur' : 'rien à régler'}
+          subtitle={computed.toPay > 0 ? t('bz.pdMToPaySub') : t('bz.pdMNothing')}
           icon={<Wallet size={18} />}
           variant={computed.toPay > 0 ? 'warning' : 'success'}
         />
         <MetricCard
-          title="Réception"
+          title={t('bz.pdMReceipt')}
           value={`${computed.progress} %`}
-          subtitle="des quantités commandées"
+          subtitle={t('bz.pdMReceiptSub')}
           icon={<Package size={18} />}
           variant={computed.progress >= 100 ? 'success' : 'default'}
         />
@@ -312,13 +339,20 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
 
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-[#D4AF37]/10">
-          <h2 className="text-sm font-semibold text-white">Articles</h2>
+          <h2 className="text-sm font-semibold text-white">{t('bz.pdItems')}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#D4AF37]/10">
-                {['Article', 'Commandé', 'Reçu', 'Reste', 'Coût unit.', 'Total'].map((h) => (
+                {[
+                  t('bz.pdColItem'),
+                  t('bz.pdColOrdered'),
+                  t('bz.pdColReceived'),
+                  t('bz.pdColRest'),
+                  t('bz.pdColUnit'),
+                  t('bz.pdColTotal'),
+                ].map((h) => (
                   <th
                     key={h}
                     className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
@@ -358,12 +392,10 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-[#D4AF37]/10">
-            <h2 className="text-sm font-semibold text-white">Réceptions</h2>
+            <h2 className="text-sm font-semibold text-white">{t('bz.pdReceipts')}</h2>
           </div>
           {detail.receipts.length === 0 ? (
-            <p className="px-5 py-8 text-sm text-[#A0AEC0] text-center">
-              Aucune réception pour l&apos;instant.
-            </p>
+            <p className="px-5 py-8 text-sm text-[#A0AEC0] text-center">{t('bz.pdNoReceipt')}</p>
           ) : (
             <ul className="divide-y divide-[#D4AF37]/5">
               {detail.receipts.map((r) => (
@@ -373,7 +405,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
                     <p className="text-xs text-[#718096]">
                       {formatDateFr(r.receipt_date)}
                       {r.status !== 'received'
-                        ? ` · ${r.status === 'cancelled' ? 'annulée' : 'brouillon'}`
+                        ? ` · ${r.status === 'cancelled' ? t('bz.pdCancelledLc') : t('bz.pdDraftLc')}`
                         : ''}
                     </p>
                   </div>
@@ -381,7 +413,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
                     {(r.goods_receipt_items ?? [])
                       .map(
                         (i) =>
-                          `${computed.names[i.article_id.toLowerCase()] ?? 'Article'} × ${Number(i.quantity_received)}`
+                          `${computed.names[i.article_id.toLowerCase()] ?? t('bz.puItem')} × ${Number(i.quantity_received)}`
                       )
                       .join(' · ') || '—'}
                   </p>
@@ -396,19 +428,17 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
 
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-[#D4AF37]/10">
-            <h2 className="text-sm font-semibold text-white">Paiements</h2>
+            <h2 className="text-sm font-semibold text-white">{t('bz.pdPayments')}</h2>
           </div>
           {detail.payments.length === 0 ? (
-            <p className="px-5 py-8 text-sm text-[#A0AEC0] text-center">
-              Aucun paiement enregistré.
-            </p>
+            <p className="px-5 py-8 text-sm text-[#A0AEC0] text-center">{t('bz.pdNoPayment')}</p>
           ) : (
             <ul className="divide-y divide-[#D4AF37]/5">
               {detail.payments.map((p) => (
                 <li key={p.id} className="px-5 py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm text-white">
-                      {paymentMethodLabel(p.payment_method)}
+                      {labels.paymentMethod(p.payment_method)}
                       {p.provider_reference ? ` · ${p.provider_reference}` : ''}
                     </p>
                     <p className="text-xs text-[#718096]">
@@ -431,7 +461,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       <Modal
         open={receiveOpen}
         onClose={() => !busy && setReceiveOpen(false)}
-        title="Réceptionner des marchandises"
+        title={t('bz.pdRcvTitle')}
         size="xl"
       >
         <div className="space-y-4">
@@ -443,9 +473,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
               {modalError}
             </div>
           )}
-          <p className="text-sm text-[#A0AEC0]">
-            Saisissez les quantités effectivement reçues. Le stock sera mis à jour immédiatement.
-          </p>
+          <p className="text-sm text-[#A0AEC0]">{t('bz.pdRcvIntro')}</p>
           <div className="space-y-2">
             {detail.items.map((it) => {
               const rest = computed.remaining[it.article_id] ?? 0;
@@ -453,7 +481,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
                 <div key={it.id} className="grid grid-cols-12 gap-2 items-center">
                   <div className="col-span-12 sm:col-span-7">
                     <p className="text-sm text-white">{it.article_name}</p>
-                    <p className="text-xs text-[#718096]">Reste à recevoir : {rest}</p>
+                    <p className="text-xs text-[#718096]">{fill('bz.pdRestToRecv', { n: rest })}</p>
                   </div>
                   <input
                     type="number"
@@ -466,7 +494,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
                       setReceiveInputs((prev) => ({ ...prev, [it.article_id]: e.target.value }))
                     }
                     disabled={rest <= 0}
-                    aria-label={`Quantité reçue pour ${it.article_name}`}
+                    aria-label={fill('bz.pdQtyRecvFor', { a: it.article_name })}
                     placeholder="0"
                     className={`${inputClass} col-span-12 sm:col-span-5 disabled:opacity-40`}
                   />
@@ -475,11 +503,11 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
             })}
           </div>
           <button onClick={receiveAll} className="text-sm text-[#D4AF37] hover:underline">
-            Tout recevoir
+            {t('bz.pdRecvAll')}
           </button>
           <div>
             <label className={labelClass} htmlFor="rcv-notes">
-              Notes
+              {t('bz.pdNotes')}
             </label>
             <textarea
               id="rcv-notes"
@@ -492,14 +520,14 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button onClick={() => setReceiveOpen(false)} disabled={busy} className={btnGhost}>
-              Annuler
+              {t('bz.pdCancel')}
             </button>
             <button
               onClick={() => void handleReceive()}
               disabled={busy}
               className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
             >
-              {busy ? 'Enregistrement…' : 'Valider la réception'}
+              {busy ? t('bz.pdSaving') : t('bz.pdValidateRcv')}
             </button>
           </div>
         </div>
@@ -509,7 +537,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       <Modal
         open={payOpen}
         onClose={() => !busy && setPayOpen(false)}
-        title="Enregistrer un paiement"
+        title={t('bz.pdPay')}
         size="md"
       >
         <div className="space-y-4">
@@ -522,12 +550,12 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
             </div>
           )}
           <p className="text-sm text-[#A0AEC0]">
-            Reste à payer :{' '}
+            {t('bz.pdRestToPay')}{' '}
             <span className="text-white font-semibold">{formatXof(computed.toPay)}</span>
           </p>
           <div>
             <label className={labelClass} htmlFor="pay-amount">
-              Montant (XOF) *
+              {t('bz.pdAmount')}
             </label>
             <input
               id="pay-amount"
@@ -542,7 +570,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
           </div>
           <div>
             <label className={labelClass} htmlFor="pay-method">
-              Mode de paiement
+              {t('bz.pdMethod')}
             </label>
             <select
               id="pay-method"
@@ -552,14 +580,14 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
             >
               {PAYMENT_METHODS.map((m) => (
                 <option key={m.value} value={m.value}>
-                  {m.label}
+                  {labels.paymentMethod(m.value)}
                 </option>
               ))}
             </select>
           </div>
           <div>
             <label className={labelClass} htmlFor="pay-ref">
-              Référence (facultatif)
+              {t('bz.pdRef')}
             </label>
             <input
               id="pay-ref"
@@ -571,7 +599,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
           </div>
           <div>
             <label className={labelClass} htmlFor="pay-notes">
-              Notes
+              {t('bz.pdNotes')}
             </label>
             <textarea
               id="pay-notes"
@@ -584,14 +612,14 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button onClick={() => setPayOpen(false)} disabled={busy} className={btnGhost}>
-              Annuler
+              {t('bz.pdCancel')}
             </button>
             <button
               onClick={() => void handlePay()}
               disabled={busy}
               className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
             >
-              {busy ? 'Enregistrement…' : 'Enregistrer'}
+              {busy ? t('bz.pdSaving') : t('bz.pdSave')}
             </button>
           </div>
         </div>
@@ -601,7 +629,7 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
       <Modal
         open={cancelOpen}
         onClose={() => !busy && setCancelOpen(false)}
-        title="Annuler la commande"
+        title={t('bz.pdCancelTitle')}
         size="sm"
       >
         <div className="space-y-4">
@@ -614,20 +642,20 @@ export default function PurchaseOrderDetailView({ orderId }: { orderId: string }
             </div>
           )}
           <p className="text-sm text-[#A0AEC0]">
-            Annuler la commande{' '}
-            <span className="text-white font-semibold">{detail.order_number}</span> ? Cette action
-            est impossible si des marchandises ont déjà été reçues ou des paiements enregistrés.
+            {t('bz.pdCancelQ1')}{' '}
+            <span className="text-white font-semibold">{detail.order_number}</span>
+            {t('bz.pdCancelQ2')}
           </p>
           <div className="flex justify-end gap-2 pt-2">
             <button onClick={() => setCancelOpen(false)} disabled={busy} className={btnGhost}>
-              Conserver
+              {t('bz.pdKeep')}
             </button>
             <button
               onClick={() => void handleCancel()}
               disabled={busy}
               className="px-5 py-2.5 rounded-xl text-sm font-bold bg-red-500/80 text-white hover:bg-red-500 disabled:opacity-50"
             >
-              {busy ? 'Annulation…' : 'Annuler la commande'}
+              {busy ? t('bz.pdCancelling') : t('bz.pdCancelTitle')}
             </button>
           </div>
         </div>

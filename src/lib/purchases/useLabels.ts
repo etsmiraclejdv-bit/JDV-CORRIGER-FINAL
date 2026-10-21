@@ -24,6 +24,19 @@ export function usePurchaseLabels() {
       SUPPLIER_STATUSES.includes(s) ? t(('bz.puSs.' + s) as TerrainKey) : s,
     paymentMethod: (v: string | null | undefined) =>
       v && PAYMENT_METHODS.includes(v) ? t(('bz.puPm.' + v) as TerrainKey) : v || '—',
+    paymentState: (s: string) =>
+      ['unpaid', 'partial', 'paid'].includes(s) ? t(('bz.pdPs.' + s) as TerrainKey) : s,
+    /** Traduit les messages d'erreur français renvoyés par les fonctions pures de `helpers.ts`. */
+    helperError: (message: string) => {
+      const known: Record<string, TerrainKey> = {
+        'Une quantité saisie est invalide.': 'bz.pdRcvInvalid',
+        'Une quantité dépasse le reste à recevoir pour cet article.': 'bz.pdRcvOver',
+        'Indiquez au moins une quantité reçue.': 'we.aNeedQty',
+        'Saisissez un montant supérieur à 0.': 'bz.pdPayAmount',
+        'Le montant dépasse le reste à payer.': 'bz.pdPayOver',
+      };
+      return known[message] ? t(known[message]) : message;
+    },
     /** Même logique que `validateOrderLines`, mais avec des messages traduits. */
     lineError: (lines: OrderLineInput[]): string | null => {
       if (lines.length === 0) return t('bz.puLineNone');
