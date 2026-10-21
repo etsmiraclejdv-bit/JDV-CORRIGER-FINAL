@@ -4,7 +4,9 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
-import { Banner, Card, PageTitle, Stat, money, num, useBanner } from '@/components/entrepot/common';
+import { Banner, Card, PageTitle, Stat, useBanner, useFormat } from '@/components/entrepot/common';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type StockRow = {
   article_id: string;
@@ -29,6 +31,13 @@ type Report = {
 
 export default function EntrepotOverviewPage() {
   const { current } = useWarehouse();
+  const { t } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const { money, num } = useFormat();
   const { banner, fail } = useBanner();
   const [stock, setStock] = useState<StockRow[]>([]);
   const [prosp, setProsp] = useState<Prosp[]>([]);
@@ -64,38 +73,34 @@ export default function EntrepotOverviewPage() {
 
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle title="Tableau de bord" subtitle="Situation de votre entrepôt en temps réel." />
+      <PageTitle title={t('dashboard')} subtitle={t('we.dashSub')} />
       <Banner state={banner} />
       {loading ? (
-        <p className="text-slate-400 text-sm">Chargement…</p>
+        <p className="text-slate-400 text-sm">{t('we.loading')}</p>
       ) : (
         <>
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-            <Stat label="Produits en stock" value={num(inStock)} />
+            <Stat label={t('we.sInStock')} value={num(inStock)} />
             <Stat
-              label="Alertes stock bas"
+              label={t('we.sLowAlerts')}
               value={num(low.length)}
               tone={low.length ? 'warn' : 'ok'}
             />
-            <Stat label="Prospecteurs affectés" value={num(prosp.length)} />
+            <Stat label={t('we.sPros')} value={num(prosp.length)} />
+            <Stat label={t('we.sLateLots')} value={num(overdue)} tone={overdue ? 'warn' : 'ok'} />
+            <Stat label={t('we.sEntries')} value={`+${num(entries)}`} />
+            <Stat label={t('we.sExits')} value={`−${num(exits)}`} />
+            <Stat label={t('we.sSales')} value={money(report?.sales_total?.amount)} />
             <Stat
-              label="Lots en retard de retour"
-              value={num(overdue)}
-              tone={overdue ? 'warn' : 'ok'}
-            />
-            <Stat label="Entrées du jour" value={`+${num(entries)}`} />
-            <Stat label="Sorties du jour" value={`−${num(exits)}`} />
-            <Stat label="Ventes du jour" value={money(report?.sales_total?.amount)} />
-            <Stat
-              label="Appels à traiter"
+              label={t('we.sCalls')}
               value={num(report?.tickets?.still_open)}
               tone={report?.tickets?.still_open ? 'warn' : 'ok'}
             />
           </div>
           <div className="grid gap-6 lg:grid-cols-2">
-            <Card title="Produits à réapprovisionner">
+            <Card title={t('we.restock')}>
               {low.length === 0 ? (
-                <p className="text-sm text-slate-400">Aucun produit sous son seuil minimum.</p>
+                <p className="text-sm text-slate-400">{t('we.noneBelow')}</p>
               ) : (
                 <ul className="space-y-2 text-sm">
                   {low.map((s) => (
@@ -105,7 +110,7 @@ export default function EntrepotOverviewPage() {
                     >
                       <span>{s.article_name}</span>
                       <span className="text-red-400">
-                        {num(s.quantity)} / seuil {num(s.minimum_quantity)}
+                        {fill('we.thresholdOf', { a: num(s.quantity), b: num(s.minimum_quantity) })}
                       </span>
                     </li>
                   ))}
@@ -115,12 +120,12 @@ export default function EntrepotOverviewPage() {
                 href="/entrepot/dashboard/approvisionnement"
                 className="inline-block mt-4 text-sm text-[#D4AF37] underline"
               >
-                Demander un approvisionnement →
+                {t('we.askSupply')}
               </Link>
             </Card>
-            <Card title="Prospecteurs à surveiller">
+            <Card title={t('we.watchPros')}>
               {prosp.filter((p) => Number(p.overdue_count) > 0).length === 0 ? (
-                <p className="text-sm text-slate-400">Aucun lot en retard de retour.</p>
+                <p className="text-sm text-slate-400">{t('we.noLateLots')}</p>
               ) : (
                 <ul className="space-y-2 text-sm">
                   {prosp
@@ -132,7 +137,10 @@ export default function EntrepotOverviewPage() {
                       >
                         <span>{p.full_name ?? '—'}</span>
                         <span className="text-red-400">
-                          {num(p.overdue_count)} lot(s) · {num(p.to_return_units)} unité(s)
+                          {fill('we.lotsUnits', {
+                            a: num(p.overdue_count),
+                            b: num(p.to_return_units),
+                          })}
                         </span>
                       </li>
                     ))}
@@ -142,7 +150,7 @@ export default function EntrepotOverviewPage() {
                 href="/entrepot/dashboard/prospecteurs"
                 className="inline-block mt-4 text-sm text-[#D4AF37] underline"
               >
-                Gérer les prospecteurs et les retours →
+                {t('we.managePros')}
               </Link>
             </Card>
           </div>
