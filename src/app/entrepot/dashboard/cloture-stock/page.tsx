@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
-import { Card, PageTitle, num } from '@/components/entrepot/common';
+import { Card, PageTitle, useFormat } from '@/components/entrepot/common';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type Summary = {
   opening_units: number;
@@ -37,6 +38,8 @@ type Closure = {
 
 export default function ClotureStockPage() {
   const { current } = useWarehouse();
+  const { t } = useLanguage();
+  const { num } = useFormat();
   const [subs, setSubs] = useState<Sub[]>([]);
   const [subId, setSubId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
@@ -86,11 +89,11 @@ export default function ClotureStockPage() {
           article_id: x.article_id,
           quantity: Number(x.quantity || 0),
           article_code: x.articles?.code || '—',
-          article_name: x.articles?.name || 'Article',
+          article_name: x.articles?.name || t('we.cArticleFallback'),
         }))
       );
     setLoading(false);
-  }, [current, subId, date]);
+  }, [current, subId, date, t]);
   useEffect(() => {
     if (!current) return;
     supabase
@@ -127,7 +130,7 @@ export default function ClotureStockPage() {
       p_notes: 'Clôture journalière depuis le module sous-entrepôt',
     });
     if (result.error) setError(result.error.message);
-    else setSuccess('Journée du sous-entrepôt clôturée et calculs enregistrés.');
+    else setSuccess(t('we.kDone'));
     setClosing(false);
     await load();
   }
@@ -135,10 +138,7 @@ export default function ClotureStockPage() {
   const selected = subs.find((s) => s.id === subId);
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle
-        title="Clôture journalière du stock"
-        subtitle="Inventaire, calcul automatique et clôture indépendante de chaque sous-entrepôt."
-      >
+      <PageTitle title={t('we.kTitle')} subtitle={t('we.kSub')}>
         <div className="flex flex-wrap gap-2">
           <select
             value={subId}
@@ -148,7 +148,7 @@ export default function ClotureStockPage() {
             }}
             className="rounded-lg border border-white/10 bg-[#08152f] px-3 py-2 text-sm"
           >
-            <option value="">Choisir un sous-entrepôt</option>
+            <option value="">{t('we.kChoose')}</option>
             {subs.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.code} — {s.name}
@@ -165,9 +165,7 @@ export default function ClotureStockPage() {
       </PageTitle>
       {!subId && (
         <Card>
-          <p className="text-slate-400">
-            Créez ou sélectionnez un sous-entrepôt pour lancer son inventaire et sa clôture.
-          </p>
+          <p className="text-slate-400">{t('we.kNoSub')}</p>
         </Card>
       )}
       {error && (
@@ -183,53 +181,51 @@ export default function ClotureStockPage() {
       {subId && (
         <>
           <Card>
-            <p className="text-xs uppercase text-[#D4AF37]">Sous-entrepôt sélectionné</p>
+            <p className="text-xs uppercase text-[#D4AF37]">{t('we.kSelected')}</p>
             <p className="text-xl font-bold">
               {selected?.code} — {selected?.name}
             </p>
           </Card>
           <div className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
             <Card>
-              <p className="text-xs text-slate-500">Début</p>
+              <p className="text-xs text-slate-500">{t('we.kStart')}</p>
               <p className="text-xl font-bold">{num(summary?.opening_units ?? 0)}</p>
             </Card>
             <Card>
-              <p className="text-xs text-slate-500">Entrées</p>
+              <p className="text-xs text-slate-500">{t('we.jEntries')}</p>
               <p className="text-xl font-bold text-emerald-400">
                 +{num(summary?.total_entries ?? 0)}
               </p>
             </Card>
             <Card>
-              <p className="text-xs text-slate-500">Sorties</p>
+              <p className="text-xs text-slate-500">{t('we.jExits')}</p>
               <p className="text-xl font-bold text-red-400">-{num(summary?.total_exits ?? 0)}</p>
             </Card>
             <Card>
-              <p className="text-xs text-slate-500">Stock final</p>
+              <p className="text-xs text-slate-500">{t('we.jThFinal')}</p>
               <p className="text-xl font-bold">{num(summary?.closing_units ?? 0)}</p>
             </Card>
             <Card>
-              <p className="text-xs text-slate-500">Valeur</p>
+              <p className="text-xs text-slate-500">{t('we.kValue')}</p>
               <p className="text-xl font-bold">{num(summary?.theoretical_value ?? 0)} FCFA</p>
             </Card>
             <Card>
-              <p className="text-xs text-slate-500">Mouvements</p>
+              <p className="text-xs text-slate-500">{t('we.kMoves')}</p>
               <p className="text-xl font-bold">{num(summary?.movement_count ?? 0)}</p>
             </Card>
           </div>
           <Card>
-            <h2 className="text-xl font-semibold">Inventaire physique</h2>
-            <p className="mt-1 text-sm text-slate-400">
-              Comptage physique du sous-entrepôt. L&apos;écart est calculé automatiquement.
-            </p>
+            <h2 className="text-xl font-semibold">{t('we.kPhysTitle')}</h2>
+            <p className="mt-1 text-sm text-slate-400">{t('we.kPhysSub')}</p>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[700px] text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-left text-slate-400">
-                    <th className="p-2">Code</th>
-                    <th className="p-2">Article</th>
-                    <th className="p-2 text-right">Théorique</th>
-                    <th className="p-2 text-right">Physique</th>
-                    <th className="p-2 text-right">Écart</th>
+                    <th className="p-2">{t('we.cThCode')}</th>
+                    <th className="p-2">{t('we.cThItem')}</th>
+                    <th className="p-2 text-right">{t('we.kTheo')}</th>
+                    <th className="p-2 text-right">{t('we.kPhys')}</th>
+                    <th className="p-2 text-right">{t('we.kVar')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -274,35 +270,32 @@ export default function ClotureStockPage() {
           <Card>
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <h2 className="text-xl font-semibold">Contrôle de la journée</h2>
-                <p className="text-sm text-slate-400">
-                  Après clôture, toute correction doit passer par un mouvement d&apos;ajustement
-                  contrôlé.
-                </p>
+                <h2 className="text-xl font-semibold">{t('we.kControl')}</h2>
+                <p className="text-sm text-slate-400">{t('we.kAfter')}</p>
               </div>
               <button
                 disabled={loading || closing || !summary}
                 onClick={() => void closeDay()}
                 className="rounded-xl bg-[#D4AF37] px-5 py-3 font-semibold text-[#07142c] disabled:opacity-50"
               >
-                {closing ? 'Clôture…' : 'Clôturer le sous-entrepôt'}
+                {closing ? t('we.closing') : t('we.kCloseSub')}
               </button>
             </div>
           </Card>
           <Card>
-            <h2 className="text-xl font-semibold">Historique des clôtures</h2>
+            <h2 className="text-xl font-semibold">{t('we.kHistory')}</h2>
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[900px] text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-left text-slate-400">
-                    <th className="p-2">Date</th>
-                    <th className="p-2">Statut</th>
-                    <th className="p-2 text-right">Début</th>
-                    <th className="p-2 text-right">Entrées</th>
-                    <th className="p-2 text-right">Sorties</th>
-                    <th className="p-2 text-right">Final</th>
-                    <th className="p-2 text-right">Écart</th>
-                    <th className="p-2 text-right">Valeur</th>
+                    <th className="p-2">{t('we.thDate')}</th>
+                    <th className="p-2">{t('we.cThStatus')}</th>
+                    <th className="p-2 text-right">{t('we.kStart')}</th>
+                    <th className="p-2 text-right">{t('we.jEntries')}</th>
+                    <th className="p-2 text-right">{t('we.jExits')}</th>
+                    <th className="p-2 text-right">{t('we.kFinal')}</th>
+                    <th className="p-2 text-right">{t('we.kVar')}</th>
+                    <th className="p-2 text-right">{t('we.kValue')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -310,7 +303,7 @@ export default function ClotureStockPage() {
                     <tr key={c.id} className="border-b border-white/5">
                       <td className="p-2">{c.exercise_date}</td>
                       <td className="p-2 text-emerald-400">
-                        {c.status === 'closed' ? 'Clôturée' : c.status}
+                        {c.status === 'closed' ? t('we.kClosed') : c.status}
                       </td>
                       <td className="p-2 text-right">{num(c.opening_units)}</td>
                       <td className="p-2 text-right text-emerald-400">+{num(c.total_entries)}</td>
