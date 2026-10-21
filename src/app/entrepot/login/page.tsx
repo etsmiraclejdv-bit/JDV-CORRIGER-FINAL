@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Warehouse } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function EntrepotLoginPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,14 +24,14 @@ export default function EntrepotLoginPage() {
     });
     if (signInError) {
       setLoading(false);
-      setError('Identifiants incorrects.');
+      setError(t('auth.invalid'));
       return;
     }
     const { data, error: rpcError } = await supabase.rpc('jdvcrm_my_warehouses_v1');
     if (rpcError || !data || (data as unknown[]).length === 0) {
       await supabase.auth.signOut();
       setLoading(false);
-      setError("Ce compte n'est rattaché à aucune agence active. Contactez votre administrateur.");
+      setError(t('we.noAgency'));
       return;
     }
     router.replace('/entrepot/dashboard');
@@ -46,10 +48,10 @@ export default function EntrepotLoginPage() {
           <h1 className="mt-3 text-2xl font-bold">
             JDV <span className="text-[#D4AF37]">Agence</span>
           </h1>
-          <p className="text-slate-400 text-sm mt-1">Espace du chef d&apos;agence</p>
+          <p className="text-slate-400 text-sm mt-1">{t('we.spaceTitle')}</p>
         </div>
         <label className="block text-sm">
-          Adresse e-mail
+          {t('auth.emailAddress')}
           <input
             type="email"
             required
@@ -60,7 +62,7 @@ export default function EntrepotLoginPage() {
           />
         </label>
         <label className="block text-sm">
-          Mot de passe
+          {t('auth.password')}
           <input
             type="password"
             required
@@ -79,7 +81,7 @@ export default function EntrepotLoginPage() {
           disabled={loading}
           className="w-full rounded-lg bg-[#D4AF37] text-[#08152f] font-semibold py-2.5 disabled:opacity-50"
         >
-          {loading ? 'Connexion…' : 'Se connecter'}
+          {loading ? t('auth.signingIn') : t('auth.signIn')}
         </button>
       </form>
     </main>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 export const dateFr = (d: string | null | undefined) =>
   d ? new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—';
 export const dayFr = (d: string | null | undefined) =>
@@ -9,6 +10,20 @@ export const money = (n: number | string | null | undefined) =>
   new Intl.NumberFormat('fr-FR').format(Math.round(Number(n) || 0)) + ' FCFA';
 export const num = (n: number | string | null | undefined) =>
   new Intl.NumberFormat('fr-FR').format(Number(n) || 0);
+/** Formats selon la langue choisie (dates, nombres, montants). */
+export function useFormat() {
+  const { locale } = useLanguage();
+  return {
+    dateFr: (d: string | null | undefined) =>
+      d ? new Date(d).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' }) : '—',
+    dayFr: (d: string | null | undefined) =>
+      d ? new Date(d).toLocaleDateString(locale, { dateStyle: 'medium' }) : '—',
+    money: (n: number | string | null | undefined) =>
+      new Intl.NumberFormat(locale).format(Math.round(Number(n) || 0)) + ' FCFA',
+    num: (n: number | string | null | undefined) =>
+      new Intl.NumberFormat(locale).format(Number(n) || 0),
+  };
+}
 export type BannerState = { tone: 'ok' | 'error'; text: string } | null;
 export function useBanner() {
   const [banner, setBanner] = useState<BannerState>(null);

@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
 import { Card, PageTitle } from '@/components/entrepot/common';
 
@@ -15,6 +16,7 @@ type Row = {
 
 export default function AppelsPage() {
   const { current } = useWarehouse();
+  const { t } = useLanguage();
   const [data, setData] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const load = useCallback(async () => {
@@ -42,13 +44,10 @@ export default function AppelsPage() {
   }, [load]);
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle
-        title="Appels & plaintes"
-        subtitle="Suivi des demandes clients et appels à traiter."
-      />
+      <PageTitle title={t('callsComplaints')} subtitle={t('we.callsSub')} />
       <Card>
         {loading ? (
-          <p className="text-slate-400">Chargement…</p>
+          <p className="text-slate-400">{t('we.loading')}</p>
         ) : (
           <div className="space-y-2">
             {data.map((ticket) => (
@@ -59,7 +58,7 @@ export default function AppelsPage() {
                 <span className="text-slate-400">{ticket.status}</span>
               </div>
             ))}
-            {!data.length && <p className="text-slate-500">Aucun appel.</p>}
+            {!data.length && <p className="text-slate-500">{t('we.noCalls')}</p>}
           </div>
         )}
       </Card>

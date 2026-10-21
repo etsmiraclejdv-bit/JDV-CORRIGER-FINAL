@@ -1,8 +1,9 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
-import { Card, PageTitle, num } from '@/components/entrepot/common';
+import { Card, PageTitle, useFormat } from '@/components/entrepot/common';
 type Row = {
   prospecteur_id: string;
   full_name: string | null;
@@ -11,6 +12,8 @@ type Row = {
 };
 export default function ProspecteursPage() {
   const { current } = useWarehouse();
+  const { t } = useLanguage();
+  const { num } = useFormat();
   const [data, setData] = useState<Row[]>([]);
   const load = useCallback(async () => {
     if (!current) return;
@@ -24,18 +27,15 @@ export default function ProspecteursPage() {
   }, [load]);
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle
-        title="Prospecteurs & retours"
-        subtitle="Lots détenus, retards et retours à contrôler."
-      />
+      <PageTitle title={t('we.prosTitle')} subtitle={t('we.prosSub')} />
       <Card>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-slate-400 border-b border-white/10">
-                <th className="p-2">Prospecteur</th>
-                <th className="p-2">Retards</th>
-                <th className="p-2">Unités à retourner</th>
+                <th className="p-2">{t('we.thPros')}</th>
+                <th className="p-2">{t('we.thOverdue')}</th>
+                <th className="p-2">{t('we.thToReturn')}</th>
               </tr>
             </thead>
             <tbody>
