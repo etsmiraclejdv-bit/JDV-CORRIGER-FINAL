@@ -16,13 +16,14 @@ import {
 } from '@/lib/services/purchasesService';
 import {
   lineTotal,
-  orderStatusLabel,
   orderTotal,
   toOrderItemsPayload,
-  validateOrderLines,
   type OrderLineInput,
 } from '@/lib/purchases/helpers';
-import { formatDateFr, formatXof } from '@/lib/relances/helpers';
+import { toNumber } from '@/lib/relances/helpers';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
+import { usePurchaseLabels } from '@/lib/purchases/useLabels';
 import { inputClass, labelClass } from '@/lib/ui/forms';
 import Modal from '@/components/ui/Modal';
 import MetricCard from '@/components/ui/MetricCard';
@@ -30,11 +31,11 @@ import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
 
 type Filter = 'all' | 'open' | 'received' | 'cancelled';
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: 'all', label: 'Toutes' },
-  { id: 'open', label: 'En cours' },
-  { id: 'received', label: 'Reçues' },
-  { id: 'cancelled', label: 'Annulées' },
+const FILTERS: { id: Filter; label: TerrainKey }[] = [
+  { id: 'all', label: 'bz.puAll' },
+  { id: 'open', label: 'bz.puOpen' },
+  { id: 'received', label: 'bz.puRecv' },
+  { id: 'cancelled', label: 'bz.puCanc' },
 ];
 const OPEN_STATUSES = ['draft', 'sent', 'confirmed', 'partial'];
 
@@ -58,6 +59,23 @@ const today = () => {
 };
 
 export default function PurchaseOrdersView() {
+  const { t, locale } = useLanguage();
+  const labels = usePurchaseLabels();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const formatXof = (value: unknown) =>
+    `${new Intl.NumberFormat(locale).format(Math.round(toNumber(value)))} XOF`;
+  const formatDateFr = (iso: string | null | undefined) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? '');
+    return m
+      ? new Intl.DateTimeFormat(locale, { timeZone: 'UTC' }).format(
+          new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])))
+        )
+      : '—';
+  };
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -81,7 +99,7 @@ export default function PurchaseOrdersView() {
     setError('');
     const { orgId: org, error: guardError } = await getAdminOrganization();
     if (!org) {
-      setError(guardError ?? 'Accès impossible.');
+      setError(guardError ?? 'bz.puNoAccess');
       setLoading(false);
       return;
     }
@@ -143,16 +161,16 @@ export default function PurchaseOrdersView() {
   async function handleCreate() {
     if (saving) return;
     if (!supplierId) {
-      setFormError('Choisissez un fournisseur.');
+      setFormError(t('bz.puPickSupplier'));
       return;
     }
-    const lineError = validateOrderLines(lines);
+    const lineError = labels.lineError(lines);
     if (lineError) {
       setFormError(lineError);
       return;
     }
     if (expected && expected < today()) {
-      setFormError('La date de livraison prévue ne peut pas être dans le passé.');
+      setFormError(t('bz.puPastDate'));
       return;
     }
     setSaving(true);
@@ -166,17 +184,20 @@ export default function PurchaseOrdersView() {
       setFormError(err);
       return;
     }
-    toast.success(`Commande ${orderNumber ?? ''} créée.`);
+    toast.success(fill('bz.puCreated', { n: orderNumber ?? '' }));
     setOpen(false);
     if (orderId) router.push(`/business/dashboard/achats/${orderId}`);
     else void load();
   }
 
-  if (loading && orders.length === 0 && !error)
-    return <LoadingState message="Chargement des commandes…" />;
+  const showError = (s: string) => (s.startsWith('bz.') ? t(s as TerrainKey) : s);
+  if (loading && orders.length === 0 && !error) return <LoadingState message={t('bz.puLoading')} />;
   if (error && orders.length === 0 && suppliers.length === 0) {
     return (
-      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+      <ErrorState
+        message={showError(error)}
+        action={{ label: t('bz.fnRetry'), onClick: () => void load() }}
+      />
     );
   }
 
@@ -186,27 +207,25 @@ export default function PurchaseOrdersView() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Achats</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">
-            Commandes auprès de vos fournisseurs, réceptions et paiements
-          </p>
+          <h1 className="text-2xl font-bold text-white">{t('bz.puTitle')}</h1>
+          <p className="text-sm text-[#A0AEC0] mt-1">{t('bz.puSub')}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => void load()}
             disabled={loading}
-            aria-label="Actualiser la liste"
+            aria-label={t('bz.puRefreshAria')}
             className="flex items-center gap-2 btn-outline-gold px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            Actualiser
+            {t('bz.fnRefresh')}
           </button>
           <button
             onClick={openCreate}
             className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
           >
             <Plus size={14} />
-            Nouvelle commande
+            {t('bz.puNew')}
           </button>
         </div>
       </div>
@@ -216,29 +235,29 @@ export default function PurchaseOrdersView() {
           className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
           role="alert"
         >
-          {error}
+          {showError(error)}
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <MetricCard
-          title="Commandes en cours"
+          title={t('bz.puMOpen')}
           value={String(stats.open)}
-          subtitle="à réceptionner ou à solder"
+          subtitle={t('bz.puMOpenSub')}
           icon={<ClipboardList size={18} />}
           variant="default"
         />
         <MetricCard
-          title="Reste à payer"
+          title={t('bz.puMToPay')}
           value={formatXof(stats.toPay)}
-          subtitle="sur les commandes non annulées"
+          subtitle={t('bz.puMToPaySub')}
           icon={<Wallet size={18} />}
           variant={stats.toPay > 0 ? 'warning' : 'success'}
         />
         <MetricCard
-          title="Total commandé"
+          title={t('bz.puMOrdered')}
           value={formatXof(stats.ordered)}
-          subtitle="commandes non annulées"
+          subtitle={t('bz.puMOrderedSub')}
           icon={<ClipboardList size={18} />}
           variant="gold"
         />
@@ -251,12 +270,12 @@ export default function PurchaseOrdersView() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un numéro de commande ou un fournisseur…"
-            aria-label="Rechercher une commande"
+            placeholder={t('bz.puSearchPh')}
+            aria-label={t('bz.puSearchAria')}
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
-        <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrer par statut">
+        <div className="flex flex-wrap gap-2" role="group" aria-label={t('bz.puFilterAria')}>
           {FILTERS.map((f) => (
             <button
               key={f.id}
@@ -268,7 +287,7 @@ export default function PurchaseOrdersView() {
                   : 'bg-[#0F2347] text-[#A0AEC0] border-[#D4AF37]/20 hover:text-white'
               }`}
             >
-              {f.label}
+              {t(f.label)}
             </button>
           ))}
         </div>
@@ -279,12 +298,10 @@ export default function PurchaseOrdersView() {
           <div className="py-16 text-center px-6">
             <ClipboardList size={32} className="mx-auto mb-3 text-[#D4AF37] opacity-60" />
             <p className="text-white text-sm font-semibold mb-1">
-              {orders.length === 0 ? 'Aucune commande' : 'Aucun résultat'}
+              {orders.length === 0 ? t('bz.puNone') : t('bz.puNoResult')}
             </p>
             <p className="text-[#A0AEC0] text-sm">
-              {orders.length === 0
-                ? 'Créez votre première commande fournisseur.'
-                : 'Modifiez la recherche ou le filtre.'}
+              {orders.length === 0 ? t('bz.puCreateFirst') : t('bz.puChangeFilter')}
             </p>
           </div>
         ) : (
@@ -293,13 +310,13 @@ export default function PurchaseOrdersView() {
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
                   {[
-                    'Commande',
-                    'Fournisseur',
-                    'Date',
-                    'Livraison prévue',
-                    'Total',
-                    'Reste à payer',
-                    'Statut',
+                    t('bz.puColOrder'),
+                    t('bz.puColSupplier'),
+                    t('bz.puColDate'),
+                    t('bz.puColExpected'),
+                    t('bz.puColTotal'),
+                    t('bz.puColRest'),
+                    t('bz.puColStatus'),
                     '',
                   ].map((h, i) => (
                     <th
@@ -337,14 +354,14 @@ export default function PurchaseOrdersView() {
                             {formatXof(remaining)}
                           </span>
                         ) : (
-                          <span className="text-[#68D391]">Soldée</span>
+                          <span className="text-[#68D391]">{t('bz.puSettled')}</span>
                         )}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span
                           className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[o.status] ?? STATUS_CLASSES.closed}`}
                         >
-                          {orderStatusLabel(o.status)}
+                          {labels.orderStatus(o.status)}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -352,7 +369,7 @@ export default function PurchaseOrdersView() {
                           href={`/business/dashboard/achats/${o.id}`}
                           className="text-sm text-[#D4AF37] hover:underline whitespace-nowrap"
                         >
-                          Ouvrir
+                          {t('bz.puOpenLink')}
                         </Link>
                       </td>
                     </tr>
@@ -367,7 +384,7 @@ export default function PurchaseOrdersView() {
       <Modal
         open={open}
         onClose={() => !saving && setOpen(false)}
-        title="Nouvelle commande fournisseur"
+        title={t('bz.puModalTitle')}
         size="xl"
       >
         <div className="space-y-4">
@@ -375,18 +392,18 @@ export default function PurchaseOrdersView() {
             <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
               {activeSuppliers.length === 0 && (
                 <p>
-                  Aucun fournisseur actif.{' '}
+                  {t('bz.puNoSupplier')}{' '}
                   <Link href="/business/dashboard/fournisseurs" className="underline">
-                    Ajoutez-en un
+                    {t('bz.puAddOne')}
                   </Link>
                   .
                 </p>
               )}
               {articles.length === 0 && (
                 <p>
-                  Aucun article actif.{' '}
+                  {t('bz.puNoArticle')}{' '}
                   <Link href="/business/dashboard/catalogue" className="underline">
-                    Créez-en dans le catalogue
+                    {t('bz.puCreateInCat')}
                   </Link>
                   .
                 </p>
@@ -404,7 +421,7 @@ export default function PurchaseOrdersView() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="po-supplier">
-                Fournisseur *
+                {t('bz.puSupplierReq')}
               </label>
               <select
                 id="po-supplier"
@@ -412,7 +429,7 @@ export default function PurchaseOrdersView() {
                 onChange={(e) => setSupplierId(e.target.value)}
                 className={inputClass}
               >
-                <option value="">Choisir…</option>
+                <option value="">{t('bz.puChoose')}</option>
                 {activeSuppliers.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.company_name}
@@ -422,7 +439,7 @@ export default function PurchaseOrdersView() {
             </div>
             <div>
               <label className={labelClass} htmlFor="po-expected">
-                Livraison prévue
+                {t('bz.puExpected')}
               </label>
               <input
                 id="po-expected"
@@ -436,17 +453,17 @@ export default function PurchaseOrdersView() {
           </div>
 
           <div>
-            <p className={labelClass}>Articles commandés *</p>
+            <p className={labelClass}>{t('bz.puItemsReq')}</p>
             <div className="space-y-2">
               {lines.map((l) => (
                 <div key={l.key} className="grid grid-cols-12 gap-2 items-center">
                   <select
                     value={l.article_id}
                     onChange={(e) => updateLine(l.key, { article_id: e.target.value })}
-                    aria-label="Article"
+                    aria-label={t('bz.puItem')}
                     className={`${inputClass} col-span-12 sm:col-span-4`}
                   >
-                    <option value="">Article…</option>
+                    <option value="">{t('bz.puItemPh')}</option>
                     {articles.map((a) => (
                       <option key={a.id} value={a.id}>
                         {a.code ? `${a.code} — ${a.name}` : a.name}
@@ -460,8 +477,8 @@ export default function PurchaseOrdersView() {
                     inputMode="decimal"
                     value={l.quantity}
                     onChange={(e) => updateLine(l.key, { quantity: e.target.value })}
-                    aria-label="Quantité"
-                    placeholder="Qté"
+                    aria-label={t('bz.puQty')}
+                    placeholder={t('bz.puQtyPh')}
                     className={`${inputClass} col-span-5 sm:col-span-2`}
                   />
                   <input
@@ -471,8 +488,8 @@ export default function PurchaseOrdersView() {
                     inputMode="decimal"
                     value={l.unit_cost}
                     onChange={(e) => updateLine(l.key, { unit_cost: e.target.value })}
-                    aria-label="Coût unitaire"
-                    placeholder="Coût unit."
+                    aria-label={t('bz.puUnitCost')}
+                    placeholder={t('bz.puUnitCostPh')}
                     className={`${inputClass} col-span-5 sm:col-span-2`}
                   />
                   <p className="sm:col-span-3 text-xs text-right text-[#A0AEC0] hidden sm:block">
@@ -485,7 +502,7 @@ export default function PurchaseOrdersView() {
                       )
                     }
                     disabled={lines.length === 1}
-                    aria-label="Retirer cette ligne"
+                    aria-label={t('bz.puRemoveLine')}
                     className="col-span-2 sm:col-span-1 p-2 rounded-lg bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white disabled:opacity-40 flex justify-center"
                   >
                     <X size={14} />
@@ -506,17 +523,17 @@ export default function PurchaseOrdersView() {
                 className="flex items-center gap-1.5 text-sm text-[#D4AF37] hover:underline disabled:opacity-50"
               >
                 <Plus size={14} />
-                Ajouter un article
+                {t('bz.puAddItem')}
               </button>
               <p className="text-sm text-white font-semibold">
-                Total : {formatXof(orderTotal(lines))}
+                {fill('bz.puTotalLbl', { a: formatXof(orderTotal(lines)) })}
               </p>
             </div>
           </div>
 
           <div>
             <label className={labelClass} htmlFor="po-notes">
-              Notes
+              {t('bz.puNotes')}
             </label>
             <textarea
               id="po-notes"
@@ -534,14 +551,14 @@ export default function PurchaseOrdersView() {
               disabled={saving}
               className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white disabled:opacity-50"
             >
-              Annuler
+              {t('bz.puCancel')}
             </button>
             <button
               onClick={() => void handleCreate()}
               disabled={saving || noPrerequisite}
               className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
             >
-              {saving ? 'Création…' : 'Créer la commande'}
+              {saving ? t('bz.puCreating') : t('bz.puCreate')}
             </button>
           </div>
         </div>
