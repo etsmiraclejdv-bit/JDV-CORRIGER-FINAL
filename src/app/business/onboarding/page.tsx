@@ -12,15 +12,17 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 const docs = [
-  ['identity', 'Pièce d’identité du représentant'],
-  ['rccm', 'RCCM / registre de commerce'],
-  ['ifu', 'IFU / document fiscal'],
-  ['incorporation', 'Acte constitutif / création'],
-  ['statutes', 'Statuts'],
-  ['mandate', 'Mandat / pouvoir si nécessaire'],
-  ['address_proof', 'Justificatif d’adresse'],
+  ['identity', 'bz.oDoc.identity'],
+  ['rccm', 'bz.oDoc.rccm'],
+  ['ifu', 'bz.oDoc.ifu'],
+  ['incorporation', 'bz.oDoc.incorporation'],
+  ['statutes', 'bz.oDoc.statutes'],
+  ['mandate', 'bz.oDoc.mandate'],
+  ['address_proof', 'bz.oDoc.address_proof'],
 ] as const;
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -39,6 +41,14 @@ type ValidationState = {
 
 export default function CompanyOnboardingPage() {
   const router = useRouter();
+  const { t } = useLanguage();
+  // Une valeur « bz.… » est une clé de traduction ; sinon c'est un texte brut venant du serveur.
+  const show = (s: string) => (s.startsWith('bz.') ? t(s as TerrainKey) : s);
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
   const [app, setApp] = useState<any>(null);
   const [files, setFiles] = useState<Record<string, File | null>>({});
   const [validation, setValidation] = useState<ValidationState | null>(null);
@@ -75,16 +85,12 @@ export default function CompanyOnboardingPage() {
           .limit(1)
           .maybeSingle();
         if (queryError) throw queryError;
-        if (!data)
-          throw new Error(
-            'Aucun dossier d’entreprise trouvé. Revenez à l’inscription pour créer votre dossier.'
-          );
+        if (!data) throw new Error('bz.oNoFile');
         if (cancelled) return;
         setApp(data);
         await refreshValidation(data.id);
       } catch (e) {
-        if (!cancelled)
-          setError(e instanceof Error ? e.message : 'Impossible de charger le dossier.');
+        if (!cancelled) setError(e instanceof Error ? e.message : 'bz.oLoadFail');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -104,40 +110,31 @@ export default function CompanyOnboardingPage() {
         body: { application_id: app.id, stage: 'identity' },
       });
       if (invokeError) throw invokeError;
-      if (data?.status === 'approved')
-        setNotice('Identité approuvée. Vous pouvez maintenant transmettre les documents.');
+      if (data?.status === 'approved') setNotice('bz.oIdApproved');
       else if (data?.status === 'refused')
-        setError(
-          (
-            data.reasons || [
-              'Identité refusée. Corrigez les informations du dossier puis réessayez.',
-            ]
-          ).join(' ')
-        );
-      else
-        setNotice(
-          data?.message || 'Résultat reçu. Actualisez le dossier pour consulter le statut.'
-        );
+        setError((data.reasons || ['bz.oIdRefused']).map((r: string) => show(r)).join(' '));
+      else setNotice(data?.message || 'bz.oResult');
       await refreshValidation(app.id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'La vérification de l’identité a échoué.');
+      setError(e instanceof Error ? e.message : 'bz.oIdFail');
     } finally {
       setBusy('');
     }
   }
 
-  async function uploadDocument(type: string, label: string) {
+  async function uploadDocument(type: string, labelKey: TerrainKey) {
+    const label = t(labelKey);
     const file = files[type];
     if (!app || !file) {
-      setError('Choisissez d’abord un fichier.');
+      setError('bz.oPickFile');
       return;
     }
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      setError('Format refusé. Utilisez JPG, PNG, WEBP ou PDF.');
+      setError('bz.oBadFormat');
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      setError('Le fichier dépasse la limite de 8 Mo.');
+      setError('bz.oTooBig');
       return;
     }
     setBusy(type);
@@ -147,7 +144,7 @@ export default function CompanyOnboardingPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error('Session expirée. Reconnectez-vous.');
+      if (!user) throw new Error('bz.oSession');
       const safeName = file.name.replace(/[^\w.-]/g, '_');
       const path = user.id + '/' + app.id + '/' + Date.now() + '-' + safeName;
       const { error: storageError } = await supabase.storage
@@ -178,18 +175,15 @@ export default function CompanyOnboardingPage() {
         }
       );
       if (reviewError) throw reviewError;
-      if (verdict?.status === 'verified') setNotice(label + ' : document vérifié.');
+      if (verdict?.status === 'verified') setNotice(fill('bz.oDocVerified', { l: label }));
       else if (verdict?.status === 'rejected')
-        setNotice(
-          label + ' : document refusé. ' + (verdict.reason || 'Envoyez un nouveau fichier.')
-        );
-      else if (verdict?.status === 'needs_review')
-        setNotice(verdict.message || 'Document reçu, en attente de contrôle par l’équipe JDV.');
-      else setNotice('Document transmis. Actualisation de son statut…');
+        setNotice(fill('bz.oDocRejected', { l: label, r: verdict.reason || t('bz.oSendNew') }));
+      else if (verdict?.status === 'needs_review') setNotice(verdict.message || 'bz.oNeedsReview');
+      else setNotice('bz.oSubmitted');
       setFiles((current) => ({ ...current, [type]: null }));
       await refreshValidation(app.id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Échec de l’envoi ou du contrôle du document.');
+      setError(e instanceof Error ? e.message : 'bz.oUploadFail');
     } finally {
       setBusy('');
     }
@@ -205,13 +199,10 @@ export default function CompanyOnboardingPage() {
         p_application_id: app.id,
       });
       if (rpcError) throw rpcError;
-      if (!data || (Array.isArray(data) && !data[0]))
-        throw new Error('La validation n’a pas renvoyé de confirmation.');
+      if (!data || (Array.isArray(data) && !data[0])) throw new Error('bz.oNoConfirm');
       router.replace('/business/dashboard');
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : 'Impossible de valider l’entreprise pour le moment.'
-      );
+      setError(e instanceof Error ? e.message : 'bz.oValFail');
     } finally {
       setBusy('');
     }
@@ -221,22 +212,23 @@ export default function CompanyOnboardingPage() {
     return (
       <div className="min-h-screen bg-[#0B1B3D] text-white grid place-items-center">
         <Loader2 className="animate-spin mr-2" />
-        Chargement du dossier…
+        {t('bz.oLoading')}
       </div>
     );
 
   const identityStatus = validation?.identity?.status || 'pending';
-  const statusLabel: Record<string, string> = {
-    missing: 'Manquant',
-    pending: 'En attente',
-    analyzing: 'Analyse en cours',
-    verified: 'Vérifié',
-    approved: 'Approuvée',
-    rejected: 'Refusé',
-    refused: 'Refusée',
-    stale: 'À renvoyer',
-    needs_review: 'En attente de contrôle',
-  };
+  const stKeys = [
+    'missing',
+    'pending',
+    'analyzing',
+    'verified',
+    'approved',
+    'rejected',
+    'refused',
+    'stale',
+    'needs_review',
+  ];
+  const statusLabel = (s: string) => (stKeys.includes(s) ? t(('bz.oSt.' + s) as TerrainKey) : s);
   const statusClass = (status: string) =>
     ['verified', 'approved'].includes(status)
       ? 'text-emerald-300'
@@ -250,16 +242,11 @@ export default function CompanyOnboardingPage() {
     <main className="min-h-screen bg-[#0B1B3D] text-white px-4 py-10">
       <div className="max-w-5xl mx-auto">
         <header className="mb-8">
-          <p className="text-[#D4AF37] text-xs uppercase tracking-widest">
-            Activation sécurisée · JDV CRM
-          </p>
+          <p className="text-[#D4AF37] text-xs uppercase tracking-widest">{t('bz.oKicker')}</p>
           <h1 className="text-3xl font-bold mt-2">
-            Validation de {app?.company_name || 'votre entreprise'}
+            {fill('bz.oTitle', { n: app?.company_name || t('bz.oYourCompany') })}
           </h1>
-          <p className="text-slate-300 mt-2">
-            Suivez les trois étapes. L’entreprise ne sera activée que lorsque les contrôles requis
-            seront validés.
-          </p>
+          <p className="text-slate-300 mt-2">{t('bz.oIntro')}</p>
         </header>
 
         {error && (
@@ -268,7 +255,7 @@ export default function CompanyOnboardingPage() {
             className="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-200 flex gap-2"
           >
             <AlertCircle className="shrink-0" size={19} />
-            <span>{error}</span>
+            <span>{show(error)}</span>
           </div>
         )}
         {notice && (
@@ -276,19 +263,19 @@ export default function CompanyOnboardingPage() {
             role="status"
             className="mb-4 p-4 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-amber-100"
           >
-            {notice}
+            {show(notice)}
           </div>
         )}
 
         <section className="grid md:grid-cols-3 gap-3 mb-6">
           <div className="rounded-2xl border border-[#D4AF37]/30 bg-[#0F2347] p-5">
-            <span className="text-xs text-[#D4AF37]">ÉTAPE 1</span>
-            <h2 className="font-bold mt-2">Identité de l’entreprise</h2>
+            <span className="text-xs text-[#D4AF37]">{fill('bz.oStep', { n: 1 })}</span>
+            <h2 className="font-bold mt-2">{t('bz.oS1')}</h2>
             <p className={'text-sm mt-2 ' + statusClass(identityStatus)}>
-              {statusLabel[identityStatus] || identityStatus}
+              {statusLabel(identityStatus)}
             </p>
             <p className="text-xs text-slate-400 mt-2">
-              Essais : {validation?.identity?.attempts ?? 0} / 10
+              {fill('bz.oAttempts', { a: validation?.identity?.attempts ?? 0 })}
             </p>
             <button
               onClick={reviewIdentity}
@@ -296,51 +283,45 @@ export default function CompanyOnboardingPage() {
               className="mt-4 w-full rounded-lg bg-[#D4AF37] text-[#0B1B3D] p-3 font-semibold disabled:opacity-50"
             >
               {busy === 'identity'
-                ? 'Vérification…'
+                ? t('bz.oChecking')
                 : identityStatus === 'approved'
-                  ? 'Identité approuvée'
-                  : 'Vérifier mon identité'}
+                  ? t('bz.oIdApprovedBtn')
+                  : t('bz.oVerifyId')}
             </button>
             {validation?.identity?.reasons?.length ? (
               <ul className="mt-3 list-disc pl-5 text-sm text-red-200">
                 {validation.identity.reasons.map((reason, i) => (
-                  <li key={i}>{reason}</li>
+                  <li key={i}>{show(reason)}</li>
                 ))}
               </ul>
             ) : null}
           </div>
           <div className="rounded-2xl border border-[#D4AF37]/30 bg-[#0F2347] p-5">
-            <span className="text-xs text-[#D4AF37]">ÉTAPE 2</span>
-            <h2 className="font-bold mt-2">Documents justificatifs</h2>
-            <p className="text-sm text-slate-300 mt-2">
-              PDF, JPG, PNG ou WEBP · 8 Mo maximum par fichier.
-            </p>
-            <p className="text-xs text-slate-400 mt-2">
-              Un document refusé peut être remplacé par un nouveau fichier du même type.
-            </p>
+            <span className="text-xs text-[#D4AF37]">{fill('bz.oStep', { n: 2 })}</span>
+            <h2 className="font-bold mt-2">{t('bz.oS2')}</h2>
+            <p className="text-sm text-slate-300 mt-2">{t('bz.oFormats')}</p>
+            <p className="text-xs text-slate-400 mt-2">{t('bz.oReplace')}</p>
           </div>
           <div className="rounded-2xl border border-[#D4AF37]/30 bg-[#0F2347] p-5">
-            <span className="text-xs text-[#D4AF37]">ÉTAPE 3</span>
-            <h2 className="font-bold mt-2">Activation</h2>
+            <span className="text-xs text-[#D4AF37]">{fill('bz.oStep', { n: 3 })}</span>
+            <h2 className="font-bold mt-2">{t('bz.oS3')}</h2>
             <p className="text-sm mt-2 text-slate-300">
-              {validation?.can_validate
-                ? 'Tous les contrôles requis sont au vert.'
-                : 'Disponible après validation de tous les contrôles requis.'}
+              {validation?.can_validate ? t('bz.oAllGreen') : t('bz.oAfter')}
             </p>
             <button
               onClick={validateCompany}
               disabled={!!busy || !validation?.can_validate}
               className="mt-4 w-full rounded-lg bg-emerald-500 text-slate-950 p-3 font-bold disabled:opacity-40"
             >
-              {busy === 'activate' ? 'Activation…' : 'Valider mon entreprise'}
+              {busy === 'activate' ? t('bz.fActivating') : t('bz.oValidate')}
             </button>
           </div>
         </section>
 
         <section className="rounded-2xl border border-[#D4AF37]/20 bg-[#0F2347] p-5 md:p-7">
-          <h2 className="text-xl font-bold mb-4">Pièces à transmettre</h2>
+          <h2 className="text-xl font-bold mb-4">{t('bz.oPieces')}</h2>
           <div className="space-y-4">
-            {docs.map(([type, label]) => {
+            {docs.map(([type, labelKey]) => {
               const current = validation?.documents?.find((document) => document.type === type);
               const status = current?.status || 'missing';
               const selectedFile = files[type];
@@ -349,7 +330,7 @@ export default function CompanyOnboardingPage() {
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2">
                       <FileText size={18} className="text-[#D4AF37]" />
-                      <span className="font-semibold">{label}</span>
+                      <span className="font-semibold">{t(labelKey)}</span>
                     </div>
                     <span className={'text-sm flex items-center gap-1 ' + statusClass(status)}>
                       {status === 'verified' ? (
@@ -357,18 +338,20 @@ export default function CompanyOnboardingPage() {
                       ) : ['rejected', 'refused'].includes(status) ? (
                         <XCircle size={16} />
                       ) : null}
-                      {statusLabel[status] || status}
+                      {statusLabel(status)}
                     </span>
                   </div>
-                  {current?.reason && <p className="text-sm text-red-200 mb-3">{current.reason}</p>}
+                  {current?.reason && (
+                    <p className="text-sm text-red-200 mb-3">{show(current.reason)}</p>
+                  )}
                   {status === 'verified' ? (
-                    <p className="text-sm text-emerald-200">Document contrôlé avec succès.</p>
+                    <p className="text-sm text-emerald-200">{t('bz.oChecked')}</p>
                   ) : (
                     <div className="flex flex-col sm:flex-row gap-3">
                       <label className="flex-1 cursor-pointer rounded-lg border border-dashed border-white/20 p-3 text-sm text-slate-300">
                         <span className="flex items-center gap-2">
                           <UploadCloud size={17} />
-                          {selectedFile?.name || 'Choisir un nouveau fichier'}
+                          {selectedFile?.name || t('bz.oChooseNew')}
                         </span>
                         <input
                           type="file"
@@ -383,11 +366,11 @@ export default function CompanyOnboardingPage() {
                         />
                       </label>
                       <button
-                        onClick={() => uploadDocument(type, label)}
+                        onClick={() => uploadDocument(type, labelKey)}
                         disabled={!selectedFile || !!busy || identityStatus !== 'approved'}
                         className="rounded-lg bg-[#D4AF37] text-[#0B1B3D] px-5 py-3 font-semibold disabled:opacity-40"
                       >
-                        {busy === type ? 'Envoi et contrôle…' : 'Envoyer et vérifier'}
+                        {busy === type ? t('bz.oSending') : t('bz.oSend')}
                       </button>
                     </div>
                   )}
@@ -397,10 +380,7 @@ export default function CompanyOnboardingPage() {
           </div>
           <div className="mt-6 flex items-start gap-3 text-sm text-slate-400">
             <ShieldCheck className="text-[#D4AF37] shrink-0" size={20} />
-            <p>
-              Les fichiers sont stockés dans un espace privé. L’activation dépend exclusivement du
-              résultat des contrôles côté Supabase.
-            </p>
+            <p>{t('bz.oPrivate')}</p>
           </div>
         </section>
       </div>
