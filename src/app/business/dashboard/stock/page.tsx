@@ -5,6 +5,7 @@ import { Package, Warehouse, Plus, Truck, RefreshCw } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
 import { toast } from 'sonner';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type Article = { id: string; name: string; code: string; cash_price: number | null };
 type Wh = { id: string; name: string; code: string; city: string | null };
@@ -30,6 +31,7 @@ const input =
 const label = 'block text-xs text-[#A0AEC0] mb-1.5';
 
 export default function BusinessStockPage() {
+  const { t } = useLanguage();
   const [orgId, setOrgId] = useState<string | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [warehouses, setWarehouses] = useState<Wh[]>([]);
@@ -126,7 +128,7 @@ export default function BusinessStockPage() {
     });
     if (error) toast.error(error.message);
     else {
-      toast.success('Entrée stock central enregistrée');
+      toast.success(t('bz.skEntrySaved'));
       setEntry({ article_id: '', quantity: 1, minimum_quantity: 0, notes: '' });
       await load();
     }
@@ -147,7 +149,7 @@ export default function BusinessStockPage() {
     });
     if (error) toast.error(error.message);
     else {
-      toast.success('Entrepôt approvisionné depuis le stock central');
+      toast.success(t('bz.skSupplied'));
       setSupply({ article_id: '', warehouse_id: '', quantity: 1, minimum_quantity: 0, notes: '' });
       await load();
     }
@@ -159,17 +161,15 @@ export default function BusinessStockPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Stock & approvisionnement</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">
-            Flux unique : Stock central → Entrepôt → Prospecteur.
-          </p>
+          <h1 className="text-2xl font-bold text-white">{t('bz.skTitle')}</h1>
+          <p className="text-sm text-[#A0AEC0] mt-1">{t('bz.skFlow')}</p>
         </div>
         <button
           onClick={() => load()}
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0]"
         >
           <RefreshCw size={14} />
-          Actualiser
+          {t('bz.fnRefresh')}
         </button>
       </div>
 
@@ -180,20 +180,18 @@ export default function BusinessStockPage() {
         >
           <div className="flex items-center gap-2">
             <Plus size={18} className="text-[#D4AF37]" />
-            <h2 className="font-semibold text-white">Entrée stock central</h2>
+            <h2 className="font-semibold text-white">{t('bz.skCentralEntry')}</h2>
           </div>
-          <p className="text-xs text-[#718096]">
-            Crée ou augmente le stock central d’un article. Les quantités restent traçables.
-          </p>
+          <p className="text-xs text-[#718096]">{t('bz.skCentralIntro')}</p>
           <div>
-            <label className={label}>Article</label>
+            <label className={label}>{t('bz.skItem')}</label>
             <select
               required
               value={entry.article_id}
               onChange={(e) => setEntry((x) => ({ ...x, article_id: e.target.value }))}
               className={input}
             >
-              <option value="">Choisir un article</option>
+              <option value="">{t('bz.skPickItem')}</option>
               {articles.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.name} · {a.code}
@@ -203,7 +201,7 @@ export default function BusinessStockPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={label}>Quantité</label>
+              <label className={label}>{t('bz.skQty')}</label>
               <input
                 type="number"
                 min={1}
@@ -216,7 +214,7 @@ export default function BusinessStockPage() {
               />
             </div>
             <div>
-              <label className={label}>Minimum</label>
+              <label className={label}>{t('bz.skMin')}</label>
               <input
                 type="number"
                 min={0}
@@ -231,14 +229,14 @@ export default function BusinessStockPage() {
           <input
             value={entry.notes}
             onChange={(e) => setEntry((x) => ({ ...x, notes: e.target.value }))}
-            placeholder="Note / référence fournisseur"
+            placeholder={t('bz.skNotePh')}
             className={input}
           />
           <button
             disabled={saving}
             className="w-full btn-gold rounded-xl py-2.5 font-semibold disabled:opacity-60"
           >
-            Enregistrer l’entrée
+            {t('bz.skSaveEntry')}
           </button>
         </form>
 
@@ -248,21 +246,18 @@ export default function BusinessStockPage() {
         >
           <div className="flex items-center gap-2">
             <Truck size={18} className="text-[#D4AF37]" />
-            <h2 className="font-semibold text-white">Approvisionner un entrepôt</h2>
+            <h2 className="font-semibold text-white">{t('bz.skSupplyWh')}</h2>
           </div>
-          <p className="text-xs text-[#718096]">
-            L’administrateur fournit l’entrepôt. Le prospecteur se réapprovisionne ensuite
-            uniquement depuis son entrepôt affecté.
-          </p>
+          <p className="text-xs text-[#718096]">{t('bz.skSupplyIntro')}</p>
           <div>
-            <label className={label}>Entrepôt</label>
+            <label className={label}>{t('bz.skWh')}</label>
             <select
               required
               value={supply.warehouse_id}
               onChange={(e) => setSupply((x) => ({ ...x, warehouse_id: e.target.value }))}
               className={input}
             >
-              <option value="">Choisir un entrepôt</option>
+              <option value="">{t('bz.skPickWh')}</option>
               {warehouses.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name} · {w.code}
@@ -271,20 +266,26 @@ export default function BusinessStockPage() {
             </select>
           </div>
           <div>
-            <label className={label}>Article</label>
+            <label className={label}>{t('bz.skItem')}</label>
             <select
               required
               value={supply.article_id}
               onChange={(e) => setSupply((x) => ({ ...x, article_id: e.target.value }))}
               className={input}
             >
-              <option value="">Choisir un article</option>
+              <option value="">{t('bz.skPickItem')}</option>
               {articles.map((a) => {
                 const c = centralMap.get(a.id);
                 return (
                   <option key={a.id} value={a.id}>
-                    {a.name} · disponible{' '}
-                    {Math.max(0, Number(c?.quantity ?? 0) - Number(c?.reserved_quantity ?? 0))}
+                    {t('bz.skAvailable')
+                      .replace('{a}', a.name)
+                      .replace(
+                        '{n}',
+                        String(
+                          Math.max(0, Number(c?.quantity ?? 0) - Number(c?.reserved_quantity ?? 0))
+                        )
+                      )}
                   </option>
                 );
               })}
@@ -292,7 +293,7 @@ export default function BusinessStockPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={label}>Quantité</label>
+              <label className={label}>{t('bz.skQty')}</label>
               <input
                 type="number"
                 min={1}
@@ -305,7 +306,7 @@ export default function BusinessStockPage() {
               />
             </div>
             <div>
-              <label className={label}>Minimum entrepôt</label>
+              <label className={label}>{t('bz.skWhMin')}</label>
               <input
                 type="number"
                 min={0}
@@ -320,14 +321,14 @@ export default function BusinessStockPage() {
           <input
             value={supply.notes}
             onChange={(e) => setSupply((x) => ({ ...x, notes: e.target.value }))}
-            placeholder="Note de transfert"
+            placeholder={t('bz.skTransferPh')}
             className={input}
           />
           <button
             disabled={saving}
             className="w-full btn-gold rounded-xl py-2.5 font-semibold disabled:opacity-60"
           >
-            Transférer vers l’entrepôt
+            {t('bz.skTransfer')}
           </button>
         </form>
       </div>
@@ -335,20 +336,20 @@ export default function BusinessStockPage() {
       <section className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-[#D4AF37]/10 flex items-center gap-2">
           <Package size={17} className="text-[#D4AF37]" />
-          <h2 className="font-semibold text-white">Stock central</h2>
+          <h2 className="font-semibold text-white">{t('bz.skCentral')}</h2>
         </div>
         {loading ? (
-          <div className="p-8 text-center text-[#A0AEC0]">Chargement...</div>
+          <div className="p-8 text-center text-[#A0AEC0]">{t('we.loading')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="text-left text-xs text-[#718096] border-b border-white/10">
-                  <th className="p-3">Article</th>
-                  <th className="p-3">Code</th>
-                  <th className="p-3">Quantité</th>
-                  <th className="p-3">Réservé</th>
-                  <th className="p-3">Disponible</th>
+                  <th className="p-3">{t('bz.skItem')}</th>
+                  <th className="p-3">{t('bz.skColCode')}</th>
+                  <th className="p-3">{t('bz.skQty')}</th>
+                  <th className="p-3">{t('bz.skReserved')}</th>
+                  <th className="p-3">{t('bz.skAvail')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -375,23 +376,21 @@ export default function BusinessStockPage() {
       <section className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-[#D4AF37]/10 flex items-center gap-2">
           <Warehouse size={17} className="text-[#D4AF37]" />
-          <h2 className="font-semibold text-white">Stocks par entrepôt</h2>
+          <h2 className="font-semibold text-white">{t('bz.skByWh')}</h2>
         </div>
         {inventory.length === 0 ? (
-          <div className="p-8 text-center text-[#718096]">
-            Aucun stock opérationnel dans les entrepôts.
-          </div>
+          <div className="p-8 text-center text-[#718096]">{t('bz.skNoWhStock')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="text-left text-xs text-[#718096] border-b border-white/10">
-                  <th className="p-3">Entrepôt</th>
-                  <th className="p-3">Article</th>
-                  <th className="p-3">Quantité</th>
-                  <th className="p-3">Réservé</th>
-                  <th className="p-3">Disponible</th>
-                  <th className="p-3">Minimum</th>
+                  <th className="p-3">{t('bz.skWh')}</th>
+                  <th className="p-3">{t('bz.skItem')}</th>
+                  <th className="p-3">{t('bz.skQty')}</th>
+                  <th className="p-3">{t('bz.skReserved')}</th>
+                  <th className="p-3">{t('bz.skAvail')}</th>
+                  <th className="p-3">{t('bz.skMin')}</th>
                 </tr>
               </thead>
               <tbody>
