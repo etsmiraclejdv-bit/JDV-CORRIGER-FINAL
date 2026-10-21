@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Row = Record<string, any>;
 
@@ -20,6 +22,12 @@ const card = 'rounded-2xl border border-[#D4AF37]/15 bg-[#0F2347] p-4';
 const pill = 'rounded-full px-2.5 py-1 text-xs font-semibold';
 
 export default function LogisticsControlPage() {
+  const { t, locale } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
   const [orgId, setOrgId] = useState<string | null>(null);
   const [warehouses, setWarehouses] = useState<Row[]>([]);
   const [assignments, setAssignments] = useState<Row[]>([]);
@@ -36,7 +44,7 @@ export default function LogisticsControlPage() {
     const { data: profile } = await fetchOrgProfile();
     const organizationId = profile?.organization_id;
     if (!organizationId) {
-      setError('Organisation introuvable.');
+      setError('bz.lgOrgNone');
       setLoading(false);
       return;
     }
@@ -122,8 +130,7 @@ export default function LogisticsControlPage() {
     };
   }, [warehouses, assignments, inventory, holdings, requests]);
 
-  if (loading)
-    return <div className="p-8 text-[#A0AEC0]">Chargement du centre de contrôle logistique…</div>;
+  if (loading) return <div className="p-8 text-[#A0AEC0]">{t('bz.lgLoading')}</div>;
 
   return (
     <div className="p-6 lg:p-8 space-y-6 overflow-y-auto h-full">
@@ -131,26 +138,22 @@ export default function LogisticsControlPage() {
         <div>
           <div className="flex items-center gap-2">
             <Warehouse className="text-[#D4AF37]" />
-            <h1 className="text-2xl font-bold text-white">Centre de contrôle logistique</h1>
+            <h1 className="text-2xl font-bold text-white">{t('bz.lgTitle')}</h1>
           </div>
-          <p className="mt-1 text-sm text-[#A0AEC0]">
-            Entreprise → entrepôts → zones → prospecteurs → stocks → retours. L’entreprise alimente
-            les entrepôts ; chaque prospecteur se réapprovisionne exclusivement dans son entrepôt
-            affecté.
-          </p>
+          <p className="mt-1 text-sm text-[#A0AEC0]">{t('bz.lgSub')}</p>
         </div>
         <button
           onClick={load}
           className="rounded-xl border border-[#D4AF37]/20 px-3 py-2 text-sm text-white"
         >
           <RefreshCw size={15} className="inline mr-1" />
-          Actualiser
+          {t('bz.fnRefresh')}
         </button>
       </div>
 
       {error && (
         <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
-          {error}
+          {error.startsWith('bz.') ? t(error as TerrainKey) : error}
         </div>
       )}
 
@@ -158,37 +161,37 @@ export default function LogisticsControlPage() {
         <div className={card}>
           <Warehouse size={18} className="text-[#D4AF37]" />
           <p className="mt-2 text-2xl font-bold text-white">{metrics.warehouses}</p>
-          <p className="text-xs text-[#A0AEC0]">Entrepôts actifs</p>
+          <p className="text-xs text-[#A0AEC0]">{t('bz.lgActiveWh')}</p>
         </div>
         <div className={card}>
           <Users size={18} className="text-[#D4AF37]" />
           <p className="mt-2 text-2xl font-bold text-white">{metrics.assigned}</p>
-          <p className="text-xs text-[#A0AEC0]">Affectations actives</p>
+          <p className="text-xs text-[#A0AEC0]">{t('bz.lgAssign')}</p>
         </div>
         <div className={card}>
           <Boxes size={18} className="text-[#D4AF37]" />
           <p className="mt-2 text-2xl font-bold text-white">{inventory.length}</p>
-          <p className="text-xs text-[#A0AEC0]">Lignes stock entrepôt</p>
+          <p className="text-xs text-[#A0AEC0]">{t('bz.lgLines')}</p>
         </div>
         <div className={card}>
           <AlertTriangle size={18} className="text-red-300" />
           <p className="mt-2 text-2xl font-bold text-white">{metrics.low}</p>
-          <p className="text-xs text-[#A0AEC0]">Stocks faibles</p>
+          <p className="text-xs text-[#A0AEC0]">{t('bz.lgLow')}</p>
         </div>
         <div className={card}>
           <Clock3 size={18} className="text-orange-300" />
           <p className="mt-2 text-2xl font-bold text-white">{metrics.overdue}</p>
-          <p className="text-xs text-[#A0AEC0]">Retours J+10</p>
+          <p className="text-xs text-[#A0AEC0]">{t('bz.lgD10')}</p>
         </div>
         <div className={card}>
           <Truck size={18} className="text-[#D4AF37]" />
           <p className="mt-2 text-2xl font-bold text-white">{metrics.requests}</p>
-          <p className="text-xs text-[#A0AEC0]">Demandes d’approvisionnement</p>
+          <p className="text-xs text-[#A0AEC0]">{t('bz.lgReq')}</p>
         </div>
       </div>
 
       <section className={card}>
-        <h2 className="font-semibold text-white mb-4">Entrepôts et zones</h2>
+        <h2 className="font-semibold text-white mb-4">{t('bz.lgWhZones')}</h2>
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
           {warehouses
             .filter((w) => w.active)
@@ -206,10 +209,10 @@ export default function LogisticsControlPage() {
                   </p>
                   <div className="mt-3 flex gap-2">
                     <span className={pill + ' bg-[#D4AF37]/10 text-[#D4AF37]'}>
-                      {people.length} prospecteur(s)
+                      {fill('bz.lgPros', { n: people.length })}
                     </span>
                     <span className={pill + ' bg-white/5 text-[#A0AEC0]'}>
-                      {lines.length} article(s)
+                      {fill('bz.lgItems', { n: lines.length })}
                     </span>
                   </div>
                   {people.length > 0 && (
@@ -217,7 +220,7 @@ export default function LogisticsControlPage() {
                       {people.map((a) => (
                         <div key={a.id} className="text-xs text-[#CBD5E0]">
                           {a.prospecteurs?.first_name} {a.prospecteurs?.last_name} ·{' '}
-                          {a.work_zone || 'zone non définie'}
+                          {a.work_zone || t('bz.lgNoZone')}
                         </div>
                       ))}
                     </div>
@@ -229,16 +232,16 @@ export default function LogisticsControlPage() {
       </section>
 
       <section className={card}>
-        <h2 className="font-semibold text-white mb-4">Stocks entrepôts</h2>
+        <h2 className="font-semibold text-white mb-4">{t('bz.lgWhStocks')}</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-[#718096] border-b border-white/10">
-                <th className="p-2">Entrepôt</th>
-                <th className="p-2">Article</th>
-                <th className="p-2">Disponible</th>
-                <th className="p-2">Minimum</th>
-                <th className="p-2">État</th>
+                <th className="p-2">{t('bz.lgColWh')}</th>
+                <th className="p-2">{t('bz.lgColItem')}</th>
+                <th className="p-2">{t('bz.lgColAvail')}</th>
+                <th className="p-2">{t('bz.lgColMin')}</th>
+                <th className="p-2">{t('bz.lgColState')}</th>
               </tr>
             </thead>
             <tbody>
@@ -261,7 +264,7 @@ export default function LogisticsControlPage() {
                             : 'bg-emerald-500/10 text-emerald-300')
                         }
                       >
-                        {low ? 'Stock faible' : 'OK'}
+                        {low ? t('bz.lgLowStock') : t('bz.lgOk')}
                       </span>
                     </td>
                   </tr>
@@ -273,14 +276,10 @@ export default function LogisticsControlPage() {
       </section>
 
       <section className={card}>
-        <h2 className="font-semibold text-white mb-4">
-          Marchandises chez les prospecteurs — retours à surveiller
-        </h2>
+        <h2 className="font-semibold text-white mb-4">{t('bz.lgHoldTitle')}</h2>
         <div className="space-y-2">
           {holdings.length === 0 ? (
-            <p className="text-sm text-[#718096]">
-              Aucune marchandise actuellement en circulation.
-            </p>
+            <p className="text-sm text-[#718096]">{t('bz.lgNoHold')}</p>
           ) : (
             holdings.map((h) => {
               const due = new Date(h.return_due_at);
@@ -298,8 +297,11 @@ export default function LogisticsControlPage() {
                       {h.prospecteurs?.first_name} {h.prospecteurs?.last_name} · {h.articles?.name}
                     </p>
                     <p className="text-xs text-[#718096]">
-                      {h.warehouses?.name} · restant {h.remaining_quantity} · échéance{' '}
-                      {due.toLocaleDateString('fr-FR')}
+                      {fill('bz.lgHoldLine', {
+                        w: h.warehouses?.name ?? '',
+                        r: h.remaining_quantity,
+                        d: due.toLocaleDateString(locale),
+                      })}
                     </p>
                   </div>
                   <span
@@ -313,7 +315,11 @@ export default function LogisticsControlPage() {
                           : 'bg-emerald-500/10 text-emerald-300')
                     }
                   >
-                    {critical ? 'J+20 critique' : overdue ? 'J+10 dépassé' : 'En cours'}
+                    {critical
+                      ? t('bz.lgCritical')
+                      : overdue
+                        ? t('bz.lgOverdue')
+                        : t('bz.lgInProgress')}
                   </span>
                 </div>
               );
@@ -323,9 +329,9 @@ export default function LogisticsControlPage() {
       </section>
 
       <section className={card}>
-        <h2 className="font-semibold text-white mb-4">Flux d’approvisionnement</h2>
+        <h2 className="font-semibold text-white mb-4">{t('bz.lgFlow')}</h2>
         {requests.length === 0 ? (
-          <p className="text-sm text-[#718096]">Aucun approvisionnement en attente.</p>
+          <p className="text-sm text-[#718096]">{t('bz.lgNoReq')}</p>
         ) : (
           <div className="space-y-2">
             {requests.map((r) => (
@@ -334,7 +340,7 @@ export default function LogisticsControlPage() {
                   {r.prospecteurs?.first_name} {r.prospecteurs?.last_name} → {r.warehouses?.name}
                 </span>
                 <span className="text-xs text-[#A0AEC0]">
-                  {new Date(r.requested_at).toLocaleString('fr-FR')}
+                  {new Date(r.requested_at).toLocaleString(locale)}
                 </span>
               </div>
             ))}
@@ -343,7 +349,7 @@ export default function LogisticsControlPage() {
       </section>
 
       <section className={card}>
-        <h2 className="font-semibold text-white mb-4">Stock détenu par les prospecteurs</h2>
+        <h2 className="font-semibold text-white mb-4">{t('bz.lgProsStock')}</h2>
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-2">
           {prospecteurStock.map((s) => (
             <div key={s.id} className="rounded-xl bg-[#0A1628] p-3">
@@ -351,7 +357,7 @@ export default function LogisticsControlPage() {
                 {s.prospecteurs?.first_name} {s.prospecteurs?.last_name}
               </p>
               <p className="text-xs text-[#A0AEC0]">
-                {s.articles?.name} · quantité {s.quantity}
+                {fill('bz.lgQtyLine', { a: s.articles?.name ?? '', q: s.quantity })}
               </p>
             </div>
           ))}
