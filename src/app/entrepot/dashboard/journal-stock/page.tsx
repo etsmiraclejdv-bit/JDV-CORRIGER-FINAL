@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
-import { Card, PageTitle, num } from '@/components/entrepot/common';
+import { Card, PageTitle, useFormat } from '@/components/entrepot/common';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type Row = {
   movement_id: string;
@@ -27,7 +28,9 @@ type Sub = { id: string; name: string; code: string };
 
 export default function JournalStockPage() {
   const { current } = useWarehouse();
-  const [data, setData] = useState<Row[]>([]);
+  const { t, locale } = useLanguage();
+  const { num } = useFormat();
+  const [rows, setRows] = useState<Row[]>([]);
   const [subs, setSubs] = useState<Sub[]>([]);
   const [subId, setSubId] = useState('');
   const [date, setDate] = useState('');
@@ -55,24 +58,28 @@ export default function JournalStockPage() {
     ]);
     if (sres.error) setError(sres.error.message);
     else setSubs((sres.data ?? []) as Sub[]);
-    let rows = (qres.data ?? []) as Row[];
     if (qres.error) setError(qres.error.message);
-    if (subId)
-      rows = rows.filter(
-        (r) =>
-          r.subwarehouse_name && subs.some((s) => s.id === subId && s.name === r.subwarehouse_name)
-      );
+    setRows((qres.data ?? []) as Row[]);
+    setLoading(false);
+  }, [current]);
+  // Les filtres s'appliquent aux lignes déjà chargées : changer de sous-entrepôt ou de date
+  // ne relance plus de requête (et ne boucle plus sur le rechargement de la liste).
+  const data = useMemo(() => {
+    let filtered = rows;
+    if (subId) {
+      const sub = subs.find((s) => s.id === subId);
+      filtered = filtered.filter((r) => !!sub && r.subwarehouse_name === sub.name);
+    }
     if (date) {
-      const start = new Date(date + 'T00:00:00'),
-        end = new Date(date + 'T23:59:59.999');
-      rows = rows.filter((r) => {
-        const t = new Date(r.occurred_at).getTime();
-        return t >= start.getTime() && t <= end.getTime();
+      const start = new Date(date + 'T00:00:00').getTime();
+      const end = new Date(date + 'T23:59:59.999').getTime();
+      filtered = filtered.filter((r) => {
+        const time = new Date(r.occurred_at).getTime();
+        return time >= start && time <= end;
       });
     }
-    setData(rows);
-    setLoading(false);
-  }, [current, date, subId, subs]);
+    return filtered;
+  }, [rows, subs, subId, date]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -86,17 +93,14 @@ export default function JournalStockPage() {
   );
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle
-        title="Journal détaillé du stock"
-        subtitle="Journal par sous-entrepôt : date, article, entrées, sorties, stock avant/après et valorisation."
-      >
+      <PageTitle title={t('we.jTitle')} subtitle={t('we.jSub')}>
         <div className="flex flex-wrap gap-2">
           <select
             value={subId}
             onChange={(e) => setSubId(e.target.value)}
             className="rounded-lg border border-white/10 bg-[#08152f] px-3 py-2 text-sm"
           >
-            <option value="">Tous les sous-entrepôts</option>
+            <option value="">{t('we.allSubs')}</option>
             {subs.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.code} — {s.name}
@@ -114,51 +118,51 @@ export default function JournalStockPage() {
             className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm"
           >
             <RefreshCw size={14} />
-            Actualiser
+            {t('we.refresh')}
           </button>
         </div>
       </PageTitle>
       {error && <p className="text-red-400">{error}</p>}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
-          <p className="text-xs uppercase text-slate-500">Entrées</p>
+          <p className="text-xs uppercase text-slate-500">{t('we.jEntries')}</p>
           <p className="mt-1 text-2xl font-bold text-emerald-400">{num(totals.entries)}</p>
         </Card>
         <Card>
-          <p className="text-xs uppercase text-slate-500">Sorties</p>
+          <p className="text-xs uppercase text-slate-500">{t('we.jExits')}</p>
           <p className="mt-1 text-2xl font-bold text-red-400">{num(totals.exits)}</p>
         </Card>
         <Card>
-          <p className="text-xs uppercase text-slate-500">Valeur mouvements</p>
+          <p className="text-xs uppercase text-slate-500">{t('we.jValue')}</p>
           <p className="mt-1 text-2xl font-bold">{num(totals.value)} FCFA</p>
         </Card>
       </div>
       <Card>
         {loading ? (
-          <p className="text-slate-400">Chargement…</p>
+          <p className="text-slate-400">{t('we.loading')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1400px] text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-left text-slate-400">
-                  <th className="p-2">Date / heure</th>
-                  <th className="p-2">Sous-entrepôt</th>
-                  <th className="p-2">Code</th>
-                  <th className="p-2">Article</th>
-                  <th className="p-2 text-right">Stock initial</th>
-                  <th className="p-2 text-right">Entrée</th>
-                  <th className="p-2 text-right">Sortie</th>
-                  <th className="p-2 text-right">Stock final</th>
-                  <th className="p-2 text-right">Prix unitaire</th>
-                  <th className="p-2 text-right">Montant</th>
-                  <th className="p-2 text-right">Valeur stock</th>
+                  <th className="p-2">{t('we.jThDateTime')}</th>
+                  <th className="p-2">{t('we.jThSub')}</th>
+                  <th className="p-2">{t('we.jThCode')}</th>
+                  <th className="p-2">{t('we.jThItem')}</th>
+                  <th className="p-2 text-right">{t('we.jThInitial')}</th>
+                  <th className="p-2 text-right">{t('we.jThIn')}</th>
+                  <th className="p-2 text-right">{t('we.jThOut')}</th>
+                  <th className="p-2 text-right">{t('we.jThFinal')}</th>
+                  <th className="p-2 text-right">{t('we.jThUnitPrice')}</th>
+                  <th className="p-2 text-right">{t('we.jThAmount')}</th>
+                  <th className="p-2 text-right">{t('we.jThStockValue')}</th>
                 </tr>
               </thead>
               <tbody>
                 {data.map((r) => (
                   <tr key={r.movement_id} className="border-b border-white/5">
                     <td className="p-2 whitespace-nowrap">
-                      {new Date(r.occurred_at).toLocaleString('fr-FR')}
+                      {new Date(r.occurred_at).toLocaleString(locale)}
                     </td>
                     <td className="p-2">
                       {r.subwarehouse_code || '—'} {r.subwarehouse_name || ''}

@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
 import {
   Banner,
@@ -12,6 +13,7 @@ import {
 } from '@/components/entrepot/common';
 export default function FinDeServicePage() {
   const { current } = useWarehouse();
+  const { t } = useLanguage();
   const { banner, ok, fail } = useBanner();
   const [notes, setNotes] = useState('');
   const [busy, setBusy] = useState(false);
@@ -36,29 +38,24 @@ export default function FinDeServicePage() {
     setBusy(false);
     if (r.error) fail(r.error.message);
     else {
-      ok('Journée clôturée.');
+      ok(t('we.dayClosed'));
       load();
     }
   }
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle
-        title="Fin de service"
-        subtitle="Vérifiez la journée et clôturez le service de l’entrepôt."
-      />
+      <PageTitle title={t('endOfService')} subtitle={t('we.eosSub')} />
       <Banner state={banner} />
-      <Card title="Clôture">
-        <p className="text-sm text-slate-400 mb-4">
-          La clôture enregistre l’état de la journée pour l’entrepôt sélectionné.
-        </p>
+      <Card title={t('we.closure')}>
+        <p className="text-sm text-slate-400 mb-4">{t('we.closureText')}</p>
         <input
           className={inputCls}
-          placeholder="Observations (optionnel)"
+          placeholder={t('we.notesPh')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
         />
         <button disabled={busy} onClick={close} className={btnGold + ' mt-4'}>
-          {busy ? 'Clôture…' : 'Clôturer la journée'}
+          {busy ? t('we.closing') : t('we.closeDay')}
         </button>
         {status?.closure?.notes && (
           <p className="mt-4 text-sm text-slate-400">{status.closure.notes}</p>

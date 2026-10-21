@@ -10,18 +10,14 @@ import {
   PageTitle,
   btnGhost,
   btnGold,
-  dateFr,
   inputCls,
-  num,
   useBanner,
+  useFormat,
+  useUnitCodeLabels,
 } from '@/components/entrepot/common';
-import {
-  UNIT_CODE_STATUSES,
-  codeListProblem,
-  friendlyRpcError,
-  parseCodeList,
-  unitCodeStatusLabel,
-} from '@/lib/unitCodes/helpers';
+import { codeListProblem, friendlyRpcError, parseCodeList } from '@/lib/unitCodes/helpers';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 import {
   dispatchUnitCodes,
   listWarehouseUnitCodes,
@@ -34,6 +30,14 @@ type Prospecteur = { prospecteur_id: string; full_name: string | null };
 
 export default function CodesProduitsPage() {
   const { current } = useWarehouse();
+  const { t } = useLanguage();
+  const { dateFr, num } = useFormat();
+  const { statuses, statusLabel } = useUnitCodeLabels();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
   const { banner, ok, fail } = useBanner();
   const [articles, setArticles] = useState<Article[]>([]);
   const [prospecteurs, setProspecteurs] = useState<Prospecteur[]>([]);
@@ -69,12 +73,12 @@ export default function CodesProduitsPage() {
       catalog.map((r) => ({
         article_id: String(r.article_id),
         article_code: String(r.article_code ?? r.code ?? ''),
-        article_name: String(r.article_name ?? r.name ?? 'Article'),
+        article_name: String(r.article_name ?? r.name ?? t('we.cArticleFallback')),
       }))
     );
     setProspecteurs((people.data ?? []) as Prospecteur[]);
     setRows((list.data ?? []) as UnitCodeRow[]);
-  }, [warehouseId, statusFilter]);
+  }, [warehouseId, statusFilter, t]);
 
   useEffect(() => {
     void load();
@@ -88,15 +92,15 @@ export default function CodesProduitsPage() {
   const parsedDispatch = useMemo(() => parseCodeList(dispatchText), [dispatchText]);
 
   async function register() {
-    if (!warehouseId || !articleId) return fail('Choisissez un article.');
+    if (!warehouseId || !articleId) return fail(t('we.cChooseItem'));
     let codes: string[] | undefined;
     if (mode === 'own') {
       const problem = codeListProblem(parsedOwn);
       if (problem) return fail(problem);
-      if (parsedOwn.codes.length === 0) return fail('Saisissez au moins un code.');
+      if (parsedOwn.codes.length === 0) return fail(t('we.cEnterOne'));
       codes = parsedOwn.codes;
     } else if (!Number.isInteger(quantity) || quantity < 1 || quantity > 500) {
-      return fail('Quantité à générer : entre 1 et 500.');
+      return fail(t('we.cQtyRange'));
     }
     setBusy(true);
     const { data, error } = await registerUnitCodes({
@@ -109,15 +113,15 @@ export default function CodesProduitsPage() {
     if (error) return fail(friendlyRpcError(error.message));
     setGenerated(data?.codes ?? []);
     setCodesText('');
-    ok(num(data?.count ?? 0) + ' code(s) inscrit(s).');
+    ok(fill('we.cRegistered', { n: num(data?.count ?? 0) }));
     void load();
   }
 
   async function dispatch() {
-    if (!warehouseId || !prospecteurId) return fail('Choisissez un prospecteur.');
+    if (!warehouseId || !prospecteurId) return fail(t('we.cChoosePros'));
     const problem = codeListProblem(parsedDispatch);
     if (problem) return fail(problem);
-    if (parsedDispatch.codes.length === 0) return fail('Saisissez au moins un code.');
+    if (parsedDispatch.codes.length === 0) return fail(t('we.cEnterOne'));
     if (!idempotencyRef.current) idempotencyRef.current = crypto.randomUUID();
     setBusy(true);
     const { data, error } = await dispatchUnitCodes({
@@ -133,41 +137,37 @@ export default function CodesProduitsPage() {
     setDispatchText('');
     setNotes('');
     ok(
-      'Bon ' +
-        (data?.shipment_number ?? '') +
-        ' expédié (' +
-        num(data?.unit_count ?? parsedDispatch.codes.length) +
-        ' code(s)). Le prospecteur doit les saisir à la réception.'
+      fill('we.cDispatched', {
+        n: data?.shipment_number ?? '',
+        c: num(data?.unit_count ?? parsedDispatch.codes.length),
+      })
     );
     void load();
   }
 
   const copyGenerated = () => {
     void navigator.clipboard?.writeText(generated.join('\n'));
-    ok('Codes copiés.');
+    ok(t('we.cCopied'));
   };
 
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle
-        title="Codes produits"
-        subtitle="Sans lecteur de codes-barres : inscrivez chaque produit sous un code unique, expédiez ces codes au prospecteur, qui les saisit à la réception."
-      >
-        <button onClick={() => void load()} className={btnGhost} aria-label="Actualiser">
+      <PageTitle title={t('productCodes')} subtitle={t('we.cSub')}>
+        <button onClick={() => void load()} className={btnGhost} aria-label={t('we.refresh')}>
           <RefreshCw size={16} />
         </button>
       </PageTitle>
       <Banner state={banner} />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card title="1. Inscrire des produits">
+        <Card title={t('we.c1Title')}>
           <div className="space-y-3">
             <select
               className={inputCls}
               value={articleId}
               onChange={(e) => setArticleId(e.target.value)}
             >
-              <option value="">Article…</option>
+              <option value="">{t('we.cItemPh')}</option>
               {articles.map((a) => (
                 <option key={a.article_id} value={a.article_id}>
                   {a.article_code} · {a.article_name}
@@ -180,14 +180,14 @@ export default function CodesProduitsPage() {
                 className={mode === 'own' ? btnGold : btnGhost}
                 onClick={() => setMode('own')}
               >
-                J’ai mes codes
+                {t('we.cOwn')}
               </button>
               <button
                 type="button"
                 className={mode === 'generate' ? btnGold : btnGhost}
                 onClick={() => setMode('generate')}
               >
-                Générer les codes
+                {t('we.cGenerate')}
               </button>
             </div>
             {mode === 'own' ? (
@@ -197,15 +197,15 @@ export default function CodesProduitsPage() {
                   rows={5}
                   value={codesText}
                   onChange={(e) => setCodesText(e.target.value)}
-                  placeholder="Un code par ligne (4 à 64 caractères : lettres, chiffres, . _ / -)"
+                  placeholder={t('we.cOwnPh')}
                 />
                 <p className="text-xs text-slate-400">
-                  {num(parsedOwn.codes.length)} code(s) valide(s)
+                  {fill('we.cValidN', { n: num(parsedOwn.codes.length) })}
                 </p>
               </>
             ) : (
               <label className="block text-sm text-slate-300">
-                Nombre de codes à générer
+                {t('we.cGenQty')}
                 <input
                   type="number"
                   min={1}
@@ -218,12 +218,12 @@ export default function CodesProduitsPage() {
             )}
             <button disabled={busy} onClick={() => void register()} className={btnGold}>
               <Tag size={14} className="inline mr-2" />
-              Inscrire
+              {t('we.cRegister')}
             </button>
             {generated.length > 0 && (
               <div className="rounded-xl border border-white/10 bg-[#0F2347] p-3">
                 <div className="mb-2 flex items-center justify-between text-sm">
-                  <span>{num(generated.length)} code(s) à inscrire sur les produits</span>
+                  <span>{fill('we.cToWrite', { n: num(generated.length) })}</span>
                   <span className="flex gap-2">
                     <button type="button" className={btnGhost} onClick={copyGenerated}>
                       <Copy size={14} />
@@ -239,14 +239,14 @@ export default function CodesProduitsPage() {
           </div>
         </Card>
 
-        <Card title="2. Expédier par codes">
+        <Card title={t('we.c2Title')}>
           <div className="space-y-3">
             <select
               className={inputCls}
               value={prospecteurId}
               onChange={(e) => setProspecteurId(e.target.value)}
             >
-              <option value="">Prospecteur…</option>
+              <option value="">{t('we.cProsPh')}</option>
               {prospecteurs.map((p) => (
                 <option key={p.prospecteur_id} value={p.prospecteur_id}>
                   {p.full_name ?? p.prospecteur_id}
@@ -258,33 +258,33 @@ export default function CodesProduitsPage() {
               rows={5}
               value={dispatchText}
               onChange={(e) => setDispatchText(e.target.value)}
-              placeholder="Codes à expédier, un par ligne (statut « Inscrit en agence » uniquement)"
+              placeholder={t('we.cDispatchPh')}
             />
             <p className="text-xs text-slate-400">
-              {num(parsedDispatch.codes.length)} code(s) valide(s)
+              {fill('we.cValidN', { n: num(parsedDispatch.codes.length) })}
             </p>
             <input
               className={inputCls}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Note (facultatif)"
+              placeholder={t('we.cNotePh')}
             />
             <button disabled={busy} onClick={() => void dispatch()} className={btnGold}>
               <Send size={14} className="inline mr-2" />
-              Expédier
+              {t('we.cDispatch')}
             </button>
           </div>
         </Card>
       </div>
 
-      <Card title="Codes de cette agence">
+      <Card title={t('we.cBranchCodes')}>
         <select
           className={inputCls + ' mb-3 max-w-xs'}
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <option value="">Tous les statuts</option>
-          {UNIT_CODE_STATUSES.map((s) => (
+          <option value="">{t('we.cAllStatuses')}</option>
+          {statuses.map((s) => (
             <option key={s.value} value={s.value}>
               {s.label}
             </option>
@@ -294,10 +294,10 @@ export default function CodesProduitsPage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-slate-400 border-b border-white/10">
-                <th className="p-2">Code</th>
-                <th className="p-2">Article</th>
-                <th className="p-2">Statut</th>
-                <th className="p-2">Inscrit le</th>
+                <th className="p-2">{t('we.cThCode')}</th>
+                <th className="p-2">{t('we.cThItem')}</th>
+                <th className="p-2">{t('we.cThStatus')}</th>
+                <th className="p-2">{t('we.cThRegistered')}</th>
               </tr>
             </thead>
             <tbody>
@@ -305,14 +305,14 @@ export default function CodesProduitsPage() {
                 <tr key={r.id} className="border-b border-white/5">
                   <td className="p-2 font-mono">{r.code}</td>
                   <td className="p-2">{articleLabel.get(r.article_id) ?? '—'}</td>
-                  <td className="p-2">{unitCodeStatusLabel(r.status)}</td>
+                  <td className="p-2">{statusLabel(r.status)}</td>
                   <td className="p-2">{dateFr(r.registered_at)}</td>
                 </tr>
               ))}
               {rows.length === 0 && (
                 <tr>
                   <td className="p-2 text-slate-400" colSpan={4}>
-                    Aucun code.
+                    {t('we.cNoCode')}
                   </td>
                 </tr>
               )}

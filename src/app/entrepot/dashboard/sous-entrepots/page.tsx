@@ -12,6 +12,8 @@ import {
   inputCls,
   useBanner,
 } from '@/components/entrepot/common';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Sub = {
   id: string;
@@ -28,6 +30,12 @@ const EMPTY = { name: '', code: '', city: '', zone: '', address: '', manager: ''
 
 export default function SousEntrepotsChefAgencePage() {
   const { current } = useWarehouse();
+  const { t } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
   const { banner, ok, fail, clear } = useBanner();
   const [subs, setSubs] = useState<Sub[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -59,7 +67,7 @@ export default function SousEntrepotsChefAgencePage() {
     clear();
     if (!current || !userId) return;
     if (!form.name.trim() || !form.code.trim()) {
-      fail('Le nom et le code du sous-entrepôt sont obligatoires.');
+      fail(t('we.eNameCode'));
       return;
     }
     setSaving(true);
@@ -77,15 +85,11 @@ export default function SousEntrepotsChefAgencePage() {
     });
     setSaving(false);
     if (error) {
-      fail(
-        error.code === '23505'
-          ? 'Ce code de sous-entrepôt existe déjà. Choisissez-en un autre.'
-          : error.message
-      );
+      fail(error.code === '23505' ? t('we.eCodeExists') : error.message);
       return;
     }
     setForm(EMPTY);
-    ok('Sous-entrepôt créé.');
+    ok(t('we.created'));
     load();
   }
 
@@ -99,7 +103,7 @@ export default function SousEntrepotsChefAgencePage() {
       fail(error.message);
       return;
     }
-    ok(s.active ? 'Sous-entrepôt désactivé.' : 'Sous-entrepôt réactivé.');
+    ok(s.active ? t('we.deactivated') : t('we.reactivated'));
     load();
   }
 
@@ -113,7 +117,7 @@ export default function SousEntrepotsChefAgencePage() {
       fail(error.message);
       return;
     }
-    ok(mine ? 'Vous êtes maintenant responsable de ce sous-entrepôt.' : 'Responsable retiré.');
+    ok(mine ? t('we.nowManager') : t('we.managerRemoved'));
     load();
   }
 
@@ -121,16 +125,13 @@ export default function SousEntrepotsChefAgencePage() {
 
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle
-        title="Sous-entrepôts de mon agence"
-        subtitle={`En tant que chef d’agence, vous créez et pilotez les sous-entrepôts rattachés à « ${current.name} ». Ils restent toujours dans votre agence.`}
-      />
+      <PageTitle title={t('we.sTitle')} subtitle={fill('we.sSub', { n: current.name })} />
       <Banner state={banner} />
 
-      <Card title="Créer un sous-entrepôt">
+      <Card title={t('we.sCreateCard')}>
         <form onSubmit={create} className="grid gap-3 md:grid-cols-2">
           <label className="text-sm">
-            Nom *
+            {t('we.fName')}
             <input
               className={`${inputCls} mt-1`}
               value={form.name}
@@ -139,7 +140,7 @@ export default function SousEntrepotsChefAgencePage() {
             />
           </label>
           <label className="text-sm">
-            Code unique *
+            {t('we.fUniqueCode')}
             <input
               className={`${inputCls} mt-1`}
               value={form.code}
@@ -148,7 +149,7 @@ export default function SousEntrepotsChefAgencePage() {
             />
           </label>
           <label className="text-sm">
-            Ville
+            {t('we.fCity')}
             <input
               className={`${inputCls} mt-1`}
               value={form.city}
@@ -156,7 +157,7 @@ export default function SousEntrepotsChefAgencePage() {
             />
           </label>
           <label className="text-sm">
-            Zone / secteur
+            {t('we.fZone')}
             <input
               className={`${inputCls} mt-1`}
               value={form.zone}
@@ -164,7 +165,7 @@ export default function SousEntrepotsChefAgencePage() {
             />
           </label>
           <label className="text-sm md:col-span-2">
-            Adresse
+            {t('we.fAddress')}
             <input
               className={`${inputCls} mt-1`}
               value={form.address}
@@ -172,29 +173,29 @@ export default function SousEntrepotsChefAgencePage() {
             />
           </label>
           <label className="text-sm">
-            Responsable
+            {t('we.fManager')}
             <select
               className={`${inputCls} mt-1`}
               value={form.manager}
               onChange={(e) => setForm({ ...form, manager: e.target.value })}
             >
-              <option value="">Aucun pour le moment</option>
-              <option value="me">Moi (chef d’agence)</option>
+              <option value="">{t('we.fNoManager')}</option>
+              <option value="me">{t('we.fMe')}</option>
             </select>
           </label>
           <div className="flex items-end justify-end">
             <button className={btnGold} disabled={saving}>
-              {saving ? 'Création…' : 'Créer le sous-entrepôt'}
+              {saving ? t('we.creating') : t('we.createBtn')}
             </button>
           </div>
         </form>
       </Card>
 
-      <Card title={`Sous-entrepôts de l’agence (${subs.length})`}>
+      <Card title={fill('we.subsOfBranch', { n: subs.length })}>
         {loading ? (
-          <p className="text-sm text-slate-400">Chargement…</p>
+          <p className="text-sm text-slate-400">{t('we.loading')}</p>
         ) : subs.length === 0 ? (
-          <p className="text-sm text-slate-400">Aucun sous-entrepôt pour le moment.</p>
+          <p className="text-sm text-slate-400">{t('we.noSubs')}</p>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {subs.map((s) => (
@@ -209,45 +210,45 @@ export default function SousEntrepotsChefAgencePage() {
                   <span
                     className={`rounded-full px-2 py-1 text-xs ${s.active ? 'bg-emerald-500/10 text-emerald-300' : 'bg-slate-500/10 text-slate-400'}`}
                   >
-                    {s.active ? 'Actif' : 'Inactif'}
+                    {s.active ? t('we.active') : t('we.inactive')}
                   </span>
                 </div>
                 <div className="mt-3 space-y-1 text-sm text-slate-300">
                   {s.city && (
                     <div>
-                      <span className="text-slate-500">Ville :</span> {s.city}
+                      <span className="text-slate-500">{t('we.lCity')}</span> {s.city}
                     </div>
                   )}
                   {s.zone && (
                     <div>
-                      <span className="text-slate-500">Zone :</span> {s.zone}
+                      <span className="text-slate-500">{t('we.lZone')}</span> {s.zone}
                     </div>
                   )}
                   {s.address && (
                     <div>
-                      <span className="text-slate-500">Adresse :</span> {s.address}
+                      <span className="text-slate-500">{t('we.lAddress')}</span> {s.address}
                     </div>
                   )}
                   <div>
-                    <span className="text-slate-500">Responsable :</span>{' '}
+                    <span className="text-slate-500">{t('we.lManager')}</span>{' '}
                     {s.manager_user_id
                       ? s.manager_user_id === userId
-                        ? 'Vous (chef d’agence)'
-                        : 'Assigné'
-                      : 'Aucun'}
+                        ? t('we.youManager')
+                        : t('we.assigned')
+                      : t('we.none')}
                   </div>
                 </div>
                 <div className="mt-4 flex gap-2">
                   <button type="button" onClick={() => toggle(s)} className={`${btnGhost} flex-1`}>
-                    {s.active ? 'Désactiver' : 'Réactiver'}
+                    {s.active ? t('we.deactivate') : t('we.reactivate')}
                   </button>
                   {s.manager_user_id === userId ? (
                     <button type="button" onClick={() => setManager(s, false)} className={btnGhost}>
-                      Me retirer
+                      {t('we.removeMe')}
                     </button>
                   ) : !s.manager_user_id ? (
                     <button type="button" onClick={() => setManager(s, true)} className={btnGhost}>
-                      Je le prends
+                      {t('we.takeIt')}
                     </button>
                   ) : null}
                 </div>

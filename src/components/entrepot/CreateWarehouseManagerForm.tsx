@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { getAuthContext } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type WarehouseOption = {
   id: string;
@@ -29,6 +30,7 @@ export default function CreateWarehouseManagerForm({
   warehouses: WarehouseOption[];
   onCreated: () => void;
 }) {
+  const { t } = useLanguage();
   const [canCreate, setCanCreate] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -67,7 +69,7 @@ export default function CreateWarehouseManagerForm({
     setMessage('');
 
     if (!form.warehouseId) {
-      setMessage('Choisissez un entrepôt sans chef actif.');
+      setMessage(t('we.mPickWh'));
       return;
     }
 
@@ -76,7 +78,7 @@ export default function CreateWarehouseManagerForm({
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       const accessToken = sessionData.session?.access_token;
       if (sessionError || !accessToken) {
-        throw new Error('Votre session a expiré. Reconnectez-vous.');
+        throw new Error(t('we.mSession'));
       }
 
       const response = await fetch('/api/business/create-warehouse-manager', {
@@ -88,9 +90,9 @@ export default function CreateWarehouseManagerForm({
         body: JSON.stringify(form),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Création impossible.');
+      if (!response.ok) throw new Error(result.error || t('we.mFail'));
 
-      setMessage(result.message || 'Chef d’entrepôt créé.');
+      setMessage(result.message || t('we.mCreated'));
       setForm({
         warehouseId: '',
         firstName: '',
@@ -102,7 +104,7 @@ export default function CreateWarehouseManagerForm({
       setExpanded(false);
       onCreated();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Création impossible.');
+      setMessage(error instanceof Error ? error.message : t('we.mFail'));
     } finally {
       setBusy(false);
     }
@@ -114,18 +116,16 @@ export default function CreateWarehouseManagerForm({
         <div>
           <h2 className="flex items-center gap-2 font-semibold text-white">
             <UserPlus size={18} className="text-[#D4AF37]" />
-            Chefs d’entrepôt
+            {t('we.mTitle')}
           </h2>
-          <p className="mt-1 text-sm text-slate-400">
-            Créez un compte responsable et rattachez-le à un seul entrepôt.
-          </p>
+          <p className="mt-1 text-sm text-slate-400">{t('we.mSub')}</p>
         </div>
         <button
           type="button"
           onClick={() => setExpanded((value) => !value)}
           className="rounded-xl border border-[#D4AF37]/30 px-4 py-2 text-sm font-semibold text-[#D4AF37]"
         >
-          {expanded ? 'Fermer' : 'Créer un chef'}
+          {expanded ? t('we.mClose') : t('we.mOpen')}
         </button>
       </div>
 
@@ -141,14 +141,14 @@ export default function CreateWarehouseManagerForm({
       {expanded && (
         <form onSubmit={submit} className="mt-4 grid gap-3 md:grid-cols-2">
           <label className="text-sm text-slate-300">
-            Entrepôt
+            {t('we.mWh')}
             <select
               required
               value={form.warehouseId}
               onChange={(event) => setForm({ ...form, warehouseId: event.target.value })}
               className="mt-1 w-full rounded-xl border border-white/10 bg-slate-950 px-3 py-2.5 text-white"
             >
-              <option value="">Choisir un entrepôt disponible</option>
+              <option value="">{t('we.mPickOpt')}</option>
               {availableWarehouses.map((warehouse) => (
                 <option key={warehouse.id} value={warehouse.id}>
                   {warehouse.code} — {warehouse.name}
@@ -157,7 +157,7 @@ export default function CreateWarehouseManagerForm({
             </select>
           </label>
           <label className="text-sm text-slate-300">
-            Prénom
+            {t('we.mFirst')}
             <input
               required
               maxLength={100}
@@ -167,7 +167,7 @@ export default function CreateWarehouseManagerForm({
             />
           </label>
           <label className="text-sm text-slate-300">
-            Nom
+            {t('we.mLast')}
             <input
               maxLength={100}
               value={form.lastName}
@@ -176,7 +176,7 @@ export default function CreateWarehouseManagerForm({
             />
           </label>
           <label className="text-sm text-slate-300">
-            E-mail de connexion
+            {t('we.mEmail')}
             <input
               required
               type="email"
@@ -187,7 +187,7 @@ export default function CreateWarehouseManagerForm({
             />
           </label>
           <label className="text-sm text-slate-300">
-            Téléphone
+            {t('we.mPhone')}
             <input
               type="tel"
               maxLength={40}
@@ -197,7 +197,7 @@ export default function CreateWarehouseManagerForm({
             />
           </label>
           <label className="text-sm text-slate-300">
-            Mot de passe temporaire (8 caractères minimum)
+            {t('we.mPwd')}
             <input
               required
               type="password"
@@ -211,17 +211,14 @@ export default function CreateWarehouseManagerForm({
           </label>
           <div className="md:col-span-2">
             {availableWarehouses.length === 0 && (
-              <p className="mb-3 text-sm text-amber-200">
-                Tous les entrepôts actifs ont déjà un chef affecté, ou aucun entrepôt actif
-                n’existe.
-              </p>
+              <p className="mb-3 text-sm text-amber-200">{t('we.mNoWh')}</p>
             )}
             <button
               type="submit"
               disabled={busy || availableWarehouses.length === 0}
               className="rounded-xl bg-[#D4AF37] px-5 py-3 font-semibold text-slate-950 disabled:opacity-50"
             >
-              {busy ? 'Création en cours…' : 'Créer le chef d’entrepôt'}
+              {busy ? t('we.mBusy') : t('we.mSubmit')}
             </button>
           </div>
         </form>

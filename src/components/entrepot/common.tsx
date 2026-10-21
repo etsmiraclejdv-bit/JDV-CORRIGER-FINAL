@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 export const dateFr = (d: string | null | undefined) =>
   d ? new Date(d).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—';
 export const dayFr = (d: string | null | undefined) =>
@@ -9,6 +11,54 @@ export const money = (n: number | string | null | undefined) =>
   new Intl.NumberFormat('fr-FR').format(Math.round(Number(n) || 0)) + ' FCFA';
 export const num = (n: number | string | null | undefined) =>
   new Intl.NumberFormat('fr-FR').format(Number(n) || 0);
+/** Formats selon la langue choisie (dates, nombres, montants). */
+export function useFormat() {
+  const { locale } = useLanguage();
+  return {
+    dateFr: (d: string | null | undefined) =>
+      d ? new Date(d).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' }) : '—',
+    dayFr: (d: string | null | undefined) =>
+      d ? new Date(d).toLocaleDateString(locale, { dateStyle: 'medium' }) : '—',
+    money: (n: number | string | null | undefined) =>
+      new Intl.NumberFormat(locale).format(Math.round(Number(n) || 0)) + ' FCFA',
+    num: (n: number | string | null | undefined) =>
+      new Intl.NumberFormat(locale).format(Number(n) || 0),
+  };
+}
+const UNIT_STATUS_VALUES = [
+  'registered',
+  'in_transit',
+  'with_prospecteur',
+  'damaged',
+  'missing',
+  'blocked',
+] as const;
+const UNIT_EVENT_VALUES = [
+  'registered',
+  'dispatched',
+  'received',
+  'damaged_on_receipt',
+  'missing_on_receipt',
+] as const;
+/** Libellés des statuts et événements des codes uniques, selon la langue choisie. */
+export function useUnitCodeLabels() {
+  const { t } = useLanguage();
+  const statuses = UNIT_STATUS_VALUES.map((value) => ({
+    value,
+    label: t(`we.us.${value}` as TerrainKey),
+  }));
+  return {
+    statuses,
+    statusLabel: (value: string | null | undefined) =>
+      (UNIT_STATUS_VALUES as readonly string[]).includes(value ?? '')
+        ? t(`we.us.${value}` as TerrainKey)
+        : value || '—',
+    eventLabel: (value: string | null | undefined) =>
+      (UNIT_EVENT_VALUES as readonly string[]).includes(value ?? '')
+        ? t(`we.ue.${value}` as TerrainKey)
+        : value || '—',
+  };
+}
 export type BannerState = { tone: 'ok' | 'error'; text: string } | null;
 export function useBanner() {
   const [banner, setBanner] = useState<BannerState>(null);

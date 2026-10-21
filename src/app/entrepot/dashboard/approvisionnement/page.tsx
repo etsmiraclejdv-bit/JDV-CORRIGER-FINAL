@@ -10,11 +10,12 @@ import {
   PageTitle,
   btnGhost,
   btnGold,
-  dateFr,
   inputCls,
-  num,
   useBanner,
+  useFormat,
 } from '@/components/entrepot/common';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Req = {
   id: string;
@@ -36,19 +37,27 @@ type Req = {
 type Opt = { id: string; label: string };
 type Line = { article_id: string; quantity: string };
 
-const STATUS: Record<string, string> = {
-  sent: 'Envoyée',
-  approved: 'Approuvée par l’admin',
-  ordered: 'Commandée',
-  partially_received: 'Reçue partiellement',
-  received: 'Reçue',
-  rejected: 'Refusée',
-  cancelled: 'Annulée',
+const STATUS_KEYS: Record<string, TerrainKey> = {
+  sent: 'we.aSt.sent',
+  approved: 'we.aSt.approved',
+  ordered: 'we.aSt.ordered',
+  partially_received: 'we.aSt.partially_received',
+  received: 'we.aSt.received',
+  rejected: 'we.aSt.rejected',
+  cancelled: 'we.aSt.cancelled',
 };
 
 export default function EntrepotApprovisionnementPage() {
   const { current } = useWarehouse();
   const { banner, ok, fail } = useBanner();
+  const { t } = useLanguage();
+  const { dateFr, num } = useFormat();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const statusLabel = (s: string) => (STATUS_KEYS[s] ? t(STATUS_KEYS[s]) : s);
 
   const [reqs, setReqs] = useState<Req[]>([]);
   const [articles, setArticles] = useState<Opt[]>([]);
@@ -122,7 +131,8 @@ export default function EntrepotApprovisionnementPage() {
     void load();
   }, [load]);
 
-  const aName = (id: string) => articles.find((article) => article.id === id)?.label ?? 'Produit';
+  const aName = (id: string) =>
+    articles.find((article) => article.id === id)?.label ?? t('we.aProduct');
 
   const sName = (id: string | null) =>
     suppliers.find((supplier) => supplier.id === id)?.label ?? '—';
@@ -138,17 +148,17 @@ export default function EntrepotApprovisionnementPage() {
       }));
 
     if (!items.length) {
-      fail('Sélectionnez au moins un produit.');
+      fail(t('we.aPickOne'));
       return;
     }
 
     if (items.some((item) => !Number.isInteger(item.quantity) || item.quantity < 1)) {
-      fail('Quantités invalides.');
+      fail(t('we.aBadQty'));
       return;
     }
 
     if (target === 'supplier' && !supplierId) {
-      fail('Choisissez un fournisseur.');
+      fail(t('we.aPickSupplier'));
       return;
     }
 
@@ -170,7 +180,7 @@ export default function EntrepotApprovisionnementPage() {
     }
 
     const result = data as { reference: string };
-    ok('Demande ' + result.reference + ' envoyée.');
+    ok(fill('we.aSent', { r: result.reference }));
     setShowForm(false);
     setLines([{ article_id: '', quantity: '1' }]);
     setNotes('');
@@ -180,7 +190,7 @@ export default function EntrepotApprovisionnementPage() {
   async function action(request: Req, actionName: 'cancel' | 'mark_ordered') {
     if (
       actionName === 'cancel' &&
-      !window.confirm('Annuler la demande ' + request.reference + ' ?')
+      !window.confirm(fill('we.aConfirmCancel', { r: request.reference }))
     ) {
       return;
     }
@@ -200,7 +210,7 @@ export default function EntrepotApprovisionnementPage() {
       return;
     }
 
-    ok(actionName === 'cancel' ? 'Demande annulée.' : 'Demande marquée comme commandée.');
+    ok(actionName === 'cancel' ? t('we.aCancelled') : t('we.aMarkedOrdered'));
     void load();
   }
 
@@ -215,12 +225,12 @@ export default function EntrepotApprovisionnementPage() {
       .filter((item) => item.quantity > 0);
 
     if (!items.length) {
-      fail('Indiquez au moins une quantité reçue.');
+      fail(t('we.aNeedQty'));
       return;
     }
 
     if (items.some((item) => !Number.isInteger(item.quantity))) {
-      fail('Quantités invalides.');
+      fail(t('we.aBadQty'));
       return;
     }
 
@@ -244,10 +254,10 @@ export default function EntrepotApprovisionnementPage() {
     };
 
     ok(
-      num(result.received_units) +
-        ' unité(s) ajoutées au stock de l’entrepôt (' +
-        (STATUS[result.status] ?? result.status).toLowerCase() +
-        ').'
+      fill('we.aReceived', {
+        n: num(result.received_units),
+        s: statusLabel(result.status).toLowerCase(),
+      })
     );
 
     setReceiving(null);
@@ -257,20 +267,17 @@ export default function EntrepotApprovisionnementPage() {
 
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle
-        title="Approvisionnement"
-        subtitle="Demandez du stock directement à votre fournisseur ou à l’administrateur, et enregistrez les réceptions."
-      >
+      <PageTitle title={t('we.aTitle')} subtitle={t('we.aSub')}>
         <button onClick={() => setShowForm(!showForm)} className={btnGold}>
           <Plus size={14} className="inline mr-1" />
-          Nouvelle demande
+          {t('we.aNew')}
         </button>
       </PageTitle>
 
       <Banner state={banner} />
 
       {showForm && (
-        <Card title="Nouvelle demande d’approvisionnement" className="border-[#D4AF37]/40">
+        <Card title={t('we.aNewTitle')} className="border-[#D4AF37]/40">
           <div className="flex flex-wrap gap-4 text-sm mb-4">
             <label>
               <input
@@ -278,7 +285,7 @@ export default function EntrepotApprovisionnementPage() {
                 checked={target === 'supplier'}
                 onChange={() => setTarget('supplier')}
               />{' '}
-              À mon fournisseur
+              {t('we.aToSupplier')}
             </label>
             <label>
               <input
@@ -286,7 +293,7 @@ export default function EntrepotApprovisionnementPage() {
                 checked={target === 'admin'}
                 onChange={() => setTarget('admin')}
               />{' '}
-              À l’administrateur
+              {t('we.aToAdmin')}
             </label>
           </div>
 
@@ -296,7 +303,7 @@ export default function EntrepotApprovisionnementPage() {
               value={supplierId}
               onChange={(event) => setSupplierId(event.target.value)}
             >
-              <option value="">Choisir le fournisseur</option>
+              <option value="">{t('we.aPickSupplierOpt')}</option>
               {suppliers.map((supplier) => (
                 <option key={supplier.id} value={supplier.id}>
                   {supplier.label}
@@ -324,7 +331,7 @@ export default function EntrepotApprovisionnementPage() {
                     )
                   }
                 >
-                  <option value="">Choisir un produit</option>
+                  <option value="">{t('we.aPickProduct')}</option>
                   {articles.map((article) => (
                     <option key={article.id} value={article.id}>
                       {article.label}
@@ -370,30 +377,30 @@ export default function EntrepotApprovisionnementPage() {
             type="button"
           >
             <Plus size={14} className="inline mr-1" />
-            Ajouter un produit
+            {t('we.aAddProduct')}
           </button>
 
           <input
             className={inputCls + ' mt-4'}
-            placeholder="Message (optionnel)"
+            placeholder={t('we.aMsgPh')}
             value={notes}
             onChange={(event) => setNotes(event.target.value)}
           />
 
           <div className="mt-4 flex gap-2">
             <button onClick={() => setShowForm(false)} className={btnGhost} type="button">
-              Annuler
+              {t('we.aCancel')}
             </button>
             <button disabled={busy} onClick={submit} className={btnGold} type="button">
-              Envoyer la demande
+              {t('we.aSend')}
             </button>
           </div>
         </Card>
       )}
 
-      <Card title="Mes demandes">
+      <Card title={t('we.aMine')}>
         {loading ? (
-          <p className="text-sm text-slate-400">Chargement…</p>
+          <p className="text-sm text-slate-400">{t('we.loading')}</p>
         ) : (
           <div className="space-y-4">
             {reqs.map((request) => (
@@ -401,14 +408,14 @@ export default function EntrepotApprovisionnementPage() {
                 <div className="flex justify-between">
                   <span className="font-semibold">{request.reference}</span>
                   <span className="rounded-full bg-[#0F2347] px-3 py-1 text-xs">
-                    {STATUS[request.status] ?? request.status}
+                    {statusLabel(request.status)}
                   </span>
                 </div>
 
                 <div className="text-slate-400">
                   {request.target === 'supplier'
-                    ? 'Fournisseur : ' + sName(request.supplier_id)
-                    : 'Administrateur'}{' '}
+                    ? fill('we.aSupplierLbl', { s: sName(request.supplier_id) })
+                    : t('we.aAdminLbl')}{' '}
                   · {dateFr(request.requested_at)}
                 </div>
 
@@ -441,7 +448,10 @@ export default function EntrepotApprovisionnementPage() {
                           />
                         ) : (
                           <span>
-                            reçu {num(item.received_quantity)} / {num(item.quantity)}
+                            {fill('we.aRecvOf', {
+                              a: num(item.received_quantity),
+                              b: num(item.quantity),
+                            })}
                           </span>
                         )}
                       </li>
@@ -457,7 +467,7 @@ export default function EntrepotApprovisionnementPage() {
                       className={btnGhost}
                       type="button"
                     >
-                      Marquer commandée
+                      {t('we.aMarkOrdered')}
                     </button>
                   )}
 
@@ -470,7 +480,7 @@ export default function EntrepotApprovisionnementPage() {
                           className={btnGhost}
                           type="button"
                         >
-                          Annuler
+                          {t('we.aCancel')}
                         </button>
                         <button
                           disabled={busy}
@@ -478,7 +488,7 @@ export default function EntrepotApprovisionnementPage() {
                           className={btnGold}
                           type="button"
                         >
-                          Valider la réception
+                          {t('we.aValidateRecv')}
                         </button>
                       </>
                     ) : (
@@ -487,7 +497,7 @@ export default function EntrepotApprovisionnementPage() {
                         className={btnGold}
                         type="button"
                       >
-                        Réceptionner
+                        {t('we.aReceive')}
                       </button>
                     ))}
 
@@ -498,14 +508,14 @@ export default function EntrepotApprovisionnementPage() {
                       className={btnGhost + ' text-red-400'}
                       type="button"
                     >
-                      Annuler la demande
+                      {t('we.aCancelReq')}
                     </button>
                   )}
                 </div>
               </div>
             ))}
 
-            {!reqs.length && <p className="text-sm text-slate-500">Aucune demande.</p>}
+            {!reqs.length && <p className="text-sm text-slate-500">{t('we.aNone')}</p>}
           </div>
         )}
       </Card>

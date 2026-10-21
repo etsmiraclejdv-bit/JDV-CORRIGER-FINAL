@@ -12,6 +12,8 @@ import {
   inputCls,
   useBanner,
 } from '@/components/entrepot/common';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Article = {
   article_id: string;
@@ -40,6 +42,12 @@ type SupplyRequest = {
 
 export default function ExpeditionsProspecteursPage() {
   const { current } = useWarehouse();
+  const { t, locale } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
   const { banner, ok, fail } = useBanner();
   const [articles, setArticles] = useState<Article[]>([]);
   const [prospecteurs, setProspecteurs] = useState<Prospecteur[]>([]);
@@ -74,13 +82,13 @@ export default function ExpeditionsProspecteursPage() {
     ]);
     if (stock.error) fail(stock.error.message);
     if (people.error) fail(people.error.message);
-    if (requests.error) fail('Demandes en attente indisponibles : ' + requests.error.message);
+    if (requests.error) fail(t('we.xPendingErr') + requests.error.message);
     const rows = (stock.data ?? []) as Array<Record<string, unknown>>;
     setArticles(
       rows.map((r) => ({
         article_id: String(r.article_id),
         article_code: String(r.article_code ?? r.code ?? ''),
-        article_name: String(r.article_name ?? r.name ?? 'Article'),
+        article_name: String(r.article_name ?? r.name ?? t('we.xItemFallback')),
         barcode: typeof r.barcode === 'string' ? r.barcode : null,
         quantity: Number(r.quantity ?? 0),
         reserved_quantity: Number(r.reserved_quantity ?? 0),
@@ -89,7 +97,7 @@ export default function ExpeditionsProspecteursPage() {
     setProspecteurs((people.data ?? []) as Prospecteur[]);
     setPendingRequests((requests.data ?? []) as SupplyRequest[]);
     setLoading(false);
-  }, [current, fail]);
+  }, [current, fail, t]);
 
   useEffect(() => {
     void load();
@@ -102,14 +110,14 @@ export default function ExpeditionsProspecteursPage() {
     if (!code) return;
     const article = articles.find((a) => a.barcode === code || a.article_code === code);
     if (!article) {
-      fail('Code inconnu : ' + code + '. Vérifiez le code ou créez la fiche article.');
+      fail(fill('we.xUnknownCode', { c: code }));
       setScan('');
       return;
     }
     const available = Math.max(0, article.quantity - article.reserved_quantity);
     const existing = cart.find((item) => item.article_id === article.article_id);
     if ((existing?.quantity ?? 0) + 1 > available) {
-      fail('Stock disponible insuffisant pour ' + article.article_name + '.');
+      fail(fill('we.xNotEnough', { a: article.article_name }));
       setScan('');
       return;
     }
@@ -139,7 +147,7 @@ export default function ExpeditionsProspecteursPage() {
 
   async function dispatch() {
     if (!current || !prospecteurId || cart.length === 0) {
-      fail('Choisissez un prospecteur et scannez au moins un article.');
+      fail(t('we.xPickAndScan'));
       return;
     }
     setBusy(true);
@@ -170,18 +178,12 @@ export default function ExpeditionsProspecteursPage() {
         error.code === '42883' ||
         /could not find the function|function .* does not exist/i.test(error.message ?? '');
       fail(
-        missingRpc
-          ? 'Fonction de traçabilité absente dans Supabase : la migration 20261012173000_prospecteur_barcode_shipment_rpcs_v1.sql doit être appliquée et vérifiée avant les expéditions.'
-          : 'Échec de l’expédition : ' + (error.message || 'erreur inconnue')
+        missingRpc ? t('we.xMissingRpc') : t('we.xFailed') + (error.message || t('we.xUnknownErr'))
       );
       return;
     }
     const result = data as { shipment_number?: string };
-    ok(
-      'Bon ' +
-        (result?.shipment_number ?? '') +
-        ' expédié. Le prospecteur doit confirmer la réception.'
-    );
+    ok(fill('we.xShipped', { n: result?.shipment_number ?? '' }));
     idempotencyRef.current = null;
     setCart([]);
     setNotes('');
@@ -192,16 +194,11 @@ export default function ExpeditionsProspecteursPage() {
 
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle
-        title="Expéditions vers les prospecteurs"
-        subtitle="Scannez avec un lecteur USB/Bluetooth, puis créez le bon d’expédition."
-      />
+      <PageTitle title={t('we.xTitle')} subtitle={t('we.xSub')} />
       <Banner state={banner} />
       <div className="grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
-        <Card title="1. Préparer la marchandise">
-          <label className="block text-sm text-slate-300 mb-2">
-            Demande de réapprovisionnement
-          </label>
+        <Card title={t('we.x1Title')}>
+          <label className="block text-sm text-slate-300 mb-2">{t('we.xRequestLabel')}</label>
           <select
             className={inputCls + ' mb-4'}
             value={selectedRequestId}
@@ -225,20 +222,20 @@ export default function ExpeditionsProspecteursPage() {
               idempotencyRef.current = null;
             }}
           >
-            <option value="">Expédition directe sans demande</option>
+            <option value="">{t('we.xDirect')}</option>
             {pendingRequests.map((request) => {
               const person = prospecteurs.find((p) => p.prospecteur_id === request.prospecteur_id);
               const summary = request.prospecteur_supply_request_items
                 .map((item) => {
                   const article = articles.find((a) => a.article_id === item.article_id);
-                  return (article?.article_name ?? 'Article') + ' × ' + item.quantity;
+                  return (article?.article_name ?? t('we.xItemFallback')) + ' × ' + item.quantity;
                 })
                 .join(', ');
               return (
                 <option key={request.id} value={request.id}>
-                  {(person?.full_name ?? person?.code ?? 'Prospecteur') +
+                  {(person?.full_name ?? person?.code ?? t('we.xPerson')) +
                     ' · ' +
-                    new Date(request.requested_at).toLocaleString('fr-FR') +
+                    new Date(request.requested_at).toLocaleString(locale) +
                     ' · ' +
                     summary}
                 </option>
@@ -247,26 +244,24 @@ export default function ExpeditionsProspecteursPage() {
           </select>
           {selectedRequestId && (
             <p className="mb-4 rounded-lg bg-emerald-500/10 p-3 text-xs text-emerald-200">
-              Demande sélectionnée : scannez les quantités exactes ci-dessous.
+              {t('we.xRequestSelected')}
             </p>
           )}
-          <label className="block text-sm text-slate-300 mb-2">Prospecteur destinataire</label>
+          <label className="block text-sm text-slate-300 mb-2">{t('we.xRecipient')}</label>
           <select
             className={inputCls + ' mb-4'}
             value={prospecteurId}
             disabled={Boolean(selectedRequestId)}
             onChange={(e) => setProspecteurId(e.target.value)}
           >
-            <option value="">Choisir un prospecteur affecté à cet entrepôt</option>
+            <option value="">{t('we.xPickPros')}</option>
             {prospecteurs.map((p) => (
               <option key={p.prospecteur_id} value={p.prospecteur_id}>
                 {p.full_name ?? p.code ?? p.prospecteur_id}
               </option>
             ))}
           </select>
-          <label className="block text-sm text-slate-300 mb-2">
-            Code article — scanner puis appuyer sur Entrée
-          </label>
+          <label className="block text-sm text-slate-300 mb-2">{t('we.xScanLabel')}</label>
           <div className="flex gap-2">
             <input
               ref={scanRef}
@@ -279,21 +274,18 @@ export default function ExpeditionsProspecteursPage() {
                   addByCode(scan);
                 }
               }}
-              placeholder="Code-barres ou code interne"
+              placeholder={t('we.xScanPh')}
               autoComplete="off"
             />
             <button className={btnGold} onClick={() => addByCode(scan)}>
               <ScanBarcode size={16} />
             </button>
           </div>
-          <p className="text-xs text-slate-400 mt-2">
-            Le lecteur HID se comporte comme un clavier. Chaque lecture ajoute une unité. Pour les
-            lots, ajustez la quantité dans le récapitulatif.
-          </p>
+          <p className="text-xs text-slate-400 mt-2">{t('we.xHid')}</p>
           <div className="mt-5 space-y-2">
             {cart.length === 0 ? (
               <p className="rounded-xl border border-dashed border-white/15 p-6 text-center text-sm text-slate-400">
-                Aucun article scanné.
+                {t('we.xNoScan')}
               </p>
             ) : (
               cart.map((item) => {
@@ -306,7 +298,7 @@ export default function ExpeditionsProspecteursPage() {
                     <div className="min-w-0 flex-1">
                       <p className="font-medium">{item.article_name}</p>
                       <p className="text-xs text-slate-400">
-                        {item.article_code} · Disponible :{' '}
+                        {item.article_code} · {t('we.xAvailable')}{' '}
                         {Math.max(
                           0,
                           (available?.quantity ?? 0) - (available?.reserved_quantity ?? 0)
@@ -314,7 +306,7 @@ export default function ExpeditionsProspecteursPage() {
                       </p>
                     </div>
                     <input
-                      aria-label={'Quantité ' + item.article_name}
+                      aria-label={fill('we.xQtyAria', { a: item.article_name })}
                       type="number"
                       min="1"
                       max={available?.quantity ?? 1}
@@ -331,7 +323,7 @@ export default function ExpeditionsProspecteursPage() {
                       className="w-20 rounded-lg bg-[#08152f] border border-white/15 p-2 text-center"
                     />
                     <button
-                      aria-label="Retirer l'article"
+                      aria-label={t('we.xRemoveItem')}
                       onClick={() =>
                         setCart((prev) => prev.filter((x) => x.article_id !== item.article_id))
                       }
@@ -344,15 +336,13 @@ export default function ExpeditionsProspecteursPage() {
               })
             )}
           </div>
-          <label className="block text-sm text-slate-300 mt-4 mb-2">
-            Note de remise (facultatif)
-          </label>
+          <label className="block text-sm text-slate-300 mt-4 mb-2">{t('we.xHandNote')}</label>
           <textarea
             className={inputCls}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            placeholder="Observations sur la remise..."
+            placeholder={t('we.xHandPh')}
           />
           <button
             disabled={busy || !cart.length || !prospecteurId}
@@ -360,28 +350,28 @@ export default function ExpeditionsProspecteursPage() {
             className={btnGold + ' mt-4 w-full disabled:opacity-50'}
           >
             {busy ? (
-              'Enregistrement…'
+              t('we.xSaving')
             ) : (
               <>
                 <Send size={16} className="inline mr-2" />
-                Expédier {units} unité(s)
+                {fill('we.xShipUnits', { n: units })}
               </>
             )}
           </button>
         </Card>
-        <Card title="2. Contrôle du stock">
+        <Card title={t('we.x2Title')}>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm text-slate-300">{articles.length} références disponibles</p>
+            <p className="text-sm text-slate-300">{fill('we.xRefs', { n: articles.length })}</p>
             <button
               onClick={() => void load()}
               className="text-slate-300 p-2"
-              aria-label="Actualiser"
+              aria-label={t('we.refresh')}
             >
               <RefreshCw size={16} />
             </button>
           </div>
           {loading ? (
-            <p className="text-slate-400 text-sm">Chargement du catalogue…</p>
+            <p className="text-slate-400 text-sm">{t('we.xLoadingCat')}</p>
           ) : (
             <div className="space-y-2 max-h-[520px] overflow-y-auto">
               {articles.map((a) => (
@@ -392,9 +382,13 @@ export default function ExpeditionsProspecteursPage() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{a.article_name}</p>
                     <div className="text-xs text-slate-400">
-                      <p>Code de traçabilité JDV : {a.article_code}</p>
+                      <p>
+                        {t('we.xTraceCode')} {a.article_code}
+                      </p>
                       {a.barcode ? (
-                        <p className="text-slate-500">Code fabricant : {a.barcode}</p>
+                        <p className="text-slate-500">
+                          {t('we.xMakerCode')} {a.barcode}
+                        </p>
                       ) : null}
                     </div>
                   </div>
@@ -407,14 +401,12 @@ export default function ExpeditionsProspecteursPage() {
           )}
           <div className="mt-4 rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-xs text-amber-200">
             <AlertTriangle size={14} className="inline mr-1" />
-            Le stock n’est déduit qu’après validation de l’expédition par le serveur. Le bon restera
-            en attente de l’accusé de réception.
+            {t('we.xWarn')}
           </div>
         </Card>
       </div>
       <div className="flex items-center gap-2 text-xs text-slate-400">
-        <PackageCheck size={15} /> Le code de traçabilité JDV créé par l’entreprise accompagne
-        l’article jusqu’au prospecteur, qui le confirme à la réception.
+        <PackageCheck size={15} /> {t('we.xFooter')}
       </div>
     </div>
   );

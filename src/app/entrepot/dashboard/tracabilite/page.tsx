@@ -7,12 +7,14 @@ import {
   Card,
   PageTitle,
   btnGold,
-  dateFr,
   inputCls,
-  num,
   useBanner,
+  useFormat,
+  useUnitCodeLabels,
 } from '@/components/entrepot/common';
-import { friendlyRpcError, unitCodeEventLabel, unitCodeStatusLabel } from '@/lib/unitCodes/helpers';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
+import { friendlyRpcError } from '@/lib/unitCodes/helpers';
 import { traceUnitCode, type TraceUnit } from '@/lib/services/unitCodesService';
 type Row = {
   movement_id: string;
@@ -26,6 +28,14 @@ type Row = {
 };
 export default function TracabilitePage() {
   const { current } = useWarehouse();
+  const { t } = useLanguage();
+  const { dateFr, num } = useFormat();
+  const { statusLabel, eventLabel } = useUnitCodeLabels();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
   const [data, setData] = useState<Row[]>([]);
   const { banner, fail } = useBanner();
   const [search, setSearch] = useState('');
@@ -55,9 +65,9 @@ export default function TracabilitePage() {
   }, [load]);
   return (
     <div className="p-6 space-y-6 text-white">
-      <PageTitle title="Traçabilité" subtitle="Journal détaillé des mouvements de stock." />
+      <PageTitle title={t('traceability')} subtitle={t('we.traceSub')} />
       <Banner state={banner} />
-      <Card title="Retrouver un code produit">
+      <Card title={t('we.findCode')}>
         <div className="flex gap-2">
           <input
             className={inputCls}
@@ -66,28 +76,28 @@ export default function TracabilitePage() {
             onKeyDown={(e) => {
               if (e.key === 'Enter') void searchCode();
             }}
-            placeholder="Code unique du produit"
+            placeholder={t('we.uniqueCodePh')}
           />
           <button className={btnGold} onClick={() => void searchCode()}>
-            Chercher
+            {t('we.search')}
           </button>
         </div>
         {units && units.length === 0 && (
-          <p className="mt-3 text-sm text-slate-400">Aucun code trouvé.</p>
+          <p className="mt-3 text-sm text-slate-400">{t('we.noCode')}</p>
         )}
         {units?.map((u) => (
           <div key={u.unit_code_id} className="mt-4 rounded-xl border border-white/10 p-3 text-sm">
             <p className="font-mono font-semibold">{u.code}</p>
             <p className="text-slate-300">
-              {u.article_code} · {u.article_name} — {unitCodeStatusLabel(u.status)}
+              {u.article_code} · {u.article_name} — {statusLabel(u.status)}
             </p>
             <p className="text-slate-400">
-              Agence : {u.warehouse_name ?? '—'} · Prospecteur : {u.prospecteur_name ?? '—'}
+              {fill('we.agencyPros', { a: u.warehouse_name ?? '—', b: u.prospecteur_name ?? '—' })}
             </p>
             <ul className="mt-2 space-y-1">
               {u.events.map((ev, i) => (
                 <li key={i}>
-                  {dateFr(ev.created_at)} — {unitCodeEventLabel(ev.event_type)}
+                  {dateFr(ev.created_at)} — {eventLabel(ev.event_type)}
                 </li>
               ))}
             </ul>
@@ -99,11 +109,11 @@ export default function TracabilitePage() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-slate-400 border-b border-white/10">
-                <th className="p-2">Date</th>
-                <th className="p-2">Produit</th>
-                <th className="p-2">Opération</th>
-                <th className="p-2">Qté</th>
-                <th className="p-2">De / Vers</th>
+                <th className="p-2">{t('we.thDate')}</th>
+                <th className="p-2">{t('we.thProduct')}</th>
+                <th className="p-2">{t('we.thOperation')}</th>
+                <th className="p-2">{t('we.thQty')}</th>
+                <th className="p-2">{t('we.thFromTo')}</th>
               </tr>
             </thead>
             <tbody>
