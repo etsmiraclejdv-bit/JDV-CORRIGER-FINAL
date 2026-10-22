@@ -5,6 +5,7 @@ import { Warehouse, Plus, MapPin, RefreshCw, ArrowRightLeft, Save } from 'lucide
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import CreateWarehouseManagerForm from '@/components/entrepot/CreateWarehouseManagerForm';
 
 type Wh = {
@@ -44,6 +45,7 @@ const input =
 const label = 'block text-[11px] text-[#A0AEC0] mb-1';
 
 export default function WarehousesPage() {
+  const { t } = useLanguage();
   const [orgId, setOrgId] = useState<string | null>(null);
   const [warehouses, setWarehouses] = useState<Wh[]>([]);
   const [prospecteurs, setProspecteurs] = useState<P[]>([]);
@@ -150,7 +152,7 @@ export default function WarehousesPage() {
       return;
     }
 
-    toast.success('Entrepôt créé');
+    toast.success(t('bz.enCreated'));
     setForm({
       code: '',
       name: '',
@@ -166,7 +168,7 @@ export default function WarehousesPage() {
     if (!orgId) return;
     const v = selected[pid];
     if (!v?.warehouse_id) {
-      toast.error('Choisissez un entrepôt');
+      toast.error(t('bz.enPickWh'));
       return;
     }
 
@@ -186,7 +188,7 @@ export default function WarehousesPage() {
       return;
     }
 
-    toast.success('Affectation enregistrée');
+    toast.success(t('bz.enAssigned'));
     await load();
   };
 
@@ -196,12 +198,9 @@ export default function WarehousesPage() {
         <div>
           <div className="flex items-center gap-2">
             <Warehouse className="text-[#D4AF37]" />
-            <h1 className="text-2xl font-bold text-white">Entrepôts & affectation terrain</h1>
+            <h1 className="text-2xl font-bold text-white">{t('bz.enTitle')}</h1>
           </div>
-          <p className="text-sm text-[#A0AEC0] mt-1">
-            L’administrateur décide où chaque prospecteur travaille et de quel entrepôt il
-            s’approvisionne.
-          </p>
+          <p className="text-sm text-[#A0AEC0] mt-1">{t('bz.enIntro')}</p>
         </div>
 
         <div className="flex gap-2">
@@ -219,7 +218,7 @@ export default function WarehousesPage() {
             className="btn-gold px-4 py-2 rounded-xl text-sm font-bold"
           >
             <Plus size={15} className="inline mr-1" />
-            Nouvel entrepôt
+            {t('bz.enNew')}
           </button>
         </div>
       </div>
@@ -233,40 +232,40 @@ export default function WarehousesPage() {
         >
           <input
             required
-            placeholder="Code"
+            placeholder={t('bz.enCode')}
             value={form.code}
             onChange={(e) => setForm({ ...form, code: e.target.value })}
             className={input}
           />
           <input
             required
-            placeholder="Nom de l’entrepôt"
+            placeholder={t('bz.enName')}
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             className={input}
           />
           <input
-            placeholder="Adresse"
+            placeholder={t('bz.enAddress')}
             value={form.address}
             onChange={(e) => setForm({ ...form, address: e.target.value })}
             className={input}
           />
           <input
             required
-            placeholder="Ville"
+            placeholder={t('bz.enCity')}
             value={form.city}
             onChange={(e) => setForm({ ...form, city: e.target.value })}
             className={input}
           />
           <button type="submit" className="btn-gold rounded-xl">
             <Save size={15} className="inline mr-1" />
-            Créer
+            {t('bz.enCreate')}
           </button>
         </form>
       )}
 
       {loading ? (
-        <div className="text-[#A0AEC0]">Chargement…</div>
+        <div className="text-[#A0AEC0]">{t('bz.enLoading')}</div>
       ) : (
         <>
           <div className="grid md:grid-cols-3 gap-4">
@@ -287,10 +286,9 @@ export default function WarehousesPage() {
                   <span className="text-xs text-[#D4AF37]">{w.code}</span>
                 </div>
                 <p className="text-xs text-[#A0AEC0] mt-2">
-                  <MapPin size={12} className="inline" />{' '}
-                  {w.address || w.city || 'Adresse non renseignée'}
+                  <MapPin size={12} className="inline" /> {w.address || w.city || t('bz.enNoAddr')}
                 </p>
-                <p className="text-[11px] text-[#718096] mt-3">Ouvrir le détail →</p>
+                <p className="text-[11px] text-[#718096] mt-3">{t('bz.enOpen')}</p>
               </button>
             ))}
           </div>
@@ -308,12 +306,11 @@ export default function WarehousesPage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-xs uppercase tracking-widest text-[#D4AF37]">
-                          Système de l&apos;entrepôt
+                          {t('bz.enSystem')}
                         </p>
                         <h2 className="text-lg font-bold text-white">{w.name}</h2>
                         <p className="text-xs text-[#A0AEC0]">
-                          {w.code} · {w.city || 'Ville non renseignée'} ·{' '}
-                          {w.address || 'Adresse non renseignée'}
+                          {w.code} · {w.city || t('bz.enNoCity')} · {w.address || t('bz.enNoAddr')}
                         </p>
                       </div>
 
@@ -322,19 +319,17 @@ export default function WarehousesPage() {
                         onClick={() => setOpenedWarehouse(null)}
                         className="text-xs text-[#A0AEC0] hover:text-white"
                       >
-                        Fermer
+                        {t('bz.enClose')}
                       </button>
                     </div>
 
                     <div>
                       <h3 className="text-sm font-semibold text-white mb-2">
-                        Prospecteurs affectés
+                        {t('bz.enAssignedPros')}
                       </h3>
 
                       {members.length === 0 ? (
-                        <p className="text-sm text-[#718096]">
-                          Aucun prospecteur affecté à cet entrepôt.
-                        </p>
+                        <p className="text-sm text-[#718096]">{t('bz.enNoPros')}</p>
                       ) : (
                         <div className="space-y-2">
                           {members.map((a) => (
@@ -347,13 +342,13 @@ export default function WarehousesPage() {
                                   {a.prospecteurs?.first_name} {a.prospecteurs?.last_name}
                                 </p>
                                 <p className="text-xs text-[#718096]">
-                                  {a.department || 'Département non renseigné'} ·{' '}
-                                  {a.city || 'Ville non renseignée'} ·{' '}
-                                  {a.work_zone || 'Zone non renseignée'}
+                                  {a.department || t('bz.enNoDept')} · {a.city || t('bz.enNoCity')}{' '}
+                                  · {a.work_zone || t('bz.enNoZone')}
                                 </p>
                               </div>
                               <span className="text-xs text-emerald-300">
-                                Affecté{a.is_primary ? ' · principal' : ''}
+                                {t('bz.enAssignedL')}
+                                {a.is_primary ? t('bz.enPrimary') : ''}
                               </span>
                             </div>
                           ))}
@@ -368,11 +363,8 @@ export default function WarehousesPage() {
 
           <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-[#D4AF37]/10">
-              <h2 className="font-semibold text-white">Affecter / déplacer un prospecteur</h2>
-              <p className="text-xs text-[#718096] mt-1">
-                Un seul entrepôt principal actif par prospecteur. Une nouvelle affectation désactive
-                automatiquement l’ancienne.
-              </p>
+              <h2 className="font-semibold text-white">{t('bz.enMoveH')}</h2>
+              <p className="text-xs text-[#718096] mt-1">{t('bz.enMoveNote')}</p>
             </div>
 
             <div className="divide-y divide-[#D4AF37]/10">
@@ -392,12 +384,12 @@ export default function WarehousesPage() {
                         {p.first_name} {p.last_name}
                       </p>
                       <p className="text-xs text-[#718096]">
-                        {a?.warehouses?.name ?? 'Aucun entrepôt'}
+                        {a?.warehouses?.name ?? t('bz.enNoWh')}
                       </p>
                     </div>
 
                     <div>
-                      <label className={label}>Entrepôt</label>
+                      <label className={label}>{t('bz.enColWh')}</label>
                       <select
                         value={v.warehouse_id}
                         onChange={(e) =>
@@ -411,7 +403,7 @@ export default function WarehousesPage() {
                         }
                         className={input}
                       >
-                        <option value="">Choisir…</option>
+                        <option value="">{t('bz.enChoose')}</option>
                         {warehouses.map((w) => (
                           <option key={w.id} value={w.id}>
                             {w.name} — {w.city}
@@ -421,7 +413,7 @@ export default function WarehousesPage() {
                     </div>
 
                     <div>
-                      <label className={label}>Département</label>
+                      <label className={label}>{t('bz.enDept')}</label>
                       <input
                         value={v.department}
                         onChange={(e) =>
@@ -434,12 +426,12 @@ export default function WarehousesPage() {
                           }))
                         }
                         className={input}
-                        placeholder="Département"
+                        placeholder={t('bz.enDept')}
                       />
                     </div>
 
                     <div>
-                      <label className={label}>Ville</label>
+                      <label className={label}>{t('bz.enCity')}</label>
                       <input
                         value={v.city}
                         onChange={(e) =>
@@ -452,12 +444,12 @@ export default function WarehousesPage() {
                           }))
                         }
                         className={input}
-                        placeholder="Ville"
+                        placeholder={t('bz.enCity')}
                       />
                     </div>
 
                     <div>
-                      <label className={label}>Zone / secteur</label>
+                      <label className={label}>{t('bz.enZone')}</label>
                       <input
                         value={v.work_zone}
                         onChange={(e) =>
@@ -470,7 +462,7 @@ export default function WarehousesPage() {
                           }))
                         }
                         className={input}
-                        placeholder="Zone A, quartier…"
+                        placeholder={t('bz.enZonePh')}
                       />
                     </div>
 
@@ -485,7 +477,7 @@ export default function WarehousesPage() {
                       ) : (
                         <>
                           <ArrowRightLeft size={15} className="inline mr-1" />
-                          Affecter
+                          {t('bz.enAssign')}
                         </>
                       )}
                     </button>
