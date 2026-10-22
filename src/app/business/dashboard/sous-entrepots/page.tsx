@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { getAuthContext, type AuthContextData } from '@/lib/auth/context';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Warehouse = {
   id: string;
@@ -33,6 +35,9 @@ type Subwarehouse = {
 };
 
 export default function SousEntrepotsPage() {
+  const { t } = useLanguage();
+  // Les messages « bz.… » sont des clés de traduction ; le reste vient du serveur.
+  const tr = (s: string) => (s.startsWith('bz.') ? t(s as TerrainKey) : s);
   const [ctx, setCtx] = useState<AuthContextData | null>(null);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [subwarehouses, setSubwarehouses] = useState<Subwarehouse[]>([]);
@@ -139,7 +144,7 @@ export default function SousEntrepotsPage() {
         await loadData(auth.organizationId);
       } catch (e) {
         if (mounted) {
-          setError(e instanceof Error ? e.message : 'Impossible de charger les sous-entrepôts.');
+          setError(e instanceof Error ? e.message : 'bz.swLoadErr');
         }
       } finally {
         if (mounted) setLoading(false);
@@ -163,12 +168,12 @@ export default function SousEntrepotsPage() {
     setSuccess('');
 
     if (!ctx?.organizationId || !isAdmin) {
-      setError('Seul un administrateur peut créer un sous-entrepôt.');
+      setError('bz.swAdminOnly');
       return;
     }
 
     if (!selectedParent || !form.name.trim() || !form.code.trim()) {
-      setError('Nom, code et entrepôt parent sont obligatoires.');
+      setError('bz.swRequired');
       return;
     }
 
@@ -204,7 +209,7 @@ export default function SousEntrepotsPage() {
     });
 
     await loadData(ctx.organizationId);
-    setSuccess('Sous-entrepôt créé avec succès.');
+    setSuccess('bz.swCreated');
     setSaving(false);
   }
 
@@ -226,20 +231,18 @@ export default function SousEntrepotsPage() {
     }
 
     await loadData(ctx.organizationId);
-    setSuccess(item.active ? 'Sous-entrepôt désactivé.' : 'Sous-entrepôt réactivé.');
+    setSuccess(item.active ? 'bz.swDisabled' : 'bz.swEnabled');
   }
 
   if (loading) {
-    return <div className="p-6 text-slate-300">Chargement des sous-entrepôts…</div>;
+    return <div className="p-6 text-slate-300">{t('bz.swLoading')}</div>;
   }
 
   if (!ctx?.organizationId) {
     return (
       <div className="p-6 text-white">
-        <h1 className="text-2xl font-bold">Sous-entrepôts</h1>
-        <p className="mt-2 text-slate-400">
-          Aucune organisation active n&apos;est associée à votre compte.
-        </p>
+        <h1 className="text-2xl font-bold">{t('bz.swTitle')}</h1>
+        <p className="mt-2 text-slate-400">{t('bz.swNoOrg')}</p>
       </div>
     );
   }
@@ -249,50 +252,44 @@ export default function SousEntrepotsPage() {
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#D4AF37]">
-            Gestion des entrepôts
+            {t('bz.swKicker')}
           </p>
-          <h1 className="mt-1 text-3xl font-bold">Sous-entrepôts</h1>
-          <p className="mt-2 max-w-3xl text-sm text-slate-400">
-            Une unité opérationnelle reste toujours rattachée à un entrepôt parent et à la même
-            organisation. La base de données impose cette frontière avec RLS et des garde-fous côté
-            serveur.
-          </p>
+          <h1 className="mt-1 text-3xl font-bold">{t('bz.swTitle')}</h1>
+          <p className="mt-2 max-w-3xl text-sm text-slate-400">{t('bz.swIntro')}</p>
         </div>
         <div className="rounded-xl border border-white/10 bg-[#08152f] px-4 py-3 text-sm">
-          <span className="text-slate-400">Organisation</span>
+          <span className="text-slate-400">{t('bz.swOrg')}</span>
           <div className="font-semibold">{ctx.displayName}</div>
           <Link
             href="/business/dashboard/sous-entrepots/stock"
             className="mt-2 inline-block text-[#D4AF37]"
           >
-            Voir le stock →
+            {t('bz.swSeeStock')}
           </Link>
         </div>
       </div>
 
       {error && (
         <div className="rounded-xl border border-red-400/30 bg-red-950/30 p-4 text-sm text-red-200">
-          {error}
+          {tr(error)}
         </div>
       )}
       {success && (
         <div className="rounded-xl border border-emerald-400/30 bg-emerald-950/30 p-4 text-sm text-emerald-200">
-          {success}
+          {tr(success)}
         </div>
       )}
 
       {isAdmin ? (
         <section className="rounded-2xl border border-[#D4AF37]/20 bg-[#08152f] p-5 shadow-xl">
           <div className="mb-5">
-            <h2 className="text-xl font-semibold text-[#D4AF37]">+ Créer un sous-entrepôt</h2>
-            <p className="mt-1 text-sm text-slate-400">
-              Réservé au Super Admin et au Business Admin.
-            </p>
+            <h2 className="text-xl font-semibold text-[#D4AF37]">{t('bz.swCreateH')}</h2>
+            <p className="mt-1 text-sm text-slate-400">{t('bz.swAdminNote')}</p>
           </div>
 
           <form onSubmit={handleCreate} className="grid gap-4 md:grid-cols-2">
             <label className="space-y-2">
-              <span className="text-sm text-slate-300">Entrepôt parent *</span>
+              <span className="text-sm text-slate-300">{t('bz.swParent')}</span>
               <select
                 value={selectedParent}
                 onChange={(e) => {
@@ -310,7 +307,7 @@ export default function SousEntrepotsPage() {
             </label>
 
             <label className="space-y-2">
-              <span className="text-sm text-slate-300">Nom du sous-entrepôt *</span>
+              <span className="text-sm text-slate-300">{t('bz.swName')}</span>
               <input
                 value={form.name}
                 onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))}
@@ -320,7 +317,7 @@ export default function SousEntrepotsPage() {
             </label>
 
             <label className="space-y-2">
-              <span className="text-sm text-slate-300">Code unique *</span>
+              <span className="text-sm text-slate-300">{t('bz.swCode')}</span>
               <input
                 value={form.code}
                 onChange={(e) =>
@@ -332,7 +329,7 @@ export default function SousEntrepotsPage() {
             </label>
 
             <label className="space-y-2">
-              <span className="text-sm text-slate-300">Responsable</span>
+              <span className="text-sm text-slate-300">{t('bz.swManager')}</span>
               <select
                 value={form.manager_user_id}
                 onChange={(e) =>
@@ -340,8 +337,10 @@ export default function SousEntrepotsPage() {
                 }
                 className="w-full rounded-xl border border-white/10 bg-[#0F2347] px-3 py-3 text-white outline-none"
               >
-                <option value="">Aucun responsable assigné</option>
-                <option value="__me__">Moi ({ctx.displayName})</option>
+                <option value="">{t('bz.swNoManager')}</option>
+                <option value="__me__">
+                  {t('bz.swMe').replace('{name}', ctx.displayName ?? '')}
+                </option>
                 {managers.map((manager) => (
                   <option key={manager.user_id} value={manager.user_id}>
                     {manager.display_name || manager.user_id}
@@ -351,7 +350,7 @@ export default function SousEntrepotsPage() {
             </label>
 
             <label className="space-y-2">
-              <span className="text-sm text-slate-300">Ville</span>
+              <span className="text-sm text-slate-300">{t('bz.swCity')}</span>
               <input
                 value={form.city}
                 onChange={(e) => setForm((current) => ({ ...current, city: e.target.value }))}
@@ -360,7 +359,7 @@ export default function SousEntrepotsPage() {
             </label>
 
             <label className="space-y-2">
-              <span className="text-sm text-slate-300">Zone / secteur</span>
+              <span className="text-sm text-slate-300">{t('bz.swZone')}</span>
               <input
                 value={form.zone}
                 onChange={(e) => setForm((current) => ({ ...current, zone: e.target.value }))}
@@ -370,7 +369,7 @@ export default function SousEntrepotsPage() {
             </label>
 
             <label className="space-y-2 md:col-span-2">
-              <span className="text-sm text-slate-300">Adresse</span>
+              <span className="text-sm text-slate-300">{t('bz.swAddress')}</span>
               <input
                 value={form.address}
                 onChange={(e) => setForm((current) => ({ ...current, address: e.target.value }))}
@@ -380,38 +379,37 @@ export default function SousEntrepotsPage() {
 
             <div className="md:col-span-2 flex items-center justify-between gap-4 border-t border-white/10 pt-4">
               <div className="text-xs text-slate-500">
-                Parent sélectionné : <span className="text-slate-300">{parentName || '—'}</span>
+                {t('bz.swSelParent')} <span className="text-slate-300">{parentName || '—'}</span>
               </div>
               <button
                 type="submit"
                 disabled={saving || !warehouses.length}
                 className="rounded-xl bg-[#D4AF37] px-5 py-3 font-semibold text-[#07142c] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {saving ? 'Création…' : 'Créer le sous-entrepôt'}
+                {saving ? t('bz.swCreating') : t('bz.swCreateBtn')}
               </button>
             </div>
           </form>
         </section>
       ) : (
         <div className="rounded-xl border border-white/10 bg-[#08152f] p-4 text-sm text-slate-400">
-          Vous pouvez consulter les sous-entrepôts qui vous sont accessibles. La création et la
-          désactivation sont réservées aux administrateurs.
+          {t('bz.swViewOnly')}
         </div>
       )}
 
       <section className="rounded-2xl border border-white/10 bg-[#08152f] p-5">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold">Sous-entrepôts enregistrés</h2>
+            <h2 className="text-xl font-semibold">{t('bz.swRegistered')}</h2>
             <p className="mt-1 text-sm text-slate-400">
-              {subwarehouses.length} unité(s) rattachée(s).
+              {t('bz.swUnits').replace('{n}', String(subwarehouses.length))}
             </p>
           </div>
         </div>
 
         {!subwarehouses.length ? (
           <div className="rounded-xl border border-dashed border-white/10 p-8 text-center text-slate-500">
-            Aucun sous-entrepôt n&apos;a encore été créé.
+            {t('bz.swNone')}
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -440,33 +438,33 @@ export default function SousEntrepotsPage() {
                     <span
                       className={`rounded-full px-2 py-1 text-xs ${item.active ? 'bg-emerald-500/10 text-emerald-300' : 'bg-slate-500/10 text-slate-400'}`}
                     >
-                      {item.active ? 'Actif' : 'Inactif'}
+                      {item.active ? t('bz.swActive') : t('bz.swInactive')}
                     </span>
                   </div>
 
                   <div className="mt-4 space-y-2 text-sm text-slate-300">
                     <div>
-                      <span className="text-slate-500">Parent :</span>{' '}
+                      <span className="text-slate-500">{t('bz.swParentL')}</span>{' '}
                       {parent?.name || item.parent_warehouse_id}
                     </div>
                     {item.city && (
                       <div>
-                        <span className="text-slate-500">Ville :</span> {item.city}
+                        <span className="text-slate-500">{t('bz.swCityL')}</span> {item.city}
                       </div>
                     )}
                     {item.zone && (
                       <div>
-                        <span className="text-slate-500">Zone :</span> {item.zone}
+                        <span className="text-slate-500">{t('bz.swZoneL')}</span> {item.zone}
                       </div>
                     )}
                     {manager && (
                       <div>
-                        <span className="text-slate-500">Responsable :</span> {manager}
+                        <span className="text-slate-500">{t('bz.swManagerL')}</span> {manager}
                       </div>
                     )}
                     {item.address && (
                       <div>
-                        <span className="text-slate-500">Adresse :</span> {item.address}
+                        <span className="text-slate-500">{t('bz.swAddressL')}</span> {item.address}
                       </div>
                     )}
                   </div>
@@ -477,7 +475,7 @@ export default function SousEntrepotsPage() {
                       onClick={() => void toggleActive(item)}
                       className="mt-5 w-full rounded-lg border border-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/5"
                     >
-                      {item.active ? 'Désactiver' : 'Réactiver'}
+                      {item.active ? t('bz.swDeactivate') : t('bz.swReactivate')}
                     </button>
                   )}
                 </article>
