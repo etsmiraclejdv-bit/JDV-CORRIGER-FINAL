@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { getAuthContext, type AuthContextData } from '@/lib/auth/context';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Location = {
   id: string;
@@ -28,6 +30,7 @@ type Stock = {
 };
 
 export default function SousEntrepotsStockPage() {
+  const { t } = useLanguage();
   const [ctx, setCtx] = useState<AuthContextData | null>(null);
   const [locations, setLocations] = useState<Location[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
@@ -98,7 +101,7 @@ export default function SousEntrepotsStockPage() {
         setCtx(c);
         if (c?.organizationId) await load(c.organizationId);
       } catch (e) {
-        if (mounted) setMessage(e instanceof Error ? e.message : 'Chargement impossible.');
+        if (mounted) setMessage(e instanceof Error ? e.message : 'bz.sskLoadErr');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -110,7 +113,7 @@ export default function SousEntrepotsStockPage() {
 
   async function transfer() {
     if (!ctx?.organizationId || !source || !destination || !article || Number(quantity) <= 0) {
-      setMessage('Source, destination, article et quantité sont obligatoires.');
+      setMessage('bz.sskNeed');
       return;
     }
     const src = locations.find((x) => x.id === source);
@@ -129,7 +132,7 @@ export default function SousEntrepotsStockPage() {
     });
     if (error) setMessage(error.message);
     else {
-      setMessage('Transfert enregistré. Les deux mouvements sont tracés dans le journal.');
+      setMessage('bz.sskDone');
       setQuantity('');
       setNotes('');
       await load(ctx.organizationId);
@@ -137,34 +140,33 @@ export default function SousEntrepotsStockPage() {
     setSaving(false);
   }
 
-  if (loading) return <div className="p-6 text-slate-300">Chargement du stock…</div>;
+  if (loading) return <div className="p-6 text-slate-300">{t('bz.sskLoading')}</div>;
 
   return (
     <div className="min-h-full space-y-6 p-6 text-white">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#D4AF37]">
-          Stock décentralisé
+          {t('bz.sskKicker')}
         </p>
-        <h1 className="mt-1 text-3xl font-bold">Stock des sous-entrepôts</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Le stock central et les sous-entrepôts utilisent la même source de vérité. Un transfert
-          produit automatiquement une sortie et une entrée liées.
-        </p>
+        <h1 className="mt-1 text-3xl font-bold">{t('bz.sskTitle')}</h1>
+        <p className="mt-2 text-sm text-slate-400">{t('bz.sskIntro')}</p>
       </div>
 
       {message && (
-        <div className="rounded-xl border border-white/10 bg-[#08152f] p-4 text-sm">{message}</div>
+        <div className="rounded-xl border border-white/10 bg-[#08152f] p-4 text-sm">
+          {message.startsWith('bz.') ? t(message as TerrainKey) : message}
+        </div>
       )}
 
       <section className="rounded-2xl border border-[#D4AF37]/20 bg-[#08152f] p-5">
-        <h2 className="text-xl font-semibold text-[#D4AF37]">Transfert de stock</h2>
+        <h2 className="text-xl font-semibold text-[#D4AF37]">{t('bz.sskTransfer')}</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <select
             value={source}
             onChange={(e) => setSource(e.target.value)}
             className="rounded-xl border border-white/10 bg-[#0F2347] p-3"
           >
-            <option value="">Source</option>
+            <option value="">{t('bz.sskSource')}</option>
             {locations.map((x) => (
               <option key={x.kind + x.id} value={x.id}>
                 {x.name} · {x.code}
@@ -176,7 +178,7 @@ export default function SousEntrepotsStockPage() {
             onChange={(e) => setDestination(e.target.value)}
             className="rounded-xl border border-white/10 bg-[#0F2347] p-3"
           >
-            <option value="">Destination</option>
+            <option value="">{t('bz.sskDest')}</option>
             {locations.map((x) => (
               <option key={x.kind + x.id} value={x.id}>
                 {x.name} · {x.code}
@@ -188,7 +190,7 @@ export default function SousEntrepotsStockPage() {
             onChange={(e) => setArticle(e.target.value)}
             className="rounded-xl border border-white/10 bg-[#0F2347] p-3"
           >
-            <option value="">Article</option>
+            <option value="">{t('bz.sskArticle')}</option>
             {articles.map((x) => (
               <option key={x.id} value={x.id}>
                 {x.code} · {x.name}
@@ -201,7 +203,7 @@ export default function SousEntrepotsStockPage() {
             step="1"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
-            placeholder="Quantité"
+            placeholder={t('bz.sskQty')}
             className="rounded-xl border border-white/10 bg-[#0F2347] p-3"
           />
         </div>
@@ -209,7 +211,7 @@ export default function SousEntrepotsStockPage() {
           <input
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Motif / référence"
+            placeholder={t('bz.sskNotes')}
             className="flex-1 rounded-xl border border-white/10 bg-[#0F2347] p-3"
           />
           <button
@@ -217,25 +219,25 @@ export default function SousEntrepotsStockPage() {
             onClick={() => void transfer()}
             className="rounded-xl bg-[#D4AF37] px-6 py-3 font-semibold text-[#07142c] disabled:opacity-50"
           >
-            {saving ? 'Transfert…' : 'Transférer'}
+            {saving ? t('bz.sskTransferring') : t('bz.sskTransferBtn')}
           </button>
         </div>
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#08152f]">
         <div className="border-b border-white/10 p-5">
-          <h2 className="text-xl font-semibold">État des stocks</h2>
+          <h2 className="text-xl font-semibold">{t('bz.sskState')}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[900px] text-sm">
             <thead>
               <tr className="border-b border-white/10 text-left text-slate-400">
-                <th className="p-3">Entrepôt</th>
-                <th className="p-3">Sous-entrepôt</th>
-                <th className="p-3">Code</th>
-                <th className="p-3">Article</th>
-                <th className="p-3 text-right">Quantité</th>
-                <th className="p-3 text-right">Minimum</th>
+                <th className="p-3">{t('bz.sskColWh')}</th>
+                <th className="p-3">{t('bz.sskColSub')}</th>
+                <th className="p-3">{t('bz.sskColCode')}</th>
+                <th className="p-3">{t('bz.sskArticle')}</th>
+                <th className="p-3 text-right">{t('bz.sskQty')}</th>
+                <th className="p-3 text-right">{t('bz.sskColMin')}</th>
               </tr>
             </thead>
             <tbody>
@@ -245,7 +247,9 @@ export default function SousEntrepotsStockPage() {
                     {x.warehouse_name} <span className="text-slate-500">({x.warehouse_code})</span>
                   </td>
                   <td className="p-3">
-                    {x.subwarehouse_name ?? <span className="text-slate-500">Stock central</span>}
+                    {x.subwarehouse_name ?? (
+                      <span className="text-slate-500">{t('bz.sskCentral')}</span>
+                    )}
                   </td>
                   <td className="p-3 font-mono text-[#D4AF37]">{x.article_code}</td>
                   <td className="p-3">{x.article_name}</td>
