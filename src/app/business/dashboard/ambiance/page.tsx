@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ImagePlus, Trash2, Sparkles, LoaderCircle, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 const db = supabase as any;
 
 type Asset = {
@@ -14,6 +16,8 @@ type Asset = {
 };
 
 export default function AmbiancePage() {
+  const { t } = useLanguage();
+  const fill = (key: TerrainKey, e: string) => t(key).replace('{e}', e);
   const [organizationId, setOrganizationId] = useState<string | null>(null);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedUrl, setSelectedUrl] = useState('');
@@ -22,7 +26,12 @@ export default function AmbiancePage() {
   const [motion, setMotion] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessageText] = useState('');
+  const [messageOk, setMessageOk] = useState(false);
+  const setMessage = (text: string, ok = false) => {
+    setMessageText(text);
+    setMessageOk(ok);
+  };
   const bucket = 'jdv-dashboard-backgrounds';
 
   const loadAssets = useCallback(async (orgId: string) => {
@@ -39,7 +48,7 @@ export default function AmbiancePage() {
       const orgId = profile?.organization_id;
       if (!orgId) {
         if (alive) {
-          setMessage('Aucune organisation active n’est associée à votre compte.');
+          setMessage(t('bz.amNoOrg'));
           setLoading(false);
         }
         return;
@@ -65,7 +74,7 @@ export default function AmbiancePage() {
     return () => {
       alive = false;
     };
-  }, [loadAssets]);
+  }, [loadAssets, t]);
 
   async function saveSettings(url = selectedUrl) {
     if (!organizationId) return;
@@ -84,17 +93,17 @@ export default function AmbiancePage() {
       { onConflict: 'organization_id' }
     );
     setBusy(false);
-    setMessage(error ? `Enregistrement impossible : ${error.message}` : 'Ambiance enregistrée.');
+    setMessage(error ? fill('bz.amSaveErr', error.message) : t('bz.amSaved'), !error);
   }
 
   async function upload(file?: File) {
     if (!file || !organizationId) return;
     if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'].includes(file.type)) {
-      setMessage('Format refusé. Utilisez JPG, PNG, WebP, GIF ou AVIF.');
+      setMessage(t('bz.amBadFormat'));
       return;
     }
     if (file.size > 12 * 1024 * 1024) {
-      setMessage('Le fichier dépasse la limite de 12 Mo.');
+      setMessage(t('bz.amTooBig'));
       return;
     }
     setBusy(true);
@@ -110,7 +119,7 @@ export default function AmbiancePage() {
       .upload(path, file, { cacheControl: '3600', upsert: false, contentType: file.type });
     if (uploadError) {
       setBusy(false);
-      setMessage(`Téléversement impossible : ${uploadError.message}`);
+      setMessage(fill('bz.amUpErr', uploadError.message));
       return;
     }
     const { data } = supabase.storage.from(bucket).getPublicUrl(path);
@@ -129,11 +138,7 @@ export default function AmbiancePage() {
     );
     await loadAssets(organizationId);
     setBusy(false);
-    setMessage(
-      saveError
-        ? `Image importée, mais réglages non enregistrés : ${saveError.message}`
-        : 'Image importée et appliquée au fond du tableau de bord.'
-    );
+    setMessage(saveError ? fill('bz.amUpPartial', saveError.message) : t('bz.amUpOk'), !saveError);
   }
 
   async function removeAsset(name: string) {
@@ -150,10 +155,10 @@ export default function AmbiancePage() {
       await saveSettings('');
     }
     await loadAssets(organizationId);
-    setMessage('Image supprimée.');
+    setMessage(t('bz.amDeleted'), true);
   }
 
-  if (loading) return <div className="p-8 text-slate-300">Chargement du studio d’ambiance…</div>;
+  if (loading) return <div className="p-8 text-slate-300">{t('bz.amLoading')}</div>;
 
   return (
     <div className="mx-auto max-w-6xl space-y-6 p-6 lg:p-8 text-white">
@@ -162,18 +167,15 @@ export default function AmbiancePage() {
           <div className="mb-2 flex items-center gap-2 text-amber-300">
             <Sparkles size={20} />
             <span className="text-xs font-semibold uppercase tracking-[.2em]">
-              Personnalisation
+              {t('bz.amKicker')}
             </span>
           </div>
-          <h1 className="text-2xl font-bold">Studio d’ambiance</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300">
-            Importe tes images de fond, GIF animés ou visuels de marque. Le fond reste décoratif et
-            ne doit pas gêner la lecture.
-          </p>
+          <h1 className="text-2xl font-bold">{t('bz.amTitle')}</h1>
+          <p className="mt-2 max-w-2xl text-sm text-slate-300">{t('bz.amIntro')}</p>
         </div>
         <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-amber-400 px-4 py-3 font-semibold text-slate-950 hover:bg-amber-300">
           {busy ? <LoaderCircle className="animate-spin" size={18} /> : <ImagePlus size={18} />}{' '}
-          Importer une image
+          {t('bz.amImport')}
           <input
             className="hidden"
             type="file"
@@ -189,23 +191,17 @@ export default function AmbiancePage() {
       </header>
       {message && (
         <div
-          className={`flex items-start gap-2 rounded-xl border p-3 text-sm ${message.includes('impossible') || message.includes('dépasse') || message.includes('refusé') ? 'border-red-400/30 bg-red-950/30 text-red-200' : 'border-emerald-400/30 bg-emerald-950/30 text-emerald-200'}`}
+          className={`flex items-start gap-2 rounded-xl border p-3 text-sm ${messageOk ? 'border-emerald-400/30 bg-emerald-950/30 text-emerald-200' : 'border-red-400/30 bg-red-950/30 text-red-200'}`}
         >
-          {message.startsWith('Ambiance') || message.startsWith('Image') ? (
-            <CheckCircle2 size={18} />
-          ) : (
-            <AlertCircle size={18} />
-          )}
+          {messageOk ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
           <span>{message}</span>
         </div>
       )}
       <div className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
         <section className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70">
           <div className="border-b border-white/10 p-4">
-            <h2 className="font-semibold">Aperçu du fond</h2>
-            <p className="mt-1 text-xs text-slate-400">
-              Les images GIF conservent leur animation dans l’application.
-            </p>
+            <h2 className="font-semibold">{t('bz.amPrevTitle')}</h2>
+            <p className="mt-1 text-xs text-slate-400">{t('bz.amPrevNote')}</p>
           </div>
           <div className="relative min-h-72 overflow-hidden bg-[#0B1B3D] p-6">
             {selectedUrl && (
@@ -227,15 +223,15 @@ export default function AmbiancePage() {
               <div className="w-36 rounded-lg border border-white/10 bg-[#08152f]/90 p-3 text-xs text-slate-200">
                 JDV CRM
                 <br />
-                <span className="text-amber-300">Tableau de bord</span>
+                <span className="text-amber-300">{t('bz.amDash')}</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-white/10 bg-[#0F2347]/90 p-4">
-                  <span className="text-xs text-slate-300">Clients</span>
+                  <span className="text-xs text-slate-300">{t('bz.amClients')}</span>
                   <p className="mt-2 text-2xl font-bold">128</p>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-[#0F2347]/90 p-4">
-                  <span className="text-xs text-slate-300">Activité</span>
+                  <span className="text-xs text-slate-300">{t('bz.amActivity')}</span>
                   <p className="mt-2 text-2xl font-bold text-emerald-300">+12%</p>
                 </div>
               </div>
@@ -243,9 +239,9 @@ export default function AmbiancePage() {
           </div>
         </section>
         <section className="space-y-5 rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-          <h2 className="font-semibold">Réglages visuels</h2>
+          <h2 className="font-semibold">{t('bz.amVisual')}</h2>
           <label className="block text-sm">
-            Opacité du fond <span className="float-right text-amber-300">{opacity}%</span>
+            {t('bz.amOpacity')} <span className="float-right text-amber-300">{opacity}%</span>
             <input
               className="mt-3 w-full accent-amber-400"
               type="range"
@@ -254,20 +250,18 @@ export default function AmbiancePage() {
               value={opacity}
               onChange={(e) => setOpacity(Number(e.target.value))}
             />
-            <span className="mt-1 block text-xs text-slate-400">
-              Conseil : 8 à 20 % pour conserver une bonne lisibilité.
-            </span>
+            <span className="mt-1 block text-xs text-slate-400">{t('bz.amTip')}</span>
           </label>
           <label className="block text-sm">
-            Ajustement de l’image
+            {t('bz.amFit')}
             <select
               className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-3 text-white"
               value={fit}
               onChange={(e) => setFit(e.target.value as typeof fit)}
             >
-              <option value="cover">Remplir l’écran</option>
-              <option value="contain">Afficher l’image entière</option>
-              <option value="auto">Taille originale</option>
+              <option value="cover">{t('bz.amCover')}</option>
+              <option value="contain">{t('bz.amContain')}</option>
+              <option value="auto">{t('bz.amAuto')}</option>
             </select>
           </label>
           <label className="flex items-start gap-3 rounded-xl bg-slate-800/70 p-3">
@@ -278,10 +272,8 @@ export default function AmbiancePage() {
               onChange={(e) => setMotion(e.target.checked)}
             />
             <span className="text-sm">
-              <b>Animation lente du fond</b>
-              <span className="mt-1 block text-xs text-slate-400">
-                Déplacement subtil, désactivable pour limiter les distractions.
-              </span>
+              <b>{t('bz.amMotion')}</b>
+              <span className="mt-1 block text-xs text-slate-400">{t('bz.amMotionNote')}</span>
             </span>
           </label>
           <div className="flex flex-wrap gap-2">
@@ -290,7 +282,7 @@ export default function AmbiancePage() {
               onClick={() => void saveSettings()}
               className="rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-semibold text-slate-950 disabled:opacity-50"
             >
-              {busy ? 'Enregistrement…' : 'Enregistrer les réglages'}
+              {busy ? t('bz.amSaving') : t('bz.amSaveBtn')}
             </button>
             <button
               disabled={busy}
@@ -300,21 +292,19 @@ export default function AmbiancePage() {
               }}
               className="rounded-xl border border-white/15 px-4 py-2.5 text-sm text-slate-200 disabled:opacity-50"
             >
-              Retirer le fond
+              {t('bz.amRemoveBg')}
             </button>
           </div>
         </section>
       </div>
       <section className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
         <div className="mb-4">
-          <h2 className="font-semibold">Bibliothèque des images</h2>
-          <p className="mt-1 text-xs text-slate-400">
-            Les fichiers sont stockés dans le bucket JDV dédié à l’organisation.
-          </p>
+          <h2 className="font-semibold">{t('bz.amLib')}</h2>
+          <p className="mt-1 text-xs text-slate-400">{t('bz.amLibNote')}</p>
         </div>
         {assets.length === 0 ? (
           <p className="rounded-xl border border-dashed border-white/15 p-8 text-center text-sm text-slate-400">
-            Aucune image importée pour le moment.
+            {t('bz.amNoImg')}
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -350,12 +340,12 @@ export default function AmbiancePage() {
                     }}
                     className="text-xs text-amber-300"
                   >
-                    Prévisualiser
+                    {t('bz.amPreview')}
                   </button>
                   <button
                     onClick={() => void removeAsset(asset.name)}
                     className="rounded p-1 text-red-300 hover:bg-red-950/50"
-                    title="Supprimer l’image"
+                    title={t('bz.amDelImg')}
                   >
                     <Trash2 size={15} />
                   </button>

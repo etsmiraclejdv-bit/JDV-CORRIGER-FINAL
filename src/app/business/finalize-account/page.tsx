@@ -4,16 +4,21 @@ import { FormEvent, useEffect, useState } from 'react';
 import { CheckCircle2, LockKeyhole, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 export default function FinalizeAccountPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [applicationId, setApplicationId] = useState('');
   const [ready, setReady] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
+  // Un message commençant par « bz. » est une clé de traduction ; sinon c'est un texte brut (erreur serveur).
   const [message, setMessage] = useState('');
+  const shownMessage = message.startsWith('bz.') ? t(message as TerrainKey) : message;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -27,10 +32,7 @@ export default function FinalizeAccountPage() {
       if (!active) return;
       setSessionReady(Boolean(data.session));
       setReady(true);
-      if (!data.session)
-        setMessage(
-          'Le lien est invalide, expiré ou la session de récupération n’a pas été établie. Demandez un nouveau lien au Concepteur.'
-        );
+      if (!data.session) setMessage('bz.fLinkInvalid');
     };
     finish();
 
@@ -50,11 +52,10 @@ export default function FinalizeAccountPage() {
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!applicationId) return setMessage('Identifiant de demande manquant.');
-    if (!sessionReady) return setMessage('Votre lien de finalisation n’est plus actif.');
-    if (password.length < 8)
-      return setMessage('Le mot de passe doit contenir au moins 8 caractères.');
-    if (password !== confirm) return setMessage('Les deux mots de passe ne correspondent pas.');
+    if (!applicationId) return setMessage('bz.fNoId');
+    if (!sessionReady) return setMessage('bz.fLinkInactive');
+    if (password.length < 8) return setMessage('bz.fPwdShort');
+    if (password !== confirm) return setMessage('bz.fMismatch');
 
     setLoading(true);
     setMessage('');
@@ -68,12 +69,12 @@ export default function FinalizeAccountPage() {
       if (error) throw error;
 
       const row = Array.isArray(data) ? data[0] : data;
-      if (!row?.organization_id) throw new Error('Activation de l’entreprise impossible.');
+      if (!row?.organization_id) throw new Error(t('bz.fActivationFail'));
 
-      setMessage('Votre compte entreprise est maintenant actif. Redirection vers votre espace…');
+      setMessage('bz.fActive');
       setTimeout(() => router.replace('/business/dashboard'), 900);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Impossible de finaliser le compte.');
+      setMessage(error instanceof Error ? error.message : t('bz.fFail'));
     } finally {
       setLoading(false);
     }
@@ -82,7 +83,7 @@ export default function FinalizeAccountPage() {
   if (!ready) {
     return (
       <main className="min-h-screen bg-[#07142d] text-white flex items-center justify-center p-6">
-        <p>Vérification du lien de finalisation…</p>
+        <p>{t('bz.fChecking')}</p>
       </main>
     );
   }
@@ -98,18 +99,13 @@ export default function FinalizeAccountPage() {
             <p className="text-xs uppercase tracking-[0.2em] text-[#D4AF37] font-semibold">
               JDV CRM
             </p>
-            <h1 className="text-2xl md:text-3xl font-bold mt-2">
-              Finaliser votre compte entreprise
-            </h1>
-            <p className="text-sm text-[#A0AEC0] mt-3 leading-6">
-              Votre demande a été approuvée par le Concepteur. Définissez maintenant votre mot de
-              passe pour activer votre espace.
-            </p>
+            <h1 className="text-2xl md:text-3xl font-bold mt-2">{t('bz.fTitle')}</h1>
+            <p className="text-sm text-[#A0AEC0] mt-3 leading-6">{t('bz.fIntro')}</p>
           </div>
 
           {message && (
             <div className="mb-5 rounded-xl border border-[#D4AF37]/20 bg-[#D4AF37]/5 p-4 text-sm text-[#E2E8F0]">
-              {message}
+              {shownMessage}
             </div>
           )}
 
@@ -117,7 +113,7 @@ export default function FinalizeAccountPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label className="block text-xs uppercase tracking-wide text-[#A0AEC0] mb-2">
-                  Nouveau mot de passe
+                  {t('bz.fNewPwd')}
                 </label>
                 <div className="relative">
                   <LockKeyhole
@@ -131,13 +127,13 @@ export default function FinalizeAccountPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full rounded-xl bg-[#07142d] border border-[#D4AF37]/20 px-10 py-3 text-white outline-none focus:border-[#D4AF37]/60"
-                    placeholder="Minimum 8 caractères"
+                    placeholder={t('bz.fMin8')}
                   />
                 </div>
               </div>
               <div>
                 <label className="block text-xs uppercase tracking-wide text-[#A0AEC0] mb-2">
-                  Confirmer le mot de passe
+                  {t('bz.fConfirm')}
                 </label>
                 <input
                   required
@@ -146,14 +142,14 @@ export default function FinalizeAccountPage() {
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value)}
                   className="w-full rounded-xl bg-[#07142d] border border-[#D4AF37]/20 px-4 py-3 text-white outline-none focus:border-[#D4AF37]/60"
-                  placeholder="Retapez votre mot de passe"
+                  placeholder={t('bz.fRetype')}
                 />
               </div>
               <button
                 disabled={loading}
                 className="w-full rounded-xl bg-[#D4AF37] text-[#07142d] py-3.5 font-bold disabled:opacity-50"
               >
-                {loading ? 'Activation…' : 'Activer mon compte entreprise'}
+                {loading ? t('bz.fActivating') : t('bz.fActivate')}
               </button>
             </form>
           )}
@@ -161,9 +157,7 @@ export default function FinalizeAccountPage() {
           {!sessionReady && ready && (
             <div className="text-center">
               <CheckCircle2 className="mx-auto mb-3 text-[#D4AF37]" size={30} />
-              <p className="text-sm text-[#A0AEC0]">
-                Contactez le Concepteur pour recevoir un nouveau lien de finalisation.
-              </p>
+              <p className="text-sm text-[#A0AEC0]">{t('bz.fContact')}</p>
             </div>
           )}
         </div>

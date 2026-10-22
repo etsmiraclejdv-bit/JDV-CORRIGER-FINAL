@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase/client';
 import { fetchSales } from '@/lib/services/salesService';
 import Link from 'next/link';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 interface Sale {
   id: string;
@@ -28,15 +30,12 @@ const STATUS_COLORS: Record<string, string> = {
   encaissé: 'bg-green-500/20 text-green-400 border-green-500/30',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'En attente',
-  active: 'Actif',
-  completed: 'Terminé',
-  cancelled: 'Annulé',
-  encaissé: 'Encaissé',
-};
-
 export default function BusinessVentesPage() {
+  const { t, locale } = useLanguage();
+  const statusLabel = (s: string) =>
+    ['pending', 'active', 'completed', 'cancelled', 'encaissé'].includes(s)
+      ? t(('bz.vl.' + s) as TerrainKey)
+      : s;
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -77,28 +76,28 @@ export default function BusinessVentesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Ventes</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">Toutes les ventes de votre organisation</p>
+          <h1 className="text-2xl font-bold text-white">{t('bz.vTitle')}</h1>
+          <p className="text-sm text-[#A0AEC0] mt-1">{t('bz.vSub')}</p>
         </div>
         <Link
           href="/business/dashboard/ventes/new"
           className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
         >
           <Plus size={14} />
-          Nouvelle vente
+          {t('bz.vNew')}
         </Link>
       </div>
 
       {/* KPI */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
-          <p className="text-xs text-[#A0AEC0] mb-1">Total ventes</p>
+          <p className="text-xs text-[#A0AEC0] mb-1">{t('bz.vKpiTotal')}</p>
           <p className="text-2xl font-bold text-white">{sales.length}</p>
         </div>
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
-          <p className="text-xs text-[#A0AEC0] mb-1">Chiffre d&apos;affaires</p>
+          <p className="text-xs text-[#A0AEC0] mb-1">{t('bz.vKpiRevenue')}</p>
           <p className="text-2xl font-bold text-[#D4AF37]">
-            {new Intl.NumberFormat('fr-FR', {
+            {new Intl.NumberFormat(locale, {
               style: 'currency',
               currency: 'XOF',
               maximumFractionDigits: 0,
@@ -106,7 +105,7 @@ export default function BusinessVentesPage() {
           </p>
         </div>
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
-          <p className="text-xs text-[#A0AEC0] mb-1">En attente</p>
+          <p className="text-xs text-[#A0AEC0] mb-1">{t('bz.vKpiPending')}</p>
           <p className="text-2xl font-bold text-yellow-400">
             {sales.filter((s) => s.status === 'pending').length}
           </p>
@@ -121,7 +120,7 @@ export default function BusinessVentesPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher par client, produit..."
+            placeholder={t('bz.vSearchPh')}
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
@@ -130,24 +129,24 @@ export default function BusinessVentesPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#D4AF37]/60"
         >
-          <option value="">Tous les statuts</option>
-          <option value="pending">En attente</option>
-          <option value="active">Actif</option>
-          <option value="completed">Terminé</option>
-          <option value="cancelled">Annulé</option>
+          <option value="">{t('bz.vAllStatus')}</option>
+          <option value="pending">{statusLabel('pending')}</option>
+          <option value="active">{statusLabel('active')}</option>
+          <option value="completed">{statusLabel('completed')}</option>
+          <option value="cancelled">{statusLabel('cancelled')}</option>
         </select>
       </div>
 
       {/* Table */}
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-[#A0AEC0] text-sm">Chargement des ventes...</div>
+          <div className="py-16 text-center text-[#A0AEC0] text-sm">{t('bz.vLoading')}</div>
         ) : error ? (
           <div className="py-16 text-center text-red-400 text-sm">{error}</div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
             <ShoppingCart size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
-            <p className="text-[#A0AEC0] text-sm">Aucune vente trouvée</p>
+            <p className="text-[#A0AEC0] text-sm">{t('bz.vNone')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -155,19 +154,19 @@ export default function BusinessVentesPage() {
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
-                    Client
+                    {t('bz.vColClient')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
-                    Produit
+                    {t('bz.vColProduct')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
-                    Montant
+                    {t('bz.vColAmount')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
-                    Statut
+                    {t('bz.puColStatus')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
-                    Date
+                    {t('bz.puColDate')}
                   </th>
                   <th className="px-4 py-3"></th>
                 </tr>
@@ -188,7 +187,7 @@ export default function BusinessVentesPage() {
                       {sale.products?.name ?? '—'}
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold text-[#D4AF37]">
-                      {new Intl.NumberFormat('fr-FR', {
+                      {new Intl.NumberFormat(locale, {
                         style: 'currency',
                         currency: 'XOF',
                         maximumFractionDigits: 0,
@@ -198,11 +197,11 @@ export default function BusinessVentesPage() {
                       <span
                         className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border ${STATUS_COLORS[sale.status] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}
                       >
-                        {STATUS_LABELS[sale.status] ?? sale.status}
+                        {statusLabel(sale.status)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-[#718096]">
-                      {new Date(sale.sold_at).toLocaleDateString('fr-FR')}
+                      {new Date(sale.sold_at).toLocaleDateString(locale)}
                     </td>
                     <td className="px-4 py-3">
                       <Link

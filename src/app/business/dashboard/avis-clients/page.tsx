@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 const db = supabase as any;
 
 type Review = {
@@ -29,15 +31,26 @@ type ClientOption = {
   last_name: string | null;
   phone: string | null;
 };
-const sources = [
-  { value: 'in_person', label: 'En personne' },
-  { value: 'phone', label: 'Téléphone' },
-  { value: 'whatsapp', label: 'WhatsApp' },
-  { value: 'email', label: 'E-mail' },
-  { value: 'online', label: 'En ligne' },
+const sources: { value: string; label: TerrainKey | null }[] = [
+  { value: 'in_person', label: 'bz.avSrcInPerson' },
+  { value: 'phone', label: 'bz.avSrcPhone' },
+  { value: 'whatsapp', label: null },
+  { value: 'email', label: 'bz.avSrcEmail' },
+  { value: 'online', label: 'bz.avSrcOnline' },
 ];
 
 export default function AvisClientsPage() {
+  const { t, locale } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const sourceLabel = (value: string) => {
+    const s = sources.find((x) => x.value === value);
+    if (!s) return value;
+    return s.label ? t(s.label) : 'WhatsApp';
+  };
   const [orgId, setOrgId] = useState<string | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [clients, setClients] = useState<ClientOption[]>([]);
@@ -61,19 +74,22 @@ export default function AvisClientsPage() {
     setClients((data ?? []) as ClientOption[]);
   }, []);
 
-  const loadReviews = useCallback(async (id: string) => {
-    const { data, error } = await db
-      .from('client_reviews')
-      .select('id,customer_name,rating,comment,source,status,created_at')
-      .eq('organization_id', id)
-      .order('created_at', { ascending: false })
-      .limit(100);
-    if (error) {
-      setMessage(`Chargement impossible : ${error.message}`);
-      return;
-    }
-    setReviews((data ?? []) as Review[]);
-  }, []);
+  const loadReviews = useCallback(
+    async (id: string) => {
+      const { data, error } = await db
+        .from('client_reviews')
+        .select('id,customer_name,rating,comment,source,status,created_at')
+        .eq('organization_id', id)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) {
+        setMessage(fill('bz.avLoadErr', { e: error.message }));
+        return;
+      }
+      setReviews((data ?? []) as Review[]);
+    },
+    [t]
+  );
 
   useEffect(() => {
     let active = true;
@@ -82,7 +98,7 @@ export default function AvisClientsPage() {
       const id = profile?.organization_id;
       if (!id) {
         if (active) {
-          setMessage('Aucune organisation active trouvée.');
+          setMessage(t('bz.avNoOrg'));
           setLoading(false);
         }
         return;
@@ -94,7 +110,7 @@ export default function AvisClientsPage() {
     return () => {
       active = false;
     };
-  }, [loadReviews, loadClients]);
+  }, [loadReviews, loadClients, t]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -107,7 +123,7 @@ export default function AvisClientsPage() {
       ).trim(),
       trimmedComment = comment.trim();
     if (trimmedName.length < 2 || trimmedComment.length < 2) {
-      setMessage('Renseigne le nom du client et un commentaire.');
+      setMessage(t('bz.avNeed'));
       return;
     }
     setSaving(true);
@@ -125,7 +141,7 @@ export default function AvisClientsPage() {
     });
     setSaving(false);
     if (error) {
-      setMessage(`Avis non enregistré : ${error.message}`);
+      setMessage(fill('bz.avSaveErr', { e: error.message }));
       return;
     }
     setName('');
@@ -133,7 +149,7 @@ export default function AvisClientsPage() {
     setComment('');
     setRating(5);
     setSource('in_person');
-    setMessage('Avis client enregistré.');
+    setMessage(t('bz.avSaved'));
     await loadReviews(orgId);
   }
 
@@ -142,13 +158,15 @@ export default function AvisClientsPage() {
       .from('client_reviews')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', review.id);
-    setMessage(error ? error.message : status === 'hidden' ? 'Avis masqué.' : 'Avis publié.');
+    setMessage(
+      error ? error.message : status === 'hidden' ? t('bz.avHidden') : t('bz.avPublished')
+    );
     if (!error && orgId) await loadReviews(orgId);
   }
   async function remove(review: Review) {
     if (!orgId) return;
     const { error } = await db.from('client_reviews').delete().eq('id', review.id);
-    setMessage(error ? error.message : 'Avis supprimé.');
+    setMessage(error ? error.message : t('bz.avDeleted'));
     if (!error) await loadReviews(orgId);
   }
 
@@ -166,13 +184,12 @@ export default function AvisClientsPage() {
       <header>
         <div className="mb-2 flex items-center gap-2 text-amber-300">
           <MessageSquareQuote size={20} />
-          <span className="text-xs font-semibold uppercase tracking-[.2em]">Relation client</span>
+          <span className="text-xs font-semibold uppercase tracking-[.2em]">
+            {t('bz.avKicker')}
+          </span>
         </div>
-        <h1 className="text-2xl font-bold">Avis et satisfaction clients</h1>
-        <p className="mt-2 text-sm text-slate-300">
-          Enregistre les retours reçus par l’équipe, suis la satisfaction et masque les commentaires
-          inappropriés.
-        </p>
+        <h1 className="text-2xl font-bold">{t('bz.avTitle')}</h1>
+        <p className="mt-2 text-sm text-slate-300">{t('bz.avIntro')}</p>
       </header>
       {message && (
         <p className="rounded-xl border border-white/10 bg-slate-900/70 p-3 text-sm text-slate-200">
@@ -181,7 +198,7 @@ export default function AvisClientsPage() {
       )}
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-          <p className="text-sm text-slate-400">Note moyenne publiée</p>
+          <p className="text-sm text-slate-400">{t('bz.avAvg')}</p>
           <div className="mt-2 flex items-center gap-2">
             <span className="text-3xl font-bold">{average.toFixed(1)}</span>
             <span className="text-amber-300">/ 5</span>
@@ -189,11 +206,11 @@ export default function AvisClientsPage() {
           </div>
         </div>
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-          <p className="text-sm text-slate-400">Avis publiés</p>
+          <p className="text-sm text-slate-400">{t('bz.avPubCount')}</p>
           <p className="mt-2 text-3xl font-bold">{published.length}</p>
         </div>
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5">
-          <p className="text-sm text-slate-400">À modérer</p>
+          <p className="text-sm text-slate-400">{t('bz.avToMod')}</p>
           <p className="mt-2 text-3xl font-bold">
             {reviews.filter((r) => r.status === 'pending').length}
           </p>
@@ -204,9 +221,9 @@ export default function AvisClientsPage() {
           onSubmit={submit}
           className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/70 p-5"
         >
-          <h2 className="font-semibold">Enregistrer un avis</h2>
+          <h2 className="font-semibold">{t('bz.avRecord')}</h2>
           <label className="block text-sm">
-            Lier à un client du CRM (facultatif)
+            {t('bz.avLink')}
             <select
               value={clientId}
               onChange={(e) => {
@@ -218,7 +235,7 @@ export default function AvisClientsPage() {
               }}
               className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-3 text-white"
             >
-              <option value="">Saisie manuelle / client non répertorié</option>
+              <option value="">{t('bz.avManual')}</option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {[client.first_name, client.last_name].filter(Boolean).join(' ')}
@@ -228,7 +245,7 @@ export default function AvisClientsPage() {
             </select>
           </label>
           <label className="block text-sm">
-            Nom du client
+            {t('bz.avName')}
             <input
               required
               minLength={2}
@@ -238,19 +255,19 @@ export default function AvisClientsPage() {
                 setName(e.target.value);
                 if (clientId) setClientId('');
               }}
-              placeholder="Nom et prénom"
+              placeholder={t('bz.avNamePh')}
               className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-3 text-white"
             />
           </label>
           <div>
-            <p className="mb-2 text-sm">Note donnée par le client</p>
+            <p className="mb-2 text-sm">{t('bz.avRatingQ')}</p>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
                   key={n}
                   type="button"
                   onClick={() => setRating(n)}
-                  aria-label={`${n} étoile(s)`}
+                  aria-label={fill('bz.avStarsN', { n })}
                   className="rounded-lg p-1 hover:bg-white/5"
                 >
                   <Star
@@ -262,7 +279,7 @@ export default function AvisClientsPage() {
             </div>
           </div>
           <label className="block text-sm">
-            Canal de retour
+            {t('bz.avChannel')}
             <select
               value={source}
               onChange={(e) => setSource(e.target.value)}
@@ -270,13 +287,13 @@ export default function AvisClientsPage() {
             >
               {sources.map((s) => (
                 <option key={s.value} value={s.value}>
-                  {s.label}
+                  {sourceLabel(s.value)}
                 </option>
               ))}
             </select>
           </label>
           <label className="block text-sm">
-            Commentaire
+            {t('bz.avComment')}
             <textarea
               required
               minLength={2}
@@ -284,7 +301,7 @@ export default function AvisClientsPage() {
               rows={5}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Que dit le client de son expérience ?"
+              placeholder={t('bz.avCommentPh')}
               className="mt-2 w-full rounded-xl border border-white/10 bg-slate-950 p-3 text-white"
             />
           </label>
@@ -293,20 +310,17 @@ export default function AvisClientsPage() {
             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-3 font-semibold text-slate-950 disabled:opacity-50"
           >
             <Send size={16} />
-            {saving ? 'Enregistrement…' : 'Enregistrer l’avis'}
+            {saving ? t('bz.avSaving') : t('bz.avSaveBtn')}
           </button>
-          <p className="text-xs text-slate-500">
-            Les avis saisis ici sont internes à votre organisation. Aucun client ne peut publier
-            anonymement via ce formulaire.
-          </p>
+          <p className="text-xs text-slate-500">{t('bz.avInternal')}</p>
         </form>
         <section className="space-y-4 rounded-2xl border border-white/10 bg-slate-900/70 p-5">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="font-semibold">Historique des avis</h2>
+            <h2 className="font-semibold">{t('bz.avHistory')}</h2>
             <button
               onClick={() => orgId && void loadReviews(orgId)}
               className="rounded-lg border border-white/10 p-2 text-slate-300"
-              title="Actualiser"
+              title={t('bz.fnRefresh')}
             >
               <RefreshCw size={16} />
             </button>
@@ -314,7 +328,9 @@ export default function AvisClientsPage() {
           <div className="space-y-2">
             {counts.map((row) => (
               <div key={row.stars} className="flex items-center gap-3 text-xs">
-                <span className="w-10 text-slate-300">{row.stars} étoiles</span>
+                <span className="w-10 text-slate-300">
+                  {fill('bz.avStarsRow', { n: row.stars })}
+                </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/10">
                   <div
                     className="h-full rounded-full bg-amber-300"
@@ -328,10 +344,10 @@ export default function AvisClientsPage() {
             ))}
           </div>
           {loading ? (
-            <p className="p-8 text-center text-sm text-slate-400">Chargement…</p>
+            <p className="p-8 text-center text-sm text-slate-400">{t('bz.avLoading')}</p>
           ) : reviews.length === 0 ? (
             <p className="rounded-xl border border-dashed border-white/15 p-8 text-center text-sm text-slate-400">
-              Aucun avis enregistré. Le premier retour client pourra être saisi ici.
+              {t('bz.avNone')}
             </p>
           ) : (
             <div className="max-h-[680px] space-y-3 overflow-y-auto pr-1">
@@ -361,10 +377,10 @@ export default function AvisClientsPage() {
                       className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-wide ${review.status === 'published' ? 'bg-emerald-950 text-emerald-300' : 'bg-slate-800 text-slate-300'}`}
                     >
                       {review.status === 'published'
-                        ? 'Publié'
+                        ? t('bz.avStPub')
                         : review.status === 'pending'
-                          ? 'À modérer'
-                          : 'Masqué'}
+                          ? t('bz.avToMod')
+                          : t('bz.avStHidden')}
                     </span>
                   </div>
                   <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-300">
@@ -372,8 +388,8 @@ export default function AvisClientsPage() {
                   </p>
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-3">
                     <span className="text-xs text-slate-500">
-                      {sources.find((s) => s.value === review.source)?.label ?? review.source} ·{' '}
-                      {new Date(review.created_at).toLocaleDateString('fr-FR')}
+                      {sourceLabel(review.source)} ·{' '}
+                      {new Date(review.created_at).toLocaleDateString(locale)}
                     </span>
                     <div className="flex gap-2">
                       {review.status === 'published' ? (
@@ -381,7 +397,7 @@ export default function AvisClientsPage() {
                           onClick={() => void setStatus(review, 'hidden')}
                           className="rounded-lg border border-white/10 px-2 py-1 text-xs text-slate-300"
                         >
-                          Masquer
+                          {t('bz.avHide')}
                         </button>
                       ) : (
                         <button
@@ -389,13 +405,13 @@ export default function AvisClientsPage() {
                           className="inline-flex items-center gap-1 rounded-lg border border-emerald-400/20 px-2 py-1 text-xs text-emerald-300"
                         >
                           <ShieldCheck size={13} />
-                          Publier
+                          {t('bz.avPublish')}
                         </button>
                       )}
                       <button
                         onClick={() => void remove(review)}
                         className="rounded-lg p-1 text-red-300 hover:bg-red-950/40"
-                        title="Supprimer"
+                        title={t('bz.avDelete')}
                       >
                         <Trash2 size={14} />
                       </button>
@@ -409,7 +425,7 @@ export default function AvisClientsPage() {
       </div>
       <p className="flex items-center gap-2 text-xs text-slate-500">
         <TrendingUp size={14} />
-        Les indicateurs se recalculent à partir des avis publiés de votre organisation.
+        {t('bz.avFooter')}
       </p>
     </div>
   );

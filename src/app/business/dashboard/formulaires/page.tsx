@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Eye, FilePlus2, Plus, Save, Send, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 import { FIELD_TYPES } from '@/features/design-studio/defaults';
 import {
   listCustomForms,
@@ -11,14 +13,26 @@ import {
 } from '@/features/design-studio/designService';
 import type { CustomFormDefinition, FormField } from '@/features/design-studio/types';
 
-const emptyField = (): FormField => ({
+const emptyField = (label: string): FormField => ({
   id: 'field-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-  label: 'Nouveau champ',
+  label,
   type: 'text',
   required: false,
 });
 
+const FIELD_TYPE_KEYS: Record<string, TerrainKey> = {
+  text: 'bz.fmTText',
+  textarea: 'bz.fmTTextarea',
+  number: 'bz.fmTNumber',
+  email: 'bz.fmTEmail',
+  phone: 'bz.fmTPhone',
+  date: 'bz.fmTDate',
+  select: 'bz.fmTSelect',
+  checkbox: 'bz.fmTCheckbox',
+};
+
 export default function FormStudioPage() {
+  const { t } = useLanguage();
   const [organizationId, setOrganizationId] = useState('');
   const [forms, setForms] = useState<CustomFormDefinition[]>([]);
   const [formId, setFormId] = useState('');
@@ -30,14 +44,17 @@ export default function FormStudioPage() {
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState(false);
 
-  const reloadForms = useCallback(async (orgId: string) => {
-    const result = await listCustomForms(orgId);
-    if (result.error) {
-      toast.error('Impossible de charger les formulaires. Vérifiez la migration du studio.');
-      return;
-    }
-    setForms(result.data);
-  }, []);
+  const reloadForms = useCallback(
+    async (orgId: string) => {
+      const result = await listCustomForms(orgId);
+      if (result.error) {
+        toast.error(t('bz.fmLoadErr'));
+        return;
+      }
+      setForms(result.data);
+    },
+    [t]
+  );
 
   useEffect(() => {
     let live = true;
@@ -46,7 +63,7 @@ export default function FormStudioPage() {
         if (!live) return;
         const orgId = String((data as Record<string, unknown> | null)?.organization_id ?? '');
         if (!orgId) {
-          toast.error('Aucune entreprise associée à ce compte.');
+          toast.error(t('bz.fmNoOrg'));
           setLoading(false);
           return;
         }
@@ -56,14 +73,14 @@ export default function FormStudioPage() {
       })
       .catch(() => {
         if (live) {
-          toast.error('Impossible de charger l’entreprise.');
+          toast.error(t('bz.fmOrgErr'));
           setLoading(false);
         }
       });
     return () => {
       live = false;
     };
-  }, [reloadForms]);
+  }, [reloadForms, t]);
 
   function newForm() {
     setFormId('');
@@ -82,7 +99,7 @@ export default function FormStudioPage() {
     setPreview(false);
     const result = await loadCustomFormSchema(form.id);
     if (result.error) {
-      toast.error('Impossible de charger la définition du formulaire.');
+      toast.error(t('bz.fmDefErr'));
       return;
     }
     setFields(result.data.fields ?? []);
@@ -96,13 +113,9 @@ export default function FormStudioPage() {
 
   async function save(publish: boolean) {
     if (!organizationId) return;
-    if (name.trim().length < 2) return toast.error('Donnez un nom au formulaire.');
-    if (!formId && !/^[a-z][a-z0-9_]{1,79}$/.test(formKey))
-      return toast.error(
-        'La clé doit commencer par une minuscule et contenir uniquement des lettres, chiffres ou _ (2 à 80 caractères).'
-      );
-    if (fields.some((field) => !field.label.trim()))
-      return toast.error('Chaque champ doit avoir un libellé.');
+    if (name.trim().length < 2) return toast.error(t('bz.fmNameReq'));
+    if (!formId && !/^[a-z][a-z0-9_]{1,79}$/.test(formKey)) return toast.error(t('bz.fmKeyBad'));
+    if (fields.some((field) => !field.label.trim())) return toast.error(t('bz.fmLabelReq'));
     setSaving(true);
     const result = await saveCustomForm({
       organizationId,
@@ -115,45 +128,38 @@ export default function FormStudioPage() {
     });
     setSaving(false);
     if (result.error) {
-      toast.error(result.error.message || 'Enregistrement impossible.');
+      toast.error(result.error.message || t('bz.fmSaveFail'));
       return;
     }
-    toast.success(publish ? 'Formulaire publié.' : 'Version brouillon enregistrée.');
+    toast.success(publish ? t('bz.fmPublished') : t('bz.fmDraftSaved'));
     if (result.data?.id) setFormId(result.data.id);
     await reloadForms(organizationId);
   }
 
-  if (loading)
-    return (
-      <div className="p-8 text-sm text-[#A0AEC0]">Chargement de l’éditeur de formulaires…</div>
-    );
+  if (loading) return <div className="p-8 text-sm text-[#A0AEC0]">{t('bz.fmLoading')}</div>;
 
   return (
     <div className="space-y-6 p-5 sm:p-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="mb-2 text-xs font-bold uppercase tracking-widest text-[#D4AF37]">
-            Configuration entreprise
+            {t('bz.fmKicker')}
           </p>
-          <h1 className="text-2xl font-bold text-white">Éditeur de formulaires</h1>
-          <p className="mt-2 text-sm text-[#A0AEC0]">
-            Créez des formulaires métier versionnés pour votre entreprise.
-          </p>
+          <h1 className="text-2xl font-bold text-white">{t('bz.fmTitle')}</h1>
+          <p className="mt-2 text-sm text-[#A0AEC0]">{t('bz.fmIntro')}</p>
         </div>
         <button
           onClick={newForm}
           className="flex items-center justify-center gap-2 rounded-xl border border-[#D4AF37]/30 px-4 py-2.5 text-sm text-[#F5E17A]"
         >
-          <FilePlus2 size={15} /> Nouveau formulaire
+          <FilePlus2 size={15} /> {t('bz.fmNew')}
         </button>
       </header>
       <div className="grid gap-5 xl:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="space-y-2 rounded-2xl border border-white/10 bg-[#0F2347] p-4">
-          <h2 className="mb-3 text-sm font-semibold text-white">Formulaires de l’entreprise</h2>
+          <h2 className="mb-3 text-sm font-semibold text-white">{t('bz.fmList')}</h2>
           {forms.length === 0 ? (
-            <p className="text-xs leading-5 text-[#A0AEC0]">
-              Aucun formulaire personnalisé pour le moment.
-            </p>
+            <p className="text-xs leading-5 text-[#A0AEC0]">{t('bz.fmNoneYet')}</p>
           ) : (
             forms.map((form) => (
               <button
@@ -172,17 +178,17 @@ export default function FormStudioPage() {
         <section className="space-y-5 rounded-2xl border border-white/10 bg-[#0F2347] p-4 sm:p-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-2 text-sm text-white">
-              Nom du formulaire
+              {t('bz.fmName')}
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={120}
-                placeholder="Ex. Nouveau prospect"
+                placeholder={t('bz.fmNamePh')}
                 className="mt-1 w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm"
               />
             </label>
             <label className="space-y-2 text-sm text-white">
-              Clé technique
+              {t('bz.fmKey')}
               <input
                 value={formKey}
                 onChange={(e) =>
@@ -190,12 +196,12 @@ export default function FormStudioPage() {
                 }
                 disabled={!!formId}
                 maxLength={80}
-                placeholder="nouveau_prospect"
+                placeholder={t('bz.fmKeyPh')}
                 className="mt-1 w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm disabled:opacity-60"
               />
             </label>
             <label className="space-y-2 text-sm text-white sm:col-span-2">
-              Description
+              {t('bz.fmDesc')}
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -207,16 +213,16 @@ export default function FormStudioPage() {
           </div>
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold text-white">Champs ({fields.length})</h2>
-              <p className="mt-1 text-xs text-[#718096]">
-                Ajoutez, réordonnez ou rendez les champs obligatoires.
-              </p>
+              <h2 className="text-sm font-semibold text-white">
+                {t('bz.fmFields').replace('{n}', String(fields.length))}
+              </h2>
+              <p className="mt-1 text-xs text-[#718096]">{t('bz.fmFieldsHint')}</p>
             </div>
             <button
-              onClick={() => setFields((current) => [...current, emptyField()])}
+              onClick={() => setFields((current) => [...current, emptyField(t('bz.fmNewField'))])}
               className="flex items-center gap-1 rounded-lg border border-white/10 px-3 py-2 text-xs text-white"
             >
-              <Plus size={14} /> Ajouter
+              <Plus size={14} /> {t('bz.fmAdd')}
             </button>
           </div>
           <div className="space-y-3">
@@ -230,7 +236,7 @@ export default function FormStudioPage() {
                   <input
                     value={field.label}
                     onChange={(e) => patchField(field.id, { label: e.target.value })}
-                    aria-label="Libellé du champ"
+                    aria-label={t('bz.fmFieldLabel')}
                     className="min-w-0 flex-1 rounded-lg border border-white/10 bg-[#0B1B3D] px-3 py-2 text-sm text-white"
                   />
                 </div>
@@ -239,12 +245,12 @@ export default function FormStudioPage() {
                   onChange={(e) =>
                     patchField(field.id, { type: e.target.value as FormField['type'] })
                   }
-                  aria-label="Type de champ"
+                  aria-label={t('bz.fmFieldType')}
                   className="rounded-lg border border-white/10 bg-[#0B1B3D] px-2 py-2 text-sm text-white"
                 >
-                  {FIELD_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
+                  {FIELD_TYPES.map((ft) => (
+                    <option key={ft.value} value={ft.value}>
+                      {FIELD_TYPE_KEYS[ft.value] ? t(FIELD_TYPE_KEYS[ft.value]) : ft.label}
                     </option>
                   ))}
                 </select>
@@ -255,11 +261,11 @@ export default function FormStudioPage() {
                       checked={field.required}
                       onChange={(e) => patchField(field.id, { required: e.target.checked })}
                     />{' '}
-                    Obligatoire
+                    {t('bz.fmRequired')}
                   </label>
                   <button
                     onClick={() => setFields((current) => current.filter((f) => f.id !== field.id))}
-                    aria-label="Supprimer le champ"
+                    aria-label={t('bz.fmDelField')}
                     className="rounded-lg p-2 text-red-300 hover:bg-red-500/10"
                   >
                     <Trash2 size={14} />
@@ -276,7 +282,7 @@ export default function FormStudioPage() {
                           .filter(Boolean),
                       })
                     }
-                    placeholder="Options séparées par des virgules"
+                    placeholder={t('bz.fmOptionsPh')}
                     className="sm:col-span-3 rounded-lg border border-white/10 bg-[#0B1B3D] px-3 py-2 text-xs text-white"
                   />
                 )}
@@ -289,30 +295,28 @@ export default function FormStudioPage() {
               className="flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white"
             >
               <Eye size={15} />
-              {preview ? 'Fermer l’aperçu' : 'Aperçu'}
+              {preview ? t('bz.fmClosePrev') : t('bz.fmPrev')}
             </button>
             <button
               disabled={saving}
               onClick={() => save(false)}
               className="flex items-center gap-2 rounded-xl border border-[#D4AF37]/30 px-4 py-2.5 text-sm text-[#F5E17A] disabled:opacity-50"
             >
-              <Save size={15} /> Enregistrer le brouillon
+              <Save size={15} /> {t('bz.fmSaveDraft')}
             </button>
             <button
               disabled={saving}
               onClick={() => save(true)}
               className="flex items-center gap-2 rounded-xl bg-[#D4AF37] px-4 py-2.5 text-sm font-bold text-[#0B1B3D] disabled:opacity-50"
             >
-              <Send size={15} /> Publier une version
+              <Send size={15} /> {t('bz.fmPublish')}
             </button>
           </div>
           {preview && (
             <div className="space-y-4 rounded-xl border border-[#D4AF37]/20 bg-[#08152F] p-4">
-              <h3 className="font-semibold text-white">{name || 'Aperçu du formulaire'}</h3>
+              <h3 className="font-semibold text-white">{name || t('bz.fmPrevTitle')}</h3>
               {fields.length === 0 ? (
-                <p className="text-sm text-[#A0AEC0]">
-                  Ajoutez des champs pour prévisualiser le formulaire.
-                </p>
+                <p className="text-sm text-[#A0AEC0]">{t('bz.fmPrevEmpty')}</p>
               ) : (
                 fields.map((field) => (
                   <label key={field.id} className="block space-y-1.5 text-sm text-[#D9E1EF]">
@@ -331,7 +335,7 @@ export default function FormStudioPage() {
                         disabled
                         className="w-full rounded-lg border border-white/10 bg-[#0B1B3D] p-2.5"
                       >
-                        <option>Choisir…</option>
+                        <option>{t('bz.fmChoose')}</option>
                         {(field.options ?? []).map((o) => (
                           <option key={o}>{o}</option>
                         ))}

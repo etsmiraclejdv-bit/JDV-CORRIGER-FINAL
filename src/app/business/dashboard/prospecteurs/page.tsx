@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 import Modal from '@/components/ui/Modal';
 import { supabase } from '@/lib/supabase/client';
 import { getAuthContext } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 import { personName, saleTotal, toCents } from '@/lib/services/compat';
 
 interface ProspecteurRow {
@@ -33,19 +35,24 @@ interface ProspecteurRow {
   sales_amount?: number;
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  active: 'Actif',
-  suspended: 'Suspendu',
-  blocked: 'Bloqué',
-  inactive: 'Inactif',
+const STATUS_LABEL: Record<string, TerrainKey> = {
+  active: 'bz.proStActive',
+  suspended: 'bz.proStSusp',
+  blocked: 'bz.proStBlocked',
+  inactive: 'bz.proStInactive',
 };
-const ERRORS: [string, string][] = [
-  ['ACCESS_DENIED', 'Action réservée aux administrateurs et gestionnaires.'],
-  ['PROTECTED_COLUMNS', 'Seul un administrateur peut modifier la commission.'],
+const ERRORS: [string, TerrainKey][] = [
+  ['ACCESS_DENIED', 'bz.proEDenied'],
+  ['PROTECTED_COLUMNS', 'bz.proEProt'],
 ];
-const frError = (msg: string) => ERRORS.find(([k]) => msg.includes(k))?.[1] ?? msg;
 
 export default function BusinessProspecteursPage() {
+  const { t, locale } = useLanguage();
+  const frError = (msg: string) => {
+    const hit = ERRORS.find(([k]) => msg.includes(k));
+    return hit ? t(hit[1]) : msg;
+  };
+  const statusLabel = (s: string) => (STATUS_LABEL[s] ? t(STATUS_LABEL[s]) : s);
   const [prospecteurs, setProspecteurs] = useState<ProspecteurRow[]>([]);
   const [warehouses, setWarehouses] = useState<
     { id: string; name: string; code: string; city: string | null }[]
@@ -130,7 +137,7 @@ export default function BusinessProspecteursPage() {
 
     const profiles = (rows as Record<string, unknown>[]).map((r) => ({
       id: r.id as string,
-      full_name: personName(r as never) || 'Sans nom',
+      full_name: personName(r as never) || '',
       phone: (r.phone as string) ?? null,
       city: (r.city as string) ?? null,
       created_at: r.created_at as string,
@@ -180,7 +187,7 @@ export default function BusinessProspecteursPage() {
       const { data: sess } = await supabase.auth.getSession();
       const token = sess.session?.access_token;
       if (!token) {
-        toast.error('Session expirée, reconnectez-vous');
+        toast.error(t('bz.proSession'));
         return;
       }
       const res = await fetch('/api/business/create-prospecteur', {
@@ -190,13 +197,12 @@ export default function BusinessProspecteursPage() {
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        toast.error(json.error ?? 'Création impossible');
+        toast.error(json.error ?? t('bz.proCreateFail'));
         return;
       }
-      toast.success(
-        `Prospecteur créé (${json.code ?? 'code généré'}). Communiquez-lui son mot de passe de vive voix ou par un canal sûr : il n'est jamais envoyé par email.`,
-        { duration: 9000 }
-      );
+      toast.success(t('bz.proCreated').replace('{code}', json.code ?? t('bz.proCodeGen')), {
+        duration: 9000,
+      });
       setModalOpen(false);
       setForm(emptyForm);
       loadProspecteurs(orgId);
@@ -208,9 +214,7 @@ export default function BusinessProspecteursPage() {
   async function setStatus(p: ProspecteurRow, status: 'active' | 'suspended') {
     if (
       status === 'suspended' &&
-      !window.confirm(
-        `Suspendre ${p.full_name} ? Il ne pourra plus se connecter ni enregistrer de ventes.`
-      )
+      !window.confirm(t('bz.proSuspendQ').replace('{name}', p.full_name || t('bz.proNoName')))
     )
       return;
     setBusyId(p.id);
@@ -223,7 +227,7 @@ export default function BusinessProspecteursPage() {
       toast.error(frError(error.message));
       return;
     }
-    toast.success(status === 'active' ? 'Prospecteur réactivé.' : 'Prospecteur suspendu.');
+    toast.success(status === 'active' ? t('bz.proReact') : t('bz.proSuspended'));
     setSelected(null);
     if (orgId) loadProspecteurs(orgId);
   }
@@ -259,7 +263,7 @@ export default function BusinessProspecteursPage() {
       toast.error(frError(error.message));
       return;
     }
-    toast.success('Fiche enregistrée.');
+    toast.success(t('bz.proFicheSaved'));
     setSelected(null);
     if (orgId) loadProspecteurs(orgId);
   }
@@ -274,7 +278,7 @@ export default function BusinessProspecteursPage() {
   );
 
   const fmt = (cents: number) =>
-    new Intl.NumberFormat('fr-FR', {
+    new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'XOF',
       maximumFractionDigits: 0,
@@ -284,9 +288,9 @@ export default function BusinessProspecteursPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Prospecteurs</h1>
+          <h1 className="text-2xl font-bold text-white">{t('bz.proTitle')}</h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {prospecteurs.length} prospecteur{prospecteurs.length !== 1 ? 's' : ''}
+            {t('bz.proCount').replace('{n}', String(prospecteurs.length))}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -295,14 +299,14 @@ export default function BusinessProspecteursPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm transition-colors"
           >
             <RefreshCw size={14} />
-            Actualiser
+            {t('bz.fnRefresh')}
           </button>
           <button
             onClick={() => setModalOpen(true)}
             className="flex items-center gap-2 btn-gold px-4 py-2 rounded-xl text-sm font-bold"
           >
             <Plus size={14} />
-            Nouveau prospecteur
+            {t('bz.proNew')}
           </button>
         </div>
       </div>
@@ -314,7 +318,7 @@ export default function BusinessProspecteursPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un prospecteur..."
+            placeholder={t('bz.proSearchPh')}
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
@@ -323,22 +327,20 @@ export default function BusinessProspecteursPage() {
           onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'suspended')}
           className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
         >
-          <option value="all">Tous les statuts</option>
-          <option value="active">Actifs</option>
-          <option value="suspended">Suspendus ou bloqués</option>
+          <option value="all">{t('bz.proFAll')}</option>
+          <option value="active">{t('bz.proFActive')}</option>
+          <option value="suspended">{t('bz.proFOther')}</option>
         </select>
       </div>
 
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-[#A0AEC0] text-sm">Chargement...</div>
+          <div className="py-16 text-center text-[#A0AEC0] text-sm">{t('bz.proLoading')}</div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
             <Users size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
-            <p className="text-[#A0AEC0] text-sm">Aucun prospecteur trouvé</p>
-            <p className="text-xs text-[#718096] mt-1">
-              Cliquez sur « Nouveau prospecteur » pour créer un compte terrain
-            </p>
+            <p className="text-[#A0AEC0] text-sm">{t('bz.proNone')}</p>
+            <p className="text-xs text-[#718096] mt-1">{t('bz.proNoneHint')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -346,19 +348,19 @@ export default function BusinessProspecteursPage() {
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
-                    Prospecteur
+                    {t('bz.proColPros')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
-                    Téléphone
+                    {t('bz.proColPhone')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
-                    Statut
+                    {t('bz.proColStatus')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
-                    Ventes
+                    {t('bz.proColSales')}
                   </th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase">
-                    CA généré
+                    {t('bz.proColRev')}
                   </th>
                   <th className="px-4 py-3" />
                 </tr>
@@ -372,10 +374,12 @@ export default function BusinessProspecteursPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] text-xs font-bold">
-                          {p.full_name.charAt(0).toUpperCase()}
+                          {(p.full_name || t('bz.proNoName')).charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-white">{p.full_name}</p>
+                          <p className="text-sm font-medium text-white">
+                            {p.full_name || t('bz.proNoName')}
+                          </p>
                           {p.city && <p className="text-xs text-[#718096]">{p.city}</p>}
                         </div>
                       </div>
@@ -385,7 +389,7 @@ export default function BusinessProspecteursPage() {
                       <span
                         className={`rounded-full px-2 py-0.5 text-[11px] ${p.status === 'active' ? 'badge-success' : 'badge-danger'}`}
                       >
-                        {STATUS_LABEL[p.status] ?? p.status}
+                        {statusLabel(p.status)}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -406,7 +410,7 @@ export default function BusinessProspecteursPage() {
                           className="inline-flex items-center gap-1 rounded-lg border border-[#D4AF37]/20 px-3 py-1.5 text-xs text-[#A0AEC0] hover:text-white"
                         >
                           <FileText size={12} />
-                          Fiche
+                          {t('bz.proFiche')}
                         </button>
                         {p.status === 'active' ? (
                           <button
@@ -415,7 +419,7 @@ export default function BusinessProspecteursPage() {
                             className="inline-flex items-center gap-1 rounded-lg border border-red-500/30 px-3 py-1.5 text-xs text-red-400 disabled:opacity-50"
                           >
                             <UserX size={12} />
-                            Suspendre
+                            {t('bz.proSuspend')}
                           </button>
                         ) : (
                           <button
@@ -424,7 +428,7 @@ export default function BusinessProspecteursPage() {
                             className="inline-flex items-center gap-1 rounded-lg border border-green-500/30 px-3 py-1.5 text-xs text-green-400 disabled:opacity-50"
                           >
                             <UserCheck size={12} />
-                            Réactiver
+                            {t('bz.proReactBtn')}
                           </button>
                         )}
                       </div>
@@ -440,59 +444,61 @@ export default function BusinessProspecteursPage() {
       <Modal
         open={!!selected}
         onClose={() => setSelected(null)}
-        title={selected ? `Fiche : ${selected.full_name}` : ''}
+        title={
+          selected
+            ? t('bz.proFicheTitle').replace('{name}', selected.full_name || t('bz.proNoName'))
+            : ''
+        }
         size="md"
       >
         {selected && (
           <div className="space-y-4 p-1">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-xs text-[#718096]">Code</p>
+                <p className="text-xs text-[#718096]">{t('bz.proCode')}</p>
                 <p className="font-semibold text-white">{selected.code ?? '—'}</p>
               </div>
               <div>
-                <p className="text-xs text-[#718096]">Statut</p>
-                <p className="font-semibold text-white">
-                  {STATUS_LABEL[selected.status] ?? selected.status}
-                </p>
+                <p className="text-xs text-[#718096]">{t('bz.proColStatus')}</p>
+                <p className="font-semibold text-white">{statusLabel(selected.status)}</p>
               </div>
               <div>
-                <p className="text-xs text-[#718096]">E-mail de connexion</p>
+                <p className="text-xs text-[#718096]">{t('bz.proLoginEmail')}</p>
                 <p className="break-all font-semibold text-white">{selected.email ?? '—'}</p>
               </div>
               <div>
-                <p className="text-xs text-[#718096]">Créé le</p>
+                <p className="text-xs text-[#718096]">{t('bz.proCreatedOn')}</p>
                 <p className="font-semibold text-white">
-                  {new Date(selected.created_at).toLocaleDateString('fr-FR')}
+                  {new Date(selected.created_at).toLocaleDateString(locale)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-[#718096]">Ventes</p>
+                <p className="text-xs text-[#718096]">{t('bz.proColSales')}</p>
                 <p className="font-semibold text-white">{selected.sales_count ?? 0}</p>
               </div>
               <div>
-                <p className="text-xs text-[#718096]">Chiffre d’affaires</p>
+                <p className="text-xs text-[#718096]">{t('bz.proRevenue')}</p>
                 <p className="font-semibold text-[#D4AF37]">{fmt(selected.sales_amount ?? 0)}</p>
               </div>
             </div>
             <div className="space-y-3 rounded-xl border border-[#D4AF37]/10 p-4">
-              <p className="text-xs font-semibold text-[#D4AF37]">Modifier la fiche</p>
+              <p className="text-xs font-semibold text-[#D4AF37]">{t('bz.proEditFiche')}</p>
               <div className="grid grid-cols-2 gap-3">
                 <input
-                  placeholder="Téléphone"
+                  placeholder={t('bz.proColPhone')}
                   value={fiche.phone}
                   onChange={(e) => setFiche((f) => ({ ...f, phone: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
                 />
                 <input
-                  placeholder="Ville"
+                  placeholder={t('bz.proCity')}
                   value={fiche.city}
                   onChange={(e) => setFiche((f) => ({ ...f, city: e.target.value }))}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
                 />
               </div>
               <input
-                placeholder="Adresse"
+                placeholder={t('bz.proAddress')}
                 value={fiche.address}
                 onChange={(e) => setFiche((f) => ({ ...f, address: e.target.value }))}
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
@@ -500,7 +506,7 @@ export default function BusinessProspecteursPage() {
               {isAdmin && (
                 <div>
                   <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                    Commission (%)
+                    {t('bz.proCommission')}
                   </label>
                   <input
                     type="number"
@@ -520,7 +526,7 @@ export default function BusinessProspecteursPage() {
                 onClick={() => setSelected(null)}
                 className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm"
               >
-                Fermer
+                {t('bz.proClose')}
               </button>
               <button
                 type="button"
@@ -528,23 +534,20 @@ export default function BusinessProspecteursPage() {
                 disabled={busyId === selected.id}
                 className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
               >
-                Enregistrer
+                {t('bz.proSave')}
               </button>
             </div>
           </div>
         )}
       </Modal>
 
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Nouveau prospecteur"
-        size="md"
-      >
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={t('bz.proNew')} size="md">
         <form onSubmit={handleCreate} className="space-y-4 p-1">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Prénom *</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                {t('bz.proFirst')}
+              </label>
               <input
                 required
                 value={form.firstName}
@@ -553,7 +556,9 @@ export default function BusinessProspecteursPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Nom</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                {t('bz.proLast')}
+              </label>
               <input
                 value={form.lastName}
                 onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
@@ -563,7 +568,7 @@ export default function BusinessProspecteursPage() {
           </div>
           <div>
             <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-              Email de connexion *
+              {t('bz.proEmailReq')}
             </label>
             <input
               required
@@ -575,7 +580,9 @@ export default function BusinessProspecteursPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Téléphone</label>
+              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                {t('bz.proColPhone')}
+              </label>
               <input
                 value={form.phone}
                 onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
@@ -584,7 +591,7 @@ export default function BusinessProspecteursPage() {
             </div>
             <div>
               <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-                Commission (%)
+                {t('bz.proCommission')}
               </label>
               <input
                 type="number"
@@ -603,15 +610,13 @@ export default function BusinessProspecteursPage() {
             </div>
           </div>
           <div className="space-y-3 rounded-xl border border-[#D4AF37]/10 p-4">
-            <p className="text-xs font-semibold text-[#D4AF37]">
-              Affectation terrain (définie par l’administrateur)
-            </p>
+            <p className="text-xs font-semibold text-[#D4AF37]">{t('bz.proAssignH')}</p>
             <select
               value={form.warehouseId}
               onChange={(e) => setForm((f) => ({ ...f, warehouseId: e.target.value }))}
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
             >
-              <option value="">Aucun entrepôt pour le moment</option>
+              <option value="">{t('bz.proNoWh')}</option>
               {warehouses.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.name} — {w.code}
@@ -621,19 +626,19 @@ export default function BusinessProspecteursPage() {
             </select>
             <div className="grid grid-cols-3 gap-3">
               <input
-                placeholder="Département"
+                placeholder={t('bz.proDept')}
                 value={form.department}
                 onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))}
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
               />
               <input
-                placeholder="Ville de travail"
+                placeholder={t('bz.proWorkCity')}
                 value={form.workCity}
                 onChange={(e) => setForm((f) => ({ ...f, workCity: e.target.value }))}
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
               />
               <input
-                placeholder="Zone / secteur"
+                placeholder={t('bz.proZone')}
                 value={form.workZone}
                 onChange={(e) => setForm((f) => ({ ...f, workZone: e.target.value }))}
                 className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm"
@@ -642,7 +647,7 @@ export default function BusinessProspecteursPage() {
           </div>
           <div>
             <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-              Mot de passe provisoire * (8 caractères minimum)
+              {t('bz.proPwd')}
             </label>
             <div className="relative">
               <input
@@ -661,9 +666,7 @@ export default function BusinessProspecteursPage() {
                 {showPwd ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
-            <p className="text-xs text-[#718096] mt-1">
-              Aucun e-mail n’est envoyé : transmettez vous-même le mot de passe au prospecteur.
-            </p>
+            <p className="text-xs text-[#718096] mt-1">{t('bz.proNoMail')}</p>
           </div>
           <div className="flex gap-3 pt-2">
             <button
@@ -671,14 +674,14 @@ export default function BusinessProspecteursPage() {
               onClick={() => setModalOpen(false)}
               className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors"
             >
-              Annuler
+              {t('bz.proCancel')}
             </button>
             <button
               type="submit"
               disabled={submitting}
               className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
             >
-              {submitting ? 'Création...' : 'Créer le compte'}
+              {submitting ? t('bz.proCreating') : t('bz.proCreateBtn')}
             </button>
           </div>
         </form>

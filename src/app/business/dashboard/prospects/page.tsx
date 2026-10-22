@@ -4,6 +4,8 @@ import { UserCheck, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
 import { personName } from '@/lib/services/compat';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 interface Prospect {
   id: string;
@@ -26,9 +28,11 @@ const TEMP_COLORS: Record<string, string> = {
   warm: 'bg-[#F6E05E]/20 text-[#F6E05E] border-[#F6E05E]/30',
   cold: 'bg-[#63B3ED]/20 text-[#63B3ED] border-[#63B3ED]/30',
 };
-const TEMP_LABELS: Record<string, string> = { hot: 'Chaud', warm: 'Tiède', cold: 'Froid' };
 
 export default function BusinessProspectsPage() {
+  const { t, locale } = useLanguage();
+  const tempLabel = (s: string) =>
+    ['hot', 'warm', 'cold'].includes(s) ? t(('bz.prT.' + s) as TerrainKey) : s;
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -65,7 +69,7 @@ export default function BusinessProspectsPage() {
     setProspects(
       ((data ?? []) as Record<string, unknown>[]).map((r) => ({
         id: r.id as string,
-        full_name: personName(r as never) || 'Sans nom',
+        full_name: personName(r as never),
         phone: (r.phone as string) ?? undefined,
         temperature: (r.temperature as string) ?? undefined,
         desired_product: (r.desired_article as string) ?? undefined,
@@ -108,18 +112,18 @@ export default function BusinessProspectsPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Prospects</h1>
-        <p className="text-sm text-[#A0AEC0] mt-1">Tous les prospects de votre organisation</p>
+        <h1 className="text-2xl font-bold text-white">{t('bz.prTitle')}</h1>
+        <p className="text-sm text-[#A0AEC0] mt-1">{t('bz.prSub')}</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
-          { label: 'Total', value: stats.total, color: 'text-white' },
-          { label: '🔥 Chauds', value: stats.hot, color: 'text-[#FC8181]' },
-          { label: '🌤 Tièdes', value: stats.warm, color: 'text-[#F6E05E]' },
-          { label: '❄️ Froids', value: stats.cold, color: 'text-[#63B3ED]' },
-          { label: 'À relancer', value: stats.todayContact, color: 'text-[#D4AF37]' },
+          { label: t('bz.prTotal'), value: stats.total, color: 'text-white' },
+          { label: t('bz.prHot'), value: stats.hot, color: 'text-[#FC8181]' },
+          { label: t('bz.prWarm'), value: stats.warm, color: 'text-[#F6E05E]' },
+          { label: t('bz.prCold'), value: stats.cold, color: 'text-[#63B3ED]' },
+          { label: t('bz.prToFollow'), value: stats.todayContact, color: 'text-[#D4AF37]' },
         ].map((s, i) => (
           <div
             key={i}
@@ -139,7 +143,7 @@ export default function BusinessProspectsPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher par nom, téléphone, article..."
+            placeholder={t('bz.prSearchPh')}
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
           />
         </div>
@@ -148,26 +152,22 @@ export default function BusinessProspectsPage() {
           onChange={(e) => setTempFilter(e.target.value)}
           className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#D4AF37]/60"
         >
-          <option value="">Toutes températures</option>
-          <option value="hot">🔥 Chaud</option>
-          <option value="warm">🌤 Tiède</option>
-          <option value="cold">❄️ Froid</option>
+          <option value="">{t('bz.prAllTemp')}</option>
+          <option value="hot">🔥 {tempLabel('hot')}</option>
+          <option value="warm">🌤 {tempLabel('warm')}</option>
+          <option value="cold">❄️ {tempLabel('cold')}</option>
         </select>
       </div>
 
       {/* List */}
       <div className="space-y-2">
         {loading ? (
-          <div className="py-16 text-center text-[#A0AEC0] text-sm">Chargement...</div>
+          <div className="py-16 text-center text-[#A0AEC0] text-sm">{t('we.loading')}</div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
             <UserCheck size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
-            <p className="text-[#A0AEC0] text-sm">Aucun prospect visible</p>
-            <p className="text-xs text-[#718096] mt-2 max-w-md mx-auto">
-              Les clients et prospects sont privés : chaque prospecteur gère son propre portefeuille
-              depuis son espace terrain. Vous suivez ici les ventes, les paiements et les résultats
-              de l’équipe.
-            </p>
+            <p className="text-[#A0AEC0] text-sm">{t('bz.prNone')}</p>
+            <p className="text-xs text-[#718096] mt-2 max-w-md mx-auto">{t('bz.clPrivate')}</p>
           </div>
         ) : (
           filtered.map((p) => (
@@ -178,10 +178,12 @@ export default function BusinessProspectsPage() {
               <div className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="w-9 h-9 rounded-full bg-[#0A1628] border border-[#D4AF37]/20 flex items-center justify-center text-sm font-bold text-[#D4AF37] flex-shrink-0">
-                    {p.full_name?.charAt(0).toUpperCase()}
+                    {(p.full_name || t('bz.prNoName')).charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-white truncate">{p.full_name}</p>
+                    <p className="text-sm font-semibold text-white truncate">
+                      {p.full_name || t('bz.prNoName')}
+                    </p>
                     <p className="text-xs text-[#718096]">
                       {p.phone ?? '—'}
                       {p.assigned_profile?.full_name && (
@@ -197,7 +199,7 @@ export default function BusinessProspectsPage() {
                     <span
                       className={`text-xs px-2 py-0.5 rounded-lg border ${TEMP_COLORS[p.temperature] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}
                     >
-                      {TEMP_LABELS[p.temperature] ?? p.temperature}
+                      {tempLabel(p.temperature)}
                     </span>
                   )}
                   <button
@@ -214,19 +216,19 @@ export default function BusinessProspectsPage() {
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {p.desired_product && (
                       <div>
-                        <span className="text-[#718096]">Article : </span>
+                        <span className="text-[#718096]">{t('bz.prItem')}</span>
                         <span className="text-white">{p.desired_product}</span>
                       </div>
                     )}
                     {p.city && (
                       <div>
-                        <span className="text-[#718096]">Ville : </span>
+                        <span className="text-[#718096]">{t('bz.prCity')}</span>
                         <span className="text-white">{p.city}</span>
                       </div>
                     )}
                     {p.next_contact_date && (
                       <div>
-                        <span className="text-[#718096]">Prochain contact : </span>
+                        <span className="text-[#718096]">{t('bz.prNext')}</span>
                         <span
                           className={
                             p.next_contact_date === today
@@ -234,15 +236,15 @@ export default function BusinessProspectsPage() {
                               : 'text-white'
                           }
                         >
-                          {new Date(p.next_contact_date).toLocaleDateString('fr-FR')}
+                          {new Date(p.next_contact_date).toLocaleDateString(locale)}
                         </span>
                       </div>
                     )}
                     {p.appointment_date && (
                       <div>
-                        <span className="text-[#718096]">RDV : </span>
+                        <span className="text-[#718096]">{t('bz.prAppt')}</span>
                         <span className="text-white">
-                          {new Date(p.appointment_date).toLocaleDateString('fr-FR')}
+                          {new Date(p.appointment_date).toLocaleDateString(locale)}
                         </span>
                       </div>
                     )}

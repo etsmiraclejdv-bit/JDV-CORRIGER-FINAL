@@ -5,8 +5,10 @@ import { supabase } from '@/lib/supabase/client';
 import { fetchSales } from '@/lib/services/salesService';
 import { fetchClients } from '@/lib/services/clientsService';
 import { fetchOrgProfile } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function BusinessReportsPage() {
+  const { t, locale } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalRevenue: 0,
@@ -63,10 +65,7 @@ export default function BusinessReportsPage() {
         .sort(([a], [b]) => b.localeCompare(a))
         .slice(0, 6)
         .map(([month, data]) => ({
-          month: new Date(month + '-01').toLocaleDateString('fr-FR', {
-            month: 'long',
-            year: 'numeric',
-          }),
+          month,
           ...data,
         }));
 
@@ -85,7 +84,7 @@ export default function BusinessReportsPage() {
   }, []);
 
   const fmt = (cents: number) =>
-    new Intl.NumberFormat('fr-FR', {
+    new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'XOF',
       maximumFractionDigits: 0,
@@ -96,35 +95,33 @@ export default function BusinessReportsPage() {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Rapports</h1>
-        <p className="text-sm text-[#A0AEC0] mt-1">
-          Statistiques et analyses de votre organisation
-        </p>
+        <h1 className="text-2xl font-bold text-white">{t('bz.rpTitle')}</h1>
+        <p className="text-sm text-[#A0AEC0] mt-1">{t('bz.rpSub')}</p>
       </div>
 
       {/* KPI Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
-            label: "Chiffre d'affaires",
+            label: t('bz.rpRevenue'),
             value: loading ? '—' : fmt(stats.totalRevenue),
             icon: <Wallet size={18} />,
             color: 'text-[#D4AF37]',
           },
           {
-            label: 'Total ventes',
+            label: t('bz.rpTotalSales'),
             value: loading ? '—' : stats.totalSales,
             icon: <ShoppingCart size={18} />,
             color: 'text-blue-400',
           },
           {
-            label: 'Clients actifs',
+            label: t('bz.rpActiveClients'),
             value: loading ? '—' : stats.totalClients,
             icon: <TrendingUp size={18} />,
             color: 'text-green-400',
           },
           {
-            label: 'Clients en retard',
+            label: t('bz.rpLateClients'),
             value: loading ? '—' : stats.overdueClients,
             icon: <BarChart2 size={18} />,
             color: 'text-red-400',
@@ -141,17 +138,17 @@ export default function BusinessReportsPage() {
       {/* Sales status breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
-          <h2 className="text-base font-semibold text-white mb-4">Statut des ventes</h2>
+          <h2 className="text-base font-semibold text-white mb-4">{t('bz.rpSalesStatus')}</h2>
           <div className="space-y-3">
             {[
               {
-                label: 'Complétées',
+                label: t('bz.rpCompleted'),
                 value: stats.completedSales,
                 color: 'bg-green-400',
                 total: stats.totalSales,
               },
               {
-                label: 'En attente',
+                label: t('bz.rpPending'),
                 value: stats.pendingSales,
                 color: 'bg-yellow-400',
                 total: stats.totalSales,
@@ -177,16 +174,16 @@ export default function BusinessReportsPage() {
         </div>
 
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
-          <h2 className="text-base font-semibold text-white mb-4">Soldes clients</h2>
+          <h2 className="text-base font-semibold text-white mb-4">{t('bz.rpBalances')}</h2>
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-[#0A1628] rounded-xl">
-              <span className="text-sm text-[#A0AEC0]">Total soldes dus</span>
+              <span className="text-sm text-[#A0AEC0]">{t('bz.rpTotalDue')}</span>
               <span className="text-sm font-bold text-[#D4AF37]">
                 {loading ? '—' : fmt(stats.totalBalance)}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-[#0A1628] rounded-xl">
-              <span className="text-sm text-[#A0AEC0]">Clients en retard</span>
+              <span className="text-sm text-[#A0AEC0]">{t('bz.rpLateClients')}</span>
               <span className="text-sm font-bold text-red-400">
                 {loading ? '—' : stats.overdueClients}
               </span>
@@ -198,18 +195,21 @@ export default function BusinessReportsPage() {
       {/* Monthly chart */}
       {monthlySales.length > 0 && (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
-          <h2 className="text-base font-semibold text-white mb-5">
-            Ventes par mois (6 derniers mois)
-          </h2>
+          <h2 className="text-base font-semibold text-white mb-5">{t('bz.rpMonthly')}</h2>
           <div className="space-y-3">
             {monthlySales.map((m, i) => (
               <div key={i}>
                 <div className="flex justify-between text-xs mb-1">
-                  <span className="text-[#A0AEC0] capitalize">{m.month}</span>
+                  <span className="text-[#A0AEC0] capitalize">
+                    {new Date(m.month + '-01').toLocaleDateString(locale, {
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </span>
                   <span className="text-white font-medium">
                     {fmt(m.amount)}{' '}
                     <span className="text-[#718096]">
-                      ({m.count} vente{m.count !== 1 ? 's' : ''})
+                      ({t('bz.rpSalesCount').replace('{n}', String(m.count))})
                     </span>
                   </span>
                 </div>

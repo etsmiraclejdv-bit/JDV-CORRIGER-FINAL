@@ -1,7 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 export default function SuiviProspecteursPage() {
+  const { t } = useLanguage();
   const [data, setData] = useState<any[]>([]);
   useEffect(() => {
     supabase
@@ -12,15 +14,15 @@ export default function SuiviProspecteursPage() {
   }, []);
   return (
     <div className="p-6 text-white space-y-6">
-      <h1 className="text-2xl font-bold">Suivi des prospecteurs</h1>
+      <h1 className="text-2xl font-bold">{t('bz.spTitle')}</h1>
       <div className="rounded-2xl border border-white/10 bg-[#08152f] p-5 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-slate-400">
-              <th className="p-2">Nom</th>
-              <th className="p-2">Téléphone</th>
-              <th className="p-2">Statut</th>
-              <th className="p-2">Zone</th>
+              <th className="p-2">{t('bz.spName')}</th>
+              <th className="p-2">{t('bz.spPhone')}</th>
+              <th className="p-2">{t('bz.spStatus')}</th>
+              <th className="p-2">{t('bz.spZone')}</th>
             </tr>
           </thead>
           <tbody>

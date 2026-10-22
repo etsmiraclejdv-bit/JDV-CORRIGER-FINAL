@@ -13,31 +13,30 @@ import {
 } from '@/lib/services/salesService';
 import { saleTotal } from '@/lib/services/compat';
 import Modal from '@/components/ui/Modal';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Row = Record<string, unknown>;
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'En attente',
-  active: 'En cours',
-  completed: 'Soldée',
-  cancelled: 'Annulée',
-  defaulted: 'Impayée',
-};
-const METHOD_LABELS: Record<string, string> = {
-  cash: 'Espèces',
-  mobile_money: 'Mobile money',
-  bank_transfer: 'Virement',
-  card: 'Carte',
-};
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'XOF',
-    maximumFractionDigits: 0,
-  }).format(n);
-
 export default function SaleDetailPage() {
+  const { t, locale } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const fmt = (n: number) =>
+    new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'XOF',
+      maximumFractionDigits: 0,
+    }).format(n);
+  const statusLabel = (s: string) =>
+    ['pending', 'active', 'completed', 'cancelled', 'defaulted'].includes(s)
+      ? t(('bz.vd.' + s) as TerrainKey)
+      : s;
+  const METHODS = ['cash', 'mobile_money', 'bank_transfer', 'card'];
+  const methodLabel = (m: string) => (METHODS.includes(m) ? t(('bz.vm.' + m) as TerrainKey) : m);
   const params = useParams();
   const saleId = params.id as string;
   const [sale, setSale] = useState<SaleView | null>(null);
@@ -51,7 +50,7 @@ export default function SaleDetailPage() {
 
   const load = useCallback(async () => {
     const [s, p] = await Promise.all([fetchSaleById(saleId), fetchPaymentsBySale(saleId)]);
-    if (s.error || !s.data) setError(s.error?.message ?? 'Vente introuvable');
+    if (s.error || !s.data) setError(s.error?.message ?? 'bz.vNotFound');
     else setSale(s.data);
     setPayments(p.data ?? []);
     setLoading(false);
@@ -64,7 +63,7 @@ export default function SaleDetailPage() {
   async function handlePayment(e: React.FormEvent) {
     e.preventDefault();
     if (!sale) return;
-    if (amount <= 0) return toast.error('Le montant doit être supérieur à 0');
+    if (amount <= 0) return toast.error(t('bz.vAmountPos'));
     setSaving(true);
     const { error: err } = await createPayment({
       organization_id: sale.organization_id as string,
@@ -78,19 +77,21 @@ export default function SaleDetailPage() {
     });
     setSaving(false);
     if (err) return toast.error(err.message);
-    toast.success('Paiement enregistré');
+    toast.success(t('bz.vPaySaved'));
     setOpen(false);
     setAmount(0);
     load();
   }
 
-  if (loading) return <div className="p-8 text-center text-[#A0AEC0]">Chargement...</div>;
+  if (loading) return <div className="p-8 text-center text-[#A0AEC0]">{t('we.loading')}</div>;
   if (error || !sale) {
     return (
       <div className="p-8 text-center space-y-3">
-        <p className="text-red-400 text-sm">{error || 'Vente introuvable'}</p>
+        <p className="text-red-400 text-sm">
+          {error ? (error.startsWith('bz.') ? t(error as TerrainKey) : error) : t('bz.vNotFound')}
+        </p>
         <Link href="/business/dashboard/ventes" className="text-[#D4AF37] text-sm hover:underline">
-          Retour aux ventes
+          {t('bz.vBackSales')}
         </Link>
       </div>
     );
@@ -114,10 +115,12 @@ export default function SaleDetailPage() {
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Vente {sale.sale_number as string}</h1>
+          <h1 className="text-2xl font-bold text-white">
+            {fill('bz.vdTitle', { n: sale.sale_number as string })}
+          </h1>
           <p className="text-sm text-[#A0AEC0]">
-            {new Date(sale.sale_date as string).toLocaleDateString('fr-FR')} —{' '}
-            {STATUS_LABELS[sale.status as string] ?? (sale.status as string)}
+            {new Date(sale.sale_date as string).toLocaleDateString(locale)} —{' '}
+            {statusLabel(sale.status as string)}
           </p>
         </div>
         {canPay && (
@@ -129,16 +132,16 @@ export default function SaleDetailPage() {
             className="ml-auto flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
           >
             <Plus size={14} />
-            Encaisser un paiement
+            {t('bz.vdCollect')}
           </button>
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: 'Total', value: fmt(total), cls: 'text-white' },
-          { label: 'Déjà payé', value: fmt(paid), cls: 'text-green-400' },
-          { label: 'Reste à payer', value: fmt(remaining), cls: 'text-[#D4AF37]' },
+          { label: t('bz.vdTotal'), value: fmt(total), cls: 'text-white' },
+          { label: t('bz.vdPaid'), value: fmt(paid), cls: 'text-green-400' },
+          { label: t('bz.vdRemaining'), value: fmt(remaining), cls: 'text-[#D4AF37]' },
         ].map((k) => (
           <div key={k.label} className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
             <p className="text-xs text-[#A0AEC0] mb-1">{k.label}</p>
@@ -149,9 +152,9 @@ export default function SaleDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-5 space-y-3 text-sm">
-          <h2 className="font-semibold text-white">Détails</h2>
+          <h2 className="font-semibold text-white">{t('bz.vdDetails')}</h2>
           <div className="flex justify-between">
-            <span className="text-[#718096]">Client</span>
+            <span className="text-[#718096]">{t('bz.vColClient')}</span>
             {client ? (
               <Link
                 href={`/business/dashboard/clients/${client.id as string}`}
@@ -164,26 +167,26 @@ export default function SaleDetailPage() {
             )}
           </div>
           <div className="flex justify-between">
-            <span className="text-[#718096]">Article</span>
+            <span className="text-[#718096]">{t('bz.vdItem')}</span>
             <span className="text-white">{(product?.name as string) ?? '—'}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#718096]">Quantité</span>
+            <span className="text-[#718096]">{t('bz.vdQty')}</span>
             <span className="text-white">{sale.quantity as number}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#718096]">Type</span>
+            <span className="text-[#718096]">{t('bz.vdType')}</span>
             <span className="text-white">
-              {sale.sale_type === 'credit' ? 'À crédit' : 'Comptant'}
+              {sale.sale_type === 'credit' ? t('bz.vdCredit') : t('bz.vdCash')}
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#718096]">Prospecteur</span>
+            <span className="text-[#718096]">{t('bz.fnProsp')}</span>
             <span className="text-white">{(seller?.full_name as string) ?? '—'}</span>
           </div>
           {sale.sale_type === 'credit' && (
             <div className="flex justify-between">
-              <span className="text-[#718096]">Versement</span>
+              <span className="text-[#718096]">{t('bz.vdInstallment')}</span>
               <span className="text-white">
                 {fmt(Number(sale.payment_amount) || 0)} / {String(sale.payment_frequency ?? '—')}
               </span>
@@ -191,9 +194,9 @@ export default function SaleDetailPage() {
           )}
           {sale.deadline_date ? (
             <div className="flex justify-between">
-              <span className="text-[#718096]">Date limite</span>
+              <span className="text-[#718096]">{t('bz.vdDeadline')}</span>
               <span className="text-white">
-                {new Date(sale.deadline_date as string).toLocaleDateString('fr-FR')}
+                {new Date(sale.deadline_date as string).toLocaleDateString(locale)}
               </span>
             </div>
           ) : null}
@@ -201,22 +204,20 @@ export default function SaleDetailPage() {
 
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-5">
           <h2 className="font-semibold text-white mb-3 flex items-center gap-2">
-            <Wallet size={16} className="text-[#D4AF37]" /> Paiements
+            <Wallet size={16} className="text-[#D4AF37]" /> {t('bz.vdPayments')}
           </h2>
           {payments.length === 0 ? (
-            <p className="text-sm text-[#A0AEC0]">Aucun paiement enregistré.</p>
+            <p className="text-sm text-[#A0AEC0]">{t('bz.vdNoPay')}</p>
           ) : (
             <table className="w-full text-sm">
               <tbody>
                 {payments.map((p) => (
                   <tr key={p.id as string} className="border-b border-[#D4AF37]/5">
                     <td className="py-2 text-[#A0AEC0]">
-                      {new Date(p.payment_date as string).toLocaleDateString('fr-FR')}
+                      {new Date(p.payment_date as string).toLocaleDateString(locale)}
                     </td>
                     <td className="py-2 text-[#A0AEC0]">
-                      {METHOD_LABELS[p.payment_method as string] ??
-                        (p.payment_method as string) ??
-                        '—'}
+                      {methodLabel(p.payment_method as string) ?? '—'}
                     </td>
                     <td className="py-2 text-right font-semibold text-white">
                       {fmt(Number(p.amount) || 0)}
@@ -229,10 +230,12 @@ export default function SaleDetailPage() {
         </div>
       </div>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Encaisser un paiement" size="sm">
+      <Modal open={open} onClose={() => setOpen(false)} title={t('bz.vdCollect')} size="sm">
         <form onSubmit={handlePayment} className="space-y-4 p-1">
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Montant (XOF)</label>
+            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              {t('bz.vdAmountXof')}
+            </label>
             <input
               type="number"
               min={1}
@@ -246,16 +249,16 @@ export default function SaleDetailPage() {
           </div>
           <div>
             <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-              Moyen de paiement
+              {t('bz.vdMethod')}
             </label>
             <select
               value={method}
               onChange={(e) => setMethod(e.target.value)}
               className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none"
             >
-              {Object.entries(METHOD_LABELS).map(([k, v]) => (
+              {METHODS.map((k) => (
                 <option key={k} value={k}>
-                  {v}
+                  {methodLabel(k)}
                 </option>
               ))}
             </select>
@@ -266,14 +269,14 @@ export default function SaleDetailPage() {
               onClick={() => setOpen(false)}
               className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors"
             >
-              Annuler
+              {t('bz.vdCancel')}
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
             >
-              {saving ? 'Enregistrement...' : 'Enregistrer'}
+              {saving ? t('bz.vdSaving') : t('bz.vdSave')}
             </button>
           </div>
         </form>

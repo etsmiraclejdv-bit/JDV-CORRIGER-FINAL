@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type Row = {
   return_id: string;
@@ -23,6 +24,7 @@ type Row = {
 };
 
 export default function RetoursPage() {
+  const { t, locale } = useLanguage();
   const [data, setData] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -41,10 +43,8 @@ export default function RetoursPage() {
   return (
     <div className="p-6 text-white space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Retours de marchandises</h1>
-        <p className="text-slate-400">
-          Traçabilité complète de l’agent/prospecteur, de l’article et de la réception.
-        </p>
+        <h1 className="text-2xl font-bold">{t('bz.rtTitle')}</h1>
+        <p className="text-slate-400">{t('bz.rtSub')}</p>
       </div>
       {error && (
         <div className="rounded-xl border border-red-400/30 bg-red-950/30 p-4 text-red-200">
@@ -53,32 +53,32 @@ export default function RetoursPage() {
       )}
       <div className="rounded-2xl border border-white/10 bg-[#08152f] p-5 overflow-x-auto">
         {loading ? (
-          <p className="text-slate-400">Chargement…</p>
+          <p className="text-slate-400">{t('we.loading')}</p>
         ) : (
           <table className="w-full min-w-[1500px] text-sm">
             <thead>
               <tr className="text-left text-slate-400 border-b border-white/10">
-                <th className="p-2">Date / heure</th>
-                <th className="p-2">N° retour</th>
-                <th className="p-2">Agent / prospecteur</th>
-                <th className="p-2">Code article</th>
-                <th className="p-2">Article</th>
-                <th className="p-2">Qté</th>
-                <th className="p-2">Entrepôt</th>
-                <th className="p-2">Sous-entrepôt</th>
-                <th className="p-2">Motif</th>
-                <th className="p-2">Statut</th>
-                <th className="p-2">Réception</th>
+                <th className="p-2">{t('bz.rtDateTime')}</th>
+                <th className="p-2">{t('bz.rtNo')}</th>
+                <th className="p-2">{t('bz.rtAgent')}</th>
+                <th className="p-2">{t('bz.rtCode')}</th>
+                <th className="p-2">{t('bz.rtItem')}</th>
+                <th className="p-2">{t('bz.rtQty')}</th>
+                <th className="p-2">{t('bz.rtWh')}</th>
+                <th className="p-2">{t('bz.rtSubWh')}</th>
+                <th className="p-2">{t('bz.rtReason')}</th>
+                <th className="p-2">{t('bz.rtStatus')}</th>
+                <th className="p-2">{t('bz.rtReceipt')}</th>
               </tr>
             </thead>
             <tbody>
               {data.map((x) => (
                 <tr key={x.return_id} className="border-t border-white/5">
                   <td className="p-2 whitespace-nowrap">
-                    {x.return_date ? new Date(x.return_date).toLocaleString('fr-FR') : '—'}
+                    {x.return_date ? new Date(x.return_date).toLocaleString(locale) : '—'}
                   </td>
                   <td className="p-2 font-mono text-[#D4AF37]">{x.return_number || '—'}</td>
-                  <td className="p-2 font-medium">{x.returned_by_name || 'Non renseigné'}</td>
+                  <td className="p-2 font-medium">{x.returned_by_name || t('bz.rtUnknown')}</td>
                   <td className="p-2 font-mono">{x.article_code}</td>
                   <td className="p-2">{x.article_name}</td>
                   <td className="p-2">{x.quantity}</td>
@@ -91,7 +91,7 @@ export default function RetoursPage() {
                   <td className="p-2">{x.reason || '—'}</td>
                   <td className="p-2">{x.status || '—'}</td>
                   <td className="p-2">
-                    {x.received_at ? new Date(x.received_at).toLocaleString('fr-FR') : '—'}
+                    {x.received_at ? new Date(x.received_at).toLocaleString(locale) : '—'}
                   </td>
                 </tr>
               ))}

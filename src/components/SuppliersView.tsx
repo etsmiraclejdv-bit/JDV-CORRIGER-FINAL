@@ -11,7 +11,10 @@ import {
   type SupplierInput,
 } from '@/lib/services/purchasesService';
 import { SUPPLIER_STATUS_LABELS } from '@/lib/purchases/helpers';
-import { formatXof } from '@/lib/relances/helpers';
+import { toNumber } from '@/lib/relances/helpers';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
+import { usePurchaseLabels } from '@/lib/purchases/useLabels';
 import { inputClass, labelClass } from '@/lib/ui/forms';
 import Modal from '@/components/ui/Modal';
 import LoadingState from '@/components/ui/LoadingState';
@@ -70,6 +73,15 @@ function toInput(f: FormState): SupplierInput {
 }
 
 export default function SuppliersView() {
+  const { t, locale } = useLanguage();
+  const labels = usePurchaseLabels();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
+  const formatXof = (value: unknown) =>
+    `${new Intl.NumberFormat(locale).format(Math.round(toNumber(value)))} XOF`;
   const [orgId, setOrgId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -87,7 +99,7 @@ export default function SuppliersView() {
     setError('');
     const { orgId: org, error: guardError } = await getAdminOrganization();
     if (!org) {
-      setError(guardError ?? 'Accès impossible.');
+      setError(guardError ?? 'bz.puNoAccess');
       setLoading(false);
       return;
     }
@@ -150,11 +162,11 @@ export default function SuppliersView() {
   async function handleSave() {
     if (!orgId || saving) return;
     if (form.company_name.trim().length < 2) {
-      setFormError('Le nom du fournisseur est obligatoire.');
+      setFormError(t('bz.suNameReq'));
       return;
     }
     if (form.email.trim() !== '' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      setFormError("L'adresse email n'est pas valide.");
+      setFormError(t('bz.suBadEmail'));
       return;
     }
     setSaving(true);
@@ -164,16 +176,20 @@ export default function SuppliersView() {
       setFormError(err);
       return;
     }
-    toast.success(editing ? 'Fournisseur modifié.' : 'Fournisseur ajouté.');
+    toast.success(editing ? t('bz.suEdited') : t('bz.suAdded'));
     setOpen(false);
     void load();
   }
 
+  const showError = (s: string) => (s.startsWith('bz.') ? t(s as TerrainKey) : s);
   if (loading && suppliers.length === 0 && !error)
-    return <LoadingState message="Chargement des fournisseurs…" />;
+    return <LoadingState message={t('bz.suLoading')} />;
   if (error && suppliers.length === 0) {
     return (
-      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+      <ErrorState
+        message={showError(error)}
+        action={{ label: t('bz.fnRetry'), onClick: () => void load() }}
+      />
     );
   }
 
@@ -181,27 +197,27 @@ export default function SuppliersView() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Fournisseurs</h1>
+          <h1 className="text-2xl font-bold text-white">{t('bz.suTitle')}</h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {suppliers.length} fournisseur(s) enregistré(s)
+            {fill('bz.suCount', { n: suppliers.length })}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => void load()}
             disabled={loading}
-            aria-label="Actualiser la liste"
+            aria-label={t('bz.puRefreshAria')}
             className="flex items-center gap-2 btn-outline-gold px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            Actualiser
+            {t('bz.fnRefresh')}
           </button>
           <button
             onClick={openCreate}
             className="flex items-center gap-2 btn-gold px-4 py-2.5 rounded-xl text-sm font-bold"
           >
             <Plus size={14} />
-            Nouveau fournisseur
+            {t('bz.suNew')}
           </button>
         </div>
       </div>
@@ -211,7 +227,7 @@ export default function SuppliersView() {
           className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
           role="alert"
         >
-          {error}
+          {showError(error)}
         </div>
       )}
 
@@ -221,8 +237,8 @@ export default function SuppliersView() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher par nom, code, contact ou téléphone…"
-          aria-label="Rechercher un fournisseur"
+          placeholder={t('bz.suSearchPh')}
+          aria-label={t('bz.suSearchAria')}
           className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
         />
       </div>
@@ -232,12 +248,10 @@ export default function SuppliersView() {
           <div className="py-16 text-center px-6">
             <Truck size={32} className="mx-auto mb-3 text-[#D4AF37] opacity-60" />
             <p className="text-white text-sm font-semibold mb-1">
-              {suppliers.length === 0 ? 'Aucun fournisseur' : 'Aucun résultat'}
+              {suppliers.length === 0 ? t('bz.suNone') : t('bz.puNoResult')}
             </p>
             <p className="text-[#A0AEC0] text-sm">
-              {suppliers.length === 0
-                ? 'Ajoutez votre premier fournisseur pour pouvoir passer des commandes.'
-                : 'Modifiez votre recherche.'}
+              {suppliers.length === 0 ? t('bz.suAddFirst') : t('bz.suChangeSearch')}
             </p>
           </div>
         ) : (
@@ -245,16 +259,22 @@ export default function SuppliersView() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  {['Code', 'Fournisseur', 'Téléphone', 'Ville', 'Solde dû', 'Statut', ''].map(
-                    (h, i) => (
-                      <th
-                        key={i}
-                        className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
-                      >
-                        {h}
-                      </th>
-                    )
-                  )}
+                  {[
+                    t('bz.suColCode'),
+                    t('bz.puColSupplier'),
+                    t('bz.sPhone'),
+                    t('bz.sCity'),
+                    t('bz.suColBalance'),
+                    t('bz.suStatus'),
+                    '',
+                  ].map((h, i) => (
+                    <th
+                      key={i}
+                      className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap"
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -284,13 +304,13 @@ export default function SuppliersView() {
                       <span
                         className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${STATUS_CLASSES[s.status] ?? STATUS_CLASSES.inactive}`}
                       >
-                        {SUPPLIER_STATUS_LABELS[s.status] ?? s.status}
+                        {labels.supplierStatus(s.status)}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <button
                         onClick={() => openEdit(s)}
-                        aria-label={`Modifier ${s.company_name}`}
+                        aria-label={fill('bz.suEditAria', { a: s.company_name })}
                         className="p-2 rounded-lg bg-[#0B1B3D] border border-[#D4AF37]/20 text-[#D4AF37] hover:bg-[#D4AF37]/10"
                       >
                         <Edit2 size={14} />
@@ -307,7 +327,7 @@ export default function SuppliersView() {
       <Modal
         open={open}
         onClose={() => !saving && setOpen(false)}
-        title={editing ? `Modifier ${editing.code}` : 'Nouveau fournisseur'}
+        title={editing ? fill('bz.suModalEdit', { a: editing.code }) : t('bz.suModalNew')}
         size="xl"
       >
         <div className="space-y-4">
@@ -321,7 +341,7 @@ export default function SuppliersView() {
           )}
           <div>
             <label className={labelClass} htmlFor="sup-name">
-              Nom du fournisseur *
+              {t('bz.suName')}
             </label>
             <input
               id="sup-name"
@@ -334,7 +354,7 @@ export default function SuppliersView() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="sup-contact">
-                Personne à contacter
+                {t('bz.suContact')}
               </label>
               <input
                 id="sup-contact"
@@ -346,7 +366,7 @@ export default function SuppliersView() {
             </div>
             <div>
               <label className={labelClass} htmlFor="sup-email">
-                Email
+                {t('bz.suEmail')}
               </label>
               <input
                 id="sup-email"
@@ -359,7 +379,7 @@ export default function SuppliersView() {
             </div>
             <div>
               <label className={labelClass} htmlFor="sup-phone">
-                Téléphone
+                {t('bz.sPhone')}
               </label>
               <input
                 id="sup-phone"
@@ -371,7 +391,7 @@ export default function SuppliersView() {
             </div>
             <div>
               <label className={labelClass} htmlFor="sup-wa">
-                WhatsApp
+                {t('bz.suWa')}
               </label>
               <input
                 id="sup-wa"
@@ -383,7 +403,7 @@ export default function SuppliersView() {
             </div>
             <div>
               <label className={labelClass} htmlFor="sup-city">
-                Ville
+                {t('bz.sCity')}
               </label>
               <input
                 id="sup-city"
@@ -395,7 +415,7 @@ export default function SuppliersView() {
             </div>
             <div>
               <label className={labelClass} htmlFor="sup-country">
-                Pays
+                {t('bz.suCountry')}
               </label>
               <input
                 id="sup-country"
@@ -408,7 +428,7 @@ export default function SuppliersView() {
           </div>
           <div>
             <label className={labelClass} htmlFor="sup-address">
-              Adresse
+              {t('bz.sAddress')}
             </label>
             <input
               id="sup-address"
@@ -421,20 +441,20 @@ export default function SuppliersView() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="sup-terms">
-                Conditions de paiement
+                {t('bz.suTerms')}
               </label>
               <input
                 id="sup-terms"
                 value={form.payment_terms}
                 onChange={set('payment_terms')}
                 maxLength={200}
-                placeholder="ex. 30 jours"
+                placeholder={t('bz.suTermsPh')}
                 className={inputClass}
               />
             </div>
             <div>
               <label className={labelClass} htmlFor="sup-status">
-                Statut
+                {t('bz.suStatus')}
               </label>
               <select
                 id="sup-status"
@@ -442,9 +462,9 @@ export default function SuppliersView() {
                 onChange={set('status')}
                 className={inputClass}
               >
-                {Object.entries(SUPPLIER_STATUS_LABELS).map(([v, l]) => (
+                {Object.keys(SUPPLIER_STATUS_LABELS).map((v) => (
                   <option key={v} value={v}>
-                    {l}
+                    {labels.supplierStatus(v)}
                   </option>
                 ))}
               </select>
@@ -452,7 +472,7 @@ export default function SuppliersView() {
           </div>
           <div>
             <label className={labelClass} htmlFor="sup-notes">
-              Notes
+              {t('bz.puNotes')}
             </label>
             <textarea
               id="sup-notes"
@@ -469,14 +489,14 @@ export default function SuppliersView() {
               disabled={saving}
               className="px-4 py-2.5 rounded-xl text-sm font-semibold bg-[#0B1B3D] text-[#A0AEC0] border border-[#D4AF37]/20 hover:text-white disabled:opacity-50"
             >
-              Annuler
+              {t('bz.puCancel')}
             </button>
             <button
               onClick={() => void handleSave()}
               disabled={saving}
               className="btn-gold px-5 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50"
             >
-              {saving ? 'Enregistrement…' : 'Enregistrer'}
+              {saving ? t('bz.pdSaving') : t('bz.pdSave')}
             </button>
           </div>
         </div>

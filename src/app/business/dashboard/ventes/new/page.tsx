@@ -10,6 +10,8 @@ import { fetchProducts } from '@/lib/services/catalogueService';
 import { createSale } from '@/lib/services/salesService';
 import { supabase } from '@/lib/supabase/client';
 import { personName } from '@/lib/services/compat';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Row = Record<string, unknown>;
 
@@ -18,6 +20,12 @@ const inputCls =
 const labelCls = 'block text-xs font-medium text-[#A0AEC0] mb-1.5';
 
 function NewSaleForm() {
+  const { t, locale } = useLanguage();
+  const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
+    Object.entries(vars).reduce(
+      (text, [name, value]) => text.replace(`{${name}}`, String(value)),
+      t(key)
+    );
   const router = useRouter();
   const params = useSearchParams();
   const [orgId, setOrgId] = useState<string | null>(null);
@@ -91,7 +99,7 @@ function NewSaleForm() {
       setInstallment(Math.ceil(remaining / 4));
   }, [frequency, remaining]);
   const fmt = (n: number) =>
-    new Intl.NumberFormat('fr-FR', {
+    new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'XOF',
       maximumFractionDigits: 0,
@@ -100,12 +108,11 @@ function NewSaleForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!orgId) return;
-    if (!clientId) return toast.error('Choisissez un client');
-    if (!article) return toast.error('Choisissez un article');
-    if (quantity < 1) return toast.error('La quantité doit être au moins 1');
-    if (unitPrice <= 0) return toast.error('Le prix unitaire doit être supérieur à 0');
-    if (saleType === 'credit' && installment <= 0)
-      return toast.error('Indiquez le montant de chaque versement');
+    if (!clientId) return toast.error(t('bz.vnPickClient'));
+    if (!article) return toast.error(t('bz.vnPickArticle'));
+    if (quantity < 1) return toast.error(t('bz.vnQtyMin'));
+    if (unitPrice <= 0) return toast.error(t('bz.vnPricePos'));
+    if (saleType === 'credit' && installment <= 0) return toast.error(t('bz.vnInstallment'));
 
     setSaving(true);
     const { data, error } = await createSale({
@@ -127,20 +134,15 @@ function NewSaleForm() {
     });
     setSaving(false);
     if (error || !data) {
-      toast.error(error?.message ?? 'La vente n’a pas pu être enregistrée');
+      toast.error(error?.message ?? t('bz.vnFailed'));
       return;
     }
-    toast.success('Vente enregistrée');
+    toast.success(t('bz.vnSaved'));
     router.push(`/business/dashboard/ventes/${(data as Row).id as string}`);
   }
 
-  if (loading) return <div className="p-8 text-center text-[#A0AEC0]">Chargement...</div>;
-  if (!orgId)
-    return (
-      <div className="p-8 text-center text-red-400 text-sm">
-        Aucune organisation associée à ce compte.
-      </div>
-    );
+  if (loading) return <div className="p-8 text-center text-[#A0AEC0]">{t('we.loading')}</div>;
+  if (!orgId) return <div className="p-8 text-center text-red-400 text-sm">{t('bz.vnNoOrg')}</div>;
 
   return (
     <div className="p-6 lg:p-8 space-y-6 max-w-2xl">
@@ -152,8 +154,8 @@ function NewSaleForm() {
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white">Nouvelle vente</h1>
-          <p className="text-sm text-[#A0AEC0]">Enregistrer une vente au comptant ou à crédit</p>
+          <h1 className="text-2xl font-bold text-white">{t('bz.vNew')}</h1>
+          <p className="text-sm text-[#A0AEC0]">{t('bz.vnSub')}</p>
         </div>
       </div>
 
@@ -162,14 +164,14 @@ function NewSaleForm() {
         className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6 space-y-4"
       >
         <div>
-          <label className={labelCls}>Client</label>
+          <label className={labelCls}>{t('bz.vnClient')}</label>
           <select
             value={clientId}
             onChange={(e) => setClientId(e.target.value)}
             required
             className={inputCls}
           >
-            <option value="">Choisir un client…</option>
+            <option value="">{t('bz.vnChooseClient')}</option>
             {clients.map((c) => (
               <option key={c.id as string} value={c.id as string}>
                 {(c.full_name as string) || personName(c as never)}{' '}
@@ -178,47 +180,47 @@ function NewSaleForm() {
             ))}
           </select>
           {clients.length === 0 && (
-            <p className="text-xs text-[#718096] mt-1">
-              Vous ne voyez pas les clients des prospecteurs (portefeuilles privés). Les ventes
-              s’enregistrent depuis l’espace terrain du prospecteur ; ici, seul un compte concepteur
-              voit son propre portefeuille.
-            </p>
+            <p className="text-xs text-[#718096] mt-1">{t('bz.vnPrivate')}</p>
           )}
         </div>
 
         <div>
-          <label className={labelCls}>Article</label>
+          <label className={labelCls}>{t('bz.vnArticle')}</label>
           <select
             value={articleId}
             onChange={(e) => setArticleId(e.target.value)}
             required
             className={inputCls}
           >
-            <option value="">Choisir un article…</option>
+            <option value="">{t('bz.vnChooseArticle')}</option>
             {articles.map((a) => (
               <option key={a.id as string} value={a.id as string}>
-                {a.name as string} ({a.sku as string}) — stock {a.stock_quantity as number}
+                {fill('bz.vnStock', {
+                  a: a.name as string,
+                  s: a.sku as string,
+                  n: a.stock_quantity as number,
+                })}
               </option>
             ))}
           </select>
           {articles.length === 0 && (
             <p className="text-xs text-[#718096] mt-1">
-              Aucun article.{' '}
+              {t('bz.vnNoArticle')}{' '}
               <Link href="/business/dashboard/catalogue" className="text-[#D4AF37] hover:underline">
-                Créer un article
+                {t('bz.vnCreateArticle')}
               </Link>
             </p>
           )}
         </div>
 
         <div>
-          <label className={labelCls}>Prospecteur (facultatif)</label>
+          <label className={labelCls}>{t('bz.vnProsOpt')}</label>
           <select
             value={prospecteurId}
             onChange={(e) => setProspecteurId(e.target.value)}
             className={inputCls}
           >
-            <option value="">Aucun</option>
+            <option value="">{t('bz.vnNone')}</option>
             {prospecteurs.map((p) => (
               <option key={p.id as string} value={p.id as string}>
                 {personName(p as never)}
@@ -229,18 +231,18 @@ function NewSaleForm() {
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelCls}>Type de vente</label>
+            <label className={labelCls}>{t('bz.vnSaleType')}</label>
             <select
               value={saleType}
               onChange={(e) => setSaleType(e.target.value as 'cash' | 'credit')}
               className={inputCls}
             >
-              <option value="cash">Comptant</option>
-              <option value="credit">À crédit</option>
+              <option value="cash">{t('bz.vdCash')}</option>
+              <option value="credit">{t('bz.vdCredit')}</option>
             </select>
           </div>
           <div>
-            <label className={labelCls}>Quantité</label>
+            <label className={labelCls}>{t('bz.vnQty')}</label>
             <input
               type="number"
               min={1}
@@ -252,7 +254,7 @@ function NewSaleForm() {
         </div>
 
         <div>
-          <label className={labelCls}>Prix unitaire (XOF)</label>
+          <label className={labelCls}>{t('bz.vnUnitPrice')}</label>
           <input
             type="number"
             min={0}
@@ -266,7 +268,7 @@ function NewSaleForm() {
           <div className="space-y-4 rounded-xl border border-[#D4AF37]/10 p-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Acompte versé (XOF)</label>
+                <label className={labelCls}>{t('bz.vnDeposit')}</label>
                 <input
                   type="number"
                   min={0}
@@ -276,7 +278,7 @@ function NewSaleForm() {
                 />
               </div>
               <div>
-                <label className={labelCls}>Montant de chaque versement (XOF)</label>
+                <label className={labelCls}>{t('bz.vnInstAmount')}</label>
                 <input
                   type="number"
                   min={0}
@@ -289,21 +291,21 @@ function NewSaleForm() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Fréquence</label>
+                <label className={labelCls}>{t('bz.vnFreq')}</label>
                 <select
                   value={frequency}
                   onChange={(e) => setFrequency(e.target.value)}
                   className={inputCls}
                 >
-                  <option value="daily">Journalière</option>
-                  <option value="weekly">Hebdomadaire</option>
-                  <option value="biweekly">Toutes les 2 semaines</option>
-                  <option value="monthly">Mensuelle</option>
-                  <option value="four_installments">Crédit en 4 échéances (hebdomadaires)</option>
+                  <option value="daily">{t('bz.vnDaily')}</option>
+                  <option value="weekly">{t('bz.vnWeekly')}</option>
+                  <option value="biweekly">{t('bz.vnBiweekly')}</option>
+                  <option value="monthly">{t('bz.vnMonthly')}</option>
+                  <option value="four_installments">{t('bz.vnFour')}</option>
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Date limite</label>
+                <label className={labelCls}>{t('bz.vdDeadline')}</label>
                 <input
                   type="date"
                   value={deadline}
@@ -317,10 +319,11 @@ function NewSaleForm() {
 
         <div className="flex items-center justify-between rounded-xl bg-[#0A1628] px-4 py-3 text-sm">
           <span className="text-[#A0AEC0]">
-            Total : <span className="font-bold text-white">{fmt(total)}</span>
+            {t('bz.vdTotal')} : <span className="font-bold text-white">{fmt(total)}</span>
           </span>
           <span className="text-[#A0AEC0]">
-            Reste à payer : <span className="font-bold text-[#D4AF37]">{fmt(remaining)}</span>
+            {t('bz.vdRemaining')} :{' '}
+            <span className="font-bold text-[#D4AF37]">{fmt(remaining)}</span>
           </span>
         </div>
 
@@ -329,7 +332,7 @@ function NewSaleForm() {
             href="/business/dashboard/ventes"
             className="flex-1 text-center py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors"
           >
-            Annuler
+            {t('bz.vdCancel')}
           </Link>
           <button
             type="submit"
@@ -337,7 +340,7 @@ function NewSaleForm() {
             className="flex-1 flex items-center justify-center gap-2 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
           >
             <Save size={14} />
-            {saving ? 'Enregistrement...' : 'Enregistrer la vente'}
+            {saving ? t('bz.vdSaving') : t('bz.vnSubmit')}
           </button>
         </div>
       </form>
@@ -347,7 +350,7 @@ function NewSaleForm() {
 
 export default function NewSalePage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-[#A0AEC0]">Chargement...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-[#A0AEC0]">…</div>}>
       <NewSaleForm />
     </Suspense>
   );
