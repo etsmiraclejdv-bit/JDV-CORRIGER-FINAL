@@ -5,6 +5,8 @@ import { KeyRound, Plus, RefreshCw, ShieldCheck, UserCheck, UserX } from 'lucide
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { getCurrentOrgId } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Member = {
   member_id: string;
@@ -20,42 +22,29 @@ type Member = {
 };
 type MatrixRow = { role: string; module: string | null; code: string; name: string };
 
-const ROLES: { id: string; label: string; hint: string }[] = [
-  {
-    id: 'business_admin',
-    label: 'Administrateur',
-    hint: 'Accès complet à l’entreprise, y compris l’équipe et les paramètres.',
-  },
-  {
-    id: 'manager',
-    label: 'Gestionnaire',
-    hint: 'Pilote l’activité : prospecteurs, stock, ventes, rapports.',
-  },
-  {
-    id: 'supervisor',
-    label: 'Superviseur',
-    hint: 'Suit les équipes et l’activité, sans modifier les réglages.',
-  },
-  { id: 'accountant', label: 'Comptable', hint: 'Finances, paiements et rapports.' },
-  { id: 'commercial', label: 'Commercial', hint: 'Prospects, clients et ventes.' },
-  { id: 'viewer', label: 'Lecteur', hint: 'Consultation seulement.' },
+const ROLES: { id: string; label: TerrainKey; hint: TerrainKey }[] = [
+  { id: 'business_admin', label: 'bz.eqRAdmin', hint: 'bz.eqRAdminH' },
+  { id: 'manager', label: 'bz.eqRManager', hint: 'bz.eqRManagerH' },
+  { id: 'supervisor', label: 'bz.eqRSup', hint: 'bz.eqRSupH' },
+  { id: 'accountant', label: 'bz.eqRAcc', hint: 'bz.eqRAccH' },
+  { id: 'commercial', label: 'bz.eqRCom', hint: 'bz.eqRComH' },
+  { id: 'viewer', label: 'bz.eqRView', hint: 'bz.eqRViewH' },
 ];
-const ROLE_LABEL: Record<string, string> = {
+const ROLE_LABEL: Record<string, TerrainKey> = {
   ...Object.fromEntries(ROLES.map((r) => [r.id, r.label])),
-  prospecteur: 'Prospecteur',
+  prospecteur: 'bz.eqRPros',
 };
 
-const ERRORS: [string, string][] = [
-  ['CANNOT_CHANGE_OWN_ROLE', 'Vous ne pouvez pas changer votre propre rôle.'],
-  ['CANNOT_CHANGE_OWN_STATUS', 'Vous ne pouvez pas vous suspendre vous-même.'],
-  ['OWNER_PROTECTED', 'Le propriétaire de l’entreprise ne peut pas être modifié.'],
-  ['LAST_ADMIN', 'L’entreprise doit garder au moins un administrateur actif.'],
-  ['ADMIN_LIMIT_REACHED', 'Le nombre maximal d’administrateurs de votre abonnement est atteint.'],
-  ['USE_PROSPECTEURS_PAGE', 'Le rôle d’un prospecteur se gère depuis la page Prospecteurs.'],
-  ['ACCESS_DENIED', 'Action réservée aux administrateurs.'],
-  ['warehouse_managers_one_active_head', 'Cette agence a déjà un chef d’agence actif.'],
+const ERRORS: [string, TerrainKey][] = [
+  ['CANNOT_CHANGE_OWN_ROLE', 'bz.eqEOwnRole'],
+  ['CANNOT_CHANGE_OWN_STATUS', 'bz.eqEOwnStatus'],
+  ['OWNER_PROTECTED', 'bz.eqEOwner'],
+  ['LAST_ADMIN', 'bz.eqELast'],
+  ['ADMIN_LIMIT_REACHED', 'bz.eqELimit'],
+  ['USE_PROSPECTEURS_PAGE', 'bz.eqEPros'],
+  ['ACCESS_DENIED', 'bz.eqEDenied'],
+  ['warehouse_managers_one_active_head', 'bz.eqEHead'],
 ];
-const frError = (msg: string) => ERRORS.find(([k]) => msg.includes(k))?.[1] ?? msg;
 
 const EMPTY = {
   email: '',
@@ -67,6 +56,11 @@ const EMPTY = {
 };
 
 export default function TeamPage() {
+  const { t } = useLanguage();
+  const frError = (msg: string) => {
+    const hit = ERRORS.find(([k]) => msg.includes(k));
+    return hit ? t(hit[1]) : msg;
+  };
   const [orgId, setOrgId] = useState<string | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [matrix, setMatrix] = useState<MatrixRow[]>([]);
@@ -94,7 +88,7 @@ export default function TeamPage() {
     setMembers((m.data ?? []) as Member[]);
     setMatrix((x.data ?? []) as MatrixRow[]);
     setLoading(false);
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     load();
@@ -111,20 +105,20 @@ export default function TeamPage() {
     try {
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
-      if (!token) throw new Error('Session expirée. Reconnectez-vous.');
+      if (!token) throw new Error(t('bz.eqSession'));
       const res = await fetch('/api/business/create-member', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ organizationId: orgId, ...form }),
       });
       const out = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(out?.error || 'Création impossible.');
-      toast.success('Membre créé. Communiquez-lui son mot de passe de manière sécurisée.');
+      if (!res.ok) throw new Error(out?.error || t('bz.eqCreateFail'));
+      toast.success(t('bz.eqCreated'));
       setForm(EMPTY);
       setShowForm(false);
       await load();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Création impossible.');
+      toast.error(err instanceof Error ? err.message : t('bz.eqCreateFail'));
     } finally {
       setCreating(false);
     }
@@ -142,7 +136,7 @@ export default function TeamPage() {
       toast.error(frError(error.message));
       return;
     }
-    toast.success('Rôle mis à jour.');
+    toast.success(t('bz.eqRoleUpd'));
     load();
   }
 
@@ -150,9 +144,7 @@ export default function TeamPage() {
     const next = m.status === 'active' ? 'suspended' : 'active';
     if (
       next === 'suspended' &&
-      !window.confirm(
-        `Suspendre ${m.display_name} ? Cette personne ne pourra plus se connecter à l’entreprise.`
-      )
+      !window.confirm(t('bz.eqSuspendQ').replace('{name}', m.display_name))
     )
       return;
     setBusy(m.member_id);
@@ -165,7 +157,7 @@ export default function TeamPage() {
       toast.error(frError(error.message));
       return;
     }
-    toast.success(next === 'active' ? 'Membre réactivé.' : 'Membre suspendu.');
+    toast.success(next === 'active' ? t('bz.eqReact') : t('bz.eqSuspended'));
     load();
   }
 
@@ -188,20 +180,16 @@ export default function TeamPage() {
             className="text-xs font-semibold uppercase tracking-widest"
             style={{ color: 'var(--brand-text)' }}
           >
-            Équipe
+            {t('bz.eqKicker')}
           </p>
-          <h1 className="text-2xl font-bold text-foreground">Équipe et droits</h1>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Créez les comptes de vos collaborateurs, choisissez leur rôle et suspendez un accès en
-            un clic. Les prospecteurs se gèrent depuis leur page, les chefs d’agence depuis les
-            entrepôts.
-          </p>
+          <h1 className="text-2xl font-bold text-foreground">{t('bz.eqTitle')}</h1>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{t('bz.eqIntro')}</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={load}
             className="rounded-xl border border-border p-2.5 text-muted-foreground"
-            aria-label="Actualiser"
+            aria-label={t('bz.fnRefresh')}
           >
             <RefreshCw size={16} />
           </button>
@@ -211,7 +199,7 @@ export default function TeamPage() {
               className="btn-gold inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold"
             >
               <Plus size={15} />
-              Nouveau membre
+              {t('bz.eqNewMember')}
             </button>
           )}
         </div>
@@ -219,15 +207,15 @@ export default function TeamPage() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <div className={card}>
-          <p className={lab}>Membres</p>
+          <p className={lab}>{t('bz.eqMembers')}</p>
           <p className="text-2xl font-bold text-foreground">{members.length}</p>
         </div>
         <div className={card}>
-          <p className={lab}>Actifs</p>
+          <p className={lab}>{t('bz.eqActive')}</p>
           <p className="text-2xl font-bold text-foreground">{active}</p>
         </div>
         <div className={card}>
-          <p className={lab}>Suspendus</p>
+          <p className={lab}>{t('bz.eqSuspendedC')}</p>
           <p className="text-2xl font-bold text-foreground">{members.length - active}</p>
         </div>
       </div>
@@ -235,7 +223,7 @@ export default function TeamPage() {
       {showForm && canManage && (
         <form onSubmit={create} className={`${card} grid gap-4 md:grid-cols-3`}>
           <div>
-            <label className={lab}>Prénom *</label>
+            <label className={lab}>{t('bz.eqFirst')}</label>
             <input
               required
               className={input}
@@ -244,7 +232,7 @@ export default function TeamPage() {
             />
           </div>
           <div>
-            <label className={lab}>Nom</label>
+            <label className={lab}>{t('bz.eqLast')}</label>
             <input
               className={input}
               value={form.lastName}
@@ -252,7 +240,7 @@ export default function TeamPage() {
             />
           </div>
           <div>
-            <label className={lab}>Téléphone</label>
+            <label className={lab}>{t('bz.eqPhone')}</label>
             <input
               className={input}
               value={form.phone}
@@ -260,7 +248,7 @@ export default function TeamPage() {
             />
           </div>
           <div>
-            <label className={lab}>E-mail de connexion *</label>
+            <label className={lab}>{t('bz.eqEmail')}</label>
             <input
               required
               type="email"
@@ -270,7 +258,7 @@ export default function TeamPage() {
             />
           </div>
           <div>
-            <label className={lab}>Mot de passe provisoire *</label>
+            <label className={lab}>{t('bz.eqPass')}</label>
             <input
               required
               minLength={8}
@@ -278,11 +266,11 @@ export default function TeamPage() {
               className={input}
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="8 caractères minimum"
+              placeholder={t('bz.eqPassPh')}
             />
           </div>
           <div>
-            <label className={lab}>Rôle *</label>
+            <label className={lab}>{t('bz.eqRoleL')}</label>
             <select
               className={input}
               value={form.role}
@@ -290,21 +278,20 @@ export default function TeamPage() {
             >
               {ROLES.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.label}
+                  {t(r.label)}
                 </option>
               ))}
             </select>
           </div>
           <p className="text-xs text-muted-foreground md:col-span-2">
-            {ROLES.find((r) => r.id === form.role)?.hint} Aucun e-mail n’est envoyé : transmettez
-            vous-même le mot de passe, que la personne pourra changer ensuite.
+            {t(ROLES.find((r) => r.id === form.role)?.hint ?? 'bz.eqRViewH')} {t('bz.eqNoMail')}
           </p>
           <div className="flex items-end justify-end">
             <button
               disabled={creating}
               className="btn-gold rounded-xl px-5 py-2.5 text-sm font-bold disabled:opacity-60"
             >
-              {creating ? 'Création…' : 'Créer le membre'}
+              {creating ? t('bz.eqCreating') : t('bz.eqCreateBtn')}
             </button>
           </div>
         </form>
@@ -313,8 +300,8 @@ export default function TeamPage() {
       <div className="flex gap-1 rounded-xl border border-border bg-muted p-1 w-fit">
         {(
           [
-            ['members', 'Membres', ShieldCheck],
-            ['rights', 'Droits par rôle', KeyRound],
+            ['members', t('bz.eqMembers'), ShieldCheck],
+            ['rights', t('bz.eqTabRights'), KeyRound],
           ] as const
         ).map(([id, label, Icon]) => (
           <button
@@ -329,11 +316,11 @@ export default function TeamPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Chargement…</p>
+        <p className="text-sm text-muted-foreground">{t('bz.eqLoading')}</p>
       ) : tab === 'members' ? (
         <div className="overflow-hidden rounded-2xl border border-border bg-card">
           {members.length === 0 ? (
-            <p className="p-6 text-sm text-muted-foreground">Aucun membre visible.</p>
+            <p className="p-6 text-sm text-muted-foreground">{t('bz.eqNoMember')}</p>
           ) : (
             members.map((m) => (
               <div
@@ -343,7 +330,7 @@ export default function TeamPage() {
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-foreground">
                     {m.display_name}
-                    {m.is_me ? ' (vous)' : ''}
+                    {m.is_me ? t('bz.eqYou') : ''}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
                     {m.email}
@@ -352,13 +339,13 @@ export default function TeamPage() {
                   <div className="mt-1 flex flex-wrap gap-1.5">
                     {m.is_owner && (
                       <span className="badge-gold rounded-full border px-2 py-0.5 text-[11px]">
-                        Propriétaire
+                        {t('bz.eqOwner')}
                       </span>
                     )}
                     <span
                       className={`rounded-full px-2 py-0.5 text-[11px] ${m.status === 'active' ? 'badge-success' : 'badge-danger'}`}
                     >
-                      {m.status === 'active' ? 'Actif' : 'Suspendu'}
+                      {m.status === 'active' ? t('bz.eqStActive') : t('bz.eqStSusp')}
                     </span>
                   </div>
                 </div>
@@ -371,13 +358,13 @@ export default function TeamPage() {
                   >
                     {ROLES.map((r) => (
                       <option key={r.id} value={r.id}>
-                        {r.label}
+                        {t(r.label)}
                       </option>
                     ))}
                   </select>
                 ) : (
                   <span className="text-sm font-medium text-foreground">
-                    {ROLE_LABEL[m.role] ?? m.role}
+                    {ROLE_LABEL[m.role] ? t(ROLE_LABEL[m.role]) : m.role}
                   </span>
                 )}
                 {canManage && !m.is_me && !m.is_owner ? (
@@ -389,12 +376,12 @@ export default function TeamPage() {
                     {m.status === 'active' ? (
                       <>
                         <UserX size={14} />
-                        Suspendre
+                        {t('bz.eqSuspendBtn')}
                       </>
                     ) : (
                       <>
                         <UserCheck size={14} />
-                        Réactiver
+                        {t('bz.eqReactBtn')}
                       </>
                     )}
                   </button>
@@ -408,19 +395,25 @@ export default function TeamPage() {
       ) : (
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            {[...ROLES, { id: 'prospecteur', label: 'Prospecteur', hint: '' }].map((r) => (
+            {[
+              ...ROLES,
+              {
+                id: 'prospecteur',
+                label: 'bz.eqRPros' as TerrainKey,
+                hint: 'bz.eqRProsH' as TerrainKey,
+              },
+            ].map((r) => (
               <button
                 key={r.id}
                 onClick={() => setRightsRole(r.id)}
                 className={`rounded-xl border px-4 py-2 text-sm ${rightsRole === r.id ? 'border-[var(--brand)] font-semibold' : 'border-border text-muted-foreground'}`}
               >
-                {r.label}
+                {t(r.label)}
               </button>
             ))}
           </div>
           <p className="text-sm text-muted-foreground">
-            {ROLES.find((r) => r.id === rightsRole)?.hint ||
-              'Travail terrain : prospects, visites, ventes, retours.'}
+            {t(ROLES.find((r) => r.id === rightsRole)?.hint ?? 'bz.eqRProsH')}
           </p>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {Object.entries(rightsByModule).map(([module, rows]) => (
@@ -439,7 +432,7 @@ export default function TeamPage() {
               </div>
             ))}
             {Object.keys(rightsByModule).length === 0 && (
-              <p className="text-sm text-muted-foreground">Aucun droit enregistré pour ce rôle.</p>
+              <p className="text-sm text-muted-foreground">{t('bz.eqNoRights')}</p>
             )}
           </div>
         </div>
