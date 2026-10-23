@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type Row = {
   organization_id: string;
@@ -26,6 +27,7 @@ type Row = {
 };
 
 export default function SuperAdminDashboardPage() {
+  const { t, locale } = useLanguage();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   async function load() {
@@ -49,10 +51,8 @@ export default function SuperAdminDashboardPage() {
     <div className="p-6 lg:p-8 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Gestion de la plateforme</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">
-            Contrôle global des entreprises et des abonnements JDV CRM.
-          </p>
+          <h1 className="text-2xl font-bold text-white">{t('cg.dbTitle')}</h1>
+          <p className="text-sm text-[#A0AEC0] mt-1">{t('cg.dbSub')}</p>
         </div>
         <button
           onClick={load}
@@ -63,10 +63,10 @@ export default function SuperAdminDashboardPage() {
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          ['Entreprises', rows.length, Building2, 'text-[#D4AF37]'],
-          ['Abonnements actifs', active, CreditCard, 'text-green-400'],
-          ['Impayées / expirées', unpaid, AlertTriangle, 'text-red-400'],
-          ['Renouvellement auto', auto, CheckCircle2, 'text-blue-400'],
+          [t('cg.dbCompanies'), rows.length, Building2, 'text-[#D4AF37]'],
+          [t('cg.dbActive'), active, CreditCard, 'text-green-400'],
+          [t('cg.dbUnpaid'), unpaid, AlertTriangle, 'text-red-400'],
+          [t('cg.dbAuto'), auto, CheckCircle2, 'text-blue-400'],
         ].map(([l, v, I, c]) => {
           const Icon = I as typeof Building2;
           return (
@@ -84,29 +84,32 @@ export default function SuperAdminDashboardPage() {
       <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-base font-semibold text-white">État des entreprises</h2>
-            <p className="text-xs text-[#718096] mt-1">
-              Les échéances expirées sont automatiquement marquées comme expirées/suspendues lors du
-              contrôle.
-            </p>
+            <h2 className="text-base font-semibold text-white">{t('cg.dbState')}</h2>
+            <p className="text-xs text-[#718096] mt-1">{t('cg.dbNote')}</p>
           </div>
           <Link
             href="/hidden-concepteur-gate/dashboard/company-applications"
             className="flex items-center gap-1 text-xs text-[#D4AF37]"
           >
-            Dossiers entreprises <ArrowRight size={13} />
+            {t('cg.dbFiles')} <ArrowRight size={13} />
           </Link>
         </div>
         {suspended > 0 && (
           <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-300">
-            {suspended} entreprise(s) actuellement suspendue(s).
+            {t('cg.dbSuspN').replace('{n}', String(suspended))}
           </div>
         )}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#D4AF37]/10">
-                {['Entreprise', 'Abonnement', 'Échéance', 'Paiement', 'État'].map((h) => (
+                {[
+                  t('cg.dbColCo'),
+                  t('cg.dbColSub'),
+                  t('cg.dbColDue'),
+                  t('cg.dbColPay'),
+                  t('cg.dbColState'),
+                ].map((h) => (
                   <th key={h} className="text-left text-xs text-[#718096] uppercase px-4 py-3">
                     {h}
                   </th>
@@ -119,10 +122,10 @@ export default function SuperAdminDashboardPage() {
                   <td className="px-4 py-3 text-sm text-white">{r.organization_name}</td>
                   <td className="px-4 py-3 text-sm text-[#A0AEC0]">{r.plan_name || '—'}</td>
                   <td className="px-4 py-3 text-sm text-[#A0AEC0]">
-                    {r.expires_at ? new Date(r.expires_at).toLocaleDateString('fr-FR') : '—'}
+                    {r.expires_at ? new Date(r.expires_at).toLocaleDateString(locale) : '—'}
                   </td>
                   <td className="px-4 py-3 text-sm text-[#A0AEC0]">
-                    {r.last_payment_status || 'Aucun'}
+                    {r.last_payment_status || t('cg.dbNone')}
                   </td>
                   <td className="px-4 py-3">
                     <span
@@ -133,8 +136,8 @@ export default function SuperAdminDashboardPage() {
                       }
                     >
                       {r.organization_status === 'suspended' || r.subscription_status === 'expired'
-                        ? 'Suspendue'
-                        : 'Active'}
+                        ? t('cg.dbSusp')
+                        : t('cg.dbOk')}
                     </span>
                   </td>
                 </tr>

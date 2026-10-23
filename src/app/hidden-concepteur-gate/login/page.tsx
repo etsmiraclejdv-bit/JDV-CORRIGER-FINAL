@@ -6,8 +6,10 @@ import { supabase } from '@/lib/supabase/client';
 import { checkCurrentSuperAdmin } from '@/lib/auth/super-admin';
 import AppLogo from '@/components/ui/AppLogo';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function SuperAdminLoginPage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const redirected = useRef(false);
   const [email, setEmail] = useState('');
@@ -39,7 +41,7 @@ export default function SuperAdminLoginPage() {
     try {
       const normalizedEmail = email.trim().toLowerCase();
       if (!normalizedEmail || !password) {
-        setError('Veuillez renseigner votre adresse email et votre mot de passe.');
+        setError(t('cg.lgNeed'));
         setLoading(false);
         return;
       }
@@ -50,14 +52,14 @@ export default function SuperAdminLoginPage() {
       if (signInError) {
         setError(
           signInError.message.toLowerCase().includes('invalid login credentials')
-            ? 'Identifiants incorrects. Vérifiez votre email et votre mot de passe.'
+            ? t('cg.lgBad')
             : signInError.message
         );
         setLoading(false);
         return;
       }
       if (!data.user) {
-        setError('Impossible de récupérer le compte utilisateur.');
+        setError(t('cg.lgNoUser'));
         setLoading(false);
         return;
       }
@@ -67,8 +69,8 @@ export default function SuperAdminLoginPage() {
         await supabase.auth.signOut();
         setError(
           result.reason === 'not_authenticated'
-            ? "La session n'a pas pu être établie. Réessayez."
-            : result.message || "Ce compte n'est pas autorisé sur le portail Concepteur."
+            ? t('cg.lgNoSession')
+            : result.message || t('cg.lgNotAllowed')
         );
         setLoading(false);
         return;
@@ -79,7 +81,7 @@ export default function SuperAdminLoginPage() {
       }
     } catch (error) {
       console.error('Erreur connexion Concepteur:', error);
-      setError('Une erreur inattendue est survenue.');
+      setError(t('cg.lgUnexpected'));
       setLoading(false);
     }
   }
@@ -96,12 +98,12 @@ export default function SuperAdminLoginPage() {
           </div>
           <div className="flex items-center gap-2 text-sm text-[#A0AEC0]">
             <Shield size={14} />
-            <span>Espace Concepteur — Accès restreint</span>
+            <span>{t('cg.lgRestricted')}</span>
           </div>
         </div>
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-8 shadow-2xl">
-          <h1 className="text-xl font-bold text-white mb-1">Connexion Concepteur</h1>
-          <p className="text-sm text-[#A0AEC0] mb-6">Portail de supervision de la plateforme</p>
+          <h1 className="text-xl font-bold text-white mb-1">{t('cg.lgTitle')}</h1>
+          <p className="text-sm text-[#A0AEC0] mb-6">{t('cg.lgSub')}</p>
           {error && (
             <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
               {error}
@@ -110,7 +112,7 @@ export default function SuperAdminLoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[#A0AEC0] mb-1.5">
-                Adresse email
+                {t('cg.lgEmail')}
               </label>
               <div className="relative">
                 <Mail
@@ -123,14 +125,14 @@ export default function SuperAdminLoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   autoComplete="email"
-                  placeholder="votre@email.com"
+                  placeholder={t('cg.lgEmailPh')}
                   className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl pl-10 pr-4 py-3 text-white placeholder-[#718096] text-sm focus:outline-none focus:border-[#D4AF37]/60 transition-colors"
                 />
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-[#A0AEC0] mb-1.5">
-                Mot de passe
+                {t('cg.lgPwd')}
               </label>
               <div className="relative">
                 <Lock
@@ -149,7 +151,7 @@ export default function SuperAdminLoginPage() {
                 <button
                   type="button"
                   tabIndex={-1}
-                  aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                  aria-label={showPassword ? t('cg.lgHide') : t('cg.lgShow')}
                   onClick={() => setShowPassword((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#718096] hover:text-[#A0AEC0] transition-colors"
                 >
@@ -162,13 +164,11 @@ export default function SuperAdminLoginPage() {
               disabled={loading}
               className="w-full btn-gold py-3 rounded-xl font-bold text-sm disabled:opacity-60 disabled:cursor-not-allowed mt-2"
             >
-              {loading ? 'Vérification en cours...' : 'Accéder au portail'}
+              {loading ? t('cg.lgBusy') : t('cg.lgGo')}
             </button>
           </form>
           <div className="mt-6 pt-6 border-t border-[#D4AF37]/10 text-center">
-            <p className="text-xs text-[#718096]">
-              Accès réservé au SUPER ADMIN / CONCEPTEUR autorisé.
-            </p>
+            <p className="text-xs text-[#718096]">{t('cg.lgOnly')}</p>
           </div>
         </div>
       </div>
