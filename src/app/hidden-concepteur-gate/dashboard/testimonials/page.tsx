@@ -5,6 +5,7 @@ import { MessageSquareQuote, Pencil, RefreshCw, Save, Star, Trash2, X } from 'lu
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { checkCurrentSuperAdmin } from '@/lib/auth/super-admin';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 const db = supabase as any;
 type ReviewStatus = 'pending' | 'approved' | 'rejected';
@@ -40,6 +41,7 @@ const emptyForm: FormState = {
 };
 
 export default function PlatformTestimonialsAdminPage() {
+  const { t } = useLanguage();
   const [allowed, setAllowed] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -57,10 +59,10 @@ export default function PlatformTestimonialsAdminPage() {
       )
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: false });
-    if (error) toast.error(`Chargement des avis impossible : ${error.message}`);
+    if (error) toast.error(t('cg.tsLoadErr').replace('{e}', error.message));
     else setItems((data ?? []) as Testimonial[]);
     setLoading(false);
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     let active = true;
@@ -121,32 +123,31 @@ export default function PlatformTestimonialsAdminPage() {
       : await db.from('testimonials').insert(payload);
     setSaving(false);
     if (result.error) {
-      toast.error(`Enregistrement impossible : ${result.error.message}`);
+      toast.error(t('cg.tsSaveErr').replace('{e}', result.error.message));
       return;
     }
-    toast.success(editingId ? 'Avis mis à jour.' : 'Avis ajouté à la plateforme.');
+    toast.success(editingId ? t('cg.tsUpdated') : t('cg.tsAdded'));
     resetForm();
     await load();
   }
 
   async function remove(item: Testimonial) {
-    if (!window.confirm(`Supprimer l’avis de ${item.author_name} ?`)) return;
+    if (!window.confirm(t('cg.tsDelQ').replace('{name}', item.author_name))) return;
     const { error } = await db.from('testimonials').delete().eq('id', item.id);
     if (error) {
-      toast.error(`Suppression impossible : ${error.message}`);
+      toast.error(t('cg.tsDelErr').replace('{e}', error.message));
       return;
     }
-    toast.success('Avis supprimé.');
+    toast.success(t('cg.tsDeleted'));
     if (editingId === item.id) resetForm();
     await load();
   }
 
-  if (authLoading)
-    return <div className="p-8 text-sm text-slate-300">Vérification des droits du concepteur…</div>;
+  if (authLoading) return <div className="p-8 text-sm text-slate-300">{t('cg.tsAuth')}</div>;
   if (!allowed)
     return (
       <div className="m-6 rounded-2xl border border-red-400/30 bg-red-950/30 p-5 text-sm text-red-200">
-        Accès réservé au concepteur de la plateforme JDV CRM.
+        {t('cg.tsDenied')}
       </div>
     );
 
@@ -155,34 +156,29 @@ export default function PlatformTestimonialsAdminPage() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[.2em] text-amber-300">
-            <MessageSquareQuote size={16} /> Gestion de la plateforme
+            <MessageSquareQuote size={16} /> {t('cg.tsKicker')}
           </p>
-          <h1 className="text-2xl font-bold">Avis & témoignages de JDV CRM</h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-300">
-            Ces témoignages sont propres à la plateforme et peuvent être affichés sur la page
-            d’accueil après approbation. Ils restent séparés des avis clients de chaque entreprise.
-          </p>
+          <h1 className="text-2xl font-bold">{t('cg.tsTitle')}</h1>
+          <p className="mt-2 max-w-2xl text-sm text-slate-300">{t('cg.tsIntro')}</p>
         </div>
         <button
           type="button"
           onClick={() => void load()}
           className="inline-flex items-center gap-2 rounded-xl border border-white/15 px-4 py-2.5 text-sm hover:bg-white/5"
         >
-          <RefreshCw size={15} /> Actualiser
+          <RefreshCw size={15} /> {t('cg.refresh')}
         </button>
       </header>
 
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <section className="rounded-2xl border border-white/10 bg-[#0F2347] p-5">
           <div className="mb-5 flex items-center justify-between gap-3">
-            <h2 className="font-semibold">
-              {editingId ? 'Modifier un témoignage' : 'Ajouter un témoignage'}
-            </h2>
+            <h2 className="font-semibold">{editingId ? t('cg.tsEditH') : t('cg.tsAddH')}</h2>
             {editingId && (
               <button
                 type="button"
                 onClick={resetForm}
-                aria-label="Annuler la modification"
+                aria-label={t('cg.tsCancelEdit')}
                 className="rounded-lg p-2 text-slate-300 hover:bg-white/10"
               >
                 <X size={16} />
@@ -191,7 +187,7 @@ export default function PlatformTestimonialsAdminPage() {
           </div>
           <form onSubmit={save} className="space-y-4">
             <label className="block space-y-1.5 text-sm">
-              <span className="text-slate-300">Nom affiché *</span>
+              <span className="text-slate-300">{t('cg.tsName')}</span>
               <input
                 required
                 minLength={2}
@@ -203,7 +199,7 @@ export default function PlatformTestimonialsAdminPage() {
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block space-y-1.5 text-sm">
-                <span className="text-slate-300">Fonction</span>
+                <span className="text-slate-300">{t('cg.tsRole')}</span>
                 <input
                   maxLength={120}
                   value={form.author_role}
@@ -212,7 +208,7 @@ export default function PlatformTestimonialsAdminPage() {
                 />
               </label>
               <label className="block space-y-1.5 text-sm">
-                <span className="text-slate-300">Entreprise (facultatif)</span>
+                <span className="text-slate-300">{t('cg.tsCompany')}</span>
                 <input
                   maxLength={160}
                   value={form.company_name}
@@ -222,7 +218,7 @@ export default function PlatformTestimonialsAdminPage() {
               </label>
             </div>
             <label className="block space-y-1.5 text-sm">
-              <span className="text-slate-300">Témoignage *</span>
+              <span className="text-slate-300">{t('cg.tsQuote')}</span>
               <textarea
                 required
                 minLength={10}
@@ -235,7 +231,7 @@ export default function PlatformTestimonialsAdminPage() {
             </label>
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="block space-y-1.5 text-sm">
-                <span className="text-slate-300">Note</span>
+                <span className="text-slate-300">{t('cg.tsRating')}</span>
                 <select
                   value={form.rating}
                   onChange={(e) => setForm((v) => ({ ...v, rating: e.target.value }))}
@@ -249,7 +245,7 @@ export default function PlatformTestimonialsAdminPage() {
                 </select>
               </label>
               <label className="block space-y-1.5 text-sm">
-                <span className="text-slate-300">Statut</span>
+                <span className="text-slate-300">{t('cg.tsStatus')}</span>
                 <select
                   value={form.status}
                   onChange={(e) =>
@@ -257,13 +253,13 @@ export default function PlatformTestimonialsAdminPage() {
                   }
                   className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-white"
                 >
-                  <option value="pending">En attente</option>
-                  <option value="approved">Approuvé (visible)</option>
-                  <option value="rejected">Refusé</option>
+                  <option value="pending">{t('cg.tsPending')}</option>
+                  <option value="approved">{t('cg.tsApprovedV')}</option>
+                  <option value="rejected">{t('cg.tsRejected')}</option>
                 </select>
               </label>
               <label className="block space-y-1.5 text-sm">
-                <span className="text-slate-300">Ordre</span>
+                <span className="text-slate-300">{t('cg.tsOrder')}</span>
                 <input
                   type="number"
                   value={form.sort_order}
@@ -277,27 +273,25 @@ export default function PlatformTestimonialsAdminPage() {
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 py-3 font-bold text-slate-950 disabled:opacity-60"
             >
               <Save size={16} />
-              {saving
-                ? 'Enregistrement…'
-                : editingId
-                  ? 'Enregistrer les modifications'
-                  : 'Ajouter le témoignage'}
+              {saving ? t('cg.saving') : editingId ? t('cg.tsSaveEdit') : t('cg.tsAddBtn')}
             </button>
           </form>
         </section>
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Avis enregistrés</h2>
-            <span className="text-xs text-slate-400">{items.length} avis</span>
+            <h2 className="font-semibold">{t('cg.tsSaved')}</h2>
+            <span className="text-xs text-slate-400">
+              {t('cg.tsCount').replace('{n}', String(items.length))}
+            </span>
           </div>
           {loading ? (
             <div className="rounded-2xl border border-white/10 bg-[#0F2347] p-8 text-sm text-slate-300">
-              Chargement des avis…
+              {t('cg.tsLoading')}
             </div>
           ) : items.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-white/15 p-8 text-center text-sm text-slate-400">
-              Aucun avis de plateforme enregistré pour le moment.
+              {t('cg.tsNone')}
             </div>
           ) : (
             items.map((item) => (
@@ -313,15 +307,15 @@ export default function PlatformTestimonialsAdminPage() {
                         className={`rounded-full px-2 py-0.5 text-[11px] ${item.status === 'approved' ? 'bg-emerald-400/15 text-emerald-300' : item.status === 'rejected' ? 'bg-red-400/15 text-red-300' : 'bg-amber-400/15 text-amber-200'}`}
                       >
                         {item.status === 'approved'
-                          ? 'Approuvé'
+                          ? t('cg.tsApproved')
                           : item.status === 'rejected'
-                            ? 'Refusé'
-                            : 'En attente'}
+                            ? t('cg.tsRejected')
+                            : t('cg.tsPending')}
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-slate-400">
                       {[item.author_role, item.company_name].filter(Boolean).join(' · ') ||
-                        'Témoignage plateforme'}
+                        t('cg.tsDefault')}
                     </p>
                     <p className="mt-3 text-sm leading-relaxed text-slate-200">“{item.quote}”</p>
                     <div className="mt-3 flex items-center gap-1 text-amber-300">
@@ -339,7 +333,7 @@ export default function PlatformTestimonialsAdminPage() {
                     <button
                       type="button"
                       onClick={() => startEdit(item)}
-                      aria-label="Modifier"
+                      aria-label={t('cg.tsEdit')}
                       className="rounded-lg p-2 text-sky-200 hover:bg-white/10"
                     >
                       <Pencil size={15} />
@@ -347,7 +341,7 @@ export default function PlatformTestimonialsAdminPage() {
                     <button
                       type="button"
                       onClick={() => void remove(item)}
-                      aria-label="Supprimer"
+                      aria-label={t('cg.tsDelete')}
                       className="rounded-lg p-2 text-red-300 hover:bg-white/10"
                     >
                       <Trash2 size={15} />
