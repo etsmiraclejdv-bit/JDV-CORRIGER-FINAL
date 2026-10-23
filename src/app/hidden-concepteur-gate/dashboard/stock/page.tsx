@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Package, Search, RefreshCw, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { toCents } from '@/lib/services/compat';
 
 interface ProductRow {
@@ -16,6 +17,7 @@ interface ProductRow {
 }
 
 export default function SuperAdminStockPage() {
+  const { t, locale } = useLanguage();
   const [products, setProducts] = useState<ProductRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -72,7 +74,7 @@ export default function SuperAdminStockPage() {
   );
 
   const formatPrice = (cents: number) =>
-    new Intl.NumberFormat('fr-FR', {
+    new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: 'XOF',
       maximumFractionDigits: 0,
@@ -84,9 +86,9 @@ export default function SuperAdminStockPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Stock Plateforme</h1>
+          <h1 className="text-2xl font-bold text-white">{t('cg.skTitle')}</h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {products.length} produit{products.length !== 1 ? 's' : ''} sur la plateforme
+            {t('cg.skCount').replace('{n}', String(products.length))}
           </p>
         </div>
         <button
@@ -94,7 +96,7 @@ export default function SuperAdminStockPage() {
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm transition-colors"
         >
           <RefreshCw size={14} />
-          Actualiser
+          {t('cg.refresh')}
         </button>
       </div>
 
@@ -102,7 +104,7 @@ export default function SuperAdminStockPage() {
         <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
           <AlertTriangle size={16} className="text-yellow-400 flex-shrink-0" />
           <p className="text-sm text-yellow-400">
-            {lowStock} produit{lowStock !== 1 ? 's' : ''} avec un stock faible (≤ 5 unités)
+            {t('cg.skLow').replace('{n}', String(lowStock))}
           </p>
         </div>
       )}
@@ -113,7 +115,7 @@ export default function SuperAdminStockPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher un produit..."
+          placeholder={t('cg.skSearch')}
           className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-[#718096] text-sm focus:outline-none focus:border-[#D4AF37]/60 transition-colors"
         />
       </div>
@@ -128,7 +130,7 @@ export default function SuperAdminStockPage() {
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center">
             <Package size={32} className="text-[#718096] mx-auto mb-3" />
-            <p className="text-[#A0AEC0] text-sm">Aucun produit trouvé</p>
+            <p className="text-[#A0AEC0] text-sm">{t('cg.skNone')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -136,19 +138,19 @@ export default function SuperAdminStockPage() {
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
-                    Produit
+                    {t('cg.skColProd')}
                   </th>
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
                     SKU
                   </th>
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
-                    Entreprise
+                    {t('cg.dbColCo')}
                   </th>
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
-                    Stock
+                    {t('cg.skColStock')}
                   </th>
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
-                    Prix
+                    {t('cg.skColPrice')}
                   </th>
                 </tr>
               </thead>
