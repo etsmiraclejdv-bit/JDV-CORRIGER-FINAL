@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FileText, ChevronDown, ChevronRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { fetchAuditLogs, AuditLog } from '@/lib/services/auditService';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 function DiffView({
   oldData,
@@ -11,13 +12,13 @@ function DiffView({
   oldData?: Record<string, unknown>;
   newData?: Record<string, unknown>;
 }) {
+  const { t } = useLanguage();
   if (!oldData && !newData) return null;
   const keys = Array.from(new Set([...Object.keys(oldData ?? {}), ...Object.keys(newData ?? {})]));
   const changed = keys.filter(
     (k) => JSON.stringify((oldData ?? {})[k]) !== JSON.stringify((newData ?? {})[k])
   );
-  if (changed.length === 0)
-    return <p className="text-xs text-[#718096]">Aucun changement détecté</p>;
+  if (changed.length === 0) return <p className="text-xs text-[#718096]">{t('cg.auNoChange')}</p>;
   return (
     <div className="space-y-1">
       {changed.map((k) => (
@@ -40,6 +41,7 @@ interface AuditPageProps {
 }
 
 export default function AuditLogPage({ isSuperAdmin = false }: AuditPageProps) {
+  const { t, locale } = useLanguage();
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -94,10 +96,8 @@ export default function AuditLogPage({ isSuperAdmin = false }: AuditPageProps) {
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Journal d&apos;audit</h1>
-        <p className="text-sm text-[#A0AEC0] mt-1">
-          Lecture seule — alimenté automatiquement par les triggers
-        </p>
+        <h1 className="text-2xl font-bold text-white">{t('cg.auTitle')}</h1>
+        <p className="text-sm text-[#A0AEC0] mt-1">{t('cg.auSub')}</p>
       </div>
 
       {/* Filters */}
@@ -107,10 +107,10 @@ export default function AuditLogPage({ isSuperAdmin = false }: AuditPageProps) {
           onChange={(e) => setEntityTypeFilter(e.target.value)}
           className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#D4AF37]/60"
         >
-          <option value="">Tous les types</option>
-          {entityTypes.map((t) => (
-            <option key={t} value={t}>
-              {t}
+          <option value="">{t('cg.auAllTypes')}</option>
+          {entityTypes.map((et) => (
+            <option key={et} value={et}>
+              {et}
             </option>
           ))}
         </select>
@@ -119,7 +119,7 @@ export default function AuditLogPage({ isSuperAdmin = false }: AuditPageProps) {
           onChange={(e) => setActionFilter(e.target.value)}
           className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#D4AF37]/60"
         >
-          <option value="">Toutes les actions</option>
+          <option value="">{t('cg.auAllActions')}</option>
           {actions.map((a) => (
             <option key={a} value={a}>
               {a}
@@ -131,16 +131,14 @@ export default function AuditLogPage({ isSuperAdmin = false }: AuditPageProps) {
       {/* Table */}
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center text-[#A0AEC0] text-sm">Chargement...</div>
+          <div className="py-16 text-center text-[#A0AEC0] text-sm">{t('cg.auLoading')}</div>
         ) : error ? (
           <div className="py-16 text-center text-red-400 text-sm">{error}</div>
         ) : logs.length === 0 ? (
           <div className="py-16 text-center">
             <FileText size={32} className="mx-auto mb-3 text-[#718096] opacity-50" />
-            <p className="text-[#A0AEC0] text-sm">Aucun log d&apos;audit pour le moment</p>
-            <p className="text-[#718096] text-xs mt-1">
-              Les logs apparaissent automatiquement dès qu&apos;une action est enregistrée
-            </p>
+            <p className="text-[#A0AEC0] text-sm">{t('cg.auNone')}</p>
+            <p className="text-[#718096] text-xs mt-1">{t('cg.auNoneSub')}</p>
           </div>
         ) : (
           <div className="divide-y divide-[#D4AF37]/5">
@@ -155,7 +153,7 @@ export default function AuditLogPage({ isSuperAdmin = false }: AuditPageProps) {
                   </span>
                   <div className="flex-1 min-w-0 grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <span className="text-xs text-[#718096]">
-                      {new Date(log.created_at).toLocaleString('fr-FR')}
+                      {new Date(log.created_at).toLocaleString(locale)}
                     </span>
                     <span className="text-xs font-medium text-[#D4AF37]">{log.action}</span>
                     <span className="text-xs text-[#A0AEC0]">{log.entity_type}</span>
