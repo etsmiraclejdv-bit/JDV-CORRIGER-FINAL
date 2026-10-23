@@ -2007,6 +2007,7 @@ export const terrainMessages = {
   'cg.evPending': L('Paiement en attente', 'Payment pending', 'Pago pendiente', 'Pagamento in attesa', 'Nakabinbin ang bayad', 'Pagamento pendente', 'Zahlung ausstehend', '付款待处理', '付款待處理', 'الدفع قيد الانتظار', 'Malipo yanasubiri'),
   'cg.evCreated': L('Transaction créée', 'Transaction created', 'Transacción creada', 'Transazione creata', 'Nalikha ang transaksyon', 'Transação criada', 'Transaktion erstellt', '交易已创建', '交易已建立', 'تم إنشاء المعاملة', 'Muamala umeundwa'),
   'cg.evTransferred': L('Fonds transférés', 'Funds transferred', 'Fondos transferidos', 'Fondi trasferiti', 'Inilipat ang pondo', 'Fundos transferidos', 'Gelder überwiesen', '资金已转出', '資金已轉出', 'تم تحويل الأموال', 'Fedha zimehamishwa'),
+  'cg.loadingDefault': L('Chargement en cours…', 'Loading…', 'Cargando…', 'Caricamento in corso…', 'Naglo-load…', 'A carregar…', 'Wird geladen…', '加载中…', '載入中…', 'جارٍ التحميل…', 'Inapakia…'),
 } satisfies Record<string, Entry>;
 
 export type TerrainKey = keyof typeof terrainMessages;
