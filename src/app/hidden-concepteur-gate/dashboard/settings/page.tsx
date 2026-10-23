@@ -4,6 +4,7 @@ import { Users, CreditCard, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import Modal from '@/components/ui/Modal';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type Tab = 'plans' | 'admins' | 'fedapay';
 
@@ -19,6 +20,7 @@ interface Plan {
 }
 
 export default function SuperAdminSettingsPage() {
+  const { t, locale } = useLanguage();
   const [activeTab, setActiveTab] = useState<Tab>('plans');
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
@@ -72,7 +74,7 @@ export default function SuperAdminSettingsPage() {
   async function handleSavePlan(e: React.FormEvent) {
     e.preventDefault();
     if (!editPlan) return;
-    if (price < 0 || xof < 0) return toast.error('Les prix ne peuvent pas être négatifs');
+    if (price < 0 || xof < 0) return toast.error(t('cg.stNeg'));
     setSaving(true);
     const { error } = await supabase
       .from('subscription_plans')
@@ -80,22 +82,22 @@ export default function SuperAdminSettingsPage() {
       .eq('id', editPlan.id);
     setSaving(false);
     if (error) return toast.error(error.message);
-    toast.success('Plan mis à jour');
+    toast.success(t('cg.stUpdated'));
     setEditPlan(null);
     loadPlans();
   }
 
   const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
-    { id: 'plans', label: "Plans d'abonnement", icon: <Package size={14} /> },
-    { id: 'admins', label: 'Compte concepteur', icon: <Users size={14} /> },
-    { id: 'fedapay', label: 'FedaPay Plateforme', icon: <CreditCard size={14} /> },
+    { id: 'plans', label: t('cg.stTabPlans'), icon: <Package size={14} /> },
+    { id: 'admins', label: t('cg.stTabAdmin'), icon: <Users size={14} /> },
+    { id: 'fedapay', label: t('cg.stTabFeda'), icon: <CreditCard size={14} /> },
   ];
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Paramètres Plateforme</h1>
-        <p className="text-sm text-[#A0AEC0] mt-1">Configuration globale de JDV CRM</p>
+        <h1 className="text-2xl font-bold text-white">{t('cg.stTitle')}</h1>
+        <p className="text-sm text-[#A0AEC0] mt-1">{t('cg.stSub')}</p>
       </div>
 
       <div className="flex gap-1 bg-[#0A1628] rounded-xl p-1 w-fit">
@@ -117,11 +119,11 @@ export default function SuperAdminSettingsPage() {
 
       {activeTab === 'plans' && (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-5">Plans d&apos;abonnement</h2>
+          <h2 className="text-lg font-semibold text-white mb-5">{t('cg.stTabPlans')}</h2>
           {loadingPlans ? (
-            <p className="text-sm text-[#A0AEC0]">Chargement...</p>
+            <p className="text-sm text-[#A0AEC0]">{t('cg.stLoading')}</p>
           ) : plans.length === 0 ? (
-            <p className="text-sm text-[#A0AEC0]">Aucun plan défini.</p>
+            <p className="text-sm text-[#A0AEC0]">{t('cg.stNoPlan')}</p>
           ) : (
             <div className="space-y-3">
               {plans.map((plan) => (
@@ -132,10 +134,14 @@ export default function SuperAdminSettingsPage() {
                   <div>
                     <p className="text-sm font-semibold text-white">
                       {plan.name}
-                      {!plan.active && <span className="ml-2 text-xs text-red-400">désactivé</span>}
+                      {!plan.active && (
+                        <span className="ml-2 text-xs text-red-400">{t('cg.stOff')}</span>
+                      )}
                     </p>
                     <p className="text-xs text-[#718096]">
-                      {plan.duration_days} jours — {plan.code}
+                      {t('cg.stDays')
+                        .replace('{n}', String(plan.duration_days))
+                        .replace('{code}', plan.code)}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -143,8 +149,10 @@ export default function SuperAdminSettingsPage() {
                       {plan.price} {plan.currency}
                       {plan.billing_amount_xof > 0 && (
                         <span className="block text-xs font-normal text-[#A0AEC0]">
-                          {new Intl.NumberFormat('fr-FR').format(plan.billing_amount_xof)} XOF
-                          facturés
+                          {t('cg.stBilled').replace(
+                            '{amount}',
+                            new Intl.NumberFormat(locale).format(plan.billing_amount_xof)
+                          )}
                         </span>
                       )}
                     </span>
@@ -153,7 +161,7 @@ export default function SuperAdminSettingsPage() {
                       onClick={() => openEdit(plan)}
                       className="text-xs px-3 py-1.5 rounded-lg border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white transition-colors"
                     >
-                      Modifier
+                      {t('cg.stEdit')}
                     </button>
                   </div>
                 </div>
@@ -165,48 +173,43 @@ export default function SuperAdminSettingsPage() {
 
       {activeTab === 'admins' && (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-5">Compte concepteur connecté</h2>
+          <h2 className="text-lg font-semibold text-white mb-5">{t('cg.stMeTitle')}</h2>
           {me ? (
             <div className="flex items-center justify-between p-4 bg-[#0A1628] rounded-xl border border-[#D4AF37]/10">
               <div>
                 <p className="text-sm font-medium text-white">{me.email}</p>
-                <p className="text-xs text-[#718096]">
-                  Concepteur — droits sur toute la plateforme
-                </p>
+                <p className="text-xs text-[#718096]">{t('cg.stMeRights')}</p>
               </div>
               <span className="text-xs px-2.5 py-1 rounded-lg bg-green-500/20 text-green-400 border border-green-500/30">
                 {me.status}
               </span>
             </div>
           ) : (
-            <p className="text-sm text-[#A0AEC0]">Chargement...</p>
+            <p className="text-sm text-[#A0AEC0]">{t('cg.stLoading')}</p>
           )}
           <p className="text-xs text-[#718096] mt-4">
-            Les comptes concepteur sont définis uniquement en base, dans la table{' '}
-            <code className="text-[#D4AF37]">super_admins</code>. Aucune inscription libre
-            n&apos;est possible.
+            {t('cg.stMeNote1')} <code className="text-[#D4AF37]">super_admins</code>.{' '}
+            {t('cg.stMeNote2')}
           </p>
         </div>
       )}
 
       {activeTab === 'fedapay' && (
         <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
-          <h2 className="text-lg font-semibold text-white mb-2">
-            FedaPay — Abonnements Plateforme
-          </h2>
-          <p className="text-sm text-[#A0AEC0] mb-5">Collecte des abonnements JDV CRM.</p>
+          <h2 className="text-lg font-semibold text-white mb-2">{t('cg.stFeTitle')}</h2>
+          <p className="text-sm text-[#A0AEC0] mb-5">{t('cg.stFeSub')}</p>
           <div className="space-y-4 max-w-lg">
             <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
               <p className="text-xs text-yellow-400">
-                Les clés (<code>FEDAPAY_SECRET_KEY</code>, <code>FEDAPAY_WEBHOOK_SECRET</code>) sont
-                des variables d&apos;environnement serveur : elles se changent dans
-                l&apos;hébergement, jamais depuis le navigateur.
+                {t('cg.stFeKeys1')}
+                <code>FEDAPAY_SECRET_KEY</code>, <code>FEDAPAY_WEBHOOK_SECRET</code>
+                {t('cg.stFeKeys2')}
               </p>
             </div>
             <div className="flex items-center gap-2 p-3 bg-[#0A1628] rounded-xl border border-[#D4AF37]/10">
               <div className="w-2 h-2 rounded-full bg-green-400" />
               <span className="text-sm text-[#A0AEC0]">
-                Route webhook : <code className="text-[#D4AF37]">/api/fedapay-webhook</code>
+                {t('cg.stFeRoute')} <code className="text-[#D4AF37]">/api/fedapay-webhook</code>
               </span>
             </div>
           </div>
@@ -216,13 +219,13 @@ export default function SuperAdminSettingsPage() {
       <Modal
         open={!!editPlan}
         onClose={() => setEditPlan(null)}
-        title={editPlan ? `Modifier ${editPlan.name}` : ''}
+        title={editPlan ? t('cg.stModEdit').replace('{name}', editPlan.name) : ''}
         size="sm"
       >
         <form onSubmit={handleSavePlan} className="space-y-4 p-1">
           <div>
             <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-              Prix affiché ({editPlan?.currency})
+              {t('cg.stPrice').replace('{cur}', editPlan?.currency ?? '')}
             </label>
             <input
               type="number"
@@ -234,7 +237,7 @@ export default function SuperAdminSettingsPage() {
           </div>
           <div>
             <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
-              Montant facturé via FedaPay (XOF)
+              {t('cg.stXof')}
             </label>
             <input
               type="number"
@@ -245,7 +248,7 @@ export default function SuperAdminSettingsPage() {
             />
           </div>
           <label className="flex items-center justify-between text-sm text-[#A0AEC0]">
-            Plan proposé aux entreprises
+            {t('cg.stOffered')}
             <input
               type="checkbox"
               checked={active}
@@ -259,14 +262,14 @@ export default function SuperAdminSettingsPage() {
               onClick={() => setEditPlan(null)}
               className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors"
             >
-              Annuler
+              {t('cg.cancel')}
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex-1 btn-gold py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
             >
-              {saving ? 'Enregistrement...' : 'Enregistrer'}
+              {saving ? t('cg.saving') : t('cg.save')}
             </button>
           </div>
         </form>
