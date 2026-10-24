@@ -125,11 +125,11 @@ export default function TerrainDashboardPage() {
     <div className="p-5 lg:p-8 space-y-6">
       {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-[#20332F]">
           {t('td.hello')}, {firstName} 👋
         </h1>
         <div className="flex items-center gap-4 mt-1">
-          <div className="flex items-center gap-1 text-xs text-[#A0AEC0]">
+          <div className="flex items-center gap-1 text-xs text-[#71807B]">
             <Clock size={11} />
             <span>
               {new Date()?.toLocaleDateString(locale, {
@@ -144,19 +144,19 @@ export default function TerrainDashboardPage() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
+        <div className="bg-[#FFFEFA] border border-[#E5E0D3] rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <ShoppingCart size={16} className="text-[#D4AF37]" />
-            <p className="text-xs text-[#A0AEC0]">{t('td.salesToday')}</p>
+            <ShoppingCart size={16} className="text-[#147866]" />
+            <p className="text-xs text-[#71807B]">{t('td.salesToday')}</p>
           </div>
-          <p className="text-2xl font-bold text-white">{loading ? '—' : salesCount}</p>
+          <p className="text-2xl font-bold text-[#20332F]">{loading ? '—' : salesCount}</p>
         </div>
-        <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
+        <div className="bg-[#FFFEFA] border border-[#E5E0D3] rounded-2xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Wallet size={16} className="text-[#D4AF37]" />
-            <p className="text-xs text-[#A0AEC0]">{t('td.collectedToday')}</p>
+            <Wallet size={16} className="text-[#147866]" />
+            <p className="text-xs text-[#71807B]">{t('td.collectedToday')}</p>
           </div>
-          <p className="text-2xl font-bold text-[#D4AF37]">
+          <p className="text-2xl font-bold text-[#147866]">
             {loading
               ? '—'
               : new Intl.NumberFormat(locale, {
@@ -166,12 +166,12 @@ export default function TerrainDashboardPage() {
                 })?.format(totalAmount / 100)}
           </p>
         </div>
-        <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4 col-span-2">
+        <div className="bg-[#FFFEFA] border border-[#E5E0D3] rounded-2xl p-4 col-span-2">
           <div className="flex items-center gap-2 mb-2">
-            <Users size={16} className="text-[#63B3ED]" />
-            <p className="text-xs text-[#A0AEC0]">{t('myProspects')}</p>
+            <Users size={16} className="text-[#39759A]" />
+            <p className="text-xs text-[#71807B]">{t('myProspects')}</p>
           </div>
-          <p className="text-2xl font-bold text-[#63B3ED]">{loading ? '—' : prospectsCount}</p>
+          <p className="text-2xl font-bold text-[#39759A]">{loading ? '—' : prospectsCount}</p>
         </div>
       </div>
 
@@ -179,17 +179,17 @@ export default function TerrainDashboardPage() {
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => setSaleModalOpen(true)}
-          className="flex flex-col items-center gap-2 p-4 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-2xl hover:bg-[#D4AF37]/20 transition-all"
+          className="flex flex-col items-center gap-2 p-4 bg-[#E5F2EC] border border-[#D9D2C1] rounded-2xl hover:bg-[#DCEFE8] transition-all"
         >
-          <Plus size={20} className="text-[#D4AF37]" />
-          <span className="text-sm font-semibold text-white">{t('td.newSale')}</span>
+          <Plus size={20} className="text-[#147866]" />
+          <span className="text-sm font-semibold text-[#20332F]">{t('td.newSale')}</span>
         </button>
         <Link
           href="/terrain/dashboard/prospects"
-          className="flex flex-col items-center gap-2 p-4 bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl hover:bg-[#0A1628] transition-all"
+          className="flex flex-col items-center gap-2 p-4 bg-[#FFFEFA] border border-[#E5E0D3] rounded-2xl hover:bg-[#F1EFE6] transition-all"
         >
-          <Users size={20} className="text-[#63B3ED]" />
-          <span className="text-sm font-semibold text-white">{t('myProspects')}</span>
+          <Users size={20} className="text-[#39759A]" />
+          <span className="text-sm font-semibold text-[#20332F]">{t('myProspects')}</span>
         </Link>
       </div>
 
@@ -197,23 +197,23 @@ export default function TerrainDashboardPage() {
       <div className="space-y-2">
         <Link
           href="/terrain/dashboard/ventes"
-          className="flex items-center justify-between p-4 bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl hover:bg-[#0A1628] transition-all"
+          className="flex items-center justify-between p-4 bg-[#FFFEFA] border border-[#E5E0D3] rounded-xl hover:bg-[#F1EFE6] transition-all"
         >
           <div className="flex items-center gap-3">
-            <ShoppingCart size={16} className="text-[#D4AF37]" />
-            <span className="text-sm font-medium text-white">{t('mySales')}</span>
+            <ShoppingCart size={16} className="text-[#147866]" />
+            <span className="text-sm font-medium text-[#20332F]">{t('mySales')}</span>
           </div>
-          <span className="text-xs text-[#718096]">→</span>
+          <span className="text-xs text-[#87938C]">→</span>
         </Link>
         <Link
           href="/terrain/dashboard/commission"
-          className="flex items-center justify-between p-4 bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl hover:bg-[#0A1628] transition-all"
+          className="flex items-center justify-between p-4 bg-[#FFFEFA] border border-[#E5E0D3] rounded-xl hover:bg-[#F1EFE6] transition-all"
         >
           <div className="flex items-center gap-3">
-            <TrendingUp size={16} className="text-[#D4AF37]" />
-            <span className="text-sm font-medium text-white">{t('myCommission')}</span>
+            <TrendingUp size={16} className="text-[#147866]" />
+            <span className="text-sm font-medium text-[#20332F]">{t('myCommission')}</span>
           </div>
-          <span className="text-xs text-[#718096]">→</span>
+          <span className="text-xs text-[#87938C]">→</span>
         </Link>
       </div>
 
@@ -291,14 +291,14 @@ export default function TerrainDashboardPage() {
             </div>
           )}
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+            <label className="block text-xs font-medium text-[#71807B] mb-1.5">
               {t('td.client')}
             </label>
             <select
               value={newSaleForm.client_id}
               onChange={(e) => setNewSaleForm((f) => ({ ...f, client_id: e.target.value }))}
               required
-              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
+              className="w-full bg-[#0A1628] border border-[#E5E0D3] rounded-xl px-3 py-2.5 text-[#20332F] text-sm focus:outline-none focus:border-[#D4AF37]/60"
             >
               <option value="">{t('td.pickClient')}</option>
               {clients.map((c) => (
@@ -308,11 +308,11 @@ export default function TerrainDashboardPage() {
               ))}
             </select>
             {clients.length === 0 && (
-              <p className="text-xs text-[#718096] mt-1">{t('td.noClient')}</p>
+              <p className="text-xs text-[#87938C] mt-1">{t('td.noClient')}</p>
             )}
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+            <label className="block text-xs font-medium text-[#71807B] mb-1.5">
               {t('td.article')}
             </label>
             <select
@@ -330,7 +330,7 @@ export default function TerrainDashboardPage() {
                 }));
               }}
               required
-              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
+              className="w-full bg-[#0A1628] border border-[#E5E0D3] rounded-xl px-3 py-2.5 text-[#20332F] text-sm focus:outline-none focus:border-[#D4AF37]/60"
             >
               <option value="">{t('td.pickArticle')}</option>
               {articles.map((a) => (
@@ -342,7 +342,7 @@ export default function TerrainDashboardPage() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              <label className="block text-xs font-medium text-[#71807B] mb-1.5">
                 {t('td.type')}
               </label>
               <select
@@ -360,14 +360,14 @@ export default function TerrainDashboardPage() {
                       : f.unit_price,
                   }));
                 }}
-                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none"
+                className="w-full bg-[#0A1628] border border-[#E5E0D3] rounded-xl px-3 py-2.5 text-[#20332F] text-sm focus:outline-none"
               >
                 <option value="cash">{t('td.cash')}</option>
                 <option value="credit">{t('td.credit')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              <label className="block text-xs font-medium text-[#71807B] mb-1.5">
                 {t('td.qty')}
               </label>
               <input
@@ -380,13 +380,13 @@ export default function TerrainDashboardPage() {
                     quantity: Math.max(1, parseInt(e.target.value) || 1),
                   }))
                 }
-                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none"
+                className="w-full bg-[#0A1628] border border-[#E5E0D3] rounded-xl px-3 py-2.5 text-[#20332F] text-sm focus:outline-none"
               />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+              <label className="block text-xs font-medium text-[#71807B] mb-1.5">
                 {t('td.unitPrice')}
               </label>
               <input
@@ -399,12 +399,12 @@ export default function TerrainDashboardPage() {
                     unit_price: Math.max(0, parseInt(e.target.value) || 0),
                   }))
                 }
-                className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none"
+                className="w-full bg-[#0A1628] border border-[#E5E0D3] rounded-xl px-3 py-2.5 text-[#20332F] text-sm focus:outline-none"
               />
             </div>
             {newSaleForm.sale_type === 'credit' && (
               <div>
-                <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+                <label className="block text-xs font-medium text-[#71807B] mb-1.5">
                   {t('td.deposit')}
                 </label>
                 <input
@@ -417,7 +417,7 @@ export default function TerrainDashboardPage() {
                       amount_paid: Math.max(0, parseInt(e.target.value) || 0),
                     }))
                   }
-                  className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none"
+                  className="w-full bg-[#0A1628] border border-[#E5E0D3] rounded-xl px-3 py-2.5 text-[#20332F] text-sm focus:outline-none"
                 />
               </div>
             )}
@@ -426,7 +426,7 @@ export default function TerrainDashboardPage() {
             <button
               type="button"
               onClick={() => setSaleModalOpen(false)}
-              className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm"
+              className="flex-1 py-2.5 rounded-xl border border-[#E5E0D3] text-[#71807B] text-sm"
             >
               {t('cancel')}
             </button>

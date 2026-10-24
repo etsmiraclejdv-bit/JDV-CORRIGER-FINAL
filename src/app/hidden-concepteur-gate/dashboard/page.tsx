@@ -49,65 +49,65 @@ export default function SuperAdminDashboardPage() {
     <div className="p-6 lg:p-8 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Gestion de la plateforme</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">
+          <h1 className="text-2xl font-bold text-[#20332F]">Gestion de la plateforme</h1>
+          <p className="text-sm text-[#71807B] mt-1">
             Contrôle global des entreprises et des abonnements JDV CRM.
           </p>
         </div>
         <button
           onClick={load}
-          className="p-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white"
+          className="p-2 rounded-xl border border-[#D4AF37]/20 text-[#71807B] hover:text-[#20332F]"
         >
           <RefreshCw size={16} />
         </button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          ['Entreprises', rows.length, Building2, 'text-[#D4AF37]'],
-          ['Abonnements actifs', active, CreditCard, 'text-green-400'],
+          ['Entreprises', rows.length, Building2, 'text-[#147866]'],
+          ['Abonnements actifs', active, CreditCard, 'text-emerald-700'],
           ['Impayées / expirées', unpaid, AlertTriangle, 'text-red-400'],
-          ['Renouvellement auto', auto, CheckCircle2, 'text-blue-400'],
+          ['Renouvellement auto', auto, CheckCircle2, 'text-blue-700'],
         ].map(([l, v, I, c]) => {
           const Icon = I as typeof Building2;
           return (
             <div
               key={l as string}
-              className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-5"
+              className="bg-[#FFFEFA] border border-[#E5E0D3] rounded-2xl p-5"
             >
               <Icon size={20} className={c as string} />
-              <p className="text-2xl font-bold text-white mt-3">{loading ? '—' : (v as number)}</p>
-              <p className="text-xs text-[#718096] mt-1">{l as string}</p>
+              <p className="text-2xl font-bold text-[#20332F] mt-3">{loading ? '—' : (v as number)}</p>
+              <p className="text-xs text-[#87938C] mt-1">{l as string}</p>
             </div>
           );
         })}
       </div>
-      <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-6">
+      <div className="bg-[#FFFEFA] border border-[#E5E0D3] rounded-2xl p-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-base font-semibold text-white">État des entreprises</h2>
-            <p className="text-xs text-[#718096] mt-1">
+            <h2 className="text-base font-semibold text-[#20332F]">État des entreprises</h2>
+            <p className="text-xs text-[#87938C] mt-1">
               Les échéances expirées sont automatiquement marquées comme expirées/suspendues lors du
               contrôle.
             </p>
           </div>
           <Link
             href="/hidden-concepteur-gate/dashboard/company-applications"
-            className="flex items-center gap-1 text-xs text-[#D4AF37]"
+            className="flex items-center gap-1 text-xs text-[#147866]"
           >
             Dossiers entreprises <ArrowRight size={13} />
           </Link>
         </div>
         {suspended > 0 && (
-          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-sm text-red-300">
+          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
             {suspended} entreprise(s) actuellement suspendue(s).
           </div>
         )}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#D4AF37]/10">
+              <tr className="border-b border-[#E5E0D3]">
                 {['Entreprise', 'Abonnement', 'Échéance', 'Paiement', 'État'].map((h) => (
-                  <th key={h} className="text-left text-xs text-[#718096] uppercase px-4 py-3">
+                  <th key={h} className="text-left text-xs text-[#87938C] uppercase px-4 py-3">
                     {h}
                   </th>
                 ))}
@@ -116,12 +116,12 @@ export default function SuperAdminDashboardPage() {
             <tbody className="divide-y divide-[#D4AF37]/5">
               {rows.slice(0, 10).map((r) => (
                 <tr key={r.organization_id}>
-                  <td className="px-4 py-3 text-sm text-white">{r.organization_name}</td>
-                  <td className="px-4 py-3 text-sm text-[#A0AEC0]">{r.plan_name || '—'}</td>
-                  <td className="px-4 py-3 text-sm text-[#A0AEC0]">
+                  <td className="px-4 py-3 text-sm text-[#20332F]">{r.organization_name}</td>
+                  <td className="px-4 py-3 text-sm text-[#71807B]">{r.plan_name || '—'}</td>
+                  <td className="px-4 py-3 text-sm text-[#71807B]">
                     {r.expires_at ? new Date(r.expires_at).toLocaleDateString('fr-FR') : '—'}
                   </td>
-                  <td className="px-4 py-3 text-sm text-[#A0AEC0]">
+                  <td className="px-4 py-3 text-sm text-[#71807B]">
                     {r.last_payment_status || 'Aucun'}
                   </td>
                   <td className="px-4 py-3">
@@ -129,7 +129,7 @@ export default function SuperAdminDashboardPage() {
                       className={
                         r.organization_status === 'suspended' || r.subscription_status === 'expired'
                           ? 'text-red-400'
-                          : 'text-green-400'
+                          : 'text-emerald-700'
                       }
                     >
                       {r.organization_status === 'suspended' || r.subscription_status === 'expired'
