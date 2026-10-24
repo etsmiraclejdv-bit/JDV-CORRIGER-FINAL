@@ -1,5 +1,6 @@
 import React from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 interface ErrorStateProps {
   title?: string;
@@ -11,12 +12,8 @@ interface ErrorStateProps {
   className?: string;
 }
 
-export default function ErrorState({
-  title = 'Une erreur est survenue',
-  message = 'Impossible de charger les données. Veuillez réessayer.',
-  action,
-  className = '',
-}: ErrorStateProps) {
+export default function ErrorState({ title, message, action, className = '' }: ErrorStateProps) {
+  const { t } = useLanguage();
   return (
     <div
       className={`flex flex-col items-center justify-center py-16 px-6 text-center ${className}`}
@@ -24,8 +21,8 @@ export default function ErrorState({
       <div className="p-4 rounded-2xl bg-[rgba(252,129,129,0.1)] mb-4">
         <AlertTriangle size={28} className="text-[#FC8181]" />
       </div>
-      <h3 className="text-base font-semibold text-white mb-2">{title}</h3>
-      <p className="text-sm text-[#A0AEC0] max-w-xs mb-4">{message}</p>
+      <h3 className="text-base font-semibold text-white mb-2">{title ?? t('sh.errTitle')}</h3>
+      <p className="text-sm text-[#A0AEC0] max-w-xs mb-4">{message ?? t('sh.errMsg')}</p>
       {action && (
         <button
           onClick={action.onClick}

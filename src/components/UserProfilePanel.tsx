@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase/client';
 import { fetchProfile, updateProfile } from '@/lib/services/settingsService';
 import { toast } from 'sonner';
 import ChangePasswordForm from '@/components/ChangePasswordForm';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 // Language switcher removed — preferred_language not in profiles schema
 
 interface UserProfilePanelProps {
@@ -12,6 +13,7 @@ interface UserProfilePanelProps {
 }
 
 export default function UserProfilePanel({ onClose }: UserProfilePanelProps) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -43,21 +45,21 @@ export default function UserProfilePanel({ onClose }: UserProfilePanelProps) {
     const { error } = await updateProfile(userId, form);
     setSaving(false);
     if (error) {
-      toast.error('Erreur lors de la mise à jour du profil');
+      toast.error(t('sh.pfErr'));
     } else {
-      toast.success('Profil mis à jour avec succès');
+      toast.success(t('sh.pfOk'));
       onClose?.();
     }
   }
 
   if (loading) {
-    return <div className="p-6 text-center text-[#A0AEC0] text-sm">Chargement...</div>;
+    return <div className="p-6 text-center text-[#A0AEC0] text-sm">{t('sh.loading')}</div>;
   }
 
   return (
     <div className="p-6 w-full max-w-sm">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-bold text-white">Mon profil</h2>
+        <h2 className="text-lg font-bold text-white">{t('sh.pfTitle')}</h2>
         {onClose && (
           <button onClick={onClose} className="text-[#718096] hover:text-white">
             <X size={18} />
@@ -76,18 +78,22 @@ export default function UserProfilePanel({ onClose }: UserProfilePanelProps) {
 
       <form onSubmit={handleSave} className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Nom complet</label>
+          <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+            {t('sh.pfName')}
+          </label>
           <input
             type="text"
             value={form.full_name}
             onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
             className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
-            placeholder="Votre nom complet"
+            placeholder={t('sh.pfNamePh')}
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">Téléphone</label>
+          <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+            {t('sh.pfPhone')}
+          </label>
           <input
             type="tel"
             value={form.phone}
@@ -103,7 +109,7 @@ export default function UserProfilePanel({ onClose }: UserProfilePanelProps) {
           className="w-full btn-gold py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
         >
           <Save size={14} />
-          {saving ? 'Enregistrement...' : 'Enregistrer'}
+          {saving ? t('sh.pfSaving') : t('sh.pfSave')}
         </button>
       </form>
 
