@@ -15,6 +15,28 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { trackPlanSelection, trackPaymentConfirmed } from '@/lib/analytics';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
+
+// Textes affichés par plan (le nom français reste utilisé pour les statistiques).
+const PLAN_TEXT: Record<string, { name: TerrainKey; features: (TerrainKey | `n:${number}`)[] }> = {
+  monthly: {
+    name: 'pw.plM',
+    features: ['n:5', 'pw.fSales', 'pw.fTrack', 'pw.fRepB', 'pw.fSupE'],
+  },
+  quarterly: {
+    name: 'pw.plQ',
+    features: ['n:10', 'pw.fSales', 'pw.fTrack', 'pw.fRepA', 'pw.fStock', 'pw.fSupP'],
+  },
+  semester: {
+    name: 'pw.plS',
+    features: ['n:25', 'pw.fAll', 'pw.fTransf', 'pw.fAudit', 'pw.fNotif', 'pw.fSupD'],
+  },
+  annual: {
+    name: 'pw.plA',
+    features: ['pw.fUnl', 'pw.fAll', 'pw.fApi', 'pw.fCustom', 'pw.fFeda', 'pw.f247', 'pw.f2m'],
+  },
+};
 
 interface Plan {
   id: string;
@@ -115,6 +137,7 @@ interface TrialStatus {
 }
 
 export default function PaymentWallContent() {
+  const { t, locale } = useLanguage();
   const [trialStatus, setTrialStatus] = useState<TrialStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
@@ -227,8 +250,7 @@ export default function PaymentWallContent() {
     try {
       const { data: sess } = await supabase.auth.getSession();
       const accessToken = sess.session?.access_token;
-      if (!accessToken || !trialStatus)
-        throw new Error('Session expirée. Veuillez vous reconnecter.');
+      if (!accessToken || !trialStatus) throw new Error(t('pw.session'));
 
       // Le montant et l'entreprise sont déterminés côté serveur : on n'envoie que le plan choisi.
       const response = await fetch('/api/fedapay/initiate-subscription', {
@@ -240,7 +262,7 @@ export default function PaymentWallContent() {
       const result = await response.json();
 
       if (!response.ok || !result.paymentUrl) {
-        throw new Error(result.error ?? "Impossible d'initier le paiement FedaPay.");
+        throw new Error(result.error ?? t('pw.payErr'));
       }
 
       // Track payment initiation (confirmed when webhook fires, but track intent here)
@@ -254,7 +276,7 @@ export default function PaymentWallContent() {
       // Redirection vers la page de paiement FedaPay
       window.location.href = result.paymentUrl;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Une erreur est survenue.';
+      const message = err instanceof Error ? err.message : t('pw.generic');
       setError(message);
       setInitiating(false);
       setSelectedPlan(null);
@@ -266,7 +288,7 @@ export default function PaymentWallContent() {
       <div className="min-h-screen bg-[#0B1B3D] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 size={32} className="text-[#D4AF37] animate-spin" />
-          <p className="text-[#A0AEC0] text-sm">Chargement de votre abonnement…</p>
+          <p className="text-[#A0AEC0] text-sm">{t('pw.loading')}</p>
         </div>
       </div>
     );
@@ -283,7 +305,7 @@ export default function PaymentWallContent() {
         <div className="inline-flex items-center gap-2 bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] rounded-full px-4 py-1.5 mb-6">
           <Star size={14} className="text-[#D4AF37]" />
           <span className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider">
-            JDV CRM — Abonnement
+            {t('pw.badge')}
           </span>
         </div>
 
@@ -291,11 +313,16 @@ export default function PaymentWallContent() {
           <div className="inline-flex items-center gap-2 bg-[rgba(99,179,237,0.1)] border border-[rgba(99,179,237,0.2)] rounded-xl px-5 py-3 mb-6">
             <Bell size={16} className="text-[#63B3ED]" />
             <span className="text-sm text-[#63B3ED]">
-              Essai gratuit —{' '}
-              <strong>
-                {daysLeft} jour{daysLeft > 1 ? 's' : ''}
-              </strong>{' '}
-              restant{daysLeft > 1 ? 's' : ''}
+              {(() => {
+                const [a, b] = t(daysLeft > 1 ? 'pw.trialN' : 'pw.trial1').split('{n}');
+                return (
+                  <>
+                    {a}
+                    <strong>{daysLeft}</strong>
+                    {b}
+                  </>
+                );
+              })()}
             </span>
           </div>
         )}
@@ -303,20 +330,14 @@ export default function PaymentWallContent() {
         {isExpired && (
           <div className="inline-flex items-center gap-2 bg-[rgba(252,129,129,0.1)] border border-[rgba(252,129,129,0.2)] rounded-xl px-5 py-3 mb-6">
             <AlertCircle size={16} className="text-[#FC8181]" />
-            <span className="text-sm text-[#FC8181]">
-              Votre essai a expiré. Choisissez un plan pour continuer à utiliser les fonctionnalités
-              premium.
-            </span>
+            <span className="text-sm text-[#FC8181]">{t('pw.expired')}</span>
           </div>
         )}
 
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-          Choisissez votre <span className="gold-gradient-text">plan JDV CRM</span>
+          {t('pw.choose1')} <span className="gold-gradient-text">{t('pw.choose2')}</span>
         </h1>
-        <p className="text-[#A0AEC0] text-base max-w-xl mx-auto">
-          Gérez vos ventes à crédit, vos prospecteurs terrain et votre recouvrement avec une
-          solution pensée pour l&apos;Afrique de l&apos;Ouest.
-        </p>
+        <p className="text-[#A0AEC0] text-base max-w-xl mx-auto">{t('pw.intro')}</p>
       </div>
 
       {/* Error */}
@@ -343,39 +364,52 @@ export default function PaymentWallContent() {
             {plan.recommended && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="btn-gold text-xs font-bold px-3 py-1 rounded-full">
-                  Recommandé
+                  {t('pw.recom')}
                 </span>
               </div>
             )}
 
             <div className="p-5 flex-1">
-              <h3 className="text-base font-bold text-white mb-1">{plan.name}</h3>
+              <h3 className="text-base font-bold text-white mb-1">
+                {PLAN_TEXT[plan.id] ? t(PLAN_TEXT[plan.id].name) : plan.name}
+              </h3>
               <div className="flex items-baseline gap-1 mb-1">
                 <span className="text-3xl font-bold text-[#D4AF37]">{plan.price}</span>
                 <span className="text-sm text-[#A0AEC0]">{plan.currency}</span>
               </div>
               {plan.billing_amount_xof ? (
                 <p className="text-xs text-[#A0AEC0] mb-1">
-                  Réglé en francs CFA :{' '}
+                  {t('pw.cfa')}{' '}
                   <span className="font-semibold text-white">
-                    {new Intl.NumberFormat('fr-FR').format(plan.billing_amount_xof)} XOF
+                    {new Intl.NumberFormat(locale).format(plan.billing_amount_xof)} XOF
                   </span>
                 </p>
               ) : null}
-              <p className="text-xs text-[#718096] mb-4">{plan.duration_days} jours</p>
+              <p className="text-xs text-[#718096] mb-4">
+                {t('pw.days').replace('{n}', String(plan.duration_days))}
+              </p>
 
               <div className="flex items-center gap-2 bg-[rgba(212,175,55,0.08)] rounded-lg px-3 py-2 mb-4">
                 <Users size={13} className="text-[#D4AF37]" />
                 <span className="text-xs text-[#D4AF37] font-semibold">
-                  {plan.prospecteur_limit} prospecteur{plan.prospecteur_limit !== '1' ? 's' : ''}
+                  {plan.prospecteur_limit === 'Illimité'
+                    ? t('pw.unl')
+                    : t(plan.prospecteur_limit === '1' ? 'pw.pro1' : 'pw.proN').replace(
+                        '{n}',
+                        plan.prospecteur_limit
+                      )}
                 </span>
               </div>
 
               <ul className="space-y-2">
-                {plan.features.map((f, i) => (
+                {((PLAN_TEXT[plan.id]?.features ?? plan.features) as string[]).map((f, i) => (
                   <li key={i} className="flex items-start gap-2 text-xs text-[#A0AEC0]">
                     <CheckCircle size={13} className="text-[#68D391] flex-shrink-0 mt-0.5" />
-                    {f}
+                    {f.startsWith('n:')
+                      ? t('pw.upTo').replace('{n}', f.slice(2))
+                      : f.startsWith('pw.')
+                        ? t(f as TerrainKey)
+                        : f}
                   </li>
                 ))}
               </ul>
@@ -392,11 +426,11 @@ export default function PaymentWallContent() {
                 {initiating && selectedPlan?.id === plan.id ? (
                   <>
                     <Loader2 size={14} className="animate-spin" />
-                    Redirection…
+                    {t('pw.redir')}
                   </>
                 ) : (
                   <>
-                    Choisir ce plan
+                    {t('pw.pick')}
                     <ArrowRight size={14} />
                   </>
                 )}
@@ -408,31 +442,17 @@ export default function PaymentWallContent() {
 
       {/* Features overview */}
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-lg font-bold text-white text-center mb-6">
-          Tout ce qui est inclus dans chaque plan
-        </h2>
+        <h2 className="text-lg font-bold text-white text-center mb-6">{t('pw.inclH')}</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { icon: <Zap size={20} />, label: 'Ventes à crédit', desc: 'Échéanciers automatiques' },
-            { icon: <Users size={20} />, label: 'Prospecteurs terrain', desc: 'Suivi des agents' },
-            {
-              icon: <BarChart2 size={20} />,
-              label: 'Rapports détaillés',
-              desc: 'Analyse financière',
-            },
-            {
-              icon: <Package size={20} />,
-              label: 'Gestion du stock',
-              desc: 'Transferts & réceptions',
-            },
-            { icon: <Shield size={20} />, label: 'Sécurité RLS', desc: 'Données isolées par org.' },
-            { icon: <Bell size={20} />, label: 'Notifications', desc: 'Relances impayés' },
-            {
-              icon: <CheckCircle size={20} />,
-              label: "Journal d'audit",
-              desc: 'Traçabilité complète',
-            },
-            { icon: <Star size={20} />, label: 'Support dédié', desc: 'Selon le plan choisi' },
+            { icon: <Zap size={20} />, label: t('pw.i1'), desc: t('pw.i1d') },
+            { icon: <Users size={20} />, label: t('pw.i2'), desc: t('pw.i2d') },
+            { icon: <BarChart2 size={20} />, label: t('pw.i3'), desc: t('pw.i3d') },
+            { icon: <Package size={20} />, label: t('pw.fStock'), desc: t('pw.i4d') },
+            { icon: <Shield size={20} />, label: t('pw.i5'), desc: t('pw.i5d') },
+            { icon: <Bell size={20} />, label: t('pw.i6'), desc: t('pw.i6d') },
+            { icon: <CheckCircle size={20} />, label: t('pw.i7'), desc: t('pw.i7d') },
+            { icon: <Star size={20} />, label: t('pw.fSupD'), desc: t('pw.i8d') },
           ].map((f, i) => (
             <div
               key={i}
@@ -453,8 +473,7 @@ export default function PaymentWallContent() {
       {/* Security note */}
       <div className="max-w-5xl mx-auto mt-8 text-center">
         <p className="text-xs text-[#718096]">
-          Paiement sécurisé via <span className="text-[#D4AF37]">FedaPay</span> · Aucune donnée
-          bancaire stockée sur nos serveurs · Annulation possible à tout moment
+          {t('pw.sec1')} <span className="text-[#D4AF37]">FedaPay</span> {t('pw.sec2')}
         </p>
       </div>
     </div>
