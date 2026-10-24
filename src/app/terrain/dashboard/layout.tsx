@@ -144,18 +144,18 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
   return (
     <>
       <IntelligencePresenceTracker />
-      <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
+      <div className="flex h-screen bg-[#F7F4EB] overflow-hidden">
         <aside
-          className={`hidden md:flex h-screen flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-56'}`}
+          className={`hidden md:flex h-screen flex-col bg-[#FFFEFA] border-r border-[#E5E0D3] transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-56'}`}
         >
           <div
-            className={`h-16 flex items-center border-b border-[#D4AF37]/10 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
+            className={`h-16 flex items-center border-b border-[#E5E0D3] px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
           >
             {!collapsed && (
               <div className="flex items-center gap-2">
                 <AppLogo size={26} />
-                <span className="font-bold text-sm text-white">
-                  JDV <span className="text-[#D4AF37]">Terrain</span>
+                <span className="font-bold text-sm text-[#20332F]">
+                  JDV <span className="text-[#147866]">Terrain</span>
                 </span>
               </div>
             )}
@@ -163,7 +163,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
             {!collapsed && (
               <button
                 onClick={() => setCollapsed(true)}
-                className="p-1.5 rounded-lg text-[#718096] hover:text-white hover:bg-[#0F2347] transition-all"
+                className="p-1.5 rounded-lg text-[#87938C] hover:text-[#20332F] hover:bg-[#F1EFE6] transition-all"
               >
                 <ChevronLeft size={16} />
               </button>
@@ -173,7 +173,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
             {groups.map((group) => (
               <div key={group} className="mb-4">
                 {!collapsed && (
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#718096] px-3 mb-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#87938C] px-3 mb-2">
                     {t(GROUP_KEYS[group] ?? 'menu')}
                   </p>
                 )}
@@ -188,7 +188,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
                         key={item.id}
                         href={item.href}
                         title={collapsed ? t(item.labelKey) : undefined}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#E5F2EC] text-[#147866] border border-[#E5E0D3]' : 'text-[#65766F] hover:text-[#20332F] hover:bg-[#F1EFE6]'} ${collapsed ? 'justify-center' : ''}`}
                       >
                         <span className="flex-shrink-0">{item.icon}</span>
                         {!collapsed && <span className="flex-1 truncate">{t(item.labelKey)}</span>}
@@ -198,11 +198,11 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
               </div>
             ))}
           </nav>
-          <div className="border-t border-[#D4AF37]/10 p-2 flex-shrink-0">
+          <div className="border-t border-[#E5E0D3] p-2 flex-shrink-0">
             <div className={`flex ${collapsed ? 'flex-col gap-1 items-center' : 'gap-2'}`}>
               <button
                 onClick={() => setProfileOpen(true)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-white hover:bg-[#0F2347] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-1'}`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#65766F] hover:text-[#20332F] hover:bg-[#F1EFE6] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-1'}`}
                 title={t('profile')}
               >
                 <User size={16} />
@@ -210,7 +210,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
               </button>
               <button
                 onClick={handleLogout}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-red-400 transition-all text-sm ${collapsed ? 'justify-center w-full' : ''}`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#65766F] hover:text-red-400 transition-all text-sm ${collapsed ? 'justify-center w-full' : ''}`}
                 title={t('logout')}
               >
                 <LogOut size={16} />
@@ -220,7 +220,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
             {collapsed && (
               <button
                 onClick={() => setCollapsed(false)}
-                className="w-full flex justify-center p-2 mt-1 text-[#718096] hover:text-white hover:bg-[#0F2347] rounded-xl transition-all"
+                className="w-full flex justify-center p-2 mt-1 text-[#87938C] hover:text-[#20332F] hover:bg-[#F1EFE6] rounded-xl transition-all"
               >
                 <ChevronRight size={14} />
               </button>
@@ -229,8 +229,8 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
         </aside>
         <div className="flex-1 flex flex-col overflow-hidden">
           <ConcepteurBranchBar />
-          <div className="h-16 flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
-            <h1 className="text-base font-semibold text-white">{t('terrainPortal')}</h1>
+          <div className="h-16 flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#E5E0D3] bg-[#FFFEFA]/80 backdrop-blur-sm flex-shrink-0">
+            <h1 className="text-base font-semibold text-[#20332F]">{t('terrainPortal')}</h1>
             <div className="flex items-center gap-3">
               <NotificationBell />
             </div>
