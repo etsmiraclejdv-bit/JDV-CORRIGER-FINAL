@@ -37,18 +37,18 @@ export default function StockPage() {
     <div className="p-6 space-y-6 text-white">
       <PageTitle title={t('we.stockTitle')} subtitle={t('we.stockSub')}>
         <div className="flex gap-2">
-          <Link
+          {current?.access_role !== 'manager' && <Link
             href="/entrepot/dashboard/journal-stock"
             className="rounded-lg border border-[#34D399]/30 px-3 py-2 text-sm text-[#34D399]"
           >
             {t('we.journal')}
-          </Link>
-          <Link
+          </Link>}
+          {current?.access_role !== 'manager' && <Link
             href="/entrepot/dashboard/cloture-stock"
             className="rounded-lg border border-white/10 px-3 py-2 text-sm"
           >
             {t('we.closure')}
-          </Link>
+          </Link>}
           <button
             onClick={load}
             className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm"
