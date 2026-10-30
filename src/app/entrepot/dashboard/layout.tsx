@@ -49,26 +49,27 @@ const NAV: Array<{ href: string; labelKey: TranslationKey; icon: ElementType }> 
 function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const workspaceRoot = pathname.startsWith('/agence/dashboard') ? '/agence/dashboard' : '/entrepot/dashboard';
   const { warehouses, current, setCurrentId, loading, error } = useWarehouse();
   const { t } = useLanguage();
   const [checked, setChecked] = useState(false);
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) router.replace('/entrepot/login');
+      if (!data.user) router.replace(workspaceRoot === '/agence/dashboard' ? '/agence/login' : '/entrepot/login');
       else setChecked(true);
     });
-  }, [router]);
+  }, [router, workspaceRoot]);
   async function logout() {
     await supabase.auth.signOut();
-    router.replace('/entrepot/login');
+    router.replace(workspaceRoot === '/agence/dashboard' ? '/agence/login' : '/entrepot/login');
   }
 
   useEffect(() => {
     if (!current || current.access_role !== 'manager') return;
     const managerRoutes = [
-      '/entrepot/dashboard',
-      '/entrepot/dashboard/stock',
-      '/entrepot/dashboard/sous-entrepots',
+      workspaceRoot,
+      `${workspaceRoot}/stock`,
+      `${workspaceRoot}/sous-entrepots`,
     ];
     const allowed = managerRoutes.some((route) =>
       route === '/entrepot/dashboard'
@@ -76,7 +77,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         : pathname === route || pathname.startsWith(`${route}/`)
     );
     if (!allowed) router.replace('/entrepot/dashboard');
-  }, [current, pathname, router]);
+  }, [current, pathname, router, workspaceRoot]);
   if (!checked || loading)
     return (
       <div className="flex h-screen items-center justify-center bg-[#0B1B3D] text-slate-300 text-sm">
@@ -102,7 +103,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const visibleNav = isAdmin
     ? NAV
     : NAV.filter(({ href }) =>
-        ['/entrepot/dashboard', '/entrepot/dashboard/stock', '/entrepot/dashboard/sous-entrepots'].includes(href)
+        [workspaceRoot, `${workspaceRoot}/stock`, `${workspaceRoot}/sous-entrepots`].includes(href)
       );
   return (
     <div className="jdv-workspace-shell flex h-screen bg-[#0B1B3D] text-white overflow-hidden">
@@ -137,11 +138,11 @@ function Shell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 overflow-y-auto p-2">
           {visibleNav.map(({ href, labelKey, icon: Icon }) => {
             const active =
-              href === '/entrepot/dashboard' ? pathname === href : pathname.startsWith(href);
+              href === '/entrepot/dashboard' ? pathname === workspaceRoot : pathname.startsWith(href.replace('/entrepot/dashboard', workspaceRoot));
             return (
               <Link
                 key={href}
-                href={href}
+                href={href.replace('/entrepot/dashboard', workspaceRoot)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${active ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'}`}
               >
                 <Icon size={18} />
@@ -211,9 +212,9 @@ function Shell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
       </div>
       <MobileTabBar
-        rootHref="/entrepot/dashboard"
+        rootHref={workspaceRoot}
         items={visibleNav.map(({ href, labelKey, icon: Icon }) => ({
-          href,
+          href: href.replace('/entrepot/dashboard', workspaceRoot),
           label: t(labelKey),
           icon: <Icon size={20} />,
         }))}
@@ -223,8 +224,10 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 export default function EntrepotDashboardLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const requiredRole = pathname.startsWith('/agence/dashboard') ? 'manager' : undefined;
   return (
-    <WarehouseProvider>
+    <WarehouseProvider requiredRole={requiredRole}>
       <Shell>{children}</Shell>
     </WarehouseProvider>
   );
