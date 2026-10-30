@@ -164,7 +164,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
     return (
       <div className="flex h-screen bg-[#0B1B3D] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#34D399] border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-[#A0AEC0]">{t('cg.lyChecking')}</p>
         </div>
       </div>
@@ -220,7 +220,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
                       key={item.id}
                       href={item.href}
                       title={collapsed ? t(item.label) : undefined}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
                     >
                       <span className="flex-shrink-0">{item.icon}</span>
                       {!collapsed && <span className="flex-1 truncate">{t(item.label)}</span>}
@@ -263,7 +263,10 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <ConcepteurBranchBar />
-        <div data-jdv-design="topbar" className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
+        <div
+          data-jdv-design="topbar"
+          className="h-16 flex items-center justify-between px-6 border-b border-[#34D399]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0"
+        >
           <h1 data-jdv-design="page-title" className="text-base font-semibold text-white">
             {t('cg.lyTitle')}
           </h1>
