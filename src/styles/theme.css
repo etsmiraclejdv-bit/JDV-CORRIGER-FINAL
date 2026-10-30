@@ -245,3 +245,83 @@ html:not([data-accent="gold"]) [class*="hover:border-[#D4AF37]"]:hover,
 html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
   border-color: var(--brand);
 }
+
+
+/* ─── JDV CRM workspace system: shared shell for every authenticated role ─── */
+.jdv-workspace-shell {
+  color-scheme: dark;
+  --brand: #8B5CF6;
+  --brand-2: #A78BFA;
+  --brand-3: #6D28D9;
+  --brand-ink: #C4B5FD;
+  --brand-ink-dark: #C4B5FD;
+  --on-brand: #FFFFFF;
+  --background: #0A0D16;
+  --foreground: #F5F7FC;
+  --primary: #8B5CF6;
+  --primary-foreground: #FFFFFF;
+  --secondary: #171D2B;
+  --secondary-foreground: #F5F7FC;
+  --accent: #29213D;
+  --accent-foreground: #E9D5FF;
+  --muted: #171D2B;
+  --muted-foreground: #A1A1AA;
+  --card: #111827;
+  --card-foreground: #F5F7FC;
+  --border: rgba(255, 255, 255, 0.09);
+  --input: #0D1422;
+  --ring: #8B5CF6;
+  --navy-deep: #080B12;
+  --navy-mid: #111827;
+  --navy-light: #171D2B;
+  --faint: #71717A;
+  --brand-text: #C4B5FD;
+  color: #F5F7FC;
+  background:
+    radial-gradient(ellipse at 82% 0%, rgba(139, 92, 246, 0.075), transparent 34%),
+    #0A0D16;
+}
+.jdv-workspace-shell > aside {
+  background: rgba(8, 11, 18, 0.99);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.jdv-workspace-shell [data-jdv-design="topbar"] {
+  min-height: 4rem;
+  background: rgba(8, 11, 18, 0.94);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+}
+.jdv-workspace-shell aside nav a {
+  border-radius: 0.8rem;
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+.jdv-workspace-shell aside nav a:hover {
+  background: rgba(139, 92, 246, 0.10);
+}
+.jdv-workspace-shell aside nav a[aria-current="page"],
+.jdv-workspace-shell aside nav a.bg-\\[\\#34D399\\]\\/15 {
+  color: #C4B5FD;
+  background: rgba(139, 92, 246, 0.16);
+  border-color: rgba(167, 139, 250, 0.24);
+}
+.jdv-workspace-shell main {
+  scrollbar-color: #554078 transparent;
+  scrollbar-width: thin;
+}
+/* Harmonise legacy module utility classes without changing other workspaces. */
+.jdv-workspace-shell [class~="text-[#D4AF37]"] { color: #A78BFA !important; }
+.jdv-workspace-shell [class~="bg-[#0F2347]"],
+.jdv-workspace-shell [class~="bg-[#0B1B3D]"] { background-color: #111827 !important; }
+.jdv-workspace-shell [class~="bg-[#0A1628]"] { background-color: #0D1422 !important; }
+.jdv-workspace-shell [class~="text-[#A0AEC0]"] { color: #A1A1AA !important; }
+.jdv-workspace-shell [class~="text-[#718096]"] { color: #71717A !important; }
+.jdv-workspace-shell [class~="border-[#D4AF37]"] { border-color: rgba(167, 139, 250, 0.3) !important; }
+.jdv-workspace-shell main > div {
+  min-width: 0;
+}
+@media (max-width: 767px) {
+  .jdv-workspace-shell [data-jdv-design="topbar"] {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

@@ -88,7 +88,7 @@ export default function SuperAdminProspecteursPage() {
   };
   const roleColor: Record<string, string> = {
     prospecteur: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    admin: 'bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30',
+    admin: 'bg-[#8B5CF6]/20 text-[#8B5CF6] border-[#8B5CF6]/30',
     super_admin: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   };
 
@@ -97,13 +97,13 @@ export default function SuperAdminProspecteursPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">{t('cg.prTitle')}</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">
+          <p className="text-sm text-[#A1A1AA] mt-1">
             {t('cg.prCount').replace('{n}', String(prospecteurs.length))}
           </p>
         </div>
         <button
           onClick={loadProspecteurs}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#8B5CF6]/20 text-[#A1A1AA] hover:text-white text-sm transition-colors"
         >
           <RefreshCw size={14} />
           {t('cg.refresh')}
@@ -112,13 +112,13 @@ export default function SuperAdminProspecteursPage() {
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('cg.prSearch')}
-            className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-[#718096] text-sm focus:outline-none focus:border-[#D4AF37]/60 transition-colors"
+            className="w-full bg-[#0F2347] border border-[#8B5CF6]/20 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-[#71717A] text-sm focus:outline-none focus:border-[#8B5CF6]/60 transition-colors"
           />
         </div>
         <div className="flex gap-1 bg-[#0A1628] rounded-xl p-1">
@@ -127,7 +127,7 @@ export default function SuperAdminProspecteursPage() {
               key={r}
               onClick={() => setRoleFilter(r)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                roleFilter === r ? 'bg-[#D4AF37] text-[#0B1B3D]' : 'text-[#A0AEC0] hover:text-white'
+                roleFilter === r ? 'bg-[#8B5CF6] text-[#0A0D16]' : 'text-[#A1A1AA] hover:text-white'
               }`}
             >
               {r === 'all'
@@ -140,7 +140,7 @@ export default function SuperAdminProspecteursPage() {
         </div>
       </div>
 
-      <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl overflow-hidden">
+      <div className="bg-[#0F2347] border border-[#8B5CF6]/15 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-8 space-y-3">
             {[1, 2, 3, 4].map((i) => (
@@ -149,40 +149,40 @@ export default function SuperAdminProspecteursPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center">
-            <Users size={32} className="text-[#718096] mx-auto mb-3" />
-            <p className="text-[#A0AEC0] text-sm">{t('cg.prNone')}</p>
+            <Users size={32} className="text-[#71717A] mx-auto mb-3" />
+            <p className="text-[#A1A1AA] text-sm">{t('cg.prNone')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#D4AF37]/10">
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                <tr className="border-b border-[#8B5CF6]/10">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     {t('cg.prColName')}
                   </th>
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     {t('cg.prColPhone')}
                   </th>
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     {t('cg.dbColCo')}
                   </th>
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     {t('cg.prColCity')}
                   </th>
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     {t('cg.prColRole')}
                   </th>
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     {t('cg.prColJoined')}
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#D4AF37]/5">
+              <tbody className="divide-y divide-[#8B5CF6]/5">
                 {filtered.map((p) => (
                   <tr key={p.id} className="hover:bg-[#0A1628]/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] text-xs font-bold">
+                        <div className="w-8 h-8 rounded-full bg-[#8B5CF6]/10 flex items-center justify-center text-[#8B5CF6] text-xs font-bold">
                           {(p.full_name || t('cg.prNoName')).charAt(0).toUpperCase()}
                         </div>
                         <span className="text-sm font-medium text-white">
@@ -190,9 +190,9 @@ export default function SuperAdminProspecteursPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-[#A0AEC0]">{p.phone ?? '—'}</td>
-                    <td className="px-6 py-4 text-sm text-[#A0AEC0]">{p.org_name}</td>
-                    <td className="px-6 py-4 text-sm text-[#A0AEC0]">{p.city ?? '—'}</td>
+                    <td className="px-6 py-4 text-sm text-[#A1A1AA]">{p.phone ?? '—'}</td>
+                    <td className="px-6 py-4 text-sm text-[#A1A1AA]">{p.org_name}</td>
+                    <td className="px-6 py-4 text-sm text-[#A1A1AA]">{p.city ?? '—'}</td>
                     <td className="px-6 py-4">
                       <span
                         className={`text-xs px-2.5 py-1 rounded-lg border ${roleColor[p.role] ?? 'bg-gray-500/20 text-gray-400 border-gray-500/30'}`}
@@ -200,7 +200,7 @@ export default function SuperAdminProspecteursPage() {
                         {roleLabel[p.role] ?? p.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-[#A0AEC0]">{formatDate(p.created_at)}</td>
+                    <td className="px-6 py-4 text-sm text-[#A1A1AA]">{formatDate(p.created_at)}</td>
                   </tr>
                 ))}
               </tbody>

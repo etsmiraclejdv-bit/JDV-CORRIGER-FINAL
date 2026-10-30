@@ -181,7 +181,7 @@ export default function ClotureStockPage() {
       {subId && (
         <>
           <Card>
-            <p className="text-xs uppercase text-[#D4AF37]">{t('we.kSelected')}</p>
+            <p className="text-xs uppercase text-[#34D399]">{t('we.kSelected')}</p>
             <p className="text-xl font-bold">
               {selected?.code} — {selected?.name}
             </p>
@@ -234,7 +234,7 @@ export default function ClotureStockPage() {
                     const variance = value === '' ? null : Number(value) - Number(item.quantity);
                     return (
                       <tr key={item.article_id} className="border-b border-white/5">
-                        <td className="p-2 font-mono text-[#D4AF37]">{item.article_code}</td>
+                        <td className="p-2 font-mono text-[#34D399]">{item.article_code}</td>
                         <td className="p-2">{item.article_name}</td>
                         <td className="p-2 text-right">{num(item.quantity)}</td>
                         <td className="p-2 text-right">
@@ -276,7 +276,7 @@ export default function ClotureStockPage() {
               <button
                 disabled={loading || closing || !summary}
                 onClick={() => void closeDay()}
-                className="rounded-xl bg-[#D4AF37] px-5 py-3 font-semibold text-[#07142c] disabled:opacity-50"
+                className="rounded-xl bg-[#34D399] px-5 py-3 font-semibold text-[#07142c] disabled:opacity-50"
               >
                 {closing ? t('we.closing') : t('we.kCloseSub')}
               </button>

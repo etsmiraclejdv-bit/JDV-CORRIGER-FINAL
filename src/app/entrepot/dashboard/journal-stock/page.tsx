@@ -167,7 +167,7 @@ export default function JournalStockPage() {
                     <td className="p-2">
                       {r.subwarehouse_code || '—'} {r.subwarehouse_name || ''}
                     </td>
-                    <td className="p-2 font-mono text-[#D4AF37]">{r.article_code}</td>
+                    <td className="p-2 font-mono text-[#34D399]">{r.article_code}</td>
                     <td className="p-2">{r.article_name}</td>
                     <td className="p-2 text-right">{num(r.stock_before)}</td>
                     <td className="p-2 text-right text-emerald-400">

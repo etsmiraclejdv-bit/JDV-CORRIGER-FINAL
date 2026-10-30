@@ -144,21 +144,21 @@ export default function CompanyApplicationsPage() {
     <div className="p-6 lg:p-8 space-y-7">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-[#D4AF37] uppercase tracking-widest">{t('cg.apKicker')}</p>
+          <p className="text-xs text-[#8B5CF6] uppercase tracking-widest">{t('cg.apKicker')}</p>
           <h1 className="text-2xl font-bold text-white mt-1">{t('cg.apTitle')}</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">{t('cg.apSub')}</p>
+          <p className="text-sm text-[#A1A1AA] mt-1">{t('cg.apSub')}</p>
         </div>
-        <button onClick={load} className="p-3 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0]">
+        <button onClick={load} className="p-3 rounded-xl border border-[#8B5CF6]/20 text-[#A1A1AA]">
           <RefreshCw size={17} />
         </button>
       </div>
       {message && (
-        <div className="p-3 rounded-xl bg-[#D4AF37]/10 border border-[#D4AF37]/20 text-[#D4AF37] text-sm">
+        <div className="p-3 rounded-xl bg-[#8B5CF6]/10 border border-[#8B5CF6]/20 text-[#8B5CF6] text-sm">
           {message}
         </div>
       )}
-      <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-4 text-sm text-[#A0AEC0]">
-        <FileSearch className="inline mr-2 text-[#D4AF37]" size={17} />
+      <div className="bg-[#0F2347] border border-[#8B5CF6]/15 rounded-2xl p-4 text-sm text-[#A1A1AA]">
+        <FileSearch className="inline mr-2 text-[#8B5CF6]" size={17} />
         {t('cg.apInfo')}
       </div>
 
@@ -167,23 +167,23 @@ export default function CompanyApplicationsPage() {
           {t('cg.apDocsH').replace('{n}', String(docs.length))}
         </h2>
         {loading ? (
-          <div className="text-[#A0AEC0]">{t('cg.apLoading')}</div>
+          <div className="text-[#A1A1AA]">{t('cg.apLoading')}</div>
         ) : docs.length === 0 ? (
-          <div className="bg-[#0F2347] rounded-2xl p-8 text-center text-[#A0AEC0]">
+          <div className="bg-[#0F2347] rounded-2xl p-8 text-center text-[#A1A1AA]">
             {t('cg.apNoDocs')}
           </div>
         ) : (
           docs.map((d) => (
             <div
               key={d.document_id}
-              className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
+              className="bg-[#0F2347] border border-[#8B5CF6]/15 rounded-2xl p-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <FileText size={17} className="text-[#D4AF37]" />
+                  <FileText size={17} className="text-[#8B5CF6]" />
                   <span className="font-semibold text-white">{docLabel(d.document_type)}</span>
                 </div>
-                <p className="text-sm text-[#A0AEC0]">
+                <p className="text-sm text-[#A1A1AA]">
                   {d.company_name} · {d.document_name}
                 </p>
                 <button
@@ -199,7 +199,7 @@ export default function CompanyApplicationsPage() {
                   value={reasons[d.document_id] ?? ''}
                   onChange={(e) => setReasons({ ...reasons, [d.document_id]: e.target.value })}
                   placeholder={t('cg.apReasonPh')}
-                  className="bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2 text-sm text-white placeholder-[#718096]"
+                  className="bg-[#0A1628] border border-[#8B5CF6]/20 rounded-xl px-3 py-2 text-sm text-white placeholder-[#71717A]"
                 />
                 <div className="flex gap-2">
                   <button
@@ -230,31 +230,31 @@ export default function CompanyApplicationsPage() {
           {t('cg.apRowsH').replace('{n}', String(rows.length))}
         </h2>
         {loading ? null : rows.length === 0 ? (
-          <div className="bg-[#0F2347] rounded-2xl p-8 text-center text-[#A0AEC0]">
+          <div className="bg-[#0F2347] rounded-2xl p-8 text-center text-[#A1A1AA]">
             {t('cg.apNoRows')}
           </div>
         ) : (
           rows.map((r) => (
             <div
               key={r.application_id}
-              className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-6"
+              className="bg-[#0F2347] border border-[#8B5CF6]/15 rounded-2xl p-6"
             >
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Building2 size={18} className="text-[#D4AF37]" />
+                    <Building2 size={18} className="text-[#8B5CF6]" />
                     <h3 className="font-bold text-white">{r.company_name}</h3>
                   </div>
-                  <p className="text-sm text-[#A0AEC0]">
+                  <p className="text-sm text-[#A1A1AA]">
                     {r.legal_name || '—'} · {r.legal_form || t('cg.apNoForm')} ·{' '}
                     {r.sector_name || t('cg.apNoSector')}
                   </p>
-                  <p className="text-sm text-[#A0AEC0]">
+                  <p className="text-sm text-[#A1A1AA]">
                     {r.professional_email} · {r.country}
                     {r.city ? ' · ' + r.city : ''}
                   </p>
                   <div className="flex gap-2 flex-wrap">
-                    <span className="px-2 py-1 rounded-lg bg-[#D4AF37]/10 text-[#D4AF37] text-xs">
+                    <span className="px-2 py-1 rounded-lg bg-[#8B5CF6]/10 text-[#8B5CF6] text-xs">
                       {r.status}
                     </span>
                     <span className="px-2 py-1 rounded-lg bg-blue-500/10 text-blue-300 text-xs">

@@ -19,6 +19,8 @@ import {
   Palette,
   BarChart3,
   MessageSquareQuote,
+  Search,
+  Plus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -144,6 +146,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [topSearch, setTopSearch] = useState('');
   const pathname = usePathname();
   const router = useRouter();
   const groups = Array.from(new Set(navItems.map((item) => item.group)));
@@ -162,29 +165,29 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
 
   if (!authChecked) {
     return (
-      <div className="flex h-screen bg-[#0B1B3D] items-center justify-center">
+      <div className="flex h-screen bg-[#0A0D16] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-[#A0AEC0]">{t('cg.lyChecking')}</p>
+          <div className="w-8 h-8 border-2 border-[#8B5CF6] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[#A1A1AA]">{t('cg.lyChecking')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
+    <div className="jdv-workspace-shell flex h-screen bg-[#0A0D16] overflow-hidden">
       <aside
         data-jdv-design="sidebar"
-        className={`hidden md:flex h-screen flex-col bg-[#08152F] border-r border-[#1E355B] transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}
+        className={`hidden md:flex h-screen flex-col bg-[#080B12] border-r border-[rgba(255,255,255,0.08)] transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}
       >
         <div
-          className={`h-16 flex items-center border-b border-[#1E355B] px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
+          className={`h-16 flex items-center border-b border-[rgba(255,255,255,0.08)] px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
         >
           {!collapsed && (
             <div className="flex items-center gap-2">
               <AppLogo size={28} />
-              <span className="font-bold text-sm text-[#F4F7FC]">
-                JDV <span className="text-[#34D399]">Admin</span>
+              <span className="font-bold text-sm text-[#F5F7FC]">
+                JDV <span className="text-[#A78BFA]">Concepteur</span>
               </span>
             </div>
           )}
@@ -192,7 +195,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
-              className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#F4F7FC] hover:bg-[#14294B] transition-all"
+              className="p-1.5 rounded-lg text-[#A1A1AA] hover:text-[#F5F7FC] hover:bg-[#171D2B] transition-all"
             >
               <ChevronLeft size={16} />
             </button>
@@ -203,7 +206,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
           {groups.map((group) => (
             <div key={group} className="mb-4">
               {!collapsed && (
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#718096] px-3 mb-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#71717A] px-3 mb-2">
                   {t(GROUP_KEYS[group])}
                 </p>
               )}
@@ -220,7 +223,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
                       key={item.id}
                       href={item.href}
                       title={collapsed ? t(item.label) : undefined}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#8B5CF6]/15 text-[#8B5CF6] border border-[#8B5CF6]/20' : 'text-[#A1A1AA] hover:text-white hover:bg-[#171D2B]'} ${collapsed ? 'justify-center' : ''}`}
                     >
                       <span className="flex-shrink-0">{item.icon}</span>
                       {!collapsed && <span className="flex-1 truncate">{t(item.label)}</span>}
@@ -231,11 +234,11 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
           ))}
         </nav>
 
-        <div className="border-t border-[#1E355B] p-2 flex-shrink-0">
+        <div className="border-t border-[rgba(255,255,255,0.08)] p-2 flex-shrink-0">
           <div className={`flex ${collapsed ? 'flex-col gap-1 items-center' : 'gap-2'}`}>
             <button
               onClick={() => setProfileOpen(true)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-white hover:bg-[#0F2347] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-1'}`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A1A1AA] hover:text-white hover:bg-[#171D2B] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-1'}`}
               title={t('cg.lyProfile')}
             >
               <User size={16} />
@@ -243,7 +246,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
             </button>
             <button
               onClick={handleLogout}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-red-400 transition-all text-sm ${collapsed ? 'justify-center w-full' : ''}`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A1A1AA] hover:text-red-400 transition-all text-sm ${collapsed ? 'justify-center w-full' : ''}`}
               title={t('cg.lyLogout')}
             >
               <LogOut size={16} />
@@ -253,7 +256,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
           {collapsed && (
             <button
               onClick={() => setCollapsed(false)}
-              className="w-full flex justify-center p-2 mt-1 text-[#94A3B8] hover:text-[#F4F7FC] hover:bg-[#14294B] rounded-xl transition-all"
+              className="w-full flex justify-center p-2 mt-1 text-[#A1A1AA] hover:text-[#F5F7FC] hover:bg-[#171D2B] rounded-xl transition-all"
             >
               <ChevronRight size={14} />
             </button>
@@ -263,11 +266,47 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <ConcepteurBranchBar />
-        <div className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
-          <h1 data-jdv-design="page-title" className="text-base font-semibold text-white">
-            {t('cg.lyTitle')}
-          </h1>
-          <div className="flex items-center gap-3">
+        <div
+          data-jdv-design="topbar"
+          className="flex min-h-16 items-center justify-between gap-4 border-b border-white/[0.07] bg-[#080B12]/95 px-4 backdrop-blur-sm sm:px-6"
+        >
+          <div className="relative hidden min-w-0 max-w-md flex-1 sm:block">
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <input
+              value={topSearch}
+              onChange={(event) => setTopSearch(event.target.value)}
+              placeholder="Rechercher un espace ou un outil…"
+              aria-label="Rechercher un espace ou un outil"
+              className="w-full rounded-xl border border-white/10 bg-[#111827] py-2.5 pl-9 pr-4 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-violet-400/50"
+            />
+            {topSearch.trim() && (
+              <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-white/10 bg-[#111827] p-1 shadow-2xl">
+                {navItems
+                  .filter((item) => t(item.label).toLocaleLowerCase().includes(topSearch.toLocaleLowerCase()))
+                  .slice(0, 6)
+                  .map((item) => (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      onClick={() => setTopSearch('')}
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:bg-violet-500/10 hover:text-violet-200"
+                    >
+                      {item.icon}<span>{t(item.label)}</span>
+                    </Link>
+                  ))}
+                {navItems.filter((item) => t(item.label).toLocaleLowerCase().includes(topSearch.toLocaleLowerCase())).length === 0 && (
+                  <p className="px-3 py-3 text-xs text-zinc-500">Aucun espace correspondant.</p>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="ml-auto flex shrink-0 items-center gap-3">
+            <Link
+              href="/hidden-concepteur-gate/dashboard/company-applications"
+              className="hidden items-center gap-2 rounded-xl bg-violet-600 px-3 py-2.5 text-xs font-semibold text-white transition hover:bg-violet-500 md:inline-flex"
+            >
+              <Plus size={15} /> Nouvelle demande
+            </Link>
             <NotificationBell />
           </div>
         </div>
