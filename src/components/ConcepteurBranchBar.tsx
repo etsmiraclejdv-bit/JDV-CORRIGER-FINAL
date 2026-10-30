@@ -54,11 +54,11 @@ export default function ConcepteurBranchBar() {
   return (
     <nav
       aria-label={t('cg.baAria')}
-      className="flex flex-wrap items-center gap-2 border-b border-[#D4AF37]/30 bg-[#07142d] px-4 py-2 text-xs text-white"
+      className="flex flex-wrap items-center gap-2 border-b border-[#A78BFA]/30 bg-[#080B12] px-4 py-2 text-xs text-white"
     >
       <Link
         href="/hidden-concepteur-gate"
-        className="flex items-center gap-1 rounded-md px-2 py-1 text-[#D4AF37] hover:bg-white/10"
+        className="flex items-center gap-1 rounded-md px-2 py-1 text-[#A78BFA] hover:bg-white/10"
       >
         <LayoutGrid size={14} /> {t('cg.baHome')}
       </Link>
@@ -70,7 +70,7 @@ export default function ConcepteurBranchBar() {
             href={href}
             className={
               active
-                ? 'flex items-center gap-1 rounded-md px-2 py-1 transition bg-[#D4AF37] text-[#07142d] font-semibold'
+                ? 'flex items-center gap-1 rounded-md px-2 py-1 transition bg-[#A78BFA] text-[#080B12] font-semibold'
                 : 'flex items-center gap-1 rounded-md px-2 py-1 transition hover:bg-white/10'
             }
           >
