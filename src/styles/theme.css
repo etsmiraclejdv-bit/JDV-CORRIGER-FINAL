@@ -341,3 +341,18 @@ html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
 .jdv-data-table td, .jdv-data-table th { vertical-align: middle; }
 .jdv-data-table tbody tr { transition: background-color 150ms ease; }
 .jdv-data-table tbody tr:hover { background-color: color-mix(in srgb, var(--brand) 7%, var(--card)); }
+
+/* Table palette is captured from the selected root theme, even inside role shells. */
+html { --jdv-table-bg: #FFFFFF; --jdv-table-fg: #0B1B3D; --jdv-table-muted: #EEF2F8; --jdv-table-muted-fg: #53627C; --jdv-table-border: rgba(11,27,61,.14); --jdv-table-hover: rgba(11,27,61,.045); --jdv-table-skeleton: #E2E8F0; }
+html[data-theme="dark"] { --jdv-table-bg: #0F2347; --jdv-table-fg: #F7F9FC; --jdv-table-muted: #0A1628; --jdv-table-muted-fg: #A0AEC0; --jdv-table-border: color-mix(in srgb, var(--brand) 24%, transparent); --jdv-table-hover: color-mix(in srgb, var(--brand) 10%, #0F2347); --jdv-table-skeleton: #243B60; }
+html[data-theme="contrast"] { --jdv-table-bg: #FFFFFF; --jdv-table-fg: #000000; --jdv-table-muted: #F0F0F0; --jdv-table-muted-fg: #1F2937; --jdv-table-border: rgba(0,0,0,.6); --jdv-table-hover: #E5E7EB; --jdv-table-skeleton: #D1D5DB; }
+.jdv-data-table { font-family: inherit; color: var(--jdv-table-fg); background: var(--jdv-table-bg); border-color: var(--jdv-table-border); }
+.jdv-data-table table { font-size: 0.875rem; color: var(--jdv-table-fg); }
+.jdv-data-table thead tr { background: var(--jdv-table-muted); border-color: var(--jdv-table-border); }
+.jdv-data-table th { color: var(--jdv-table-muted-fg); font-weight: 700; letter-spacing: 0.055em; }
+.jdv-data-table td { color: var(--jdv-table-fg); }
+.jdv-data-table tbody { border-color: var(--jdv-table-border); }
+.jdv-data-table tbody tr { background: var(--jdv-table-bg); color: var(--jdv-table-fg); border-color: var(--jdv-table-border); transition: background-color 150ms ease; }
+.jdv-data-table tbody tr:hover { background: var(--jdv-table-hover); }
+.jdv-data-table .jdv-table-empty { color: var(--jdv-table-muted-fg); }
+.jdv-data-table .jdv-table-skeleton { background: var(--jdv-table-skeleton); }
