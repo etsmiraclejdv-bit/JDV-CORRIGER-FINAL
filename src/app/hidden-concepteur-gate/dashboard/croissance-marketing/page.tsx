@@ -128,17 +128,24 @@ function MetricCard({
   return (
     <article className="rounded-2xl border border-white/10 bg-[#0F2347] p-5">
       <div className="flex items-start justify-between gap-3">
-        <span className="grid h-10 w-10 place-items-center rounded-xl border border-[#D4AF37]/20 bg-[#D4AF37]/10 text-[#F5D76E]">
+        <span className="grid h-10 w-10 place-items-center rounded-xl border border-[#34D399]/20 bg-[#34D399]/10 text-[#6EE7B7]">
           <Icon size={19} />
         </span>
         <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-200">
           {t('mk.srcConn')}
         </span>
       </div>
+ fix/traduction-pages-diverses
       <p className="mt-5 text-sm font-medium text-white">{t(label)}</p>
       <p className="mt-1 text-xs leading-5 text-[#8FA2C1]">{t(description)}</p>
       <p className="mt-4 text-sm font-semibold text-[#F5D76E]">{t('mk.dataNA')}</p>
       <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">{t(missingSource)}</p>
+=======
+      <p className="mt-5 text-sm font-medium text-white">{label}</p>
+      <p className="mt-1 text-xs leading-5 text-[#8FA2C1]">{description}</p>
+      <p className="mt-4 text-sm font-semibold text-[#6EE7B7]">Donnée non disponible</p>
+      <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">{missingSource}</p>
+ main
     </article>
   );
 }
@@ -154,10 +161,10 @@ function RecommendationCard({ item, index }: { item: MarketingRecommendation; in
         : 'border-white/10 bg-white/5 text-[#A0AEC0]';
 
   return (
-    <article className="rounded-2xl border border-white/10 bg-[#0F2347] p-5 transition hover:border-[#D4AF37]/30">
+    <article className="rounded-2xl border border-white/10 bg-[#0F2347] p-5 transition hover:border-[#34D399]/30">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="flex items-center gap-2 text-xs font-semibold text-[#D4AF37]">
-          <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#D4AF37]/10">
+        <span className="flex items-center gap-2 text-xs font-semibold text-[#34D399]">
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#34D399]/10">
             {index + 1}
           </span>
           {t('mk.recGuided')}
@@ -171,8 +178,13 @@ function RecommendationCard({ item, index }: { item: MarketingRecommendation; in
       <h3 className="mt-4 text-base font-semibold text-white">{rk ? t(rk.title) : item.title}</h3>
       <p className="mt-2 text-sm leading-6 text-[#A0AEC0]">{rk ? t(rk.reason) : item.reason}</p>
       <div className="mt-4 rounded-xl border border-white/5 bg-[#08152F] p-4">
+ fix/traduction-pages-diverses
         <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#D4AF37]">
           <Sparkles size={14} /> {t('mk.recAction')}
+=======
+        <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#34D399]">
+          <Sparkles size={14} /> Action proposée
+ main
         </p>
         <p className="mt-2 text-sm leading-6 text-slate-200">{rk ? t(rk.action) : item.action}</p>
         <div className="mt-3 border-t border-white/10 pt-3">
@@ -388,13 +400,18 @@ export default function MarketingGrowthPage() {
 
   return (
     <div className="min-h-full space-y-7 p-4 sm:p-6 lg:p-8">
-      <header className="relative overflow-hidden rounded-3xl border border-[#D4AF37]/20 bg-gradient-to-br from-[#102851] via-[#0D2041] to-[#08152F] p-6 sm:p-8">
-        <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full border border-[#D4AF37]/10" />
-        <div className="pointer-events-none absolute -right-2 -top-10 h-44 w-44 rounded-full border border-[#D4AF37]/15" />
+      <header className="relative overflow-hidden rounded-3xl border border-[#34D399]/20 bg-gradient-to-br from-[#102851] via-[#0D2041] to-[#08152F] p-6 sm:p-8">
+        <div className="pointer-events-none absolute -right-12 -top-20 h-64 w-64 rounded-full border border-[#34D399]/10" />
+        <div className="pointer-events-none absolute -right-2 -top-10 h-44 w-44 rounded-full border border-[#34D399]/15" />
         <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-2xl">
+ fix/traduction-pages-diverses
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[#D4AF37]">
               <Sparkles size={15} /> {t('mk.kicker')}
+=======
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[#34D399]">
+              <Sparkles size={15} /> Intelligence marketing · Concepteur
+ main
             </p>
             <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
               {t('mk.h1')}
@@ -411,7 +428,7 @@ export default function MarketingGrowthPage() {
           </div>
           <button
             onClick={() => setShowCampaignForm(true)}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#D4AF37] px-5 py-3 text-sm font-bold text-[#07142D] shadow-lg shadow-black/10 transition hover:bg-[#F0D675]"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#34D399] px-5 py-3 text-sm font-bold text-[#07142D] shadow-lg shadow-black/10 transition hover:bg-[#A7F3D0]"
           >
             <Plus size={17} /> {t('mk.prep')}
           </button>
@@ -423,8 +440,13 @@ export default function MarketingGrowthPage() {
         aria-live="polite"
         className="rounded-xl border border-white/10 bg-[#0B1B3D] px-4 py-3 text-xs text-[#A0AEC0]"
       >
+ fix/traduction-pages-diverses
         <ShieldCheck size={14} className="mr-2 inline text-[#D4AF37]" />
         {t(persistenceStatus)}
+=======
+        <ShieldCheck size={14} className="mr-2 inline text-[#34D399]" />
+        {persistenceStatus}
+ main
       </p>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -449,13 +471,13 @@ export default function MarketingGrowthPage() {
             <div className="flex rounded-xl border border-white/10 bg-[#08152F] p-1">
               <button
                 onClick={() => setChannel('organic')}
-                className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${channel === 'organic' ? 'bg-[#D4AF37] text-[#07142D]' : 'text-[#A0AEC0] hover:text-white'}`}
+                className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${channel === 'organic' ? 'bg-[#34D399] text-[#07142D]' : 'text-[#A0AEC0] hover:text-white'}`}
               >
                 {t('mk.organic')}
               </button>
               <button
                 onClick={() => setChannel('paid')}
-                className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${channel === 'paid' ? 'bg-[#D4AF37] text-[#07142D]' : 'text-[#A0AEC0] hover:text-white'}`}
+                className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${channel === 'paid' ? 'bg-[#34D399] text-[#07142D]' : 'text-[#A0AEC0] hover:text-white'}`}
               >
                 {t('mk.paid')}
               </button>
@@ -489,7 +511,7 @@ export default function MarketingGrowthPage() {
                   key={title}
                   className="flex gap-3 rounded-xl border border-white/10 bg-[#0F2347] p-4"
                 >
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#D4AF37]/10 text-[#D4AF37]">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#34D399]/10 text-[#34D399]">
                     <Icon size={18} />
                   </span>
                   <div>
@@ -525,7 +547,7 @@ export default function MarketingGrowthPage() {
           {channel === 'organic' && (
             <section
               aria-labelledby="organic-checklist-title"
-              className="rounded-xl border border-[#D4AF37]/20 bg-[#08152F] p-4 sm:p-5"
+              className="rounded-xl border border-[#34D399]/20 bg-[#08152F] p-4 sm:p-5"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -534,15 +556,20 @@ export default function MarketingGrowthPage() {
                   </h3>
                   <p className="mt-1 text-xs leading-5 text-[#8FA2C1]">{t('mk.clP')}</p>
                 </div>
+ fix/traduction-pages-diverses
                 <span className="rounded-full border border-[#D4AF37]/20 px-3 py-1 text-xs font-semibold text-[#F5D76E]">
                   {t('mk.clCount')
                     .replace('{d}', String(organicTasksDone.length))
                     .replace('{n}', String(organicTasks.length))}
+=======
+                <span className="rounded-full border border-[#34D399]/20 px-3 py-1 text-xs font-semibold text-[#6EE7B7]">
+                  {organicTasksDone.length}/{organicTasks.length} étapes
+ main
                 </span>
               </div>
               <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
                 <div
-                  className="h-full rounded-full bg-[#D4AF37] transition-all"
+                  className="h-full rounded-full bg-[#34D399] transition-all"
                   style={{ width: `${(organicTasksDone.length / organicTasks.length) * 100}%` }}
                 />
               </div>
@@ -580,7 +607,7 @@ export default function MarketingGrowthPage() {
                               );
                           }
                         }}
-                        className="mt-1 h-4 w-4 rounded border-white/20 bg-[#08152F] accent-[#D4AF37]"
+                        className="mt-1 h-4 w-4 rounded border-white/20 bg-[#08152F] accent-[#34D399]"
                       />
                       <span className="min-w-0 flex-1">
                         <span
@@ -624,7 +651,7 @@ export default function MarketingGrowthPage() {
             </p>
             <button
               onClick={() => setShowCampaignForm(true)}
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#F5D76E] hover:text-white"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#6EE7B7] hover:text-white"
             >
               {t('mk.draftLink')} <ChevronRight size={15} />
             </button>
@@ -633,7 +660,7 @@ export default function MarketingGrowthPage() {
 
         <aside className="space-y-4 rounded-2xl border border-white/10 bg-[#0B1B3D] p-5 sm:p-6">
           <div className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#D4AF37]/10 text-[#D4AF37]">
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#34D399]/10 text-[#34D399]">
               <Target size={19} />
             </span>
             <div>
@@ -652,7 +679,7 @@ export default function MarketingGrowthPage() {
                 key={n}
                 className="flex gap-3 rounded-xl border border-white/5 bg-[#0F2347]/70 p-3"
               >
-                <span className="text-xs font-bold text-[#D4AF37]">{n}</span>
+                <span className="text-xs font-bold text-[#34D399]">{n}</span>
                 <div>
                   <p className="text-sm font-medium text-white">{title}</p>
                   <p className="mt-0.5 text-xs text-[#8FA2C1]">{desc}</p>
@@ -672,8 +699,18 @@ export default function MarketingGrowthPage() {
       <section className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
+ fix/traduction-pages-diverses
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#D4AF37]">
               <Sparkles size={14} /> {t('mk.engK')}
+=======
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-[#34D399]">
+              <Sparkles size={14} /> Moteur explicable
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-white">Recommandations prioritaires</h2>
+            <p className="mt-1 max-w-2xl text-sm text-[#8FA2C1]">
+              Les suggestions ci-dessous indiquent les mesures à raccorder avant de pouvoir analyser
+              les résultats. Elles ne représentent pas des performances observées.
+ main
             </p>
             <h2 className="mt-2 text-xl font-semibold text-white">{t('mk.engH')}</h2>
             <p className="mt-1 max-w-2xl text-sm text-[#8FA2C1]">{t('mk.engP')}</p>
@@ -783,7 +820,7 @@ export default function MarketingGrowthPage() {
                       href={visual.path}
                       target="_blank"
                       rel="noreferrer"
-                      className="shrink-0 text-xs font-semibold text-[#F5D76E] hover:text-white"
+                      className="shrink-0 text-xs font-semibold text-[#6EE7B7] hover:text-white"
                     >
                       {t('mk.open')}
                     </a>
@@ -835,7 +872,7 @@ export default function MarketingGrowthPage() {
 
       <section className="rounded-2xl border border-white/10 bg-[#0B1B3D] p-5 sm:p-6">
         <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#D4AF37]/20 bg-[#D4AF37]/10 text-[#D4AF37]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#34D399]/20 bg-[#34D399]/10 text-[#34D399]">
             <ShieldCheck size={19} />
           </span>
           <div>
@@ -857,12 +894,17 @@ export default function MarketingGrowthPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="campaign-dialog-title"
-            className="my-auto w-full max-w-xl rounded-2xl border border-[#D4AF37]/20 bg-[#0B1B3D] p-5 shadow-2xl sm:p-7"
+            className="my-auto w-full max-w-xl rounded-2xl border border-[#34D399]/20 bg-[#0B1B3D] p-5 shadow-2xl sm:p-7"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
+ fix/traduction-pages-diverses
                 <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#D4AF37]">
                   <Megaphone size={14} /> {t('mk.fPlan')}
+=======
+                <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#34D399]">
+                  <Megaphone size={14} /> Planification
+ main
                 </p>
                 <h2 id="campaign-dialog-title" className="mt-2 text-xl font-bold text-white">
                   {t('mk.prep')}
@@ -885,8 +927,13 @@ export default function MarketingGrowthPage() {
                   maxLength={100}
                   value={campaignNameValue}
                   onChange={(event) => setCampaignName(event.target.value)}
+ fix/traduction-pages-diverses
                   placeholder={t('mk.fNamePh')}
                   className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-3 text-sm text-white outline-none focus:border-[#D4AF37]/60"
+=======
+                  placeholder="Ex. Visibilité de la vitrine"
+                  className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-3 text-sm text-white outline-none focus:border-[#34D399]/60"
+ main
                 />
               </label>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -957,7 +1004,7 @@ export default function MarketingGrowthPage() {
                 </button>
                 <button
                   type="submit"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#D4AF37] px-4 py-3 text-sm font-bold text-[#07142D] hover:bg-[#F0D675]"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#34D399] px-4 py-3 text-sm font-bold text-[#07142D] hover:bg-[#A7F3D0]"
                 >
                   <Rocket size={16} /> {t('mk.create')}
                 </button>

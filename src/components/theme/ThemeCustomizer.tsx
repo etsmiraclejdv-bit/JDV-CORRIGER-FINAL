@@ -8,7 +8,7 @@ import type { DesignConfig, DesignElementStyle } from '@/features/design-studio/
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import type { TerrainKey } from '@/lib/i18n/terrain';
 
-export type ThemeChoice = 'light' | 'dark' | 'contrast' | 'system';
+export type ThemeChoice = 'designer' | 'light' | 'dark';
 export type Accent = 'gold' | 'blue' | 'green' | 'violet' | 'orange';
 export type FontSize = 'sm' | 'md' | 'lg' | 'xl';
 export type Prefs = {
@@ -20,14 +20,15 @@ export type Prefs = {
 };
 
 export const DEFAULT_PREFS: Prefs = {
-  theme: 'light',
-  accent: 'gold',
+  theme: 'designer',
+  accent: 'green',
   font: 'md',
   reduceMotion: false,
   themeOverride: false,
 };
 export const THEME_STORAGE_KEY = 'jdv_theme_v1';
 
+ fix/traduction-pages-diverses
 const THEMES: { id: ThemeChoice; label: TerrainKey; hint: TerrainKey; icon: typeof Sun }[] = [
   { id: 'light', label: 'th.light', hint: 'th.lightH', icon: Sun },
   { id: 'dark', label: 'th.dark', hint: 'th.darkH', icon: Moon },
@@ -40,6 +41,19 @@ const ACCENTS: { id: Accent; label: TerrainKey; color: string }[] = [
   { id: 'green', label: 'th.aGreen', color: '#059669' },
   { id: 'violet', label: 'th.aViolet', color: '#7C3AED' },
   { id: 'orange', label: 'th.aOrange', color: '#EA580C' },
+=======
+const THEMES: { id: ThemeChoice; label: string; hint: string; icon: typeof Sun }[] = [
+  { id: 'designer', label: 'Thème JDV', hint: 'Thème officiel choisi par le Concepteur', icon: Palette },
+  { id: 'light', label: 'Clair', hint: 'Fond clair pour une lecture lumineuse', icon: Sun },
+  { id: 'dark', label: 'Sombre', hint: 'Bleu nuit et vert émeraude', icon: Moon },
+];
+const ACCENTS: { id: Accent; label: string; color: string }[] = [
+  { id: 'gold', label: 'Or', color: '#D4AF37' },
+  { id: 'blue', label: 'Bleu', color: '#2563EB' },
+  { id: 'green', label: 'Vert', color: '#059669' },
+  { id: 'violet', label: 'Violet', color: '#7C3AED' },
+  { id: 'orange', label: 'Orange', color: '#EA580C' },
+ main
 ];
 const FONTS: { id: FontSize; label: TerrainKey; sample: string }[] = [
   { id: 'sm', label: 'th.fSm', sample: 'text-xs' },
@@ -60,9 +74,8 @@ function clean(raw: unknown): Prefs | null {
   };
 }
 
-function resolveTheme(theme: ThemeChoice): 'light' | 'dark' | 'contrast' {
-  if (theme === 'system')
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+function resolveTheme(theme: ThemeChoice, design: Partial<DesignConfig> | null): 'light' | 'dark' {
+  if (theme === 'designer') return design?.mode === 'light' ? 'light' : 'dark';
   return theme;
 }
 
@@ -104,7 +117,7 @@ function applyElementStyles(design: Partial<DesignConfig> | null) {
 
 function apply(p: Prefs, design: Partial<DesignConfig> | null = null) {
   const root = document.documentElement;
-  root.dataset.theme = resolveTheme(!p.themeOverride && design?.mode ? design.mode : p.theme);
+  root.dataset.theme = resolveTheme(p.theme, design);
   root.dataset.accent = p.accent;
   root.dataset.font = p.font;
   root.dataset.motion = p.reduceMotion ? 'reduce' : 'normal';
@@ -259,15 +272,6 @@ export default function ThemeCustomizer() {
     };
   }, []);
 
-  // Mode automatique : suivre l'appareil
-  useEffect(() => {
-    if (prefs.theme !== 'system') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => apply(prefs, designConfig);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, [prefs, designConfig]);
-
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -282,7 +286,7 @@ export default function ThemeCustomizer() {
       setPrefs((p) => ({
         ...p,
         [key]: value,
-        ...(key === 'theme' ? { themeOverride: true } : {}),
+        ...(key === 'theme' ? { themeOverride: value !== 'designer' } : {}),
       })),
     []
   );

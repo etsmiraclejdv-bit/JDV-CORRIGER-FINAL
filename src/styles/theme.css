@@ -53,18 +53,18 @@ html[data-theme="dark"] {
   --foreground: #F7F9FC;
   --secondary: #0F2347;
   --secondary-foreground: #F7F9FC;
-  --accent: #63B3ED;
-  --accent-foreground: #0B1B3D;
+  --accent: #34D399;
+  --accent-foreground: #06281F;
   --muted: #0A1628;
   --muted-foreground: #A0AEC0;
   --card: #0F2347;
   --card-foreground: #F7F9FC;
-  --border: color-mix(in srgb, var(--brand) 22%, transparent);
+  --border: color-mix(in srgb, var(--brand) 24%, transparent);
   --input: #0A1628;
   --success: #68D391;
   --danger: #FC8181;
   --warning: #F6E05E;
-  --info: #63B3ED;
+  --info: #7DD3FC;
   --navy-deep: #08152f;
   --navy-mid: #041c48;
   --navy-light: #031026;
@@ -211,3 +211,37 @@ html[data-design-density="compact"] .p-6 { padding: 1rem !important; }
 html[data-design-density="compact"] .p-5 { padding: 0.75rem !important; }
 html[data-design-density="compact"] .gap-6 { gap: 1rem !important; }
 html[data-design-density="compact"] .gap-4 { gap: 0.75rem !important; }
+
+
+/* Accent dynamique : les anciennes classes or suivent désormais la couleur choisie.
+   Les états métier (rouge, orange, bleu, succès) restent inchangés. */
+html:not([data-accent="gold"]) [class~="text-[#D4AF37]"],
+html:not([data-accent="gold"]) [class~="text-[#F5E17A]"] {
+  color: var(--brand-text);
+}
+html:not([data-accent="gold"]) [class~="bg-[#D4AF37]"] {
+  background-color: var(--brand);
+}
+html:not([data-accent="gold"]) [class~="bg-[#F5E17A]"] {
+  background-color: var(--brand-2);
+}
+html:not([data-accent="gold"]) [class~="border-[#D4AF37]"],
+html:not([data-accent="gold"]) [class~="border-[#F5E17A]"] {
+  border-color: var(--brand);
+}
+html:not([data-accent="gold"]) [class*="border-[#D4AF37]/"],
+html:not([data-accent="gold"]) [class*="border-[#F5E17A]/"] {
+  border-color: color-mix(in srgb, var(--brand) 30%, transparent);
+}
+html:not([data-accent="gold"]) [class*="bg-[#D4AF37]/"],
+html:not([data-accent="gold"]) [class*="bg-[#F5E17A]/"] {
+  background-color: color-mix(in srgb, var(--brand) 14%, transparent);
+}
+html:not([data-accent="gold"]) [class*="hover:bg-[#D4AF37]"]:hover,
+html:not([data-accent="gold"]) [class*="hover:bg-[#F5E17A]"]:hover {
+  background-color: var(--brand-3);
+}
+html:not([data-accent="gold"]) [class*="hover:border-[#D4AF37]"]:hover,
+html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
+  border-color: var(--brand);
+}

@@ -118,7 +118,7 @@ export default function EntrepotOverviewPage() {
               )}
               <Link
                 href="/entrepot/dashboard/approvisionnement"
-                className="inline-block mt-4 text-sm text-[#D4AF37] underline"
+                className="inline-block mt-4 text-sm text-[#34D399] underline"
               >
                 {t('we.askSupply')}
               </Link>
@@ -148,7 +148,7 @@ export default function EntrepotOverviewPage() {
               )}
               <Link
                 href="/entrepot/dashboard/prospecteurs"
-                className="inline-block mt-4 text-sm text-[#D4AF37] underline"
+                className="inline-block mt-4 text-sm text-[#34D399] underline"
               >
                 {t('we.managePros')}
               </Link>

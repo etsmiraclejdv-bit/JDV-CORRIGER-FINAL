@@ -131,7 +131,7 @@ export default function ApprovisionnementPage() {
     <div className="p-5 lg:p-8 space-y-6">
       <div className="flex justify-between">
         <div>
-          <p className="text-xs uppercase tracking-widest text-[#D4AF37]">{t('ta.field')}</p>
+          <p className="text-xs uppercase tracking-widest text-[#34D399]">{t('ta.field')}</p>
           <h1 className="text-2xl font-bold text-white">{t('mySupply')}</h1>
           <p className="text-sm text-[#A0AEC0]">{t('ta.sub')}</p>
         </div>
@@ -154,9 +154,9 @@ export default function ApprovisionnementPage() {
         </div>
       ) : (
         <>
-          <div className="p-5 bg-[#0F2347] rounded-2xl border border-[#D4AF37]/20">
+          <div className="p-5 bg-[#0F2347] rounded-2xl border border-[#34D399]/20">
             <div className="flex gap-3">
-              <Warehouse className="text-[#D4AF37]" />
+              <Warehouse className="text-[#34D399]" />
               <div>
                 <p className="text-xs text-[#718096]">{t('ta.myWarehouse')}</p>
                 <h2 className="text-lg font-bold text-white">{wh.warehouses?.name}</h2>
@@ -202,11 +202,11 @@ export default function ApprovisionnementPage() {
                   className={
                     'p-3 rounded-xl border text-left ' +
                     (tab === x[0]
-                      ? 'bg-[#D4AF37]/10 border-[#D4AF37]/40'
-                      : 'bg-[#0F2347] border-[#D4AF37]/15')
+                      ? 'bg-[#34D399]/10 border-[#34D399]/40'
+                      : 'bg-[#0F2347] border-[#34D399]/15')
                   }
                 >
-                  <Icon size={16} className="text-[#D4AF37]" />
+                  <Icon size={16} className="text-[#34D399]" />
                   <p className="text-xs text-[#A0AEC0] mt-2">{x[1]}</p>
                   <p className="text-lg font-bold text-white">{x[3]}</p>
                 </button>
@@ -239,7 +239,7 @@ export default function ApprovisionnementPage() {
                     return (
                       <div
                         key={a.id}
-                        className="p-4 bg-[#0F2347] rounded-2xl border border-[#D4AF37]/15"
+                        className="p-4 bg-[#0F2347] rounded-2xl border border-[#34D399]/15"
                       >
                         <p className="font-semibold text-white">{a.name}</p>
                         <p className="text-xs text-[#718096]">
@@ -303,7 +303,7 @@ export default function ApprovisionnementPage() {
                         <b className="text-white">{r.articles?.name}</b>
                         <p className="text-xs text-[#718096]">{r.articles?.code}</p>
                       </div>
-                      <b className="text-xl text-[#D4AF37]">{r.quantity}</b>
+                      <b className="text-xl text-[#34D399]">{r.quantity}</b>
                     </div>
                   ))
                 ) : (
@@ -322,7 +322,7 @@ export default function ApprovisionnementPage() {
                         key={h.id}
                         className={
                           'p-4 bg-[#0F2347] rounded-xl border ' +
-                          (overdue ? 'border-red-500/50' : 'border-[#D4AF37]/15')
+                          (overdue ? 'border-red-500/50' : 'border-[#34D399]/15')
                         }
                       >
                         <div className="flex justify-between gap-3">
@@ -431,7 +431,7 @@ export default function ApprovisionnementPage() {
 }
 function Empty({ text }: { text: string }) {
   return (
-    <div className="col-span-full p-8 text-center bg-[#0F2347] rounded-2xl border border-[#D4AF37]/10 text-sm text-[#718096]">
+    <div className="col-span-full p-8 text-center bg-[#0F2347] rounded-2xl border border-[#34D399]/10 text-sm text-[#718096]">
       {text}
     </div>
   );

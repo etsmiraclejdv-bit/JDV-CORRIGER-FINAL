@@ -123,11 +123,11 @@ export default function BusinessProspectsPage() {
           { label: t('bz.prHot'), value: stats.hot, color: 'text-[#FC8181]' },
           { label: t('bz.prWarm'), value: stats.warm, color: 'text-[#F6E05E]' },
           { label: t('bz.prCold'), value: stats.cold, color: 'text-[#63B3ED]' },
-          { label: t('bz.prToFollow'), value: stats.todayContact, color: 'text-[#D4AF37]' },
+          { label: t('bz.prToFollow'), value: stats.todayContact, color: 'text-[#34D399]' },
         ].map((s, i) => (
           <div
             key={i}
-            className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl p-3 text-center"
+            className="bg-[#0F2347] border border-[#34D399]/20 rounded-xl p-3 text-center"
           >
             <p className={`text-xl font-bold ${s.color}`}>{loading ? '—' : s.value}</p>
             <p className="text-xs text-[#718096] mt-0.5">{s.label}</p>
@@ -144,13 +144,13 @@ export default function BusinessProspectsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('bz.prSearchPh')}
-            className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
+            className="w-full bg-[#0F2347] border border-[#34D399]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#34D399]/60"
           />
         </div>
         <select
           value={tempFilter}
           onChange={(e) => setTempFilter(e.target.value)}
-          className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#D4AF37]/60"
+          className="bg-[#0F2347] border border-[#34D399]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#34D399]/60"
         >
           <option value="">{t('bz.prAllTemp')}</option>
           <option value="hot">🔥 {tempLabel('hot')}</option>
@@ -173,11 +173,11 @@ export default function BusinessProspectsPage() {
           filtered.map((p) => (
             <div
               key={p.id}
-              className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl overflow-hidden"
+              className="bg-[#0F2347] border border-[#34D399]/15 rounded-2xl overflow-hidden"
             >
               <div className="flex items-center justify-between px-4 py-3">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-[#0A1628] border border-[#D4AF37]/20 flex items-center justify-center text-sm font-bold text-[#D4AF37] flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-[#0A1628] border border-[#34D399]/20 flex items-center justify-center text-sm font-bold text-[#34D399] flex-shrink-0">
                     {(p.full_name || t('bz.prNoName')).charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -187,7 +187,7 @@ export default function BusinessProspectsPage() {
                     <p className="text-xs text-[#718096]">
                       {p.phone ?? '—'}
                       {p.assigned_profile?.full_name && (
-                        <span className="ml-2 text-[#D4AF37]/70">
+                        <span className="ml-2 text-[#34D399]/70">
                           • {p.assigned_profile.full_name}
                         </span>
                       )}
@@ -212,7 +212,7 @@ export default function BusinessProspectsPage() {
               </div>
 
               {expandedId === p.id && (
-                <div className="border-t border-[#D4AF37]/10 px-4 py-3 space-y-2">
+                <div className="border-t border-[#34D399]/10 px-4 py-3 space-y-2">
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {p.desired_product && (
                       <div>
@@ -232,7 +232,7 @@ export default function BusinessProspectsPage() {
                         <span
                           className={
                             p.next_contact_date === today
-                              ? 'text-[#D4AF37] font-medium'
+                              ? 'text-[#34D399] font-medium'
                               : 'text-white'
                           }
                         >

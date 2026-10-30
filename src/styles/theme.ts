@@ -13,9 +13,9 @@ export const COLORS = {
   navyCard: '#0A1628',
 
   // Accent
-  gold: '#D4AF37',
-  goldLight: '#F5E17A',
-  goldDark: '#A8860C',
+  gold: '#059669',
+  goldLight: '#34D399',
+  goldDark: '#047857',
 
   // Text
   foreground: '#F7F9FC',
@@ -29,14 +29,14 @@ export const COLORS = {
   info: '#63B3ED',
 
   // Borders
-  borderGold: 'rgba(212,175,55,0.2)',
-  borderGoldStrong: 'rgba(212,175,55,0.4)',
-  borderGoldSubtle: 'rgba(212,175,55,0.1)',
+  borderGold: 'rgba(5,150,105,0.24)',
+  borderGoldStrong: 'rgba(5,150,105,0.45)',
+  borderGoldSubtle: 'rgba(5,150,105,0.1)',
 } as const;
 
 export const GRADIENTS = {
-  gold: 'linear-gradient(135deg, #D4AF37 0%, #F5E17A 40%, #D4AF37 60%, #A8860C 100%)',
-  goldText: 'linear-gradient(135deg, #D4AF37 0%, #F5E17A 50%, #A8860C 100%)',
+  gold: 'linear-gradient(135deg, #059669 0%, #34D399 40%, #059669 60%, #047857 100%)',
+  goldText: 'linear-gradient(135deg, #059669 0%, #34D399 50%, #047857 100%)',
   navyCard: 'linear-gradient(145deg, #132a56 0%, #0F2347 100%)',
 } as const;
 
