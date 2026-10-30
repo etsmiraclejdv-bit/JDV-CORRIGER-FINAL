@@ -139,7 +139,7 @@ export default function DesignStudioPage() {
     <div className="space-y-6 p-5 sm:p-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#D4AF37]">
+          <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#34D399]">
             <Palette size={15} /> {t('cg.dsStudio')}
           </p>
           <h1 className="text-2xl font-bold text-white">{t('cg.dsGlobal')}</h1>
