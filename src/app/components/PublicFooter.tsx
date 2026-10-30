@@ -22,6 +22,7 @@ export default function PublicFooter() {
     { key: 'companySpace', href: '/business/login' },
     { key: 'prospectorSpace', href: '/terrain/login' },
     { key: 'agencySpace', href: '/agence/login' },
+    { key: 'warehouse', href: '/entrepot/login' },
   ];
   return (
     <footer id="about" className="border-t border-border py-12 mt-8">
