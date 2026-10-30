@@ -83,7 +83,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     );
   const isAdmin = current.access_role === 'admin';
   return (
-    <div className="flex h-screen bg-[#0B1B3D] text-white overflow-hidden">
+    <div className="jdv-workspace-shell flex h-screen bg-[#0B1B3D] text-white overflow-hidden">
       <aside className="hidden md:flex w-64 flex-shrink-0 flex-col bg-[#08152f] border-r border-[#34D399]/10">
         <div className="h-16 flex items-center gap-2 px-4 border-b border-[#34D399]/10">
           <AppLogo size={26} />
@@ -148,7 +148,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="h-16 flex items-center justify-between gap-3 px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#34D399]/10 bg-[#08152f]/80 flex-shrink-0">
+        <div data-jdv-design="topbar" className="h-16 flex items-center justify-between gap-3 px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#34D399]/10 bg-[#08152f]/80 flex-shrink-0">
           <h1 className="min-w-0 truncate text-base font-semibold">
             {current.name}
             {current.city ? (
