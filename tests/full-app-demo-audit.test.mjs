@@ -143,6 +143,8 @@ test('full-app demo audit: agency overview does not request admin-only activity 
 test('full-app demo audit: both designer agency shortcuts open the dedicated agency workspace', async () => {
   const branchBar = await readFile(path.join(ROOT, 'src', 'components', 'ConcepteurBranchBar.tsx'), 'utf8');
   const designerGate = await readFile(path.join(APP_ROOT, 'hidden-concepteur-gate', 'page.tsx'), 'utf8');
-  assert.match(branchBar, /code: 'agence'[\\s\\S]*?href: '\/agence\/dashboard'/);
-  assert.match(designerGate, /branch_code: 'agence'[\\s\\S]*?route: '\/agence\/dashboard'/);
+  assert.ok(branchBar.includes("code: 'agence'"));
+  assert.ok(branchBar.includes("href: '/agence/dashboard'"));
+  assert.ok(designerGate.includes("branch_code: 'agence'"));
+  assert.ok(designerGate.includes("route: '/agence/dashboard'"));
 });
