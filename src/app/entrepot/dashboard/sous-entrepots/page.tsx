@@ -128,6 +128,7 @@ export default function SousEntrepotsChefAgencePage() {
       <PageTitle title={t('we.sTitle')} subtitle={fill('we.sSub', { n: current.name })} />
       <Banner state={banner} />
 
+      {current.access_role === 'admin' && (
       <Card title={t('we.sCreateCard')}>
         <form onSubmit={create} className="grid gap-3 md:grid-cols-2">
           <label className="text-sm">
@@ -191,6 +192,14 @@ export default function SousEntrepotsChefAgencePage() {
         </form>
       </Card>
 
+      </Card>)}
+
+      {current.access_role === 'manager' && (
+        <p role="status" className="rounded-xl border border-white/10 bg-[#0F2347] p-3 text-sm text-slate-300">
+          Consultation des sous-entrepôts uniquement. La création et la modification sont réservées à l’administrateur de l’entreprise.
+        </p>
+      )}
+
       <Card title={fill('we.subsOfBranch', { n: subs.length })}>
         {loading ? (
           <p className="text-sm text-slate-400">{t('we.loading')}</p>
@@ -238,7 +247,8 @@ export default function SousEntrepotsChefAgencePage() {
                       : t('we.none')}
                   </div>
                 </div>
-                <div className="mt-4 flex gap-2">
+                {current.access_role === 'admin' && (
+<div className="mt-4 flex gap-2">
                   <button type="button" onClick={() => toggle(s)} className={`${btnGhost} flex-1`}>
                     {s.active ? t('we.deactivate') : t('we.reactivate')}
                   </button>
@@ -252,6 +262,7 @@ export default function SousEntrepotsChefAgencePage() {
                     </button>
                   ) : null}
                 </div>
+                )}
               </article>
             ))}
           </div>
