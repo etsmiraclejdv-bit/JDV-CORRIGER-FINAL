@@ -21,7 +21,7 @@ const ICONS = {
 const AGENCE_BRANCH: Branch = {
   branch_code: 'agence',
   branch_label: '',
-  route: '/entrepot/dashboard',
+  route: '/agence/dashboard',
 };
 const DESCRIPTIONS: Record<string, TerrainKey> = {
   admin: 'cg.dAdmin',
