@@ -201,3 +201,15 @@ test('full-app demo audit: supply and receipt screens are wired to the guarded R
   assert.ok(receiptPage.includes('confirmUnitCodeReceipt'));
   assert.ok(receiptPage.includes('phone_camera'));
 });
+
+
+test('full-app demo audit: only the platform designer may bypass the agency-manager role filter', async () => {
+  const [context, layout] = await Promise.all([
+    readFile(path.join(ROOT, 'src', 'components', 'entrepot', 'WarehouseContext.tsx'), 'utf8'),
+    readFile(path.join(APP_ROOT, 'entrepot', 'dashboard', 'layout.tsx'), 'utf8'),
+  ]);
+  assert.ok(context.includes('allowSuperAdmin?: boolean'));
+  assert.ok(context.includes('access?.isSuperAdmin'));
+  assert.ok(context.includes("w.access_role === 'admin'"));
+  assert.ok(layout.includes("allowSuperAdmin={pathname.startsWith('/agence/dashboard')}"));
+});
