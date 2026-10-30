@@ -277,7 +277,7 @@ export default function EntrepotApprovisionnementPage() {
       <Banner state={banner} />
 
       {showForm && (
-        <Card title={t('we.aNewTitle')} className="border-[#D4AF37]/40">
+        <Card title={t('we.aNewTitle')} className="border-[#34D399]/40">
           <div className="flex flex-wrap gap-4 text-sm mb-4">
             <label>
               <input
@@ -373,7 +373,7 @@ export default function EntrepotApprovisionnementPage() {
 
           <button
             onClick={() => setLines([...lines, { article_id: '', quantity: '1' }])}
-            className="mt-3 text-sm text-[#D4AF37]"
+            className="mt-3 text-sm text-[#34D399]"
             type="button"
           >
             <Plus size={14} className="inline mr-1" />
