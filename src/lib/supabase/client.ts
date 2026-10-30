@@ -19,9 +19,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // operations resolve to never/undefined throughout the application.
 let client: SupabaseClient<Database> | null = null;
 
-export function getSupabaseClient() {
+export function getSupabaseClient(): SupabaseClient<Database, 'public'> {
   if (!client) {
-    client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    client = createClient<Database, 'public'>(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
