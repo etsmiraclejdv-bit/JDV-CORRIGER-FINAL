@@ -88,11 +88,11 @@ export default function CompaniesPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white">{t('cg.coTitle')}</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">{t('cg.coSub')}</p>
+          <p className="text-sm text-[#A1A1AA] mt-1">{t('cg.coSub')}</p>
         </div>
         <button
           onClick={load}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#8B5CF6]/20 text-[#A1A1AA] hover:text-white text-sm"
         >
           <RefreshCw size={14} />
           {t('cg.refresh')}
@@ -112,36 +112,36 @@ export default function CompaniesPage() {
               .length,
             'text-red-400',
           ],
-          [t('cg.dbAuto'), rows.filter((r) => r.auto_renew).length, 'text-[#D4AF37]'],
+          [t('cg.dbAuto'), rows.filter((r) => r.auto_renew).length, 'text-[#8B5CF6]'],
         ].map(([l, v, c]) => (
           <div
             key={l as string}
-            className="rounded-2xl bg-[#0F2347] border border-[#D4AF37]/15 p-5"
+            className="rounded-2xl bg-[#0F2347] border border-[#8B5CF6]/15 p-5"
           >
             <p className={(c as string) + ' text-2xl font-bold'}>{v as number}</p>
-            <p className="text-xs text-[#718096] mt-1">{l as string}</p>
+            <p className="text-xs text-[#71717A] mt-1">{l as string}</p>
           </div>
         ))}
       </div>
       <div className="relative max-w-md">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('cg.coSearch')}
-          className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-[#718096]"
+          className="w-full bg-[#0F2347] border border-[#8B5CF6]/20 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-[#71717A]"
         />
       </div>
-      <div className="rounded-2xl bg-[#0F2347] border border-[#D4AF37]/15 overflow-hidden">
+      <div className="rounded-2xl bg-[#0F2347] border border-[#8B5CF6]/15 overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-[#A0AEC0]">{t('cg.coLoading')}</div>
+          <div className="p-8 text-center text-[#A1A1AA]">{t('cg.coLoading')}</div>
         ) : filtered.length === 0 ? (
-          <div className="p-12 text-center text-[#A0AEC0]">{t('cg.coNone')}</div>
+          <div className="p-12 text-center text-[#A1A1AA]">{t('cg.coNone')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1100px]">
               <thead>
-                <tr className="border-b border-[#D4AF37]/10">
+                <tr className="border-b border-[#8B5CF6]/10">
                   {[
                     t('cg.dbColCo'),
                     t('cg.dbColSub'),
@@ -153,14 +153,14 @@ export default function CompaniesPage() {
                   ].map((h) => (
                     <th
                       key={h}
-                      className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-5 py-4"
+                      className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-5 py-4"
                     >
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#D4AF37]/5">
+              <tbody className="divide-y divide-[#8B5CF6]/5">
                 {filtered.map((r) => {
                   const unpaid =
                     ['past_due', 'expired', 'cancelled'].includes(r.subscription_status) ||
@@ -171,14 +171,14 @@ export default function CompaniesPage() {
                     <tr key={r.organization_id} className="hover:bg-[#0A1628]/50">
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-[#D4AF37]/10 flex items-center justify-center">
-                            <Building2 size={15} className="text-[#D4AF37]" />
+                          <div className="w-9 h-9 rounded-xl bg-[#8B5CF6]/10 flex items-center justify-center">
+                            <Building2 size={15} className="text-[#8B5CF6]" />
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-white">
                               {r.organization_name}
                             </p>
-                            <p className="text-xs text-[#718096]">
+                            <p className="text-xs text-[#71717A]">
                               {r.city || '—'} · {r.phone || '—'}
                             </p>
                           </div>
@@ -186,7 +186,7 @@ export default function CompaniesPage() {
                       </td>
                       <td className="px-5 py-4">
                         <p className="text-sm text-white">{r.plan_name || t('cg.coNoPlan')}</p>
-                        <p className="text-xs text-[#718096]">
+                        <p className="text-xs text-[#71717A]">
                           {r.plan_price != null ? money(r.plan_price, r.plan_currency) : '—'}
                         </p>
                       </td>
@@ -195,7 +195,7 @@ export default function CompaniesPage() {
                         <p
                           className={
                             'text-xs ' +
-                            ((r.days_remaining ?? 99) <= 3 ? 'text-red-400' : 'text-[#718096]')
+                            ((r.days_remaining ?? 99) <= 3 ? 'text-red-400' : 'text-[#71717A]')
                           }
                         >
                           {r.days_remaining == null
@@ -205,12 +205,12 @@ export default function CompaniesPage() {
                       </td>
                       <td className="px-5 py-4">
                         <p className="text-sm text-white">{date(r.last_payment_at)}</p>
-                        <p className="text-xs text-[#718096]">
+                        <p className="text-xs text-[#71717A]">
                           {r.last_payment_status || t('cg.coNoPay')}
                         </p>
                       </td>
                       <td className="px-5 py-4">
-                        <span className={r.auto_renew ? 'text-green-400' : 'text-[#718096]'}>
+                        <span className={r.auto_renew ? 'text-green-400' : 'text-[#71717A]'}>
                           {r.auto_renew ? t('cg.coOn') : t('cg.coOff')}
                         </span>
                       </td>
@@ -247,7 +247,7 @@ export default function CompaniesPage() {
                             onClick={() => action(r.organization_id, 'remind')}
                             disabled={busy === r.organization_id + 'remind'}
                             title={t('cg.coRemindT')}
-                            className="p-2 rounded-lg border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10"
+                            className="p-2 rounded-lg border border-[#8B5CF6]/30 text-[#8B5CF6] hover:bg-[#8B5CF6]/10"
                           >
                             <Bell size={14} />
                           </button>
