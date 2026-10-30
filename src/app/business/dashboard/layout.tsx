@@ -371,7 +371,10 @@ export default function BusinessDashboardLayout({ children }: { children: React.
             />
           )}
           <div className="relative z-10 flex-1 min-w-0 flex flex-col overflow-hidden">
-            <div data-jdv-design="topbar" className="h-16 flex items-center justify-between px-3 sm:px-6 border-b border-[#34D399]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
+            <div
+              data-jdv-design="topbar"
+              className="h-16 flex items-center justify-between px-3 sm:px-6 border-b border-[#34D399]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0"
+            >
               <div className="flex min-w-0 items-center gap-2">
                 <button
                   type="button"
