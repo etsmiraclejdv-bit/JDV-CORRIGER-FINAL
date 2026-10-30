@@ -126,23 +126,17 @@ export default function EntrepotOverviewPage() {
         <>
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             <Stat label={t('we.sInStock')} value={num(inStock)} />
-            <Stat
-              label={t('we.sLowAlerts')}
-              value={num(low.length)}
-              tone={low.length ? 'warn' : 'ok'}
-            />
-            <Stat label={t('we.sPros')} value={num(prosp.length)} />
-            <Stat label={t('we.sLateLots')} value={num(overdue)} tone={overdue ? 'warn' : 'ok'} />
-            <Stat label={t('we.sEntries')} value={`+${num(entries)}`} />
-            <Stat label={t('we.sExits')} value={`−${num(exits)}`} />
-            <Stat label={t('we.sSales')} value={money(report?.sales_total?.amount)} />
-            <Stat
-              label={t('we.sCalls')}
-              value={num(report?.tickets?.still_open)}
-              tone={report?.tickets?.still_open ? 'warn' : 'ok'}
-            />
+            <Stat label={t('we.sLowAlerts')} value={num(low.length)} tone={low.length ? 'warn' : 'ok'} />
+            {current?.access_role !== "manager" && <>
+              <Stat label={t('we.sPros')} value={num(prosp.length)} />
+              <Stat label={t('we.sLateLots')} value={num(overdue)} tone={overdue ? 'warn' : 'ok'} />
+              <Stat label={t('we.sEntries')} value={'+' + num(entries)} />
+              <Stat label={t('we.sExits')} value={'−' + num(exits)} />
+              <Stat label={t('we.sSales')} value={money(report?.sales_total?.amount)} />
+              <Stat label={t('we.sCalls')} value={num(report?.tickets?.still_open)} tone={report?.tickets?.still_open ? 'warn' : 'ok'} />
+            </>}
           </div>
-          <div className="grid gap-6 lg:grid-cols-2">
+          {current?.access_role !== "manager" && <div className="grid gap-6 lg:grid-cols-2">
             <Card title={t('we.restock')}>
               {low.length === 0 ? (
                 <p className="text-sm text-slate-400">{t('we.noneBelow')}</p>
@@ -198,7 +192,7 @@ export default function EntrepotOverviewPage() {
                 {t('we.managePros')}
               </Link>
             </Card>
-          </div>
+          </div>}
         </>
       )}
     </div>
