@@ -298,8 +298,7 @@ html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
 .jdv-workspace-shell aside nav a:hover {
   background: rgba(139, 92, 246, 0.10);
 }
-.jdv-workspace-shell aside nav a[aria-current="page"],
-.jdv-workspace-shell aside nav a.bg-\\[\\#34D399\\]\\/15 {
+.jdv-workspace-shell aside nav a[aria-current="page"] {
   color: #C4B5FD;
   background: rgba(139, 92, 246, 0.16);
   border-color: rgba(167, 139, 250, 0.24);
