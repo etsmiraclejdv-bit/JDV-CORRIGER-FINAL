@@ -324,3 +324,20 @@ html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
     padding-right: 1rem;
   }
 }
+
+
+/* Public showcase: readable wrapping, stable section rhythm and mobile spacing. */
+.jdv-public-site { min-width: 0; overflow-x: clip; }
+.jdv-public-site section { min-width: 0; scroll-margin-top: 5.5rem; }
+.jdv-public-site h1, .jdv-public-site h2, .jdv-public-site h3 { min-width: 0; text-wrap: balance; overflow-wrap: anywhere; }
+.jdv-public-site p, .jdv-public-site a, .jdv-public-site button { overflow-wrap: break-word; }
+.jdv-public-site [class*="grid"] > *, .jdv-public-site article, .jdv-public-site .card-navy { min-width: 0; }
+@media (max-width: 767px) { .jdv-public-site section { scroll-margin-top: 4.5rem; } .jdv-public-site section h2 { line-height: 1.18; } .jdv-public-site section p { line-height: 1.7; } }
+
+/* Shared DataTable: typography and colors follow the active theme. */
+.jdv-data-table { font-family: inherit; color: var(--card-foreground); }
+.jdv-data-table table { font-size: 0.875rem; }
+.jdv-data-table th { font-weight: 700; letter-spacing: 0.055em; }
+.jdv-data-table td, .jdv-data-table th { vertical-align: middle; }
+.jdv-data-table tbody tr { transition: background-color 150ms ease; }
+.jdv-data-table tbody tr:hover { background-color: color-mix(in srgb, var(--brand) 7%, var(--card)); }
