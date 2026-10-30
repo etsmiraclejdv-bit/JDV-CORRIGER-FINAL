@@ -56,14 +56,14 @@ export default function SuperAdminDashboardPage() {
         </div>
         <button
           onClick={load}
-          className="p-2 rounded-xl border border-[#D4AF37]/20 text-[#AFC0D8] hover:text-[#F4F7FC]"
+          className="p-2 rounded-xl border border-[#34D399]/20 text-[#AFC0D8] hover:text-[#F4F7FC]"
         >
           <RefreshCw size={16} />
         </button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          [t('cg.dbCompanies'), rows.length, Building2, 'text-[#D4AF37]'],
+          [t('cg.dbCompanies'), rows.length, Building2, 'text-[#34D399]'],
           [t('cg.dbActive'), active, CreditCard, 'text-green-400'],
           [t('cg.dbUnpaid'), unpaid, AlertTriangle, 'text-red-400'],
           [t('cg.dbAuto'), auto, CheckCircle2, 'text-blue-400'],
@@ -102,7 +102,7 @@ export default function SuperAdminDashboardPage() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#D4AF37]/10">
+              <tr className="border-b border-[#34D399]/10">
                 {[
                   t('cg.dbColCo'),
                   t('cg.dbColSub'),
