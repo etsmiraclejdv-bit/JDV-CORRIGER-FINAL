@@ -87,7 +87,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   if (!checked || loading)
     return (
       <div className="flex h-screen items-center justify-center bg-[#0B1B3D] text-slate-300 text-sm">
-        Chargement de l&apos;espace agence…
+        Chargement de l&apos;espace {workspaceRoot === '/agence/dashboard' ? 'agence' : 'entrepôt'}…
       </div>
     );
   if (error || !current)
@@ -117,7 +117,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="h-16 flex items-center gap-2 px-4 border-b border-[#34D399]/10">
           <AppLogo size={26} />
           <span className="font-bold text-sm">
-            JDV <span className="text-[#34D399]">{t('agencyBrand')}</span>
+            JDV <span className="text-[#34D399]">{t(workspaceRoot === '/agence/dashboard' ? 'agencyBrand' : 'warehouse')}</span>
           </span>
         </div>
         <div className="p-3 border-b border-[#34D399]/10">
