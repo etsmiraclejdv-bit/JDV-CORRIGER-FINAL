@@ -80,29 +80,25 @@ export default function EntrepotOverviewPage() {
         {[
           {
             href: '/entrepot/dashboard/sous-entrepots',
-            label: 'Sous-entrepôts',
-            description: 'Gérer les points de stockage rattachés à cette agence',
+            label: t('subWarehouses'),
             icon: Store,
           },
           {
             href: '/entrepot/dashboard/approvisionnement',
-            label: 'Approvisionnement',
-            description: 'Consulter et traiter les demandes de stock',
+            label: t('supplyNav'),
             icon: Truck,
           },
           {
             href: '/entrepot/dashboard/expeditions-prospecteurs',
-            label: 'Expéditions',
-            description: 'Préparer les remises de marchandises aux prospecteurs',
+            label: t('prospectorShipments'),
             icon: ScanBarcode,
           },
           {
             href: '/entrepot/dashboard/tracabilite',
-            label: 'Traçabilité',
-            description: 'Retrouver les mouvements et les codes produits',
+            label: t('traceability'),
             icon: Search,
           },
-        ].map(({ href, label, description, icon: Icon }) => (
+        ].map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
@@ -118,7 +114,7 @@ export default function EntrepotOverviewPage() {
               />
             </div>
             <h2 className="mt-3 text-sm font-semibold text-white">{label}</h2>
-            <p className="mt-1 text-xs leading-5 text-slate-400">{description}</p>
+            
           </Link>
         ))}
       </section>
