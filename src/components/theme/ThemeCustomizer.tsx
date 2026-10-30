@@ -28,12 +28,10 @@ export const DEFAULT_PREFS: Prefs = {
 };
 export const THEME_STORAGE_KEY = 'jdv_theme_v1';
 
- fix/traduction-pages-diverses
 const THEMES: { id: ThemeChoice; label: TerrainKey; hint: TerrainKey; icon: typeof Sun }[] = [
+  { id: 'designer', label: 'th.theme', hint: 'th.theme', icon: Palette },
   { id: 'light', label: 'th.light', hint: 'th.lightH', icon: Sun },
   { id: 'dark', label: 'th.dark', hint: 'th.darkH', icon: Moon },
-  { id: 'contrast', label: 'th.contrast', hint: 'th.contrastH', icon: Contrast },
-  { id: 'system', label: 'th.system', hint: 'th.systemH', icon: Monitor },
 ];
 const ACCENTS: { id: Accent; label: TerrainKey; color: string }[] = [
   { id: 'gold', label: 'th.aGold', color: '#D4AF37' },
@@ -41,19 +39,6 @@ const ACCENTS: { id: Accent; label: TerrainKey; color: string }[] = [
   { id: 'green', label: 'th.aGreen', color: '#059669' },
   { id: 'violet', label: 'th.aViolet', color: '#7C3AED' },
   { id: 'orange', label: 'th.aOrange', color: '#EA580C' },
-=======
-const THEMES: { id: ThemeChoice; label: string; hint: string; icon: typeof Sun }[] = [
-  { id: 'designer', label: 'Thème JDV', hint: 'Thème officiel choisi par le Concepteur', icon: Palette },
-  { id: 'light', label: 'Clair', hint: 'Fond clair pour une lecture lumineuse', icon: Sun },
-  { id: 'dark', label: 'Sombre', hint: 'Bleu nuit et vert émeraude', icon: Moon },
-];
-const ACCENTS: { id: Accent; label: string; color: string }[] = [
-  { id: 'gold', label: 'Or', color: '#D4AF37' },
-  { id: 'blue', label: 'Bleu', color: '#2563EB' },
-  { id: 'green', label: 'Vert', color: '#059669' },
-  { id: 'violet', label: 'Violet', color: '#7C3AED' },
-  { id: 'orange', label: 'Orange', color: '#EA580C' },
- main
 ];
 const FONTS: { id: FontSize; label: TerrainKey; sample: string }[] = [
   { id: 'sm', label: 'th.fSm', sample: 'text-xs' },
