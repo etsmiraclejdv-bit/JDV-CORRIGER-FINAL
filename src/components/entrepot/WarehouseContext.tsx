@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
+import { getAuthContext } from '@/lib/auth/context';
 
 export type MyWarehouse = {
   warehouse_id: string;
@@ -30,7 +31,15 @@ const Ctx = createContext<WarehouseCtx>({
 });
 const STORAGE_KEY = 'jdv_entrepot_courant';
 
-export function WarehouseProvider({ children, requiredRole }: { children: React.ReactNode; requiredRole?: MyWarehouse['access_role'] }) {
+export function WarehouseProvider({
+  children,
+  requiredRole,
+  allowSuperAdmin = false,
+}: {
+  children: React.ReactNode;
+  requiredRole?: MyWarehouse['access_role'];
+  allowSuperAdmin?: boolean;
+}) {
   const [warehouses, setWarehouses] = useState<MyWarehouse[]>([]);
   const [currentId, setCurrentIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,12 +47,21 @@ export function WarehouseProvider({ children, requiredRole }: { children: React.
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { data, error: err } = await supabase.rpc('jdvcrm_my_warehouses_v1');
+    const [access, { data, error: err }] = await Promise.all([
+      allowSuperAdmin ? getAuthContext() : Promise.resolve(null),
+      supabase.rpc('jdvcrm_my_warehouses_v1'),
+    ]);
     if (err) {
       setError(err.message);
       setWarehouses([]);
     } else {
-      const list = ((data ?? []) as MyWarehouse[]).filter((w) => w.active && (!requiredRole || w.access_role === requiredRole));
+      const list = ((data ?? []) as MyWarehouse[]).filter(
+        (w) =>
+          w.active &&
+          (!requiredRole ||
+            w.access_role === requiredRole ||
+            (allowSuperAdmin && access?.isSuperAdmin && w.access_role === 'admin'))
+      );
       setWarehouses(list);
       let saved: string | null = null;
       try {
@@ -59,7 +77,7 @@ export function WarehouseProvider({ children, requiredRole }: { children: React.
       });
     }
     setLoading(false);
-  }, [requiredRole]);
+  }, [allowSuperAdmin, requiredRole]);
   useEffect(() => {
     load();
   }, [load]);
