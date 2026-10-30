@@ -410,7 +410,14 @@ export default function BusinessDashboardLayout({ children }: { children: React.
             </div>
             <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
           </div>
-          <MobileTabBar rootHref="/business/dashboard" items={navItems.map((item) => ({ href: item.href, label: t(item.label), icon: item.icon }))} />
+          <MobileTabBar
+            rootHref="/business/dashboard"
+            items={navItems.map((item) => ({
+              href: item.href,
+              label: t(item.label),
+              icon: item.icon,
+            }))}
+          />
           <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="" size="sm">
             <UserProfilePanel onClose={() => setProfileOpen(false)} />
           </Modal>
