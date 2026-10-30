@@ -264,11 +264,11 @@ html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
   border-bottom: 1px solid rgba(148, 163, 184, 0.16);
   backdrop-filter: blur(16px);
 }
-.jdv-workspace-shell [data-jdv-design="sidebar"] a {
+.jdv-workspace-shell aside nav a {
   border-radius: 0.8rem;
   transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
 }
-.jdv-workspace-shell [data-jdv-design="sidebar"] a:hover {
+.jdv-workspace-shell aside nav a:hover {
   background: rgba(30, 53, 91, 0.72);
 }
 .jdv-workspace-shell main {
