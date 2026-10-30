@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Building2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { getAuthContext } from '@/lib/auth/context';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type WarehouseAccess = { access_role?: string };
@@ -32,16 +33,20 @@ export default function AgencyLoginPage() {
       return;
     }
 
-    const { data, error: accessError } = await supabase.rpc('jdvcrm_my_warehouses_v1');
+    const [authContext, { data, error: accessError }] = await Promise.all([
+      getAuthContext(),
+      supabase.rpc('jdvcrm_my_warehouses_v1'),
+    ]);
     const hasAgencyAccess =
-      !accessError &&
-      Array.isArray(data) &&
-      (data as WarehouseAccess[]).some((item) => item.access_role === 'manager');
+      authContext?.isSuperAdmin ||
+      (!accessError &&
+        Array.isArray(data) &&
+        (data as WarehouseAccess[]).some((item) => item.access_role === 'manager'));
 
     if (!hasAgencyAccess) {
       await supabase.auth.signOut();
       setLoading(false);
-      setError("Ce compte ne possède pas d'accès responsable d'agence.");
+      setError("Ce compte ne possède pas les droits nécessaires pour accéder à cet espace.");
       return;
     }
 
@@ -60,7 +65,7 @@ export default function AgencyLoginPage() {
             JDV <span className="text-emerald-300">Agence</span>
           </h1>
           <p className="mt-1 text-sm text-slate-400">
-            Accès réservé aux responsables d&apos;agence
+            Accès réservé aux responsables d&apos;agence et au Concepteur autorisé
           </p>
         </div>
         <label className="block text-sm">
