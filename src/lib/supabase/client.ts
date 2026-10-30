@@ -4,11 +4,13 @@ import type { Database } from '@/types/database.types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON;
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_key ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    'Supabase configuration is missing. Set NEXT_PUBLIC_SUPABASE_URL and either NEXT_PUBLIC_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_ANON in the deployment environment.'
+    'Supabase configuration is missing. Set NEXT_PUBLIC_SUPABASE_URL and one of NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_SUPABASE_ANON_key, or NEXT_PUBLIC_SUPABASE_ANON in the deployment environment.'
   );
 }
 
