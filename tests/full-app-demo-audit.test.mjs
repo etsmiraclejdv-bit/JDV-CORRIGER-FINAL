@@ -213,3 +213,12 @@ test('full-app demo audit: only the platform designer may bypass the agency-mana
   assert.ok(context.includes("w.access_role === 'admin'"));
   assert.ok(layout.includes("allowSuperAdmin={pathname.startsWith('/agence/dashboard')}"));
 });
+
+
+test('full-app demo audit: agency login accepts only managers or the active platform designer', async () => {
+  const agencyLogin = await readFile(path.join(APP_ROOT, 'agence', 'login', 'page.tsx'), 'utf8');
+  assert.ok(agencyLogin.includes("import { getAuthContext } from '@/lib/auth/context'"));
+  assert.ok(agencyLogin.includes('authContext?.isSuperAdmin'));
+  assert.ok(agencyLogin.includes("item.access_role === 'manager'"));
+  assert.ok(agencyLogin.includes('await supabase.auth.signOut()'));
+});

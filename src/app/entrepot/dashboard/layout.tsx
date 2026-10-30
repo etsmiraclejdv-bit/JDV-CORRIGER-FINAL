@@ -49,13 +49,17 @@ const NAV: Array<{ href: string; labelKey: TranslationKey; icon: ElementType }> 
 function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const workspaceRoot = pathname.startsWith('/agence/dashboard') ? '/agence/dashboard' : '/entrepot/dashboard';
+  const workspaceRoot = pathname.startsWith('/agence/dashboard')
+    ? '/agence/dashboard'
+    : '/entrepot/dashboard';
   const { warehouses, current, setCurrentId, loading, error } = useWarehouse();
   const { t } = useLanguage();
   const [checked, setChecked] = useState(false);
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) router.replace(workspaceRoot === '/agence/dashboard' ? '/agence/login' : '/entrepot/login');
+      if (!data.user) {
+        router.replace(workspaceRoot === '/agence/dashboard' ? '/agence/login' : '/entrepot/login');
+      }
       else setChecked(true);
     });
   }, [router, workspaceRoot]);
@@ -105,7 +109,11 @@ function Shell({ children }: { children: React.ReactNode }) {
   const visibleNav = isAdmin
     ? NAV
     : NAV.filter(({ href }) =>
-        ['/entrepot/dashboard', '/entrepot/dashboard/stock', '/entrepot/dashboard/sous-entrepots'].includes(href)
+        [
+          '/entrepot/dashboard',
+          '/entrepot/dashboard/stock',
+          '/entrepot/dashboard/sous-entrepots',
+        ].includes(href)
       );
   return (
     <div className="jdv-workspace-shell flex h-screen bg-[#0B1B3D] text-white overflow-hidden">
@@ -113,7 +121,10 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="h-16 flex items-center gap-2 px-4 border-b border-[#34D399]/10">
           <AppLogo size={26} />
           <span className="font-bold text-sm">
-            JDV <span className="text-[#34D399]">{t(workspaceRoot === '/agence/dashboard' ? 'agencyBrand' : 'warehouse')}</span>
+            JDV{' '}
+            <span className="text-[#34D399]">
+              {t(workspaceRoot === '/agence/dashboard' ? 'agencyBrand' : 'warehouse')}
+            </span>
           </span>
         </div>
         <div className="p-3 border-b border-[#34D399]/10">
