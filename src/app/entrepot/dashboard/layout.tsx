@@ -72,11 +72,11 @@ function Shell({ children }: { children: React.ReactNode }) {
       `${workspaceRoot}/sous-entrepots`,
     ];
     const allowed = managerRoutes.some((route) =>
-      route === '/entrepot/dashboard'
+      route === workspaceRoot
         ? pathname === route
         : pathname === route || pathname.startsWith(`${route}/`)
     );
-    if (!allowed) router.replace('/entrepot/dashboard');
+    if (!allowed) router.replace(workspaceRoot);
   }, [current, pathname, router, workspaceRoot]);
   if (!checked || loading)
     return (
