@@ -148,7 +148,7 @@ export default function DesignStudioPage() {
           <button
             disabled={saving}
             onClick={() => save('draft')}
-            className="flex items-center gap-2 rounded-xl border border-[#1E355B] px-4 py-2.5 text-sm text-[#F5E17A] disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl border border-[#1E355B] px-4 py-2.5 text-sm text-[#6EE7B7] disabled:opacity-50"
           >
             <Save size={15} /> Brouillon
           </button>
@@ -164,13 +164,13 @@ export default function DesignStudioPage() {
       <div className="flex gap-2 border-b border-[#1E355B]">
         <button
           onClick={() => setHistory(false)}
-          className={`border-b-2 px-3 py-3 text-sm ${!history ? 'border-[#D4AF37] text-[#F5E17A]' : 'border-transparent text-[#AFC0D8]'}`}
+          className={`border-b-2 px-3 py-3 text-sm ${!history ? 'border-[#34D399] text-[#6EE7B7]' : 'border-transparent text-[#AFC0D8]'}`}
         >
           Éditeur
         </button>
         <button
           onClick={() => setHistory(true)}
-          className={`flex items-center gap-2 border-b-2 px-3 py-3 text-sm ${history ? 'border-[#D4AF37] text-[#F5E17A]' : 'border-transparent text-[#AFC0D8]'}`}
+          className={`flex items-center gap-2 border-b-2 px-3 py-3 text-sm ${history ? 'border-[#34D399] text-[#6EE7B7]' : 'border-transparent text-[#AFC0D8]'}`}
         >
           <History size={14} /> Versions ({versions.length})
         </button>
@@ -386,7 +386,7 @@ export default function DesignStudioPage() {
                   className="block w-full text-xs text-[#AFC0D8] file:mr-3 file:rounded-lg file:border-0 file:bg-[#147866] file:px-3 file:py-2 file:font-bold file:text-white"
                 />
                 {uploading === 'background' && (
-                  <span className="text-xs text-[#F5E17A]">Téléversement…</span>
+                  <span className="text-xs text-[#6EE7B7]">Téléversement…</span>
                 )}
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -421,7 +421,7 @@ export default function DesignStudioPage() {
                     onChange={(e) =>
                       setConfig((v) => ({ ...v, backgroundOpacity: Number(e.target.value) }))
                     }
-                    className="mt-3 w-full accent-[#D4AF37]"
+                    className="mt-3 w-full accent-[#34D399]"
                   />
                 </label>
               </div>
@@ -479,7 +479,7 @@ export default function DesignStudioPage() {
                   className="block w-full text-xs text-[#AFC0D8] file:mr-3 file:rounded-lg file:border-0 file:bg-[#147866] file:px-3 file:py-2 file:font-bold file:text-white"
                 />
                 {uploading === 'update' && (
-                  <span className="text-xs text-[#F5E17A]">Téléversement…</span>
+                  <span className="text-xs text-[#6EE7B7]">Téléversement…</span>
                 )}
               </label>
               <label className="flex items-center gap-3 text-sm text-[#F4F7FC]">
@@ -487,7 +487,7 @@ export default function DesignStudioPage() {
                   type="checkbox"
                   checked={config.updatePublished ?? false}
                   onChange={(e) => setConfig((v) => ({ ...v, updatePublished: e.target.checked }))}
-                  className="h-4 w-4 accent-[#D4AF37]"
+                  className="h-4 w-4 accent-[#34D399]"
                 />
                 Afficher cette annonce sur la page d’accueil après publication du design
               </label>
