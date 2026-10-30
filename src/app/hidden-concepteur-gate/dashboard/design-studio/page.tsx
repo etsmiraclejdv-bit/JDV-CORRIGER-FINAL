@@ -120,19 +120,11 @@ export default function DesignStudioPage() {
     await reload();
   }
 
- fix/traduction-pages-diverses
   if (loading) return <div className="p-8 text-sm text-[#A0AEC0]">{t('cg.dsCheck')}</div>;
   if (!allowed)
     return (
       <div className="m-6 rounded-xl border border-red-500/30 bg-red-500/10 p-5 text-sm text-red-200">
         {t('cg.dsDenied')}
-=======
-  if (loading) return <div className="p-8 text-sm text-[#AFC0D8]">Vérification des droits…</div>;
-  if (!allowed)
-    return (
-      <div className="m-6 rounded-xl border border-red-400/30 bg-red-950/40 p-5 text-sm text-red-300">
-        Accès réservé au concepteur JDV CRM.
- main
       </div>
     );
 
@@ -147,22 +139,12 @@ export default function DesignStudioPage() {
     <div className="space-y-6 p-5 sm:p-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
- fix/traduction-pages-diverses
           <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#D4AF37]">
             <Palette size={15} /> {t('cg.dsStudio')}
           </p>
           <h1 className="text-2xl font-bold text-white">{t('cg.dsGlobal')}</h1>
           <p className="mt-2 max-w-2xl text-sm text-[#A0AEC0]">
             {t('cg.dsGlobalSub')}
-=======
-          <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#34D399]">
-            <Palette size={15} /> Studio de design
-          </p>
-          <h1 className="text-2xl font-bold text-[#F4F7FC]">Personnalisation globale</h1>
-          <p className="mt-2 max-w-2xl text-sm text-[#AFC0D8]">
-            Configurez la charte, prévisualisez le résultat et gérez les versions sans déployer
-            l’application.
- main
           </p>
         </div>
         <div className="flex gap-2">
@@ -202,11 +184,7 @@ export default function DesignStudioPage() {
           <div className="grid gap-5 xl:grid-cols-2">
             <section className="space-y-5 rounded-2xl border border-[#1E355B] bg-[#08152F] p-5">
               <label className="block space-y-2">
- fix/traduction-pages-diverses
                 <span className="text-sm text-white">{t('cg.dsBrand')}</span>
-=======
-                <span className="text-sm text-[#F4F7FC]">Nom affiché</span>
- main
                 <input
                   value={config.brandName}
                   onChange={(e) => setConfig((v) => ({ ...v, brandName: e.target.value }))}
@@ -234,13 +212,8 @@ export default function DesignStudioPage() {
                 ))}
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
- fix/traduction-pages-diverses
                 <label className="space-y-2 text-sm text-white">
                   {t('cg.dsTheme')}
-=======
-                <label className="space-y-2 text-sm text-[#F4F7FC]">
-                  Thème
- main
                   <select
                     value={config.mode}
                     onChange={(e) =>
@@ -253,13 +226,8 @@ export default function DesignStudioPage() {
                     <option value="system">{t('cg.dsSystem')}</option>
                   </select>
                 </label>
- fix/traduction-pages-diverses
                 <label className="space-y-2 text-sm text-white">
                   {t('cg.dsDensity')}
-=======
-                <label className="space-y-2 text-sm text-[#F4F7FC]">
-                  Densité
- main
                   <select
                     value={config.density}
                     onChange={(e) =>
@@ -274,13 +242,8 @@ export default function DesignStudioPage() {
                     <option value="compact">{t('cg.dsCompact')}</option>
                   </select>
                 </label>
- fix/traduction-pages-diverses
                 <label className="space-y-2 text-sm text-white">
                   {t('cg.dsRadius')}
-=======
-                <label className="space-y-2 text-sm text-[#F4F7FC]">
-                  Arrondis
- main
                   <select
                     value={config.radius}
                     onChange={(e) =>
@@ -293,13 +256,8 @@ export default function DesignStudioPage() {
                     <option value="large">{t('cg.dsRLarge')}</option>
                   </select>
                 </label>
- fix/traduction-pages-diverses
                 <label className="space-y-2 text-sm text-white">
                   {t('cg.dsFont')}
-=======
-                <label className="space-y-2 text-sm text-[#F4F7FC]">
-                  Taille du texte
- main
                   <select
                     value={config.fontScale}
                     onChange={(e) =>
@@ -324,11 +282,7 @@ export default function DesignStudioPage() {
               </button>
             </section>
             <section className="space-y-3">
- fix/traduction-pages-diverses
               <h2 className="text-sm font-semibold text-white">{t('cg.dsLive')}</h2>
-=======
-              <h2 className="text-sm font-semibold text-[#F4F7FC]">Aperçu en direct</h2>
- main
               <div
                 className="overflow-hidden border p-5 shadow-xl"
                 style={{
@@ -404,7 +358,6 @@ export default function DesignStudioPage() {
           <section className="grid gap-5 xl:grid-cols-2">
             <div className="space-y-4 rounded-2xl border border-[#1E355B] bg-[#08152F] p-5">
               <div>
- fix/traduction-pages-diverses
                 <h2 className="text-base font-bold text-white">{t('cg.dsBgH')}</h2>
                 <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">
                   {t('cg.dsBgSub')}
@@ -412,17 +365,6 @@ export default function DesignStudioPage() {
               </div>
               <label className="block space-y-2 text-sm text-white">
                 {t('cg.dsBgUrl')}
-=======
-                <h2 className="text-base font-bold text-[#F4F7FC]">Arrière-plan et animations</h2>
-                <p className="mt-1 text-xs leading-5 text-[#AFC0D8]">
-                  Ajoutez une image ou une courte vidéo de fond pour les pages qui prennent en
-                  charge l’ambiance JDV. Respectez la lisibilité et les préférences de réduction des
-                  mouvements.
-                </p>
-              </div>
-              <label className="block space-y-2 text-sm text-[#F4F7FC]">
-                URL du média de fond
- main
                 <input
                   value={config.backgroundMediaUrl ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, backgroundMediaUrl: e.target.value }))}
@@ -430,13 +372,8 @@ export default function DesignStudioPage() {
                   className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm"
                 />
               </label>
- fix/traduction-pages-diverses
               <label className="block space-y-2 text-sm text-white">
                 {t('cg.dsImport50')}
-=======
-              <label className="block space-y-2 text-sm text-[#F4F7FC]">
-                Importer une image ou vidéo (50 Mo maximum)
- main
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm"
@@ -449,21 +386,12 @@ export default function DesignStudioPage() {
                   className="block w-full text-xs text-[#AFC0D8] file:mr-3 file:rounded-lg file:border-0 file:bg-[#147866] file:px-3 file:py-2 file:font-bold file:text-white"
                 />
                 {uploading === 'background' && (
- fix/traduction-pages-diverses
                   <span className="text-xs text-[#F5E17A]">{t('cg.dsUploading')}</span>
                 )}
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block space-y-2 text-sm text-white">
                   {t('cg.dsAnim')}
-=======
-                  <span className="text-xs text-[#6EE7B7]">Téléversement…</span>
-                )}
-              </label>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="block space-y-2 text-sm text-[#F4F7FC]">
-                  Animation
- main
                   <select
                     value={config.backgroundAnimation ?? 'none'}
                     onChange={(e) =>
@@ -482,16 +410,11 @@ export default function DesignStudioPage() {
                     <option value="gradient">{t('cg.dsAnGrad')}</option>
                   </select>
                 </label>
- fix/traduction-pages-diverses
                 <label className="block space-y-2 text-sm text-white">
                   {t('cg.dsIntensity').replace(
                     '{n}',
                     String(Math.round((config.backgroundOpacity ?? 0.12) * 100))
                   )}
-=======
-                <label className="block space-y-2 text-sm text-[#F4F7FC]">
-                  Intensité visuelle ({Math.round((config.backgroundOpacity ?? 0.12) * 100)} %)
- main
                   <input
                     type="range"
                     min="0.02"
@@ -508,7 +431,6 @@ export default function DesignStudioPage() {
             </div>
             <div className="space-y-4 rounded-2xl border border-[#1E355B] bg-[#08152F] p-5">
               <div>
- fix/traduction-pages-diverses
                 <h2 className="text-base font-bold text-white">{t('cg.dsNewsH')}</h2>
                 <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">
                   {t('cg.dsNewsSub')}
@@ -516,56 +438,27 @@ export default function DesignStudioPage() {
               </div>
               <label className="block space-y-2 text-sm text-white">
                 {t('cg.dsAnnTitle')}
-=======
-                <h2 className="text-base font-bold text-[#F4F7FC]">Actualités du concepteur</h2>
-                <p className="mt-1 text-xs leading-5 text-[#AFC0D8]">
-                  Publiez une annonce de mise à jour, un visuel ou une courte vidéo de
-                  démonstration. La publication devient visible sur l’accueil lorsque la version est
-                  publiée.
-                </p>
-              </div>
-              <label className="block space-y-2 text-sm text-[#F4F7FC]">
-                Titre de l’annonce
- main
                 <input
                   maxLength={120}
                   value={config.updateTitle ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, updateTitle: e.target.value }))}
- fix/traduction-pages-diverses
                   placeholder={t('cg.dsAnnPh')}
                   className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm"
                 />
               </label>
               <label className="block space-y-2 text-sm text-white">
                 {t('cg.dsInfo')}
-=======
-                  placeholder="Nouvelle fonctionnalité disponible"
-                  className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm"
-                />
-              </label>
-              <label className="block space-y-2 text-sm text-[#F4F7FC]">
-                Information à communiquer
- main
                 <textarea
                   maxLength={2000}
                   rows={4}
                   value={config.updateBody ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, updateBody: e.target.value }))}
- fix/traduction-pages-diverses
                   placeholder={t('cg.dsInfoPh')}
                   className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm"
                 />
               </label>
               <label className="block space-y-2 text-sm text-white">
                 {t('cg.dsDemoUrl')}
-=======
-                  placeholder="Expliquez ce qui change et comment l’utiliser…"
-                  className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm"
-                />
-              </label>
-              <label className="block space-y-2 text-sm text-[#F4F7FC]">
-                URL du média de démonstration (facultatif)
- main
                 <input
                   value={config.updateMediaUrl ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, updateMediaUrl: e.target.value }))}
@@ -573,13 +466,8 @@ export default function DesignStudioPage() {
                   className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm"
                 />
               </label>
- fix/traduction-pages-diverses
               <label className="block space-y-2 text-sm text-white">
                 {t('cg.dsImportShort')}
-=======
-              <label className="block space-y-2 text-sm text-[#F4F7FC]">
-                Importer image ou courte vidéo
- main
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm"
@@ -592,11 +480,7 @@ export default function DesignStudioPage() {
                   className="block w-full text-xs text-[#AFC0D8] file:mr-3 file:rounded-lg file:border-0 file:bg-[#147866] file:px-3 file:py-2 file:font-bold file:text-white"
                 />
                 {uploading === 'update' && (
- fix/traduction-pages-diverses
                   <span className="text-xs text-[#F5E17A]">{t('cg.dsUploading')}</span>
-=======
-                  <span className="text-xs text-[#6EE7B7]">Téléversement…</span>
- main
                 )}
               </label>
               <label className="flex items-center gap-3 text-sm text-[#F4F7FC]">
@@ -614,11 +498,7 @@ export default function DesignStudioPage() {
       ) : (
         <section className="divide-y divide-white/5 rounded-2xl border border-[#1E355B] bg-[#08152F]">
           {versions.length === 0 ? (
- fix/traduction-pages-diverses
             <p className="p-5 text-sm text-[#A0AEC0]">{t('cg.dsNoVer')}</p>
-=======
-            <p className="p-5 text-sm text-[#AFC0D8]">Aucune version enregistrée.</p>
- main
           ) : (
             versions.map((v) => (
               <div
@@ -626,7 +506,6 @@ export default function DesignStudioPage() {
                 className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
- fix/traduction-pages-diverses
                   <p className="text-sm font-semibold text-white">
                     {t('cg.dsVer')
                       .replace('{n}', String(v.version_no))
@@ -638,10 +517,6 @@ export default function DesignStudioPage() {
                             ? t('cg.dsStPub')
                             : v.status
                       )}
-=======
-                  <p className="text-sm font-semibold text-[#F4F7FC]">
-                    Version {v.version_no} · {v.status}
- main
                   </p>
                   <p className="mt-1 text-xs text-[#718096]">
                     {new Date(v.created_at).toLocaleString(locale)}
