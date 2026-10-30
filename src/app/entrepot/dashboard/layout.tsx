@@ -148,7 +148,10 @@ function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div data-jdv-design="topbar" className="h-16 flex items-center justify-between gap-3 px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#34D399]/10 bg-[#08152f]/80 flex-shrink-0">
+        <div
+          data-jdv-design="topbar"
+          className="h-16 flex items-center justify-between gap-3 px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#34D399]/10 bg-[#08152f]/80 flex-shrink-0"
+        >
           <h1 className="min-w-0 truncate text-base font-semibold">
             {current.name}
             {current.city ? (
