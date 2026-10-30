@@ -17,46 +17,55 @@ import {
   Target,
   Users,
 } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
-const scenes = [
+const scenes: {
+  eyebrow: TerrainKey;
+  title: TerrainKey;
+  text: TerrainKey;
+  icon: typeof Building2;
+  visual: string;
+}[] = [
   {
-    eyebrow: 'POURQUOI JDV CRM ?',
-    title: 'Une vision conçue pour les entreprises qui veulent grandir.',
-    text: 'JDV CRM réunit la gestion de l’entreprise, la prospection terrain, la vente à crédit, le suivi des paiements, le stock, les commissions et le recouvrement dans un même écosystème.',
+    eyebrow: 'ld.e1',
+    title: 'ld.n1',
+    text: 'ld.x1',
     icon: Building2,
     visual: 'vision',
   },
   {
-    eyebrow: 'SUR LE TERRAIN',
-    title: 'Le prospecteur au cœur de la croissance.',
-    text: 'Chaque prospecteur dispose de son portefeuille, de ses prospects, de ses visites, de ses relances et de ses ventes. Le terrain devient une donnée exploitable par l’entreprise.',
+    eyebrow: 'ld.e2',
+    title: 'ld.n2',
+    text: 'ld.x2',
     icon: MapPin,
     visual: 'prospection',
   },
   {
-    eyebrow: 'VENTE À CRÉDIT',
-    title: 'Du premier contact au dernier paiement.',
-    text: 'Le client peut acheter, choisir son mode de paiement et suivre ses échéances. L’entreprise conserve la trace de la vente, du stock, des paiements et du recouvrement.',
+    eyebrow: 'ld.e3',
+    title: 'ld.n3',
+    text: 'ld.x3',
     icon: CreditCard,
     visual: 'client',
   },
   {
-    eyebrow: 'FORMATION & MANAGEMENT',
-    title: 'Un gestionnaire qui prépare son équipe à réussir.',
-    text: 'Le responsable forme, organise et accompagne ses prospecteurs avant leur départ sur le terrain. JDV CRM donne une vision claire des équipes, des performances et des opérations.',
+    eyebrow: 'ld.e4',
+    title: 'ld.n4',
+    text: 'ld.x4',
     icon: GraduationCap,
     visual: 'formation',
   },
   {
-    eyebrow: 'VISION DU FONDATEUR',
-    title: 'Mettre la technologie au service du travail réel.',
-    text: 'Romaric A. B. ADEDEDJI porte une vision simple : donner aux entreprises des outils professionnels, accessibles et adaptés aux réalités du terrain, afin de transformer chaque activité en organisation maîtrisée.',
+    eyebrow: 'ld.e5',
+    title: 'ld.n5',
+    text: 'ld.x5',
     icon: Target,
     visual: 'founder',
   },
 ];
 
 function SceneVisual({ type }: { type: string }) {
+  const { t } = useLanguage();
   if (type === 'prospection')
     return (
       <div className="jdv-scene-visual">
@@ -65,7 +74,7 @@ function SceneVisual({ type }: { type: string }) {
         </div>
         <div className="jdv-client-dot" />
         <div className="jdv-signal" />
-        <span>Prospection active</span>
+        <span>{t('ld.v1')}</span>
       </div>
     );
   if (type === 'client')
@@ -75,7 +84,7 @@ function SceneVisual({ type }: { type: string }) {
         <ArrowRight size={18} />
         <CreditCard size={27} />
         <CheckCircle2 size={20} />
-        <span>Achat • Crédit • Suivi</span>
+        <span>{t('ld.v2')}</span>
       </div>
     );
   if (type === 'formation')
@@ -89,7 +98,7 @@ function SceneVisual({ type }: { type: string }) {
           <Users size={32} />
           <Users size={32} />
         </div>
-        <span>Équipe prête pour le terrain</span>
+        <span>{t('ld.v3')}</span>
       </div>
     );
   if (type === 'founder')
@@ -103,7 +112,7 @@ function SceneVisual({ type }: { type: string }) {
           <i />
           <i />
         </div>
-        <span>Innovation • Discipline • Croissance</span>
+        <span>{t('ld.v4')}</span>
       </div>
     );
   return (
@@ -111,12 +120,13 @@ function SceneVisual({ type }: { type: string }) {
       <ShieldCheck size={30} />
       <BriefcaseBusiness size={30} />
       <Banknote size={30} />
-      <span>Une plateforme pensée pour toute l’activité</span>
+      <span>{t('ld.v5')}</span>
     </div>
   );
 }
 
 export default function JdvLoadingScreen() {
+  const { t } = useLanguage();
   const [visible, setVisible] = useState(false),
     [scene, setScene] = useState(0),
     [progress, setProgress] = useState(0);
@@ -144,11 +154,7 @@ export default function JdvLoadingScreen() {
   const current = scenes[scene],
     Icon = current.icon;
   return (
-    <div
-      className="jdv-loading jdv-loading--extended"
-      role="status"
-      aria-label="Présentation de JDV CRM"
-    >
+    <div className="jdv-loading jdv-loading--extended" role="status" aria-label={t('ld.aria2')}>
       <div className="jdv-loading__grid" />
       <div className="jdv-loading__glow jdv-loading__glow--one" />
       <div className="jdv-loading__glow jdv-loading__glow--two" />
@@ -168,7 +174,7 @@ export default function JdvLoadingScreen() {
           <div className="jdv-loading__name">
             JDV <span>CRM</span>
           </div>
-          <p>Gestion • Prospection • Vente à crédit • Stock • Recouvrement</p>
+          <p>{t('ld.tag2')}</p>
         </div>
         <div className="jdv-founder-strip">
           <div className="jdv-founder-strip__icon">
@@ -176,17 +182,17 @@ export default function JdvLoadingScreen() {
           </div>
           <div>
             <strong>Romaric A. B. ADEDEDJI</strong>
-            <small>Fondateur, concepteur et porteur de la vision JDV CRM</small>
+            <small>{t('ld.fnd')}</small>
           </div>
         </div>
         <div className="jdv-loading__story">
           <div className="jdv-story-copy" key={scene}>
             <div className="jdv-story-eyebrow">
               <Icon size={15} />
-              {current.eyebrow}
+              {t(current.eyebrow)}
             </div>
-            <h1>{current.title}</h1>
-            <p>{current.text}</p>
+            <h1>{t(current.title)}</h1>
+            <p>{t(current.text)}</p>
           </div>
           <SceneVisual type={current.visual} />
         </div>
@@ -200,17 +206,15 @@ export default function JdvLoadingScreen() {
             <span style={{ width: progress + '%' }} />
           </div>
           <div className="jdv-loading__status">
-            <span>Découvrez JDV CRM avant d’entrer dans votre espace</span>
+            <span>{t('ld.disc')}</span>
             <span>{Math.round(progress)}%</span>
           </div>
         </div>
         <div className="mt-5 rounded-2xl border border-white/10 bg-[#08152f]/75 px-4 py-3 text-center backdrop-blur">
           <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#D4AF37]">
-            Personnalisation de votre plateforme
+            {t('ld.pers')}
           </p>
-          <p className="mt-1 text-xs text-slate-300">
-            Contacter directement le concepteur pour adapter JDV CRM à votre secteur.
-          </p>
+          <p className="mt-1 text-xs text-slate-300">{t('ld.contact2')}</p>
           <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-white">
             <a href="tel:+2290166038221" className="hover:text-[#F5E17A]">
               +229 01 66 03 82 21
@@ -229,11 +233,11 @@ export default function JdvLoadingScreen() {
             <a href="mailto:centre.global.jdv@gmail.com" className="hover:text-[#F5E17A]">
               centre.global.jdv@gmail.com
             </a>
-            <span>Cotonou, Bénin</span>
+            <span>{t('ld.city')}</span>
           </div>
         </div>
       </section>
-      <p className="jdv-loading__footer">Votre activité. Votre contrôle. Votre croissance.</p>
+      <p className="jdv-loading__footer">{t('ld.foot')}</p>
     </div>
   );
 }
