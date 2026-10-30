@@ -129,3 +129,13 @@ test('full-app demo audit: agency managers cannot see sub-warehouse mutation con
   assert.ok(subWarehousesPage.includes('Consultation des sous-entrepôts uniquement'));
   assert.ok(subWarehousesPage.includes("current.access_role === 'manager'"));
 });
+
+test('full-app demo audit: agency overview does not request admin-only activity data', async () => {
+  const warehouseDashboard = await readFile(path.join(APP_ROOT, 'entrepot', 'dashboard', 'page.tsx'), 'utf8');
+  const managerGuard = warehouseDashboard.indexOf("if (current.access_role === 'manager')");
+  const adminOnlyRequest = warehouseDashboard.indexOf("jdvcrm_warehouse_prospecteurs_v1");
+  assert.ok(managerGuard >= 0);
+  assert.ok(adminOnlyRequest > managerGuard);
+  assert.ok(warehouseDashboard.includes('setProsp([])'));
+  assert.ok(warehouseDashboard.includes('setReport(null)'));
+});
