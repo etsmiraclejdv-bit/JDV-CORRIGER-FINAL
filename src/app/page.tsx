@@ -17,7 +17,7 @@ import PublicAccountBanner from './components/PublicAccountBanner';
 
 export default function PublicSitePage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="jdv-public-site min-h-screen overflow-x-clip bg-background">
       <PublicNavbar />
       <PublicAccountBanner />
       <PublicExperience />
