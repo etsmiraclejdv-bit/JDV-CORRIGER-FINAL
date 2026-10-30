@@ -48,14 +48,14 @@ import { useLanguage } from '@/lib/i18n/LanguageProvider';
 type Period = '7' | '30' | '90';
 
 const palette = {
-  green: '#147866',
-  greenLight: '#DCEFE8',
-  orange: '#D58A1D',
-  red: '#B94735',
-  blue: '#39759A',
-  ink: '#1D302D',
-  muted: '#71807B',
-  grid: '#E7E4D9',
+  green: 'var(--brand)',
+  greenLight: 'color-mix(in srgb, var(--brand) 14%, transparent)',
+  orange: 'var(--warning)',
+  red: 'var(--danger)',
+  blue: 'var(--info)',
+  ink: 'var(--foreground)',
+  muted: 'var(--muted-foreground)',
+  grid: 'var(--border)',
 };
 
 const money = (value: number, locale: string) =>
