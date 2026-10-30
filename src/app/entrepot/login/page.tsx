@@ -46,7 +46,7 @@ export default function EntrepotLoginPage() {
         <div className="text-center">
           <Warehouse className="mx-auto text-[#34D399]" size={34} />
           <h1 className="mt-3 text-2xl font-bold">
-            JDV <span className="text-[#34D399]">Agence</span>
+            JDV <span className="text-[#34D399]">Entrepôt</span>
           </h1>
           <p className="text-slate-400 text-sm mt-1">{t('we.spaceTitle')}</p>
         </div>
