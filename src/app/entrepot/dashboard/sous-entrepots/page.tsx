@@ -1,3 +1,4 @@
+// CI formatting pass trigger; no runtime behavior change.
 'use client';
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
