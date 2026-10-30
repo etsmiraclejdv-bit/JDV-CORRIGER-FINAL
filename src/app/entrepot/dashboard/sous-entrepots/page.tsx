@@ -191,8 +191,7 @@ export default function SousEntrepotsChefAgencePage() {
           </div>
         </form>
       </Card>
-
-      </Card>)}
+      )}
 
       {current.access_role === 'manager' && (
         <p role="status" className="rounded-xl border border-white/10 bg-[#0F2347] p-3 text-sm text-slate-300">
