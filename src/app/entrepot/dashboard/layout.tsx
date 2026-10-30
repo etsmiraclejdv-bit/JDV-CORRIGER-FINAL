@@ -49,23 +49,45 @@ const NAV: Array<{ href: string; labelKey: TranslationKey; icon: ElementType }> 
 function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const workspaceRoot = pathname.startsWith('/agence/dashboard') ? '/agence/dashboard' : '/entrepot/dashboard';
   const { warehouses, current, setCurrentId, loading, error } = useWarehouse();
   const { t } = useLanguage();
   const [checked, setChecked] = useState(false);
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (!data.user) router.replace('/entrepot/login');
+      if (!data.user) router.replace(workspaceRoot === '/agence/dashboard' ? '/agence/login' : '/entrepot/login');
       else setChecked(true);
     });
-  }, [router]);
+  }, [router, workspaceRoot]);
   async function logout() {
     await supabase.auth.signOut();
-    router.replace('/entrepot/login');
+    router.replace(workspaceRoot === '/agence/dashboard' ? '/agence/login' : '/entrepot/login');
   }
+
+  useEffect(() => {
+    if (current?.access_role === 'manager' && workspaceRoot === '/entrepot/dashboard') {
+      router.replace('/agence/dashboard');
+    }
+  }, [current, router, workspaceRoot]);
+
+  useEffect(() => {
+    if (!current || current.access_role !== 'manager') return;
+    const managerRoutes = [
+      workspaceRoot,
+      `${workspaceRoot}/stock`,
+      `${workspaceRoot}/sous-entrepots`,
+    ];
+    const allowed = managerRoutes.some((route) =>
+      route === workspaceRoot
+        ? pathname === route
+        : pathname === route || pathname.startsWith(`${route}/`)
+    );
+    if (!allowed) router.replace(workspaceRoot);
+  }, [current, pathname, router, workspaceRoot]);
   if (!checked || loading)
     return (
       <div className="flex h-screen items-center justify-center bg-[#0B1B3D] text-slate-300 text-sm">
-        Chargement de l&apos;espace agence…
+        Chargement de l&apos;espace {workspaceRoot === '/agence/dashboard' ? 'agence' : 'entrepôt'}…
       </div>
     );
   if (error || !current)
@@ -82,13 +104,20 @@ function Shell({ children }: { children: React.ReactNode }) {
       </div>
     );
   const isAdmin = current.access_role === 'admin';
+  // Un responsable d'agence ne voit et n'ouvre que le tableau de bord,
+  // le stock et les sous-entrepôts. Les opérations avancées restent réservées à l'admin.
+  const visibleNav = isAdmin
+    ? NAV
+    : NAV.filter(({ href }) =>
+        ['/entrepot/dashboard', '/entrepot/dashboard/stock', '/entrepot/dashboard/sous-entrepots'].includes(href)
+      );
   return (
     <div className="jdv-workspace-shell flex h-screen bg-[#0B1B3D] text-white overflow-hidden">
       <aside className="hidden md:flex w-64 flex-shrink-0 flex-col bg-[#08152f] border-r border-[#34D399]/10">
         <div className="h-16 flex items-center gap-2 px-4 border-b border-[#34D399]/10">
           <AppLogo size={26} />
           <span className="font-bold text-sm">
-            JDV <span className="text-[#34D399]">{t('agencyBrand')}</span>
+            JDV <span className="text-[#34D399]">{t(workspaceRoot === '/agence/dashboard' ? 'agencyBrand' : 'warehouse')}</span>
           </span>
         </div>
         <div className="p-3 border-b border-[#34D399]/10">
@@ -113,13 +142,13 @@ function Shell({ children }: { children: React.ReactNode }) {
           )}
         </div>
         <nav className="flex-1 overflow-y-auto p-2">
-          {NAV.map(({ href, labelKey, icon: Icon }) => {
+          {visibleNav.map(({ href, labelKey, icon: Icon }) => {
             const active =
-              href === '/entrepot/dashboard' ? pathname === href : pathname.startsWith(href);
+              href === '/entrepot/dashboard' ? pathname === workspaceRoot : pathname.startsWith(href.replace('/entrepot/dashboard', workspaceRoot));
             return (
               <Link
                 key={href}
-                href={href}
+                href={href.replace('/entrepot/dashboard', workspaceRoot)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${active ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'}`}
               >
                 <Icon size={18} />
@@ -189,9 +218,9 @@ function Shell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
       </div>
       <MobileTabBar
-        rootHref="/entrepot/dashboard"
-        items={NAV.map(({ href, labelKey, icon: Icon }) => ({
-          href,
+        rootHref={workspaceRoot}
+        items={visibleNav.map(({ href, labelKey, icon: Icon }) => ({
+          href: href.replace('/entrepot/dashboard', workspaceRoot),
           label: t(labelKey),
           icon: <Icon size={20} />,
         }))}
@@ -201,8 +230,10 @@ function Shell({ children }: { children: React.ReactNode }) {
 }
 
 export default function EntrepotDashboardLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const requiredRole = pathname.startsWith('/agence/dashboard') ? 'manager' : undefined;
   return (
-    <WarehouseProvider>
+    <WarehouseProvider requiredRole={requiredRole}>
       <Shell>{children}</Shell>
     </WarehouseProvider>
   );

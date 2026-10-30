@@ -46,6 +46,7 @@ import type { TranslationKey } from '@/lib/i18n/messages';
 import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 import OrganizationAmbience from '@/components/OrganizationAmbience';
 import MobileTabBar from '@/components/MobileTabBar';
+import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
 
 const navItems: {
   id: string;
@@ -371,6 +372,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
             />
           )}
           <div className="relative z-10 flex-1 min-w-0 flex flex-col overflow-hidden">
+            <ConcepteurBranchBar />
             <div
               data-jdv-design="topbar"
               className="h-16 flex items-center justify-between px-3 sm:px-6 border-b border-[#34D399]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0"

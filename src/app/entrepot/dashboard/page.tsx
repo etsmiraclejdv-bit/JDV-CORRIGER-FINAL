@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ArrowUpRight, Search, Store, Truck, ScanBarcode } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
@@ -32,6 +33,8 @@ type Report = {
 
 export default function EntrepotOverviewPage() {
   const { current } = useWarehouse();
+  const pathname = usePathname();
+  const workspaceRoot = pathname.startsWith('/agence/dashboard') ? '/agence/dashboard' : '/entrepot/dashboard';
   const { t } = useLanguage();
   const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
     Object.entries(vars).reduce(
@@ -49,16 +52,25 @@ export default function EntrepotOverviewPage() {
     if (!current) return;
     setLoading(true);
     const id = current.warehouse_id;
-    const [s, p, r] = await Promise.all([
-      supabase.rpc('jdvcrm_warehouse_stock_v1', { p_warehouse_id: id }),
+    const stockResult = await supabase.rpc('jdvcrm_warehouse_stock_v1', { p_warehouse_id: id });
+    if (current.access_role === 'manager') {
+      if (stockResult.error) fail(stockResult.error.message);
+      setStock((stockResult.data ?? []) as StockRow[]);
+      setProsp([]);
+      setReport(null);
+      setLoading(false);
+      return;
+    }
+
+    const [prospectorsResult, reportResult] = await Promise.all([
       supabase.rpc('jdvcrm_warehouse_prospecteurs_v1', { p_warehouse_id: id }),
       supabase.rpc('jdvcrm_warehouse_day_report_v1', { p_warehouse_id: id }),
     ]);
-    const err = s.error || p.error || r.error;
+    const err = stockResult.error || prospectorsResult.error || reportResult.error;
     if (err) fail(err.message);
-    setStock((s.data ?? []) as StockRow[]);
-    setProsp((p.data ?? []) as Prosp[]);
-    setReport((r.data ?? null) as Report | null);
+    setStock((stockResult.data ?? []) as StockRow[]);
+    setProsp((prospectorsResult.data ?? []) as Prosp[]);
+    setReport((reportResult.data ?? null) as Report | null);
     setLoading(false);
   }, [current, fail]);
 
@@ -98,10 +110,10 @@ export default function EntrepotOverviewPage() {
             label: t('traceability'),
             icon: Search,
           },
-        ].map(({ href, label, icon: Icon }) => (
+        ].filter(({ href }) => current?.access_role !== 'manager' || href === '/entrepot/dashboard/sous-entrepots').map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
-            href={href}
+            href={href.replace("/entrepot/dashboard", workspaceRoot)}
             className="group rounded-2xl border border-[#294365] bg-[#08152f] p-4 transition hover:-translate-y-0.5 hover:border-[#34D399]/50 hover:bg-[#10264a]"
           >
             <div className="flex items-center justify-between">
@@ -123,23 +135,17 @@ export default function EntrepotOverviewPage() {
         <>
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             <Stat label={t('we.sInStock')} value={num(inStock)} />
-            <Stat
-              label={t('we.sLowAlerts')}
-              value={num(low.length)}
-              tone={low.length ? 'warn' : 'ok'}
-            />
-            <Stat label={t('we.sPros')} value={num(prosp.length)} />
-            <Stat label={t('we.sLateLots')} value={num(overdue)} tone={overdue ? 'warn' : 'ok'} />
-            <Stat label={t('we.sEntries')} value={`+${num(entries)}`} />
-            <Stat label={t('we.sExits')} value={`−${num(exits)}`} />
-            <Stat label={t('we.sSales')} value={money(report?.sales_total?.amount)} />
-            <Stat
-              label={t('we.sCalls')}
-              value={num(report?.tickets?.still_open)}
-              tone={report?.tickets?.still_open ? 'warn' : 'ok'}
-            />
+            <Stat label={t('we.sLowAlerts')} value={num(low.length)} tone={low.length ? 'warn' : 'ok'} />
+            {current?.access_role !== "manager" && <>
+              <Stat label={t('we.sPros')} value={num(prosp.length)} />
+              <Stat label={t('we.sLateLots')} value={num(overdue)} tone={overdue ? 'warn' : 'ok'} />
+              <Stat label={t('we.sEntries')} value={'+' + num(entries)} />
+              <Stat label={t('we.sExits')} value={'−' + num(exits)} />
+              <Stat label={t('we.sSales')} value={money(report?.sales_total?.amount)} />
+              <Stat label={t('we.sCalls')} value={num(report?.tickets?.still_open)} tone={report?.tickets?.still_open ? 'warn' : 'ok'} />
+            </>}
           </div>
-          <div className="grid gap-6 lg:grid-cols-2">
+          {current?.access_role !== "manager" && <div className="grid gap-6 lg:grid-cols-2">
             <Card title={t('we.restock')}>
               {low.length === 0 ? (
                 <p className="text-sm text-slate-400">{t('we.noneBelow')}</p>
@@ -159,7 +165,7 @@ export default function EntrepotOverviewPage() {
                 </ul>
               )}
               <Link
-                href="/entrepot/dashboard/approvisionnement"
+                href={`${workspaceRoot}/approvisionnement`}
                 className="inline-block mt-4 text-sm text-[#34D399] underline"
               >
                 {t('we.askSupply')}
@@ -189,13 +195,13 @@ export default function EntrepotOverviewPage() {
                 </ul>
               )}
               <Link
-                href="/entrepot/dashboard/prospecteurs"
+                href={`${workspaceRoot}/prospecteurs`}
                 className="inline-block mt-4 text-sm text-[#34D399] underline"
               >
                 {t('we.managePros')}
               </Link>
             </Card>
-          </div>
+          </div>}
         </>
       )}
     </div>
