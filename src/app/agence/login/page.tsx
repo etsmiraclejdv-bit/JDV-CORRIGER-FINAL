@@ -46,7 +46,7 @@ export default function AgencyLoginPage() {
     if (!hasAgencyAccess) {
       await supabase.auth.signOut();
       setLoading(false);
-      setError("Ce compte ne possède pas les droits nécessaires pour accéder à cet espace.");
+      setError('Ce compte ne possède pas les droits nécessaires pour accéder à cet espace.');
       return;
     }
 
