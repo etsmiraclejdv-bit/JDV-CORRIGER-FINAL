@@ -31,7 +31,7 @@ export default function EntrepotLoginPage() {
     if (rpcError || !data || (data as unknown[]).length === 0) {
       await supabase.auth.signOut();
       setLoading(false);
-      setError(t('we.noAgency'));
+      setError("Aucun entrepôt actif n'est associé à ce compte. Contactez votre administrateur.");
       return;
     }
     router.replace('/entrepot/dashboard');
@@ -44,9 +44,9 @@ export default function EntrepotLoginPage() {
         className="w-full max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 space-y-5"
       >
         <div className="text-center">
-          <Warehouse className="mx-auto text-[#D4AF37]" size={34} />
+          <Warehouse className="mx-auto text-[#34D399]" size={34} />
           <h1 className="mt-3 text-2xl font-bold">
-            JDV <span className="text-[#D4AF37]">Agence</span>
+            JDV <span className="text-[#34D399]">{t('warehouse')}</span>
           </h1>
           <p className="text-slate-400 text-sm mt-1">{t('we.spaceTitle')}</p>
         </div>
@@ -79,7 +79,7 @@ export default function EntrepotLoginPage() {
         )}
         <button
           disabled={loading}
-          className="w-full rounded-lg bg-[#D4AF37] text-[#08152f] font-semibold py-2.5 disabled:opacity-50"
+          className="w-full rounded-lg bg-[#34D399] text-[#08152f] font-semibold py-2.5 disabled:opacity-50"
         >
           {loading ? t('auth.signingIn') : t('auth.signIn')}
         </button>
