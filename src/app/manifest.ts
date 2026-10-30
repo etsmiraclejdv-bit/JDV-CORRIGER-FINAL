@@ -19,7 +19,7 @@ export default function manifest(): MetadataRoute.Manifest {
     shortcuts: [
       { name: 'Espace Prospecteur', url: '/terrain/login' },
       { name: 'Espace Entreprise', url: '/business/login' },
-      { name: 'Espace Agence', url: '/entrepot/login' },
+      { name: 'Espace Agence', url: '/agence/login' },
     ],
   };
 }
