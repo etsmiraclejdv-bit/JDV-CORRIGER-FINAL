@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { usePathname } from 'next/navigation';
 import { Globe, Check } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
@@ -13,7 +12,6 @@ export default function LanguageSwitcher({
   variant?: 'floating' | 'inline';
 }) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
   const { locale, setLocale, locales, t } = useLanguage();
 
   async function handleSelect(lang: typeof locale) {
@@ -33,8 +31,6 @@ export default function LanguageSwitcher({
       // Local preference remains available even when the profile cannot be updated.
     }
   }
-
-  if (variant === 'floating' && pathname === '/') return null;
 
   const current = locales.find((item) => item.code === locale);
   return (

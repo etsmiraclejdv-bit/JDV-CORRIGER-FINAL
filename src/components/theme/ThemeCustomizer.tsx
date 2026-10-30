@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
 import type { DesignConfig, DesignElementStyle } from '@/features/design-studio/types';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import type { TerrainKey } from '@/lib/i18n/terrain';
 
 export type ThemeChoice = 'designer' | 'light' | 'dark';
@@ -399,6 +400,11 @@ export default function ThemeCustomizer() {
             >
               <X size={18} />
             </button>
+          </div>
+
+          <div className="mb-5 rounded-xl border border-border bg-muted/40 p-3">
+            <p className={section}>{t('languageSettings')}</p>
+            <LanguageSwitcher variant="inline" />
           </div>
 
           <p className={section}>{t('th.theme')}</p>

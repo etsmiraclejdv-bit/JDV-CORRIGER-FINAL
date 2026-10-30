@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Menu, X, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function PublicNavbar() {
@@ -180,7 +179,7 @@ export default function PublicNavbar() {
         scrolled ? 'nav-glass shadow-card' : 'bg-transparent'
       }`}
     >
-      <div className="max-w-screen-xl px-6 lg:px-10 h-16 flex items-center justify-between mx-0 mt-[51px] pl-6 rounded-t-[15px] border-0">
+      <div className="mx-auto flex h-16 max-w-screen-xl items-center justify-between rounded-t-[15px] border-0 px-6 lg:px-10">
         <div className="flex items-center gap-3">
           <Image
             src="/assets/images/image_a5395bef-1789678648033.jpg"
@@ -209,7 +208,6 @@ export default function PublicNavbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <LanguageSwitcher variant="inline" />
           <Link
             href="/business/login"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 py-2"
@@ -228,7 +226,7 @@ export default function PublicNavbar() {
         <button
           className="md:hidden p-2 text-muted-foreground hover:text-foreground"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label={t('languageSettings')}
+          aria-label={mobileOpen ? t('closeMenu') : t('openMenu')}
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -247,9 +245,6 @@ export default function PublicNavbar() {
                 {link?.label}
               </a>
             ))}
-            <div className="pt-1">
-              <LanguageSwitcher variant="inline" />
-            </div>
             <hr className="divider-gold" />
             <Link
               href="/business/login"
