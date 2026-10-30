@@ -65,7 +65,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   if (!checked || loading)
     return (
       <div className="flex h-screen items-center justify-center bg-[#0B1B3D] text-slate-300 text-sm">
-        Chargement de l&apos;espace entrepôt…
+        Chargement de l&apos;espace agence…
       </div>
     );
   if (error || !current)
@@ -74,7 +74,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <p className="max-w-md">
           {error
             ? `Erreur : ${error}`
-            : "Aucun entrepôt actif n'est rattaché à ce compte. Contactez votre administrateur."}
+            : "Aucune agence active n'est rattachée à ce compte. Contactez votre administrateur."}
         </p>
         <button onClick={logout} className="rounded-lg border border-white/10 px-4 py-2 text-sm">
           Se déconnecter
@@ -88,7 +88,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="h-16 flex items-center gap-2 px-4 border-b border-[#34D399]/10">
           <AppLogo size={26} />
           <span className="font-bold text-sm">
-            JDV <span className="text-[#34D399]">{t('warehouse')}</span>
+            JDV <span className="text-[#34D399]">{t('agencyBrand')}</span>
           </span>
         </div>
         <div className="p-3 border-b border-[#34D399]/10">
@@ -156,7 +156,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             ) : null}
           </h1>
           <span className="hidden sm:inline text-xs text-slate-400">
-            {isAdmin ? t('adminAccess') : t('warehouse')}
+            {isAdmin ? t('adminAccess') : t('agencyManager')}
           </span>
           <button
             onClick={logout}
