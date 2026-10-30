@@ -114,7 +114,6 @@ export default function EntrepotOverviewPage() {
               />
             </div>
             <h2 className="mt-3 text-sm font-semibold text-white">{label}</h2>
-            
           </Link>
         ))}
       </section>
