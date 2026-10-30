@@ -29,7 +29,10 @@ export default function PublicAccountBanner() {
           >
             <Store size={14} /> {t('agencySpace')}
           </a>
-          <a href="/entrepot/login" className="flex items-center gap-2 rounded-xl border border-violet-400/30 bg-violet-400/10 px-4 py-2 font-medium text-violet-300 transition-all hover:bg-violet-400/20">
+          <a
+            href="/entrepot/login"
+            className="flex items-center gap-2 rounded-xl border border-violet-400/30 bg-violet-400/10 px-4 py-2 font-medium text-violet-300 transition-all hover:bg-violet-400/20"
+          >
             <Warehouse size={14} /> {t('warehouse')}
           </a>
         </div>
