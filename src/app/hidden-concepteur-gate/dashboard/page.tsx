@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Activity, AlertTriangle, ArrowDownRight, ArrowRight, ArrowUpRight,
+  Activity, ArrowDownRight, ArrowRight, ArrowUpRight,
   Building2, CheckCircle2, CreditCard, Gauge, Layers3, Palette,
   RefreshCw, Search, ShieldCheck, Users, Warehouse, Wrench,
 } from 'lucide-react';
