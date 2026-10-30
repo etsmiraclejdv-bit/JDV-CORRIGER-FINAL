@@ -35,17 +35,17 @@ export default function MobileTabBar({ items, rootHref, primaryCount = 4 }: Prop
       {open && (
         <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setOpen(false)}>
           <div
-            className="absolute inset-x-0 bottom-0 max-h-[75vh] overflow-y-auto rounded-t-2xl border-t border-[#D4AF37]/20 bg-[#08152f] p-3 pb-[calc(env(safe-area-inset-bottom)+4.5rem)]"
+            className="absolute inset-x-0 bottom-0 max-h-[75vh] overflow-y-auto rounded-t-2xl border-t border-[#E5E0D3] bg-[#FFFEFA] p-3 pb-[calc(env(safe-area-inset-bottom)+4.5rem)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-2 flex items-center justify-between px-2">
-              <p className="text-xs font-semibold uppercase tracking-widest text-[#718096]">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[#87938C]">
                 {t('menu')}
               </p>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-lg p-2 text-[#A0AEC0]"
+                className="rounded-lg p-2 text-[#65766F]"
                 aria-label={`${t('close')} ${t('menu')}`}
               >
                 <X size={18} />
@@ -56,7 +56,7 @@ export default function MobileTabBar({ items, rootHref, primaryCount = 4 }: Prop
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium ${isActive(item.href) ? 'bg-[#D4AF37]/15 text-[#D4AF37]' : 'text-[#A0AEC0]'}`}
+                className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium ${isActive(item.href) ? 'bg-[#E5F2EC] text-[#147866]' : 'text-[#65766F]'}`}
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -66,14 +66,14 @@ export default function MobileTabBar({ items, rootHref, primaryCount = 4 }: Prop
         </div>
       )}
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 flex border-t border-[#D4AF37]/20 bg-[#08152f] pb-[env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-50 flex border-t border-[#E5E0D3] bg-[#FFFEFA] pb-[env(safe-area-inset-bottom)]"
         aria-label={t('mainNavigation')}
       >
         {primary.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium ${isActive(item.href) ? 'text-[#D4AF37]' : 'text-[#A0AEC0]'}`}
+            className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium ${isActive(item.href) ? 'text-[#D4AF37]' : 'text-[#65766F]'}`}
           >
             {item.icon}
             <span className="w-full truncate text-center">{item.label}</span>
@@ -82,7 +82,7 @@ export default function MobileTabBar({ items, rootHref, primaryCount = 4 }: Prop
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium ${open ? 'text-[#D4AF37]' : 'text-[#A0AEC0]'}`}
+          className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium ${open ? 'text-[#D4AF37]' : 'text-[#65766F]'}`}
         >
           <Menu size={20} />
           <span>{t('more')}</span>
