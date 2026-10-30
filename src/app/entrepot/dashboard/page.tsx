@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { ArrowUpRight, Search, Store, Truck, ScanBarcode } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
 import { Banner, Card, PageTitle, Stat, useBanner, useFormat } from '@/components/entrepot/common';
@@ -75,6 +76,52 @@ export default function EntrepotOverviewPage() {
     <div className="p-6 space-y-6 text-white">
       <PageTitle title={t('dashboard')} subtitle={t('we.dashSub')} />
       <Banner state={banner} />
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          {
+            href: '/entrepot/dashboard/sous-entrepots',
+            label: 'Sous-entrepôts',
+            description: 'Gérer les points de stockage rattachés à cette agence',
+            icon: Store,
+          },
+          {
+            href: '/entrepot/dashboard/approvisionnement',
+            label: 'Approvisionnement',
+            description: 'Consulter et traiter les demandes de stock',
+            icon: Truck,
+          },
+          {
+            href: '/entrepot/dashboard/expeditions-prospecteurs',
+            label: 'Expéditions',
+            description: 'Préparer les remises de marchandises aux prospecteurs',
+            icon: ScanBarcode,
+          },
+          {
+            href: '/entrepot/dashboard/tracabilite',
+            label: 'Traçabilité',
+            description: 'Retrouver les mouvements et les codes produits',
+            icon: Search,
+          },
+        ].map(({ href, label, description, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className="group rounded-2xl border border-[#294365] bg-[#08152f] p-4 transition hover:-translate-y-0.5 hover:border-[#34D399]/50 hover:bg-[#10264a]"
+          >
+            <div className="flex items-center justify-between">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#34D399]/10 text-[#34D399]">
+                <Icon size={19} />
+              </span>
+              <ArrowUpRight
+                size={16}
+                className="text-slate-500 transition group-hover:text-[#34D399]"
+              />
+            </div>
+            <h2 className="mt-3 text-sm font-semibold text-white">{label}</h2>
+            <p className="mt-1 text-xs leading-5 text-slate-400">{description}</p>
+          </Link>
+        ))}
+      </section>
       {loading ? (
         <p className="text-slate-400 text-sm">{t('we.loading')}</p>
       ) : (
