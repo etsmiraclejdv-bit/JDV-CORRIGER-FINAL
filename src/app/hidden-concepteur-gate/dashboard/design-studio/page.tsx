@@ -110,10 +110,7 @@ export default function DesignStudioPage() {
     const result = await createDesignVersion({ scope: 'platform', config, status });
     setSaving(false);
     if (result.error) {
-      toast.error(
-        result.error.message ||
-          t('cg.dsSaveErr')
-      );
+      toast.error(result.error.message || t('cg.dsSaveErr'));
       return;
     }
     toast.success(status === 'published' ? t('cg.dsPubOk') : t('cg.dsDraftOk'));
