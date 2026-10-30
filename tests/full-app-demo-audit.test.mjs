@@ -80,16 +80,16 @@ test('full-app demo audit: the agency has an independent public login entry', as
     readFile(path.join(APP_ROOT, 'components', 'PublicFooter.tsx'), 'utf8'),
     readFile(path.join(APP_ROOT, 'manifest.ts'), 'utf8'),
   ]);
-  assert.match(agencyLogin, /@\\/app\\/entrepot\\/login\\/page/);
-  assert.match(accountBanner, /href="\\/agence\\/login"/);
-  assert.match(footer, /href: '\\/agence\\/login'/);
-  assert.match(manifest, /url: '\\/agence\\/login'/);
+  assert.ok(agencyLogin.includes('@/app/entrepot/login/page'));
+  assert.ok(accountBanner.includes('href="/agence/login"'));
+  assert.ok(footer.includes("href: '/agence/login'"));
+  assert.ok(manifest.includes("url: '/agence/login'"));
 });
 
 test('full-app demo audit: agency managers are limited to authorized workspace routes', async () => {
   const layout = await readFile(path.join(APP_ROOT, 'entrepot', 'dashboard', 'layout.tsx'), 'utf8');
-  assert.match(layout, /current\\.access_role !== 'manager'/);
-  assert.match(layout, /'\\/entrepot\\/dashboard\\/stock'/);
-  assert.match(layout, /'\\/entrepot\\/dashboard\\/sous-entrepots'/);
-  assert.match(layout, /const visibleNav = isAdmin/);
+  assert.ok(layout.includes("current.access_role !== 'manager'"));
+  assert.ok(layout.includes("'/entrepot/dashboard/stock'"));
+  assert.ok(layout.includes("'/entrepot/dashboard/sous-entrepots'"));
+  assert.ok(layout.includes('const visibleNav = isAdmin'));
 });
