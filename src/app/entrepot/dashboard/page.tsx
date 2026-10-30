@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ArrowUpRight, Search, Store, Truck, ScanBarcode } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { useWarehouse } from '@/components/entrepot/WarehouseContext';
@@ -32,6 +33,8 @@ type Report = {
 
 export default function EntrepotOverviewPage() {
   const { current } = useWarehouse();
+  const pathname = usePathname();
+  const workspaceRoot = pathname.startsWith('/agence/dashboard') ? '/agence/dashboard' : '/entrepot/dashboard';
   const { t } = useLanguage();
   const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
     Object.entries(vars).reduce(
@@ -98,10 +101,10 @@ export default function EntrepotOverviewPage() {
             label: t('traceability'),
             icon: Search,
           },
-        ].map(({ href, label, icon: Icon }) => (
+        ].filter(({ href }) => current?.access_role !== 'manager' || href === '/entrepot/dashboard/sous-entrepots').map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
-            href={href}
+            href={href.replace("/entrepot/dashboard", workspaceRoot)}
             className="group rounded-2xl border border-[#294365] bg-[#08152f] p-4 transition hover:-translate-y-0.5 hover:border-[#34D399]/50 hover:bg-[#10264a]"
           >
             <div className="flex items-center justify-between">
@@ -159,7 +162,7 @@ export default function EntrepotOverviewPage() {
                 </ul>
               )}
               <Link
-                href="/entrepot/dashboard/approvisionnement"
+                href={`${workspaceRoot}/approvisionnement`}
                 className="inline-block mt-4 text-sm text-[#34D399] underline"
               >
                 {t('we.askSupply')}
@@ -189,7 +192,7 @@ export default function EntrepotOverviewPage() {
                 </ul>
               )}
               <Link
-                href="/entrepot/dashboard/prospecteurs"
+                href={`${workspaceRoot}/prospecteurs`}
                 className="inline-block mt-4 text-sm text-[#34D399] underline"
               >
                 {t('we.managePros')}
