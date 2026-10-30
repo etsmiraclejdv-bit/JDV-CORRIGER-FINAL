@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const root = resolve(new URL('..', import.meta.url).pathname, '..');
+const root = resolve(new URL('..', import.meta.url).pathname);
 const pack = JSON.parse(await readFile(resolve(root, 'docs/demo/scenarios.json'), 'utf8'));
 
 test('A-Z demo journey: all fixtures are synthetic and cannot target production', () => {
