@@ -254,15 +254,6 @@ export default function ThemeCustomizer() {
     };
   }, []);
 
-  // Mode automatique : suivre l'appareil
-  useEffect(() => {
-    if (prefs.theme !== 'system') return;
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => apply(prefs, designConfig);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, [prefs, designConfig]);
-
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
