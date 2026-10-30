@@ -139,3 +139,10 @@ test('full-app demo audit: agency overview does not request admin-only activity 
   assert.ok(warehouseDashboard.includes('setProsp([])'));
   assert.ok(warehouseDashboard.includes('setReport(null)'));
 });
+
+test('full-app demo audit: both designer agency shortcuts open the dedicated agency workspace', async () => {
+  const branchBar = await readFile(path.join(ROOT, 'src', 'components', 'ConcepteurBranchBar.tsx'), 'utf8');
+  const designerGate = await readFile(path.join(APP_ROOT, 'hidden-concepteur-gate', 'page.tsx'), 'utf8');
+  assert.match(branchBar, /code: 'agence'[\\s\\S]*?href: '\/agence\/dashboard'/);
+  assert.match(designerGate, /branch_code: 'agence'[\\s\\S]*?route: '\/agence\/dashboard'/);
+});
