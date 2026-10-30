@@ -202,7 +202,7 @@ export default function SousEntrepotsChefAgencePage() {
               <article key={s.id} className="rounded-xl border border-white/10 bg-[#0F2347] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-xs font-semibold uppercase tracking-wider text-[#D4AF37]">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-[#34D399]">
                       {s.code}
                     </div>
                     <h3 className="mt-1 font-semibold">{s.name}</h3>

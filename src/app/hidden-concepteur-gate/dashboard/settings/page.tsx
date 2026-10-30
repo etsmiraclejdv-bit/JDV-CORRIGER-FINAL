@@ -97,7 +97,7 @@ export default function SuperAdminSettingsPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">{t('cg.stTitle')}</h1>
-        <p className="text-sm text-[#A0AEC0] mt-1">{t('cg.stSub')}</p>
+        <p className="text-sm text-[#A1A1AA] mt-1">{t('cg.stSub')}</p>
       </div>
 
       <div className="flex gap-1 bg-[#0A1628] rounded-xl p-1 w-fit">
@@ -107,8 +107,8 @@ export default function SuperAdminSettingsPage() {
             onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               activeTab === tab.id
-                ? 'bg-[#D4AF37] text-[#0B1B3D]'
-                : 'text-[#A0AEC0] hover:text-white'
+                ? 'bg-[#8B5CF6] text-[#0A0D16]'
+                : 'text-[#A1A1AA] hover:text-white'
             }`}
           >
             {tab.icon}
@@ -118,18 +118,18 @@ export default function SuperAdminSettingsPage() {
       </div>
 
       {activeTab === 'plans' && (
-        <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
+        <div className="bg-[#0F2347] border border-[#8B5CF6]/20 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-5">{t('cg.stTabPlans')}</h2>
           {loadingPlans ? (
-            <p className="text-sm text-[#A0AEC0]">{t('cg.stLoading')}</p>
+            <p className="text-sm text-[#A1A1AA]">{t('cg.stLoading')}</p>
           ) : plans.length === 0 ? (
-            <p className="text-sm text-[#A0AEC0]">{t('cg.stNoPlan')}</p>
+            <p className="text-sm text-[#A1A1AA]">{t('cg.stNoPlan')}</p>
           ) : (
             <div className="space-y-3">
               {plans.map((plan) => (
                 <div
                   key={plan.id}
-                  className="flex items-center justify-between p-4 bg-[#0A1628] rounded-xl border border-[#D4AF37]/10"
+                  className="flex items-center justify-between p-4 bg-[#0A1628] rounded-xl border border-[#8B5CF6]/10"
                 >
                   <div>
                     <p className="text-sm font-semibold text-white">
@@ -138,17 +138,17 @@ export default function SuperAdminSettingsPage() {
                         <span className="ml-2 text-xs text-red-400">{t('cg.stOff')}</span>
                       )}
                     </p>
-                    <p className="text-xs text-[#718096]">
+                    <p className="text-xs text-[#71717A]">
                       {t('cg.stDays')
                         .replace('{n}', String(plan.duration_days))
                         .replace('{code}', plan.code)}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-[#D4AF37] font-bold text-right">
+                    <span className="text-[#8B5CF6] font-bold text-right">
                       {plan.price} {plan.currency}
                       {plan.billing_amount_xof > 0 && (
-                        <span className="block text-xs font-normal text-[#A0AEC0]">
+                        <span className="block text-xs font-normal text-[#A1A1AA]">
                           {t('cg.stBilled').replace(
                             '{amount}',
                             new Intl.NumberFormat(locale).format(plan.billing_amount_xof)
@@ -159,7 +159,7 @@ export default function SuperAdminSettingsPage() {
                     <button
                       type="button"
                       onClick={() => openEdit(plan)}
-                      className="text-xs px-3 py-1.5 rounded-lg border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white transition-colors"
+                      className="text-xs px-3 py-1.5 rounded-lg border border-[#8B5CF6]/20 text-[#A1A1AA] hover:text-white transition-colors"
                     >
                       {t('cg.stEdit')}
                     </button>
@@ -172,32 +172,32 @@ export default function SuperAdminSettingsPage() {
       )}
 
       {activeTab === 'admins' && (
-        <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
+        <div className="bg-[#0F2347] border border-[#8B5CF6]/20 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-5">{t('cg.stMeTitle')}</h2>
           {me ? (
-            <div className="flex items-center justify-between p-4 bg-[#0A1628] rounded-xl border border-[#D4AF37]/10">
+            <div className="flex items-center justify-between p-4 bg-[#0A1628] rounded-xl border border-[#8B5CF6]/10">
               <div>
                 <p className="text-sm font-medium text-white">{me.email}</p>
-                <p className="text-xs text-[#718096]">{t('cg.stMeRights')}</p>
+                <p className="text-xs text-[#71717A]">{t('cg.stMeRights')}</p>
               </div>
               <span className="text-xs px-2.5 py-1 rounded-lg bg-green-500/20 text-green-400 border border-green-500/30">
                 {me.status}
               </span>
             </div>
           ) : (
-            <p className="text-sm text-[#A0AEC0]">{t('cg.stLoading')}</p>
+            <p className="text-sm text-[#A1A1AA]">{t('cg.stLoading')}</p>
           )}
-          <p className="text-xs text-[#718096] mt-4">
-            {t('cg.stMeNote1')} <code className="text-[#D4AF37]">super_admins</code>.{' '}
+          <p className="text-xs text-[#71717A] mt-4">
+            {t('cg.stMeNote1')} <code className="text-[#8B5CF6]">super_admins</code>.{' '}
             {t('cg.stMeNote2')}
           </p>
         </div>
       )}
 
       {activeTab === 'fedapay' && (
-        <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-6">
+        <div className="bg-[#0F2347] border border-[#8B5CF6]/20 rounded-2xl p-6">
           <h2 className="text-lg font-semibold text-white mb-2">{t('cg.stFeTitle')}</h2>
-          <p className="text-sm text-[#A0AEC0] mb-5">{t('cg.stFeSub')}</p>
+          <p className="text-sm text-[#A1A1AA] mb-5">{t('cg.stFeSub')}</p>
           <div className="space-y-4 max-w-lg">
             <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
               <p className="text-xs text-yellow-400">
@@ -206,10 +206,10 @@ export default function SuperAdminSettingsPage() {
                 {t('cg.stFeKeys2')}
               </p>
             </div>
-            <div className="flex items-center gap-2 p-3 bg-[#0A1628] rounded-xl border border-[#D4AF37]/10">
+            <div className="flex items-center gap-2 p-3 bg-[#0A1628] rounded-xl border border-[#8B5CF6]/10">
               <div className="w-2 h-2 rounded-full bg-green-400" />
-              <span className="text-sm text-[#A0AEC0]">
-                {t('cg.stFeRoute')} <code className="text-[#D4AF37]">/api/fedapay-webhook</code>
+              <span className="text-sm text-[#A1A1AA]">
+                {t('cg.stFeRoute')} <code className="text-[#8B5CF6]">/api/fedapay-webhook</code>
               </span>
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function SuperAdminSettingsPage() {
       >
         <form onSubmit={handleSavePlan} className="space-y-4 p-1">
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+            <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5">
               {t('cg.stPrice').replace('{cur}', editPlan?.currency ?? '')}
             </label>
             <input
@@ -232,11 +232,11 @@ export default function SuperAdminSettingsPage() {
               min={0}
               value={price}
               onChange={(e) => setPrice(Math.max(0, Number(e.target.value) || 0))}
-              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
+              className="w-full bg-[#0A1628] border border-[#8B5CF6]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#8B5CF6]/60"
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#A0AEC0] mb-1.5">
+            <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5">
               {t('cg.stXof')}
             </label>
             <input
@@ -244,23 +244,23 @@ export default function SuperAdminSettingsPage() {
               min={0}
               value={xof}
               onChange={(e) => setXof(Math.max(0, Number(e.target.value) || 0))}
-              className="w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#D4AF37]/60"
+              className="w-full bg-[#0A1628] border border-[#8B5CF6]/20 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#8B5CF6]/60"
             />
           </div>
-          <label className="flex items-center justify-between text-sm text-[#A0AEC0]">
+          <label className="flex items-center justify-between text-sm text-[#A1A1AA]">
             {t('cg.stOffered')}
             <input
               type="checkbox"
               checked={active}
               onChange={(e) => setActive(e.target.checked)}
-              className="w-4 h-4 accent-[#D4AF37]"
+              className="w-4 h-4 accent-[#8B5CF6]"
             />
           </label>
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={() => setEditPlan(null)}
-              className="flex-1 py-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] text-sm hover:text-white transition-colors"
+              className="flex-1 py-2.5 rounded-xl border border-[#8B5CF6]/20 text-[#A1A1AA] text-sm hover:text-white transition-colors"
             >
               {t('cg.cancel')}
             </button>

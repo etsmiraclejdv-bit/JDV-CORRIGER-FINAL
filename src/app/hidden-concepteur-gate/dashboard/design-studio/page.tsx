@@ -110,17 +110,14 @@ export default function DesignStudioPage() {
     const result = await createDesignVersion({ scope: 'platform', config, status });
     setSaving(false);
     if (result.error) {
-      toast.error(
-        result.error.message ||
-          t('cg.dsSaveErr')
-      );
+      toast.error(result.error.message || t('cg.dsSaveErr'));
       return;
     }
     toast.success(status === 'published' ? t('cg.dsPubOk') : t('cg.dsDraftOk'));
     await reload();
   }
 
-  if (loading) return <div className="p-8 text-sm text-[#A0AEC0]">{t('cg.dsCheck')}</div>;
+  if (loading) return <div className="p-8 text-sm text-[#A1A1AA]">{t('cg.dsCheck')}</div>;
   if (!allowed)
     return (
       <div className="m-6 rounded-xl border border-red-500/30 bg-red-500/10 p-5 text-sm text-red-200">
@@ -139,11 +136,11 @@ export default function DesignStudioPage() {
     <div className="space-y-6 p-5 sm:p-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#D4AF37]">
+          <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#34D399]">
             <Palette size={15} /> {t('cg.dsStudio')}
           </p>
           <h1 className="text-2xl font-bold text-white">{t('cg.dsGlobal')}</h1>
-          <p className="mt-2 max-w-2xl text-sm text-[#A0AEC0]">
+          <p className="mt-2 max-w-2xl text-sm text-[#A1A1AA]">
             {t('cg.dsGlobalSub')}
           </p>
         </div>
@@ -182,14 +179,14 @@ export default function DesignStudioPage() {
         <div className="space-y-5">
           <VisualDesignEditor config={config} onChange={setConfig} />
           <div className="grid gap-5 xl:grid-cols-2">
-            <section className="space-y-5 rounded-2xl border border-[#1E355B] bg-[#08152F] p-5">
+            <section className="space-y-5 rounded-2xl border border-[#1E355B] bg-[#080B12] p-5">
               <label className="block space-y-2">
                 <span className="text-sm text-white">{t('cg.dsBrand')}</span>
                 <input
                   value={config.brandName}
                   onChange={(e) => setConfig((v) => ({ ...v, brandName: e.target.value }))}
                   maxLength={60}
-                  className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm text-[#F4F7FC]"
+                  className="w-full rounded-xl border border-[#1E355B] bg-[#0A0D16] px-3 py-2.5 text-sm text-[#F4F7FC]"
                 />
               </label>
               <div className="grid gap-3 sm:grid-cols-3">
@@ -200,13 +197,13 @@ export default function DesignStudioPage() {
                       type="color"
                       value={config[f.key]}
                       onChange={(e) => setConfig((v) => ({ ...v, [f.key]: e.target.value }))}
-                      className="h-11 w-full rounded-lg border border-[#1E355B] bg-[#0B1B3D] p-1"
+                      className="h-11 w-full rounded-lg border border-[#1E355B] bg-[#0A0D16] p-1"
                     />
                     <input
                       value={config[f.key]}
                       onChange={(e) => setConfig((v) => ({ ...v, [f.key]: e.target.value }))}
                       pattern="^#[0-9A-Fa-f]{6}$"
-                      className="w-full rounded-lg border border-[#1E355B] bg-[#0B1B3D] px-2 py-1.5 text-xs text-[#F4F7FC]"
+                      className="w-full rounded-lg border border-[#1E355B] bg-[#0A0D16] px-2 py-1.5 text-xs text-[#F4F7FC]"
                     />
                   </label>
                 ))}
@@ -219,7 +216,7 @@ export default function DesignStudioPage() {
                     onChange={(e) =>
                       setConfig((v) => ({ ...v, mode: e.target.value as DesignConfig['mode'] }))
                     }
-                    className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] p-2.5"
+                    className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0A0D16] p-2.5"
                   >
                     <option value="light">{t('cg.dsLight')}</option>
                     <option value="dark">{t('cg.dsDark')}</option>
@@ -236,7 +233,7 @@ export default function DesignStudioPage() {
                         density: e.target.value as DesignConfig['density'],
                       }))
                     }
-                    className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] p-2.5"
+                    className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0A0D16] p-2.5"
                   >
                     <option value="comfortable">{t('cg.dsComfort')}</option>
                     <option value="compact">{t('cg.dsCompact')}</option>
@@ -249,7 +246,7 @@ export default function DesignStudioPage() {
                     onChange={(e) =>
                       setConfig((v) => ({ ...v, radius: e.target.value as DesignConfig['radius'] }))
                     }
-                    className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] p-2.5"
+                    className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0A0D16] p-2.5"
                   >
                     <option value="small">{t('cg.dsRSmall')}</option>
                     <option value="medium">{t('cg.dsRMed')}</option>
@@ -266,7 +263,7 @@ export default function DesignStudioPage() {
                         fontScale: e.target.value as DesignConfig['fontScale'],
                       }))
                     }
-                    className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] p-2.5"
+                    className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0A0D16] p-2.5"
                   >
                     <option value="small">{t('cg.dsFSmall')}</option>
                     <option value="normal">{t('cg.dsFNormal')}</option>
@@ -286,8 +283,8 @@ export default function DesignStudioPage() {
               <div
                 className="overflow-hidden border p-5 shadow-xl"
                 style={{
-                  background: config.mode === 'dark' ? '#0B1B3D' : '#F5F7FB',
-                  color: config.mode === 'dark' ? '#F7F9FC' : '#0B1B3D',
+                  background: config.mode === 'dark' ? '#0A0D16' : '#F5F7FB',
+                  color: config.mode === 'dark' ? '#F7F9FC' : '#0A0D16',
                   borderColor: config.primaryColor + '77',
                   borderRadius:
                     config.radius === 'small' ? 8 : config.radius === 'medium' ? 16 : 24,
@@ -299,7 +296,7 @@ export default function DesignStudioPage() {
                 >
                   <span
                     className="grid h-9 w-9 place-items-center font-bold"
-                    style={{ background: config.primaryColor, color: '#0B1B3D' }}
+                    style={{ background: config.primaryColor, color: '#0A0D16' }}
                   >
                     J
                   </span>
@@ -345,21 +342,21 @@ export default function DesignStudioPage() {
                 </div>
                 <button
                   className="mt-4 w-full rounded-xl px-4 py-3 text-sm font-bold"
-                  style={{ background: config.primaryColor, color: '#0B1B3D' }}
+                  style={{ background: config.primaryColor, color: '#0A0D16' }}
                 >
                   {t('cg.dsAction')}
                 </button>
               </div>
-              <p className="text-xs leading-5 text-[#718096]">
+              <p className="text-xs leading-5 text-[#71717A]">
                 {t('cg.dsIndic')}
               </p>
             </section>
           </div>
           <section className="grid gap-5 xl:grid-cols-2">
-            <div className="space-y-4 rounded-2xl border border-[#1E355B] bg-[#08152F] p-5">
+            <div className="space-y-4 rounded-2xl border border-[#1E355B] bg-[#080B12] p-5">
               <div>
                 <h2 className="text-base font-bold text-white">{t('cg.dsBgH')}</h2>
-                <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">
+                <p className="mt-1 text-xs leading-5 text-[#A1A1AA]">
                   {t('cg.dsBgSub')}
                 </p>
               </div>
@@ -369,7 +366,7 @@ export default function DesignStudioPage() {
                   value={config.backgroundMediaUrl ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, backgroundMediaUrl: e.target.value }))}
                   placeholder="https://…"
-                  className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm"
+                  className="w-full rounded-xl border border-[#1E355B] bg-[#0A0D16] px-3 py-2.5 text-sm"
                 />
               </label>
               <label className="block space-y-2 text-sm text-white">
@@ -402,7 +399,7 @@ export default function DesignStudioPage() {
                         >,
                       }))
                     }
-                    className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] p-2.5"
+                    className="w-full rounded-xl border border-[#1E355B] bg-[#0A0D16] p-2.5"
                   >
                     <option value="none">{t('cg.dsAnNone')}</option>
                     <option value="slow-pan">{t('cg.dsAnPan')}</option>
@@ -429,10 +426,10 @@ export default function DesignStudioPage() {
                 </label>
               </div>
             </div>
-            <div className="space-y-4 rounded-2xl border border-[#1E355B] bg-[#08152F] p-5">
+            <div className="space-y-4 rounded-2xl border border-[#1E355B] bg-[#080B12] p-5">
               <div>
                 <h2 className="text-base font-bold text-white">{t('cg.dsNewsH')}</h2>
-                <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">
+                <p className="mt-1 text-xs leading-5 text-[#A1A1AA]">
                   {t('cg.dsNewsSub')}
                 </p>
               </div>
@@ -443,7 +440,7 @@ export default function DesignStudioPage() {
                   value={config.updateTitle ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, updateTitle: e.target.value }))}
                   placeholder={t('cg.dsAnnPh')}
-                  className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm"
+                  className="w-full rounded-xl border border-white/10 bg-[#080B12] px-3 py-2.5 text-sm"
                 />
               </label>
               <label className="block space-y-2 text-sm text-white">
@@ -454,7 +451,7 @@ export default function DesignStudioPage() {
                   value={config.updateBody ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, updateBody: e.target.value }))}
                   placeholder={t('cg.dsInfoPh')}
-                  className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm"
+                  className="w-full rounded-xl border border-white/10 bg-[#080B12] px-3 py-2.5 text-sm"
                 />
               </label>
               <label className="block space-y-2 text-sm text-white">
@@ -463,7 +460,7 @@ export default function DesignStudioPage() {
                   value={config.updateMediaUrl ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, updateMediaUrl: e.target.value }))}
                   placeholder="https://…"
-                  className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm"
+                  className="w-full rounded-xl border border-[#1E355B] bg-[#0A0D16] px-3 py-2.5 text-sm"
                 />
               </label>
               <label className="block space-y-2 text-sm text-white">
@@ -496,9 +493,9 @@ export default function DesignStudioPage() {
           </section>
         </div>
       ) : (
-        <section className="divide-y divide-white/5 rounded-2xl border border-[#1E355B] bg-[#08152F]">
+        <section className="divide-y divide-white/5 rounded-2xl border border-[#1E355B] bg-[#080B12]">
           {versions.length === 0 ? (
-            <p className="p-5 text-sm text-[#A0AEC0]">{t('cg.dsNoVer')}</p>
+            <p className="p-5 text-sm text-[#A1A1AA]">{t('cg.dsNoVer')}</p>
           ) : (
             versions.map((v) => (
               <div
@@ -518,7 +515,7 @@ export default function DesignStudioPage() {
                             : v.status
                       )}
                   </p>
-                  <p className="mt-1 text-xs text-[#718096]">
+                  <p className="mt-1 text-xs text-[#71717A]">
                     {new Date(v.created_at).toLocaleString(locale)}
                   </p>
                 </div>

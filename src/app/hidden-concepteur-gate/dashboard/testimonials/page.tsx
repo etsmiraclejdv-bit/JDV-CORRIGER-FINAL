@@ -194,7 +194,7 @@ export default function PlatformTestimonialsAdminPage() {
                 maxLength={120}
                 value={form.author_name}
                 onChange={(e) => setForm((v) => ({ ...v, author_name: e.target.value }))}
-                className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-white"
+                className="w-full rounded-xl border border-white/10 bg-[#080B12] px-3 py-2.5 text-white"
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -204,7 +204,7 @@ export default function PlatformTestimonialsAdminPage() {
                   maxLength={120}
                   value={form.author_role}
                   onChange={(e) => setForm((v) => ({ ...v, author_role: e.target.value }))}
-                  className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-white"
+                  className="w-full rounded-xl border border-white/10 bg-[#080B12] px-3 py-2.5 text-white"
                 />
               </label>
               <label className="block space-y-1.5 text-sm">
@@ -213,7 +213,7 @@ export default function PlatformTestimonialsAdminPage() {
                   maxLength={160}
                   value={form.company_name}
                   onChange={(e) => setForm((v) => ({ ...v, company_name: e.target.value }))}
-                  className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-white"
+                  className="w-full rounded-xl border border-white/10 bg-[#080B12] px-3 py-2.5 text-white"
                 />
               </label>
             </div>
@@ -226,7 +226,7 @@ export default function PlatformTestimonialsAdminPage() {
                 rows={5}
                 value={form.quote}
                 onChange={(e) => setForm((v) => ({ ...v, quote: e.target.value }))}
-                className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-white"
+                className="w-full rounded-xl border border-white/10 bg-[#080B12] px-3 py-2.5 text-white"
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-3">
@@ -235,7 +235,7 @@ export default function PlatformTestimonialsAdminPage() {
                 <select
                   value={form.rating}
                   onChange={(e) => setForm((v) => ({ ...v, rating: e.target.value }))}
-                  className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-white"
+                  className="w-full rounded-xl border border-white/10 bg-[#080B12] px-3 py-2.5 text-white"
                 >
                   {[5, 4, 3, 2, 1].map((n) => (
                     <option key={n} value={n}>
@@ -251,7 +251,7 @@ export default function PlatformTestimonialsAdminPage() {
                   onChange={(e) =>
                     setForm((v) => ({ ...v, status: e.target.value as ReviewStatus }))
                   }
-                  className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-white"
+                  className="w-full rounded-xl border border-white/10 bg-[#080B12] px-3 py-2.5 text-white"
                 >
                   <option value="pending">{t('cg.tsPending')}</option>
                   <option value="approved">{t('cg.tsApprovedV')}</option>
@@ -264,7 +264,7 @@ export default function PlatformTestimonialsAdminPage() {
                   type="number"
                   value={form.sort_order}
                   onChange={(e) => setForm((v) => ({ ...v, sort_order: e.target.value }))}
-                  className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-white"
+                  className="w-full rounded-xl border border-white/10 bg-[#080B12] px-3 py-2.5 text-white"
                 />
               </label>
             </div>

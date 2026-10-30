@@ -9,7 +9,6 @@ import GoogleAnalytics from '@/components/GoogleAnalytics';
 import JdvLoadingScreen from '@/app/components/JdvLoadingScreen';
 import ThemeCustomizer from '@/components/theme/ThemeCustomizer';
 import { LanguageProvider } from '@/lib/i18n/LanguageProvider';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 
 const jakarta = Plus_Jakarta_Sans({
@@ -64,7 +63,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <JdvLoadingScreen />
           {children}
           <ThemeCustomizer />
-          <LanguageSwitcher />
           <ServiceWorkerRegister />
           <Toaster
             position="top-right"

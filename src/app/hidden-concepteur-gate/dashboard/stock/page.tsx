@@ -87,13 +87,13 @@ export default function SuperAdminStockPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">{t('cg.skTitle')}</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">
+          <p className="text-sm text-[#A1A1AA] mt-1">
             {t('cg.skCount').replace('{n}', String(products.length))}
           </p>
         </div>
         <button
           onClick={loadProducts}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#8B5CF6]/20 text-[#A1A1AA] hover:text-white text-sm transition-colors"
         >
           <RefreshCw size={14} />
           {t('cg.refresh')}
@@ -110,17 +110,17 @@ export default function SuperAdminStockPage() {
       )}
 
       <div className="relative max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#718096]" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('cg.skSearch')}
-          className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-[#718096] text-sm focus:outline-none focus:border-[#D4AF37]/60 transition-colors"
+          className="w-full bg-[#0F2347] border border-[#8B5CF6]/20 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-[#71717A] text-sm focus:outline-none focus:border-[#8B5CF6]/60 transition-colors"
         />
       </div>
 
-      <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl overflow-hidden">
+      <div className="bg-[#0F2347] border border-[#8B5CF6]/15 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-8 space-y-3">
             {[1, 2, 3, 4].map((i) => (
@@ -129,44 +129,44 @@ export default function SuperAdminStockPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center">
-            <Package size={32} className="text-[#718096] mx-auto mb-3" />
-            <p className="text-[#A0AEC0] text-sm">{t('cg.skNone')}</p>
+            <Package size={32} className="text-[#71717A] mx-auto mb-3" />
+            <p className="text-[#A1A1AA] text-sm">{t('cg.skNone')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#D4AF37]/10">
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                <tr className="border-b border-[#8B5CF6]/10">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     {t('cg.skColProd')}
                   </th>
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     SKU
                   </th>
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     {t('cg.dbColCo')}
                   </th>
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     {t('cg.skColStock')}
                   </th>
-                  <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
+                  <th className="text-left text-xs font-semibold text-[#71717A] uppercase tracking-wider px-6 py-4">
                     {t('cg.skColPrice')}
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#D4AF37]/5">
+              <tbody className="divide-y divide-[#8B5CF6]/5">
                 {filtered.map((p) => (
                   <tr key={p.id} className="hover:bg-[#0A1628]/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-[#D4AF37]/10 flex items-center justify-center">
-                          <Package size={14} className="text-[#D4AF37]" />
+                        <div className="w-8 h-8 rounded-lg bg-[#8B5CF6]/10 flex items-center justify-center">
+                          <Package size={14} className="text-[#8B5CF6]" />
                         </div>
                         <span className="text-sm font-medium text-white">{p.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-[#A0AEC0] font-mono">{p.sku}</td>
-                    <td className="px-6 py-4 text-sm text-[#A0AEC0]">{p.org_name}</td>
+                    <td className="px-6 py-4 text-sm text-[#A1A1AA] font-mono">{p.sku}</td>
+                    <td className="px-6 py-4 text-sm text-[#A1A1AA]">{p.org_name}</td>
                     <td className="px-6 py-4">
                       <span
                         className={`text-sm font-semibold ${p.stock_quantity <= 5 ? 'text-yellow-400' : 'text-white'}`}
@@ -177,7 +177,7 @@ export default function SuperAdminStockPage() {
                         )}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-[#D4AF37] font-medium">
+                    <td className="px-6 py-4 text-sm text-[#8B5CF6] font-medium">
                       {formatPrice(p.price_cents)}
                     </td>
                   </tr>
