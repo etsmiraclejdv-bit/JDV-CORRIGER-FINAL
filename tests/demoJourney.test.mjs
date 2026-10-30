@@ -76,7 +76,7 @@ test('A-Z demo journey: acceptance matrix spans core functional areas', () => {
 
 test('A-Z demo journey: test scripts do not embed production credentials or real email addresses', async () => {
   const files = await readdir(resolve(root, 'tests'));
-  const source = await Promise.all(files.filter((f) => f.endsWith('.mjs')).map((f) =>
+  const source = await Promise.all(files.filter((f) => f.endsWith('.mjs') && f !== 'demoJourney.test.mjs').map((f) =>
     readFile(resolve(root, 'tests', f), 'utf8')));
   const combined = source.join('\n');
   assert.doesNotMatch(combined, /service_role|SUPABASE_DB_PASSWORD|sk_live_[A-Za-z0-9]+/i);
