@@ -27,7 +27,7 @@ export default function PublicAccountBanner() {
             href="/entrepot/login"
             className="flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 font-medium text-emerald-300 transition-all hover:bg-emerald-400/20"
           >
-            <Warehouse size={14} /> {t('agencySpace')}
+            <Warehouse size={14} /> {t('warehouse')}
           </a>
         </div>
       </div>
