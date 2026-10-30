@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import {
   Building2,
-  Users,
   CreditCard,
   AlertTriangle,
   CheckCircle2,
@@ -70,12 +69,11 @@ export default function SuperAdminDashboardPage() {
         ].map(([l, v, I, c]) => {
           const Icon = I as typeof Building2;
           return (
-            <div
-              key={l as string}
-              className="bg-[#08152F] border border-[#1E355B] rounded-2xl p-5"
-            >
+            <div key={l as string} className="bg-[#08152F] border border-[#1E355B] rounded-2xl p-5">
               <Icon size={20} className={c as string} />
-              <p className="text-2xl font-bold text-[#F4F7FC] mt-3">{loading ? '—' : (v as number)}</p>
+              <p className="text-2xl font-bold text-[#F4F7FC] mt-3">
+                {loading ? '—' : (v as number)}
+              </p>
               <p className="text-xs text-[#94A3B8] mt-1">{l as string}</p>
             </div>
           );
