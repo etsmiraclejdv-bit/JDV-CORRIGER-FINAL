@@ -162,29 +162,29 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
 
   if (!authChecked) {
     return (
-      <div className="flex h-screen bg-[#0B1B3D] items-center justify-center">
+      <div className="flex h-screen bg-[#0A0D16] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-[#34D399] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-[#A0AEC0]">{t('cg.lyChecking')}</p>
+          <div className="w-8 h-8 border-2 border-[#8B5CF6] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[#A1A1AA]">{t('cg.lyChecking')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="jdv-workspace-shell flex h-screen bg-[#0B1B3D] overflow-hidden">
+    <div className="jdv-workspace-shell flex h-screen bg-[#0A0D16] overflow-hidden">
       <aside
         data-jdv-design="sidebar"
-        className={`hidden md:flex h-screen flex-col bg-[#08152F] border-r border-[#1E355B] transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}
+        className={`hidden md:flex h-screen flex-col bg-[#080B12] border-r border-[rgba(255,255,255,0.08)] transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}
       >
         <div
-          className={`h-16 flex items-center border-b border-[#1E355B] px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
+          className={`h-16 flex items-center border-b border-[rgba(255,255,255,0.08)] px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
         >
           {!collapsed && (
             <div className="flex items-center gap-2">
               <AppLogo size={28} />
-              <span className="font-bold text-sm text-[#F4F7FC]">
-                JDV <span className="text-[#34D399]">Admin</span>
+              <span className="font-bold text-sm text-[#F5F7FC]">
+                JDV <span className="text-[#A78BFA]">Concepteur</span>
               </span>
             </div>
           )}
@@ -192,7 +192,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
           {!collapsed && (
             <button
               onClick={() => setCollapsed(true)}
-              className="p-1.5 rounded-lg text-[#94A3B8] hover:text-[#F4F7FC] hover:bg-[#14294B] transition-all"
+              className="p-1.5 rounded-lg text-[#A1A1AA] hover:text-[#F5F7FC] hover:bg-[#171D2B] transition-all"
             >
               <ChevronLeft size={16} />
             </button>
@@ -203,7 +203,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
           {groups.map((group) => (
             <div key={group} className="mb-4">
               {!collapsed && (
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#718096] px-3 mb-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#71717A] px-3 mb-2">
                   {t(GROUP_KEYS[group])}
                 </p>
               )}
@@ -220,7 +220,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
                       key={item.id}
                       href={item.href}
                       title={collapsed ? t(item.label) : undefined}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#8B5CF6]/15 text-[#8B5CF6] border border-[#8B5CF6]/20' : 'text-[#A1A1AA] hover:text-white hover:bg-[#171D2B]'} ${collapsed ? 'justify-center' : ''}`}
                     >
                       <span className="flex-shrink-0">{item.icon}</span>
                       {!collapsed && <span className="flex-1 truncate">{t(item.label)}</span>}
@@ -231,11 +231,11 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
           ))}
         </nav>
 
-        <div className="border-t border-[#1E355B] p-2 flex-shrink-0">
+        <div className="border-t border-[rgba(255,255,255,0.08)] p-2 flex-shrink-0">
           <div className={`flex ${collapsed ? 'flex-col gap-1 items-center' : 'gap-2'}`}>
             <button
               onClick={() => setProfileOpen(true)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-white hover:bg-[#0F2347] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-1'}`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A1A1AA] hover:text-white hover:bg-[#171D2B] transition-all text-sm ${collapsed ? 'justify-center w-full' : 'flex-1'}`}
               title={t('cg.lyProfile')}
             >
               <User size={16} />
@@ -243,7 +243,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
             </button>
             <button
               onClick={handleLogout}
-              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A0AEC0] hover:text-red-400 transition-all text-sm ${collapsed ? 'justify-center w-full' : ''}`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[#A1A1AA] hover:text-red-400 transition-all text-sm ${collapsed ? 'justify-center w-full' : ''}`}
               title={t('cg.lyLogout')}
             >
               <LogOut size={16} />
@@ -253,7 +253,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
           {collapsed && (
             <button
               onClick={() => setCollapsed(false)}
-              className="w-full flex justify-center p-2 mt-1 text-[#94A3B8] hover:text-[#F4F7FC] hover:bg-[#14294B] rounded-xl transition-all"
+              className="w-full flex justify-center p-2 mt-1 text-[#A1A1AA] hover:text-[#F5F7FC] hover:bg-[#171D2B] rounded-xl transition-all"
             >
               <ChevronRight size={14} />
             </button>
@@ -265,7 +265,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
         <ConcepteurBranchBar />
         <div
           data-jdv-design="topbar"
-          className="h-16 flex items-center justify-between px-6 border-b border-[#34D399]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0"
+          className="h-16 flex items-center justify-between px-6 border-b border-white/[0.07] bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0"
         >
           <h1 data-jdv-design="page-title" className="text-base font-semibold text-white">
             {t('cg.lyTitle')}
