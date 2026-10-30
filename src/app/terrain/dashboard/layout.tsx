@@ -144,7 +144,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
   return (
     <>
       <IntelligencePresenceTracker />
-      <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
+      <div className="jdv-workspace-shell flex h-screen bg-[#0B1B3D] overflow-hidden">
         <aside
           className={`hidden md:flex h-screen flex-col bg-[#08152F] border-r border-[#1E355B] transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-56'}`}
         >
@@ -229,7 +229,7 @@ export default function TerrainDashboardLayout({ children }: { children: React.R
         </aside>
         <div className="flex-1 flex flex-col overflow-hidden">
           <ConcepteurBranchBar />
-          <div className="h-16 flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#1E355B] bg-[#08152F]/80 backdrop-blur-sm flex-shrink-0">
+          <div data-jdv-design="topbar" className="h-16 flex items-center justify-between px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#1E355B] bg-[#08152F]/80 backdrop-blur-sm flex-shrink-0">
             <h1 className="text-base font-semibold text-[#F4F7FC]">{t('terrainPortal')}</h1>
             <div className="flex items-center gap-3">
               <NotificationBell />
