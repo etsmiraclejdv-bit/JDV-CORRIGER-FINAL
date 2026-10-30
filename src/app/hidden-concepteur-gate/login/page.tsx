@@ -93,7 +93,7 @@ export default function SuperAdminLoginPage() {
           <div className="flex items-center gap-3 mb-3">
             <AppLogo size={40} />
             <span className="text-2xl font-bold text-white">
-              JDV <span className="gold-gradient-text">CRM</span>
+              JDV <span className="text-violet-300">CRM</span>
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm text-[#A1A1AA]">
@@ -162,7 +162,7 @@ export default function SuperAdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-gold py-3 rounded-xl font-bold text-sm disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+              className="w-full bg-violet-600 hover:bg-violet-500 text-white py-3 rounded-xl font-bold text-sm disabled:opacity-60 disabled:cursor-not-allowed mt-2"
             >
               {loading ? t('cg.lgBusy') : t('cg.lgGo')}
             </button>
