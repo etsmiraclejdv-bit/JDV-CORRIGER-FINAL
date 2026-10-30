@@ -20,6 +20,7 @@ export default function manifest(): MetadataRoute.Manifest {
       { name: 'Espace Prospecteur', url: '/terrain/login' },
       { name: 'Espace Entreprise', url: '/business/login' },
       { name: 'Espace Agence', url: '/agence/login' },
+      { name: 'Espace Entrepôt', url: '/entrepot/login' },
     ],
   };
 }
