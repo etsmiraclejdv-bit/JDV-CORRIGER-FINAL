@@ -249,19 +249,19 @@ html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
 
 /* ─── JDV CRM workspace system: shared shell for every authenticated role ─── */
 .jdv-workspace-shell {
-  color: #F4F7FC;
+  color: #F5F7FC;
   background:
-    radial-gradient(ellipse at 82% 0%, rgba(52, 211, 153, 0.055), transparent 34%),
-    #0B1B3D;
+    radial-gradient(ellipse at 82% 0%, rgba(139, 92, 246, 0.075), transparent 34%),
+    #0A0D16;
 }
 .jdv-workspace-shell > aside {
-  background: rgba(8, 21, 47, 0.98);
-  border-color: rgba(148, 163, 184, 0.16);
+  background: rgba(8, 11, 18, 0.99);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 .jdv-workspace-shell [data-jdv-design="topbar"] {
   min-height: 4rem;
-  background: rgba(8, 21, 47, 0.88);
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(8, 11, 18, 0.94);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px);
 }
 .jdv-workspace-shell aside nav a {
@@ -269,10 +269,16 @@ html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
   transition: color 160ms ease, background 160ms ease, border-color 160ms ease;
 }
 .jdv-workspace-shell aside nav a:hover {
-  background: rgba(30, 53, 91, 0.72);
+  background: rgba(139, 92, 246, 0.10);
+}
+.jdv-workspace-shell aside nav a[aria-current="page"],
+.jdv-workspace-shell aside nav a.bg-\\[\\#34D399\\]\\/15 {
+  color: #C4B5FD;
+  background: rgba(139, 92, 246, 0.16);
+  border-color: rgba(167, 139, 250, 0.24);
 }
 .jdv-workspace-shell main {
-  scrollbar-color: #315276 transparent;
+  scrollbar-color: #554078 transparent;
   scrollbar-width: thin;
 }
 .jdv-workspace-shell main > div {
