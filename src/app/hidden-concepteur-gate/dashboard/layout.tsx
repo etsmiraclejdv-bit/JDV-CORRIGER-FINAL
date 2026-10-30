@@ -29,6 +29,7 @@ import Modal from '@/components/ui/Modal';
 import { supabase } from '@/lib/supabase/client';
 import { checkCurrentSuperAdmin } from '@/lib/auth/super-admin';
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
+import MobileTabBar from '@/components/MobileTabBar';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import type { TerrainKey } from '@/lib/i18n/terrain';
 
