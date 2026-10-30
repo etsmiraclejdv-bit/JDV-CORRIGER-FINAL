@@ -172,7 +172,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
   }
 
   return (
-    <div className="flex h-screen bg-[#0B1B3D] overflow-hidden">
+    <div className="jdv-workspace-shell flex h-screen bg-[#0B1B3D] overflow-hidden">
       <aside
         data-jdv-design="sidebar"
         className={`hidden md:flex h-screen flex-col bg-[#08152F] border-r border-[#1E355B] transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}
@@ -263,7 +263,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <ConcepteurBranchBar />
-        <div className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
+        <div data-jdv-design="topbar" className="h-16 flex items-center justify-between px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
           <h1 data-jdv-design="page-title" className="text-base font-semibold text-white">
             {t('cg.lyTitle')}
           </h1>
