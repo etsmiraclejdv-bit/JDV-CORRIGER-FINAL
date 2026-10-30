@@ -271,8 +271,8 @@ export default function BusinessDashboardLayout({ children }: { children: React.
       <div
         className={
           mobilePreview
-            ? 'mx-auto my-4 relative w-[min(390px,calc(100vw-1rem))] h-[min(844px,calc(100dvh-2rem))] rounded-[2rem] border-[6px] border-slate-700 shadow-2xl overflow-hidden bg-[#0B1B3D]'
-            : 'relative isolate flex h-screen bg-[#0B1B3D] overflow-hidden'
+            ? 'jdv-workspace-shell mx-auto my-4 relative w-[min(390px,calc(100vw-1rem))] h-[min(844px,calc(100dvh-2rem))] rounded-[2rem] border-[6px] border-slate-700 shadow-2xl overflow-hidden bg-[#0B1B3D]'
+            : 'jdv-workspace-shell relative isolate flex h-screen bg-[#0B1B3D] overflow-hidden'
         }
       >
         <div className="relative isolate flex h-full w-full bg-[#0B1B3D] overflow-hidden">
@@ -371,7 +371,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
             />
           )}
           <div className="relative z-10 flex-1 min-w-0 flex flex-col overflow-hidden">
-            <div className="h-16 flex items-center justify-between px-3 sm:px-6 border-b border-[#34D399]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
+            <div data-jdv-design="topbar" className="h-16 flex items-center justify-between px-3 sm:px-6 border-b border-[#34D399]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
               <div className="flex min-w-0 items-center gap-2">
                 <button
                   type="button"
