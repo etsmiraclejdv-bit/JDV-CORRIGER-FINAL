@@ -116,3 +116,9 @@ test('full-app demo audit: agency dashboard reuses only the authorized warehouse
   assert.ok(context.includes('requiredRole?: MyWarehouse'));
   assert.ok(context.includes('w.access_role === requiredRole'));
 });
+
+test('full-app demo audit: the designer can switch to the company workspace', async () => {
+  const businessLayout = await readFile(path.join(APP_ROOT, 'business', 'dashboard', 'layout.tsx'), 'utf8');
+  assert.ok(businessLayout.includes("import ConcepteurBranchBar from '@/components/ConcepteurBranchBar'"));
+  assert.ok(businessLayout.includes('<ConcepteurBranchBar />'));
+});
