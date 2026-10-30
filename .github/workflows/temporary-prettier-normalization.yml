@@ -1,0 +1,38 @@
+name: Temporary full Prettier normalization
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - '.github/workflows/temporary-prettier-normalization.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Format all source files using the project script
+        run: npm run format
+      - name: Commit formatting when needed
+        run: |
+          if [ -n "$(git status --porcelain src/)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/
+            git commit -m "style: normalize Prettier formatting across source"
+            git push
+          fi
