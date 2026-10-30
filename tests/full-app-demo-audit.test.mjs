@@ -80,7 +80,8 @@ test('full-app demo audit: the agency has an independent public login entry', as
     readFile(path.join(APP_ROOT, 'components', 'PublicFooter.tsx'), 'utf8'),
     readFile(path.join(APP_ROOT, 'manifest.ts'), 'utf8'),
   ]);
-  assert.ok(agencyLogin.includes('@/app/entrepot/login/page'));
+  assert.ok(agencyLogin.includes("item.access_role === 'manager'"));
+  assert.ok(agencyLogin.includes("router.replace('/agence/dashboard')"));
   assert.ok(accountBanner.includes('href="/agence/login"'));
   assert.ok(footer.includes("href: '/agence/login'"));
   assert.ok(manifest.includes("url: '/agence/login'"));
@@ -89,7 +90,26 @@ test('full-app demo audit: the agency has an independent public login entry', as
 test('full-app demo audit: agency managers are limited to authorized workspace routes', async () => {
   const layout = await readFile(path.join(APP_ROOT, 'entrepot', 'dashboard', 'layout.tsx'), 'utf8');
   assert.ok(layout.includes("current.access_role !== 'manager'"));
+  assert.ok(layout.includes("pathname.startsWith('/agence/dashboard')"));
+  assert.ok(layout.includes("requiredRole={requiredRole}"));
   assert.ok(layout.includes("'/entrepot/dashboard/stock'"));
   assert.ok(layout.includes("'/entrepot/dashboard/sous-entrepots'"));
   assert.ok(layout.includes('const visibleNav = isAdmin'));
+});
+
+
+test('full-app demo audit: agency dashboard reuses only the authorized warehouse modules', async () => {
+  const [agencyLayout, agencyHome, agencyStock, agencySubWarehouses, context] = await Promise.all([
+    readFile(path.join(APP_ROOT, 'agence', 'dashboard', 'layout.tsx'), 'utf8'),
+    readFile(path.join(APP_ROOT, 'agence', 'dashboard', 'page.tsx'), 'utf8'),
+    readFile(path.join(APP_ROOT, 'agence', 'dashboard', 'stock', 'page.tsx'), 'utf8'),
+    readFile(path.join(APP_ROOT, 'agence', 'dashboard', 'sous-entrepots', 'page.tsx'), 'utf8'),
+    readFile(path.join(ROOT, 'src', 'components', 'entrepot', 'WarehouseContext.tsx'), 'utf8'),
+  ]);
+  assert.ok(agencyLayout.includes("@/app/entrepot/dashboard/layout"));
+  assert.ok(agencyHome.includes("@/app/entrepot/dashboard/page"));
+  assert.ok(agencyStock.includes("@/app/entrepot/dashboard/stock/page"));
+  assert.ok(agencySubWarehouses.includes("@/app/entrepot/dashboard/sous-entrepots/page"));
+  assert.ok(context.includes('requiredRole?: MyWarehouse'));
+  assert.ok(context.includes('w.access_role === requiredRole'));
 });
