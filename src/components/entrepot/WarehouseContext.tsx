@@ -30,7 +30,7 @@ const Ctx = createContext<WarehouseCtx>({
 });
 const STORAGE_KEY = 'jdv_entrepot_courant';
 
-export function WarehouseProvider({ children }: { children: React.ReactNode }) {
+export function WarehouseProvider({ children, requiredRole }: { children: React.ReactNode; requiredRole?: MyWarehouse['access_role'] }) {
   const [warehouses, setWarehouses] = useState<MyWarehouse[]>([]);
   const [currentId, setCurrentIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,7 @@ export function WarehouseProvider({ children }: { children: React.ReactNode }) {
       setError(err.message);
       setWarehouses([]);
     } else {
-      const list = ((data ?? []) as MyWarehouse[]).filter((w) => w.active);
+      const list = ((data ?? []) as MyWarehouse[]).filter((w) => w.active && (!requiredRole || w.access_role === requiredRole));
       setWarehouses(list);
       let saved: string | null = null;
       try {
@@ -59,7 +59,7 @@ export function WarehouseProvider({ children }: { children: React.ReactNode }) {
       });
     }
     setLoading(false);
-  }, []);
+  }, [requiredRole]);
   useEffect(() => {
     load();
   }, [load]);
