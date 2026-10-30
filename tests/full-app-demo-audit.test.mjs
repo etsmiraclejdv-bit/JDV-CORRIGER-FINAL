@@ -148,3 +148,56 @@ test('full-app demo audit: both designer agency shortcuts open the dedicated age
   assert.ok(designerGate.includes("branch_code: 'agence'"));
   assert.ok(designerGate.includes("route: '/agence/dashboard'"));
 });
+
+
+test('full-app demo audit: warehouse dispatch is guarded by server-side ownership and stock checks', async () => {
+  const migration = await readFile(
+    path.join(ROOT, 'supabase', 'migrations', '20261012173000_prospecteur_barcode_shipment_rpcs_v1.sql'),
+    'utf8'
+  );
+  const dispatchStart = migration.indexOf(
+    'create or replace function public.jdvcrm_dispatch_prospecteur_shipment_v1'
+  );
+  const receiptStart = migration.indexOf(
+    'create or replace function public.jdvcrm_confirm_prospecteur_shipment_receipt_v1'
+  );
+  assert.ok(dispatchStart >= 0 && receiptStart > dispatchStart);
+  const dispatch = migration.slice(dispatchStart, receiptStart);
+  assert.ok(dispatch.includes('auth.uid()'));
+  assert.ok(dispatch.includes('private.can_manage_warehouse(p_warehouse_id)'));
+  assert.ok(dispatch.includes('w.organization_id = v_org'));
+  assert.ok(dispatch.includes('prospecteur_warehouse_assignments'));
+  assert.ok(dispatch.includes('Stock insuffisant'));
+  assert.ok(dispatch.includes('for update'));
+});
+
+test('full-app demo audit: receipt confirmation checks the recipient and records discrepancies', async () => {
+  const migration = await readFile(
+    path.join(ROOT, 'supabase', 'migrations', '20261012173000_prospecteur_barcode_shipment_rpcs_v1.sql'),
+    'utf8'
+  );
+  const receiptStart = migration.indexOf(
+    'create or replace function public.jdvcrm_confirm_prospecteur_shipment_receipt_v1'
+  );
+  assert.ok(receiptStart >= 0);
+  const receipt = migration.slice(receiptStart);
+  assert.ok(receipt.includes('p.user_id = v_uid'));
+  assert.ok(receipt.includes("v_shipment.status not in ('dispatched')"));
+  assert.ok(receipt.includes('quantity_damaged'));
+  assert.ok(receipt.includes('quantity_missing'));
+  assert.ok(receipt.includes("when v_has_variance then 'disputed' else 'received'"));
+  assert.ok(receipt.includes("'transfer_in'"));
+  assert.ok(receipt.includes("'prospecteur_supply_shipment'"));
+});
+
+test('full-app demo audit: supply and receipt screens are wired to the guarded RPCs', async () => {
+  const [dispatchPage, receiptPage] = await Promise.all([
+    readFile(path.join(APP_ROOT, 'entrepot', 'dashboard', 'expeditions-prospecteurs', 'page.tsx'), 'utf8'),
+    readFile(path.join(APP_ROOT, 'terrain', 'dashboard', 'reception-marchandises', 'page.tsx'), 'utf8'),
+  ]);
+  assert.ok(dispatchPage.includes('jdvcrm_dispatch_prospecteur_shipment_v1'));
+  assert.ok(dispatchPage.includes('jdvcrm_dispatch_prospecteur_supply_request_v1'));
+  assert.ok(receiptPage.includes('jdvcrm_confirm_prospecteur_shipment_receipt_v1'));
+  assert.ok(receiptPage.includes('confirmUnitCodeReceipt'));
+  assert.ok(receiptPage.includes('phone_camera'));
+});
