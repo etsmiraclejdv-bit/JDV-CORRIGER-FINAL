@@ -122,3 +122,10 @@ test('full-app demo audit: the designer can switch to the company workspace', as
   assert.ok(businessLayout.includes("import ConcepteurBranchBar from '@/components/ConcepteurBranchBar'"));
   assert.ok(businessLayout.includes('<ConcepteurBranchBar />'));
 });
+
+test('full-app demo audit: agency managers cannot see sub-warehouse mutation controls', async () => {
+  const subWarehousesPage = await readFile(path.join(APP_ROOT, 'entrepot', 'dashboard', 'sous-entrepots', 'page.tsx'), 'utf8');
+  assert.ok(subWarehousesPage.includes("current.access_role === 'admin'"));
+  assert.ok(subWarehousesPage.includes('Consultation des sous-entrepôts uniquement'));
+  assert.ok(subWarehousesPage.includes("current.access_role === 'manager'"));
+});
