@@ -45,6 +45,7 @@ import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import type { TranslationKey } from '@/lib/i18n/messages';
 import IntelligencePresenceTracker from '@/components/IntelligencePresenceTracker';
 import OrganizationAmbience from '@/components/OrganizationAmbience';
+import MobileTabBar from '@/components/MobileTabBar';
 
 const navItems: {
   id: string;
@@ -407,8 +408,9 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                 <NotificationBell />
               </div>
             </div>
-            <main className="flex-1 overflow-y-auto">{children}</main>
+            <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
           </div>
+          <MobileTabBar rootHref="/business/dashboard" items={navItems.map((item) => ({ href: item.href, label: t(item.label), icon: item.icon }))} />
           <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="" size="sm">
             <UserProfilePanel onClose={() => setProfileOpen(false)} />
           </Modal>

@@ -29,6 +29,7 @@ import Modal from '@/components/ui/Modal';
 import { supabase } from '@/lib/supabase/client';
 import { checkCurrentSuperAdmin } from '@/lib/auth/super-admin';
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
+import MobileTabBar from '@/components/MobileTabBar';
 
 const navItems = [
   {
@@ -159,7 +160,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
     <div className="flex h-screen bg-[#F7F4EB] overflow-hidden">
       <aside
         data-jdv-design="sidebar"
-        className={`h-screen flex flex-col bg-[#FFFEFA] border-r border-[#E5E0D3] transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}
+        className={`hidden md:flex h-screen flex-col bg-[#FFFEFA] border-r border-[#E5E0D3] transition-all duration-300 flex-shrink-0 ${collapsed ? 'w-16' : 'w-60'}`}
       >
         <div
           className={`h-16 flex items-center border-b border-[#E5E0D3] px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
@@ -255,9 +256,10 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
             <NotificationBell />
           </div>
         </div>
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
       </div>
 
+      <MobileTabBar rootHref="/hidden-concepteur-gate/dashboard" items={navItems.map((item) => ({ href: item.href, label: item.label, icon: item.icon }))} />
       <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="" size="sm">
         <UserProfilePanel onClose={() => setProfileOpen(false)} />
       </Modal>
