@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 };
 
 // Applique le thème choisi avant l'affichage de la page (évite le clignotement).
-const themeInit = `(function(){try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('jdv_theme_v1')||'{}'),t=p.theme||'light';if(t==='system')t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';d.dataset.theme=t;d.dataset.accent=p.accent||'gold';d.dataset.font=p.font||'md';d.dataset.motion=p.reduceMotion?'reduce':'normal';}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.dataset.accent='green';}})();`;
+const themeInit = `(function(){try{var d=document.documentElement,p=JSON.parse(localStorage.getItem('jdv_theme_v1')||'{}'),t=p.theme||'designer';if(t==='designer')t='dark';d.dataset.theme=(t==='light'||t==='dark')?t:'dark';d.dataset.accent=p.accent||'green';d.dataset.font=p.font||'md';d.dataset.motion=p.reduceMotion?'reduce':'normal';}catch(e){document.documentElement.dataset.theme='dark';document.documentElement.dataset.accent='green';}})();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
