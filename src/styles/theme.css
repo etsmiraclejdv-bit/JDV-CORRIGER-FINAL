@@ -211,3 +211,37 @@ html[data-design-density="compact"] .p-6 { padding: 1rem !important; }
 html[data-design-density="compact"] .p-5 { padding: 0.75rem !important; }
 html[data-design-density="compact"] .gap-6 { gap: 1rem !important; }
 html[data-design-density="compact"] .gap-4 { gap: 0.75rem !important; }
+
+
+/* Accent dynamique : les anciennes classes or suivent désormais la couleur choisie.
+   Les états métier (rouge, orange, bleu, succès) restent inchangés. */
+html:not([data-accent="gold"]) [class~="text-[#D4AF37]"],
+html:not([data-accent="gold"]) [class~="text-[#F5E17A]"] {
+  color: var(--brand-text);
+}
+html:not([data-accent="gold"]) [class~="bg-[#D4AF37]"] {
+  background-color: var(--brand);
+}
+html:not([data-accent="gold"]) [class~="bg-[#F5E17A]"] {
+  background-color: var(--brand-2);
+}
+html:not([data-accent="gold"]) [class~="border-[#D4AF37]"],
+html:not([data-accent="gold"]) [class~="border-[#F5E17A]"] {
+  border-color: var(--brand);
+}
+html:not([data-accent="gold"]) [class*="border-[#D4AF37]/"],
+html:not([data-accent="gold"]) [class*="border-[#F5E17A]/"] {
+  border-color: color-mix(in srgb, var(--brand) 30%, transparent);
+}
+html:not([data-accent="gold"]) [class*="bg-[#D4AF37]/"],
+html:not([data-accent="gold"]) [class*="bg-[#F5E17A]/"] {
+  background-color: color-mix(in srgb, var(--brand) 14%, transparent);
+}
+html:not([data-accent="gold"]) [class*="hover:bg-[#D4AF37]"]:hover,
+html:not([data-accent="gold"]) [class*="hover:bg-[#F5E17A]"]:hover {
+  background-color: var(--brand-3);
+}
+html:not([data-accent="gold"]) [class*="hover:border-[#D4AF37]"]:hover,
+html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
+  border-color: var(--brand);
+}
