@@ -65,6 +65,12 @@ function Shell({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    if (current?.access_role === 'manager' && workspaceRoot === '/entrepot/dashboard') {
+      router.replace('/agence/dashboard');
+    }
+  }, [current, router, workspaceRoot]);
+
+  useEffect(() => {
     if (!current || current.access_role !== 'manager') return;
     const managerRoutes = [
       workspaceRoot,
