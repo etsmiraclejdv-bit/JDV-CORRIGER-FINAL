@@ -56,7 +56,7 @@ export default function SuperAdminMaintenancePage() {
       name: 'organizations',
       label: t('cg.mtOrgs'),
       count: tableCounts.organizations ?? 0,
-      icon: <Database size={16} className="text-[#D4AF37]" />,
+      icon: <Database size={16} className="text-[#8B5CF6]" />,
     },
     {
       name: 'profiles',
@@ -106,7 +106,7 @@ export default function SuperAdminMaintenancePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">{t('cg.mtTitle')}</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">
+          <p className="text-sm text-[#A1A1AA] mt-1">
             {lastChecked
               ? t('cg.mtLast').replace('{time}', lastChecked.toLocaleTimeString(locale))
               : t('cg.mtChecking')}
@@ -115,7 +115,7 @@ export default function SuperAdminMaintenancePage() {
         <button
           onClick={runHealthCheck}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#8B5CF6]/20 text-[#A1A1AA] hover:text-white text-sm transition-colors disabled:opacity-50"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           {t('cg.mtCheck')}
@@ -123,9 +123,9 @@ export default function SuperAdminMaintenancePage() {
       </div>
 
       {/* Services health */}
-      <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-6">
+      <div className="bg-[#0F2347] border border-[#8B5CF6]/15 rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Activity size={18} className="text-[#D4AF37]" />
+          <Activity size={18} className="text-[#8B5CF6]" />
           <h2 className="text-base font-semibold text-white">{t('cg.mtServices')}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -133,10 +133,10 @@ export default function SuperAdminMaintenancePage() {
             <div key={i} className="flex items-center justify-between p-4 bg-[#0A1628] rounded-xl">
               <div>
                 <p className="text-sm font-medium text-white">{svc.name}</p>
-                <p className="text-xs text-[#718096]">{svc.description}</p>
+                <p className="text-xs text-[#71717A]">{svc.description}</p>
               </div>
               {loading ? (
-                <div className="w-4 h-4 rounded-full bg-[#718096] animate-pulse" />
+                <div className="w-4 h-4 rounded-full bg-[#71717A] animate-pulse" />
               ) : (
                 <div
                   className={`flex items-center gap-1.5 text-xs ${svc.status ? 'text-green-400' : 'text-red-400'}`}
@@ -153,9 +153,9 @@ export default function SuperAdminMaintenancePage() {
       </div>
 
       {/* Database stats */}
-      <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-6">
+      <div className="bg-[#0F2347] border border-[#8B5CF6]/15 rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-5">
-          <Server size={18} className="text-[#D4AF37]" />
+          <Server size={18} className="text-[#8B5CF6]" />
           <h2 className="text-base font-semibold text-white">{t('cg.mtDbStats')}</h2>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -163,7 +163,7 @@ export default function SuperAdminMaintenancePage() {
             <div key={tb.name} className="p-4 bg-[#0A1628] rounded-xl">
               <div className="flex items-center gap-2 mb-2">
                 {tb.icon}
-                <span className="text-xs text-[#718096]">{tb.label}</span>
+                <span className="text-xs text-[#71717A]">{tb.label}</span>
               </div>
               {loading ? (
                 <div className="h-7 w-12 bg-[#0F2347] rounded animate-pulse" />
@@ -176,9 +176,9 @@ export default function SuperAdminMaintenancePage() {
       </div>
 
       {/* Info */}
-      <div className="bg-[#0F2347] border border-[#D4AF37]/15 rounded-2xl p-6">
+      <div className="bg-[#0F2347] border border-[#8B5CF6]/15 rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Wrench size={18} className="text-[#D4AF37]" />
+          <Wrench size={18} className="text-[#8B5CF6]" />
           <h2 className="text-base font-semibold text-white">{t('cg.mtInfo')}</h2>
         </div>
         <div className="space-y-3">
@@ -194,7 +194,7 @@ export default function SuperAdminMaintenancePage() {
             },
           ].map((item, i) => (
             <div key={i} className="flex items-center justify-between p-3 bg-[#0A1628] rounded-xl">
-              <span className="text-sm text-[#718096]">{item.label}</span>
+              <span className="text-sm text-[#71717A]">{item.label}</span>
               <span className="text-sm text-white font-medium">{item.value}</span>
             </div>
           ))}
