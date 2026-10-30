@@ -31,7 +31,7 @@ export default function EntrepotLoginPage() {
     if (rpcError || !data || (data as unknown[]).length === 0) {
       await supabase.auth.signOut();
       setLoading(false);
-      setError("Aucun entrepôt actif n'est associé à ce compte. Contactez votre administrateur.");
+      setError(t('we.noAgency'));
       return;
     }
     router.replace('/entrepot/dashboard');
@@ -46,7 +46,7 @@ export default function EntrepotLoginPage() {
         <div className="text-center">
           <Warehouse className="mx-auto text-[#34D399]" size={34} />
           <h1 className="mt-3 text-2xl font-bold">
-            JDV <span className="text-[#34D399]">{t('warehouse')}</span>
+            JDV <span className="text-[#34D399]">Agence</span>
           </h1>
           <p className="text-slate-400 text-sm mt-1">{t('we.spaceTitle')}</p>
         </div>
