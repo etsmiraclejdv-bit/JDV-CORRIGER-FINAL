@@ -71,13 +71,9 @@ function Shell({ children }: { children: React.ReactNode }) {
   if (error || !current)
     return (
       <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[#0B1B3D] p-6 text-center text-white">
-        <p className="max-w-md">
-          {error
-            ? `Erreur : ${error}`
-            : "Aucune agence active n'est rattachée à ce compte. Contactez votre administrateur."}
-        </p>
+        <p className="max-w-md">{error ? t('en.err').replace('{e}', error) : t('en.noAgency')}</p>
         <button onClick={logout} className="rounded-lg border border-white/10 px-4 py-2 text-sm">
-          Se déconnecter
+          {t('en.logout')}
         </button>
       </div>
     );
