@@ -249,6 +249,33 @@ html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
 
 /* ─── JDV CRM workspace system: shared shell for every authenticated role ─── */
 .jdv-workspace-shell {
+  color-scheme: dark;
+  --brand: #8B5CF6;
+  --brand-2: #A78BFA;
+  --brand-3: #6D28D9;
+  --brand-ink: #C4B5FD;
+  --brand-ink-dark: #C4B5FD;
+  --on-brand: #FFFFFF;
+  --background: #0A0D16;
+  --foreground: #F5F7FC;
+  --primary: #8B5CF6;
+  --primary-foreground: #FFFFFF;
+  --secondary: #171D2B;
+  --secondary-foreground: #F5F7FC;
+  --accent: #29213D;
+  --accent-foreground: #E9D5FF;
+  --muted: #171D2B;
+  --muted-foreground: #A1A1AA;
+  --card: #111827;
+  --card-foreground: #F5F7FC;
+  --border: rgba(255, 255, 255, 0.09);
+  --input: #0D1422;
+  --ring: #8B5CF6;
+  --navy-deep: #080B12;
+  --navy-mid: #111827;
+  --navy-light: #171D2B;
+  --faint: #71717A;
+  --brand-text: #C4B5FD;
   color: #F5F7FC;
   background:
     radial-gradient(ellipse at 82% 0%, rgba(139, 92, 246, 0.075), transparent 34%),
