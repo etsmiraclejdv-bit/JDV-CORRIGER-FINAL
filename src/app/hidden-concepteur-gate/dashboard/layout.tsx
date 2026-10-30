@@ -259,7 +259,14 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
         <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
       </div>
 
-      <MobileTabBar rootHref="/hidden-concepteur-gate/dashboard" items={navItems.map((item) => ({ href: item.href, label: item.label, icon: item.icon }))} />
+      <MobileTabBar
+        rootHref="/hidden-concepteur-gate/dashboard"
+        items={navItems.map((item) => ({
+          href: item.href,
+          label: item.label,
+          icon: item.icon,
+        }))}
+      />
       <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="" size="sm">
         <UserProfilePanel onClose={() => setProfileOpen(false)} />
       </Modal>
