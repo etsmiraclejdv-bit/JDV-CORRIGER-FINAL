@@ -121,7 +121,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="h-16 flex items-center gap-2 px-4 border-b border-[#34D399]/10">
           <AppLogo size={26} />
           <span className="font-bold text-sm">
-            JDV <span className="text-[#34D399]">{' '}
+            JDV{' '}
             <span className="text-[#34D399]">
               {t(workspaceRoot === '/agence/dashboard' ? 'agencyBrand' : 'warehouse')}
             </span>
