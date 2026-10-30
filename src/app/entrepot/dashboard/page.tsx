@@ -52,16 +52,25 @@ export default function EntrepotOverviewPage() {
     if (!current) return;
     setLoading(true);
     const id = current.warehouse_id;
-    const [s, p, r] = await Promise.all([
-      supabase.rpc('jdvcrm_warehouse_stock_v1', { p_warehouse_id: id }),
+    const stockResult = await supabase.rpc('jdvcrm_warehouse_stock_v1', { p_warehouse_id: id });
+    if (current.access_role === 'manager') {
+      if (stockResult.error) fail(stockResult.error.message);
+      setStock((stockResult.data ?? []) as StockRow[]);
+      setProsp([]);
+      setReport(null);
+      setLoading(false);
+      return;
+    }
+
+    const [prospectorsResult, reportResult] = await Promise.all([
       supabase.rpc('jdvcrm_warehouse_prospecteurs_v1', { p_warehouse_id: id }),
       supabase.rpc('jdvcrm_warehouse_day_report_v1', { p_warehouse_id: id }),
     ]);
-    const err = s.error || p.error || r.error;
+    const err = stockResult.error || prospectorsResult.error || reportResult.error;
     if (err) fail(err.message);
-    setStock((s.data ?? []) as StockRow[]);
-    setProsp((p.data ?? []) as Prosp[]);
-    setReport((r.data ?? null) as Report | null);
+    setStock((stockResult.data ?? []) as StockRow[]);
+    setProsp((prospectorsResult.data ?? []) as Prosp[]);
+    setReport((reportResult.data ?? null) as Report | null);
     setLoading(false);
   }, [current, fail]);
 
