@@ -68,11 +68,7 @@ export default function DesignStudioPage() {
       );
       toast.success(t('cg.dsUpOk'));
     } catch (cause) {
-      toast.error(
-        cause instanceof Error
-          ? cause.message
-          : t('cg.dsUpErr')
-      );
+      toast.error(cause instanceof Error ? cause.message : t('cg.dsUpErr'));
     } finally {
       setUploading(null);
     }
@@ -140,9 +136,7 @@ export default function DesignStudioPage() {
             <Palette size={15} /> {t('cg.dsStudio')}
           </p>
           <h1 className="text-2xl font-bold text-white">{t('cg.dsGlobal')}</h1>
-          <p className="mt-2 max-w-2xl text-sm text-[#A1A1AA]">
-            {t('cg.dsGlobalSub')}
-          </p>
+          <p className="mt-2 max-w-2xl text-sm text-[#A1A1AA]">{t('cg.dsGlobalSub')}</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -347,18 +341,14 @@ export default function DesignStudioPage() {
                   {t('cg.dsAction')}
                 </button>
               </div>
-              <p className="text-xs leading-5 text-[#71717A]">
-                {t('cg.dsIndic')}
-              </p>
+              <p className="text-xs leading-5 text-[#71717A]">{t('cg.dsIndic')}</p>
             </section>
           </div>
           <section className="grid gap-5 xl:grid-cols-2">
             <div className="space-y-4 rounded-2xl border border-[#1E355B] bg-[#080B12] p-5">
               <div>
                 <h2 className="text-base font-bold text-white">{t('cg.dsBgH')}</h2>
-                <p className="mt-1 text-xs leading-5 text-[#A1A1AA]">
-                  {t('cg.dsBgSub')}
-                </p>
+                <p className="mt-1 text-xs leading-5 text-[#A1A1AA]">{t('cg.dsBgSub')}</p>
               </div>
               <label className="block space-y-2 text-sm text-white">
                 {t('cg.dsBgUrl')}
@@ -429,9 +419,7 @@ export default function DesignStudioPage() {
             <div className="space-y-4 rounded-2xl border border-[#1E355B] bg-[#080B12] p-5">
               <div>
                 <h2 className="text-base font-bold text-white">{t('cg.dsNewsH')}</h2>
-                <p className="mt-1 text-xs leading-5 text-[#A1A1AA]">
-                  {t('cg.dsNewsSub')}
-                </p>
+                <p className="mt-1 text-xs leading-5 text-[#A1A1AA]">{t('cg.dsNewsSub')}</p>
               </div>
               <label className="block space-y-2 text-sm text-white">
                 {t('cg.dsAnnTitle')}
