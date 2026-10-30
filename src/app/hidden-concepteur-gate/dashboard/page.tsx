@@ -97,7 +97,7 @@ export default function SuperAdminDashboardPage() {
         {[
           { label: 'Entreprises suivies', value: rows.length, Icon: Building2, color: 'text-violet-300', trend: 'Comptes enregistrés' },
           { label: 'Abonnements actifs', value: active, Icon: Users, color: 'text-sky-300', trend: 'Actifs et périodes d’essai' },
-          { label: 'Revenus / paiements', value: attention, Icon: CreditCard, color: 'text-emerald-300', trend: 'Dossiers nécessitant attention' },
+          { label: 'À surveiller', value: attention, Icon: CreditCard, color: 'text-emerald-300', trend: 'Dossiers nécessitant attention' },
           { label: 'Renouvellement auto', value: renewing, Icon: Gauge, color: 'text-amber-300', trend: 'Renouvellements activés' },
         ].map(({ label, value, Icon, color, trend }) => (
           <article key={label} className="rounded-2xl border border-white/[0.07] bg-[#111827] p-4 shadow-lg shadow-black/10 sm:p-5">
