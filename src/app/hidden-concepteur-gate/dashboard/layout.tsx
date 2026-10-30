@@ -19,6 +19,8 @@ import {
   Palette,
   BarChart3,
   MessageSquareQuote,
+  Search,
+  Plus,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -144,6 +146,7 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
   const [collapsed, setCollapsed] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [topSearch, setTopSearch] = useState('');
   const pathname = usePathname();
   const router = useRouter();
   const groups = Array.from(new Set(navItems.map((item) => item.group)));
@@ -265,12 +268,45 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
         <ConcepteurBranchBar />
         <div
           data-jdv-design="topbar"
-          className="h-16 flex items-center justify-between px-6 border-b border-white/[0.07] bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0"
+          className="flex min-h-16 items-center justify-between gap-4 border-b border-white/[0.07] bg-[#080B12]/95 px-4 backdrop-blur-sm sm:px-6"
         >
-          <h1 data-jdv-design="page-title" className="text-base font-semibold text-white">
-            {t('cg.lyTitle')}
-          </h1>
-          <div className="flex items-center gap-3">
+          <div className="relative hidden min-w-0 max-w-md flex-1 sm:block">
+            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <input
+              value={topSearch}
+              onChange={(event) => setTopSearch(event.target.value)}
+              placeholder="Rechercher un espace ou un outil…"
+              aria-label="Rechercher un espace ou un outil"
+              className="w-full rounded-xl border border-white/10 bg-[#111827] py-2.5 pl-9 pr-4 text-sm text-white outline-none transition placeholder:text-zinc-500 focus:border-violet-400/50"
+            />
+            {topSearch.trim() && (
+              <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-white/10 bg-[#111827] p-1 shadow-2xl">
+                {navItems
+                  .filter((item) => t(item.label).toLocaleLowerCase().includes(topSearch.toLocaleLowerCase()))
+                  .slice(0, 6)
+                  .map((item) => (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      onClick={() => setTopSearch('')}
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:bg-violet-500/10 hover:text-violet-200"
+                    >
+                      {item.icon}<span>{t(item.label)}</span>
+                    </Link>
+                  ))}
+                {navItems.filter((item) => t(item.label).toLocaleLowerCase().includes(topSearch.toLocaleLowerCase())).length === 0 && (
+                  <p className="px-3 py-3 text-xs text-zinc-500">Aucun espace correspondant.</p>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="ml-auto flex shrink-0 items-center gap-3">
+            <Link
+              href="/hidden-concepteur-gate/dashboard/company-applications"
+              className="hidden items-center gap-2 rounded-xl bg-violet-600 px-3 py-2.5 text-xs font-semibold text-white transition hover:bg-violet-500 md:inline-flex"
+            >
+              <Plus size={15} /> Nouvelle demande
+            </Link>
             <NotificationBell />
           </div>
         </div>
