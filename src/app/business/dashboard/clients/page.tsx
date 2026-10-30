@@ -78,7 +78,7 @@ export default function BusinessClientsPage() {
 
       {/* KPI */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-4">
+        <div className="bg-[#0F2347] border border-[#34D399]/20 rounded-2xl p-4">
           <p className="text-xs text-[#A0AEC0] mb-1">{t('bz.clKpiTotal')}</p>
           <p className="text-2xl font-bold text-white">{clients.length}</p>
         </div>
@@ -105,13 +105,13 @@ export default function BusinessClientsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('bz.clSearchPh')}
-            className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#D4AF37]/60"
+            className="w-full bg-[#0F2347] border border-[#34D399]/20 rounded-xl pl-9 pr-4 py-2.5 text-white text-sm placeholder-[#718096] focus:outline-none focus:border-[#34D399]/60"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#D4AF37]/60"
+          className="bg-[#0F2347] border border-[#34D399]/20 rounded-xl px-3 py-2.5 text-[#A0AEC0] text-sm focus:outline-none focus:border-[#34D399]/60"
         >
           <option value="">{t('bz.clAllStatus')}</option>
           <option value="a_jour">{statusLabel('a_jour')}</option>
@@ -121,7 +121,7 @@ export default function BusinessClientsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
+      <div className="bg-[#0F2347] border border-[#34D399]/20 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="py-16 text-center text-[#A0AEC0] text-sm">{t('bz.clLoading')}</div>
         ) : error ? (
@@ -136,7 +136,7 @@ export default function BusinessClientsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#D4AF37]/10">
+                <tr className="border-b border-[#34D399]/10">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider">
                     {t('bz.clColClient')}
                   </th>
@@ -159,7 +159,7 @@ export default function BusinessClientsPage() {
                 {filtered.map((client) => (
                   <tr
                     key={client.id}
-                    className="border-b border-[#D4AF37]/5 hover:bg-[#0A1628]/40 transition-colors"
+                    className="border-b border-[#34D399]/5 hover:bg-[#0A1628]/40 transition-colors"
                   >
                     <td className="px-4 py-3">
                       <p className="text-sm font-medium text-white">{client.full_name}</p>
@@ -168,7 +168,7 @@ export default function BusinessClientsPage() {
                     <td className="px-4 py-3 text-sm text-[#A0AEC0]">
                       {client.profiles?.full_name ?? '—'}
                     </td>
-                    <td className="px-4 py-3 text-sm font-semibold text-[#D4AF37]">
+                    <td className="px-4 py-3 text-sm font-semibold text-[#34D399]">
                       {new Intl.NumberFormat(locale, {
                         style: 'currency',
                         currency: 'XOF',
@@ -185,7 +185,7 @@ export default function BusinessClientsPage() {
                     <td className="px-4 py-3">
                       <Link
                         href={`/business/dashboard/clients/${client.id}`}
-                        className="p-1.5 rounded-lg text-[#718096] hover:text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all inline-flex"
+                        className="p-1.5 rounded-lg text-[#718096] hover:text-[#34D399] hover:bg-[#34D399]/10 transition-all inline-flex"
                       >
                         <Eye size={14} />
                       </Link>
