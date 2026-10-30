@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export interface Column<T> {
   key: string;
@@ -36,10 +37,11 @@ export default function DataTable<T>({
   columns,
   data,
   loading = false,
-  emptyMessage = 'Aucune donnée pour ces filtres.',
+  emptyMessage,
   keyExtractor,
   onRowClick,
 }: DataTableProps<T>) {
+  const { t } = useLanguage();
   return (
     <div className="overflow-x-auto rounded-2xl border border-[rgba(212,175,55,0.15)]">
       <table className="w-full text-sm">
@@ -64,7 +66,7 @@ export default function DataTable<T>({
                 colSpan={columns.length}
                 className="px-4 py-12 text-center text-sm text-[#718096]"
               >
-                {emptyMessage}
+                {emptyMessage ?? t('sh.noData')}
               </td>
             </tr>
           ) : (

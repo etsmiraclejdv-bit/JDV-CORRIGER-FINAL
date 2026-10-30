@@ -5,9 +5,11 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import { friendlyAuthError, validateNewPassword } from '@/lib/security/password';
 import { inputClass, labelClass } from '@/lib/ui/forms';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 /** Changement de mot de passe de l'utilisateur connecté (le mot de passe actuel est revérifié avant tout changement). */
 export default function ChangePasswordForm() {
+  const { t } = useLanguage();
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -28,7 +30,7 @@ export default function ChangePasswordForm() {
     const email = userData.user?.email;
     if (!email) {
       setSaving(false);
-      setError('Session expirée : reconnectez-vous puis réessayez.');
+      setError(t('sh.pwSession'));
       return;
     }
     // Revérifie le mot de passe actuel : une session laissée ouverte ne suffit pas à prendre le contrôle du compte.
@@ -50,12 +52,12 @@ export default function ChangePasswordForm() {
     setCurrent('');
     setNext('');
     setConfirm('');
-    toast.success('Mot de passe modifié avec succès.');
+    toast.success(t('sh.pwOk'));
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3" noValidate>
-      <h3 className="text-sm font-semibold text-white">Changer mon mot de passe</h3>
+      <h3 className="text-sm font-semibold text-white">{t('sh.pwTitle')}</h3>
       {error && (
         <div
           className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300"
@@ -66,7 +68,7 @@ export default function ChangePasswordForm() {
       )}
       <div>
         <label className={labelClass} htmlFor="pw-current">
-          Mot de passe actuel
+          {t('sh.pwCur')}
         </label>
         <input
           id="pw-current"
@@ -79,7 +81,7 @@ export default function ChangePasswordForm() {
       </div>
       <div>
         <label className={labelClass} htmlFor="pw-new">
-          Nouveau mot de passe
+          {t('sh.pwNew')}
         </label>
         <input
           id="pw-new"
@@ -89,13 +91,11 @@ export default function ChangePasswordForm() {
           onChange={(e) => setNext(e.target.value)}
           className={inputClass}
         />
-        <p className="text-xs text-[#718096] mt-1">
-          10 caractères minimum, avec au moins une lettre et un chiffre.
-        </p>
+        <p className="text-xs text-[#718096] mt-1">{t('sh.pwHint')}</p>
       </div>
       <div>
         <label className={labelClass} htmlFor="pw-confirm">
-          Confirmer le nouveau mot de passe
+          {t('sh.pwConf')}
         </label>
         <input
           id="pw-confirm"
@@ -112,7 +112,7 @@ export default function ChangePasswordForm() {
         className="w-full btn-outline-gold py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-60"
       >
         <Check size={14} />
-        {saving ? 'Modification…' : 'Modifier le mot de passe'}
+        {saving ? t('sh.pwSaving') : t('sh.pwBtn')}
       </button>
     </form>
   );

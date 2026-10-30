@@ -26,21 +26,23 @@ import {
   Info,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 interface Step {
   num: number;
-  title: string;
+  title: TerrainKey;
   icon: React.ReactNode;
-  desc: string;
-  tips?: string[];
+  desc: TerrainKey;
+  tips?: TerrainKey[];
 }
 
 interface Section {
   id: string;
-  role: string;
+  role: TerrainKey;
   roleColor: string;
   icon: React.ReactNode;
-  description: string;
+  description: TerrainKey;
   steps: Step[];
 }
 
@@ -48,81 +50,66 @@ const sections: Section[] = [
   // ── PROSPECTEUR TERRAIN ──────────────────────────────────────────────
   {
     id: 'terrain',
-    role: 'Prospecteur Terrain',
+    role: 'gd.rT',
     roleColor: '#63B3ED',
     icon: <MapPin size={20} />,
-    description:
-      'Guide complet pour les agents terrain : de la connexion à la gestion quotidienne de vos prospects, ventes et commissions.',
+    description: 'gd.dT',
     steps: [
       {
         num: 1,
-        title: 'Connexion au portail terrain',
+        title: 'gd.t1t',
         icon: <ShieldCheck size={16} />,
-        desc: "Accédez à /terrain/login avec vos identifiants fournis par votre administrateur entreprise. Votre compte est créé par l'admin, pas en self-service.",
-        tips: [
-          "Utilisez l'icône œil pour afficher/masquer votre mot de passe",
-          'En cas de compte inactif, contactez votre admin entreprise',
-        ],
+        desc: 'gd.t1d',
+        tips: ['gd.t1k1', 'gd.t1k2'],
       },
       {
         num: 2,
-        title: "Tableau de bord — Vue d'ensemble",
+        title: 'gd.t2t',
         icon: <BarChart2 size={16} />,
-        desc: "Votre tableau de bord affiche vos ventes du jour, vos prospects actifs (chaud/tiède/froid), votre commission du jour et de la semaine, et un fil d'activité récente.",
-        tips: [
-          'Les badges de couleur indiquent la température du prospect : rouge = chaud, jaune = tiède, bleu = froid',
-        ],
+        desc: 'gd.t2d',
+        tips: ['gd.t2k1'],
       },
       {
         num: 3,
-        title: 'Créer un nouveau prospect',
+        title: 'gd.t3t',
         icon: <UserPlus size={16} />,
-        desc: "Depuis Mes prospects → Nouveau prospect : saisissez le nom, téléphone (anti-doublon automatique), produit d'intérêt et notes. Le prospect vous est automatiquement assigné.",
-        tips: [
-          'Si le téléphone existe déjà, la base refusera la création — vérifiez avant de saisir',
-          'Ne tentez jamais de modifier le champ prospecteur_id — il est verrouillé sur votre session',
-        ],
+        desc: 'gd.t3d',
+        tips: ['gd.t3k1', 'gd.t3k2'],
       },
       {
         num: 4,
-        title: 'Suivi des prospects et activités',
+        title: 'gd.t4t',
         icon: <Users size={16} />,
-        desc: 'Enregistrez chaque interaction (appel, visite, message) via "Ajouter une activité". La date de dernier contact est mise à jour automatiquement. Planifiez des relances via next_follow_up_at.',
-        tips: [
-          'Un badge "À relancer aujourd\'hui" apparaît sur les prospects dont la relance est due',
-          "Les visites terrain peuvent inclure une géolocalisation si votre navigateur l'autorise",
-        ],
+        desc: 'gd.t4d',
+        tips: ['gd.t4k1', 'gd.t4k2'],
       },
       {
         num: 5,
-        title: 'Enregistrer une vente',
+        title: 'gd.t5t',
         icon: <ShoppingCart size={16} />,
-        desc: "Depuis Mes ventes → Nouvelle vente : sélectionnez le client (ou créez-le rapidement), l'article, le type (comptant/crédit), la quantité et l'acompte. Les échéances sont générées automatiquement par la base.",
-        tips: [
-          'Ne calculez jamais les échéances manuellement — le système le fait',
-          "Si le stock est insuffisant, la base affichera un message d'erreur explicite",
-        ],
+        desc: 'gd.t5d',
+        tips: ['gd.t5k1', 'gd.t5k2'],
       },
       {
         num: 6,
-        title: 'Consulter mes commissions',
+        title: 'gd.t6t',
         icon: <Wallet size={16} />,
-        desc: "L'onglet Ma commission affiche vos commissions en attente et réglées, avec le détail par vente. Le règlement est effectué par le Super Admin depuis le portail de supervision.",
-        tips: ['Les commissions sont calculées automatiquement à chaque vente enregistrée'],
+        desc: 'gd.t6d',
+        tips: ['gd.t6k1'],
       },
       {
         num: 7,
-        title: 'Notifications et alertes',
+        title: 'gd.t7t',
         icon: <Bell size={16} />,
-        desc: "L'icône cloche en haut à droite affiche vos notifications non lues (relances impayés, alertes stock, etc.). Cliquez sur une notification pour la marquer comme lue.",
-        tips: ['Les relances impayés sont générées automatiquement par la tâche de maintenance'],
+        desc: 'gd.t7d',
+        tips: ['gd.t7k1'],
       },
       {
         num: 8,
-        title: 'Mon profil et paramètres personnels',
+        title: 'gd.t8t',
         icon: <Settings size={16} />,
-        desc: 'Cliquez sur "Mon profil" en bas de la barre latérale pour modifier votre nom, téléphone, avatar et langue préférée. Ces changements s\'appliquent immédiatement.',
-        tips: ['Le sélecteur de langue (FR/EN) est disponible dans votre profil'],
+        desc: 'gd.t8d',
+        tips: ['gd.t8k1'],
       },
     ],
   },
@@ -130,123 +117,101 @@ const sections: Section[] = [
   // ── ENTREPRISE / BUSINESS ADMIN ──────────────────────────────────────
   {
     id: 'business',
-    role: 'Entreprise (Admin)',
+    role: 'gd.rB',
     roleColor: '#D4AF37',
     icon: <Building2 size={20} />,
-    description:
-      "Guide pour les administrateurs entreprise : gestion complète de l'activité, des prospecteurs, du stock, des ventes et des rapports.",
+    description: 'gd.dB',
     steps: [
       {
         num: 1,
-        title: 'Connexion et tableau de bord',
+        title: 'gd.b1t',
         icon: <ShieldCheck size={16} />,
-        desc: "Accédez à /business/login. Votre compte est créé lors de l'inscription de votre entreprise sur la page publique. Le tableau de bord affiche les KPI clés : encaissements, prospecteurs actifs, prospects par température.",
-        tips: ['Seul le rôle business_admin peut accéder à ce portail'],
+        desc: 'gd.b1d',
+        tips: ['gd.b1k1'],
       },
       {
         num: 2,
-        title: 'Ajouter un prospecteur',
+        title: 'gd.b2t',
         icon: <UserPlus size={16} />,
-        desc: 'Depuis Prospecteurs → Ajouter un prospecteur : remplissez le formulaire (nom, email, téléphone, taux de commission). Le compte Supabase Auth est créé automatiquement côté serveur — le prospecteur reçoit ses identifiants par email.',
-        tips: [
-          'Le code prospecteur est généré automatiquement',
-          'Le taux de commission par défaut est celui de votre organisation',
-        ],
+        desc: 'gd.b2d',
+        tips: ['gd.b2k1', 'gd.b2k2'],
       },
       {
         num: 3,
-        title: 'Gestion des prospects',
+        title: 'gd.b3t',
         icon: <Users size={16} />,
-        desc: "Tableau filtrable par température (chaud/tiède/froid), prospecteur et statut. Seul l'admin peut réassigner un prospect à un autre prospecteur — avec confirmation explicite.",
-        tips: [
-          'La protection anti-vol de prospect est gérée par la base de données',
-          "Si la réassignation échoue, le message d'erreur PostgreSQL s'affiche tel quel",
-        ],
+        desc: 'gd.b3d',
+        tips: ['gd.b3k1', 'gd.b3k2'],
       },
       {
         num: 4,
-        title: 'Catalogue articles',
+        title: 'gd.b4t',
         icon: <BookOpen size={16} />,
-        desc: "Depuis Catalogue : créez et gérez vos articles (code, nom, catégorie, prix fixe/comptant/crédit, acompte minimum). Désactivez un article plutôt que de le supprimer pour préserver l'historique des ventes.",
-        tips: ['Chaque article crée automatiquement une ligne de stock à quantité 0'],
+        desc: 'gd.b4d',
+        tips: ['gd.b4k1'],
       },
       {
         num: 5,
-        title: 'Réception de marchandises (stock)',
+        title: 'gd.b5t',
         icon: <Truck size={16} />,
-        desc: 'Stock → Réceptions : créez un bon de réception lié à un bon de commande, ajoutez les lignes reçues, puis cliquez "Valider la réception". La fonction jdvcrm_process_goods_receipt_v1 met à jour le stock automatiquement.',
-        tips: [
-          'Ne modifiez jamais le stock directement — passez toujours par une réception ou un transfert',
-        ],
+        desc: 'gd.b5d',
+        tips: ['gd.b5k1'],
       },
       {
         num: 6,
-        title: 'Transferts de stock',
+        title: 'gd.b6t',
         icon: <ArrowLeftRight size={16} />,
-        desc: 'Stock → Transferts : créez le transfert (draft), puis "Envoyer" pour décrémenter le stock source (statut in_transit), puis "Confirmer la réception" pour incrémenter le stock destination.',
-        tips: ['Les quantités reçues peuvent différer des quantités envoyées (casse/perte)'],
+        desc: 'gd.b6d',
+        tips: ['gd.b6k1'],
       },
       {
         num: 7,
-        title: 'Enregistrer une vente et un paiement',
+        title: 'gd.b7t',
         icon: <ShoppingCart size={16} />,
-        desc: 'Ventes → Nouvelle vente : sélectionnez le client, l\'article, le type (comptant/crédit). Depuis la fiche de vente, bouton "Enregistrer un paiement" pour saisir un encaissement (espèces, mobile money ou FedaPay si configuré).',
-        tips: [
-          'Les échéances et le stock sont gérés automatiquement par les triggers',
-          'La plus ancienne échéance non soldée est présélectionnée dans le formulaire de paiement',
-        ],
+        desc: 'gd.b7d',
+        tips: ['gd.b7k1', 'gd.b7k2'],
       },
       {
         num: 8,
-        title: 'Retours de vente',
+        title: 'gd.b8t',
         icon: <RotateCcw size={16} />,
-        desc: 'Depuis la fiche d\'une vente → "Enregistrer un retour" : saisissez la raison, les articles retournés et les montants remboursés. La fonction jdvcrm_process_sale_return réintègre le stock et ajuste les montants.',
-        tips: [
-          'Le motif de retour est obligatoire',
-          'Les articles suivis par numéro de série sont validés automatiquement',
-        ],
+        desc: 'gd.b8d',
+        tips: ['gd.b8k1', 'gd.b8k2'],
       },
       {
         num: 9,
-        title: 'Rapports et analyses',
+        title: 'gd.b9t',
         icon: <BarChart2 size={16} />,
-        desc: 'Rapports → 4 onglets : Ventes, Paiements, Commissions, Impayés. Filtrez par plage de dates. Les 5 fonctions RPC de reporting sont appelées en parallèle pour des performances optimales.',
-        tips: ['Les rapports sont filtrés automatiquement sur votre organisation par RLS'],
+        desc: 'gd.b9d',
+        tips: ['gd.b9k1'],
       },
       {
         num: 10,
-        title: 'Journal d&apos;audit',
+        title: 'gd.b10t',
         icon: <ClipboardList size={16} />,
-        desc: "Audit → Journal de toutes les modifications (ventes, paiements, membres, prospects, stock). Filtrez par type d'entité, action, utilisateur et plage de dates. Les changements sont affichés en différentiel lisible.",
-        tips: [
-          'Le journal est alimenté automatiquement par les triggers — aucune écriture manuelle',
-        ],
+        desc: 'gd.b10d',
+        tips: ['gd.b10k1'],
       },
       {
         num: 11,
-        title: 'Notifications',
+        title: 'gd.b11t',
         icon: <Bell size={16} />,
-        desc: "L'icône cloche affiche les notifications non lues de votre organisation (relances impayés, alertes stock bas, etc.). Cliquez pour marquer comme lue.",
-        tips: ['Les relances sont générées par la tâche de maintenance "Relances impayés"'],
+        desc: 'gd.b11d',
+        tips: ['gd.b11k1'],
       },
       {
         num: 12,
-        title: 'Paramètres entreprise',
+        title: 'gd.b12t',
         icon: <Settings size={16} />,
-        desc: 'Paramètres → 4 onglets : Général (infos légales), Personnalisation (logo, couleurs, aperçu en temps réel), Paramètres avancés (notifications, ventes, stock), Paiement en ligne (clés FedaPay de votre entreprise).',
-        tips: [
-          'La clé secrète FedaPay n\'est jamais renvoyée en lecture — utilisez "Remplacer la clé" pour la modifier',
-        ],
+        desc: 'gd.b12d',
+        tips: ['gd.b12k1'],
       },
       {
         num: 13,
-        title: 'Abonnement JDV CRM',
+        title: 'gd.b13t',
         icon: <Star size={16} />,
-        desc: "Depuis /payment-wall ou Paramètres → Abonnement : choisissez votre plan (Mensuel 50$, Trimestriel 150$, Semestriel 300$, Annuel 600$). Le paiement est traité via FedaPay et l'abonnement est activé automatiquement.",
-        tips: [
-          "L'essai gratuit dure 3 jours",
-          "Après expiration, seules les fonctionnalités premium sont verrouillées — pas l'accès total",
-        ],
+        desc: 'gd.b13d',
+        tips: ['gd.b13k1', 'gd.b13k2'],
       },
     ],
   },
@@ -254,104 +219,86 @@ const sections: Section[] = [
   // ── SUPER ADMIN / CONCEPTEUR ─────────────────────────────────────────
   {
     id: 'superadmin',
-    role: 'Super Admin (Concepteur)',
+    role: 'gd.rS',
     roleColor: '#FC8181',
     icon: <ShieldCheck size={20} />,
-    description:
-      'Guide pour le fondateur et les concepteurs autorisés : supervision de toute la plateforme, gestion du stock global, des prospecteurs, de la maintenance et des paramètres plateforme.',
+    description: 'gd.dS',
     steps: [
       {
         num: 1,
-        title: 'Accès au portail Super Admin',
+        title: 'gd.s1t',
         icon: <ShieldCheck size={16} />,
-        desc: 'Accédez directement à /hidden-concepteur-gate/login (URL non listée dans la navigation publique). Seuls les comptes de la liste fermée AUTHORIZED_CONCEPTEURS peuvent se connecter.',
-        tips: [
-          'Compte fondateur : romarica15@gmail.com',
-          "Aucun formulaire d'inscription — liste fermée uniquement",
-        ],
+        desc: 'gd.s1d',
+        tips: ['gd.s1k1', 'gd.s1k2'],
       },
       {
         num: 2,
-        title: "Vue d'ensemble plateforme",
+        title: 'gd.s2t',
         icon: <BarChart2 size={16} />,
-        desc: "Le tableau de bord affiche les KPI globaux de toutes les entreprises : revenus plateforme, entreprises actives/suspendues/en essai, prospecteurs actifs, et graphiques d'évolution.",
-        tips: ['Vous voyez toutes les organisations — pas de filtre RLS à ce niveau'],
+        desc: 'gd.s2d',
+        tips: ['gd.s2k1'],
       },
       {
         num: 3,
-        title: 'Gestion des entreprises',
+        title: 'gd.s3t',
         icon: <Building2 size={16} />,
-        desc: "Entreprises → liste de toutes les organisations avec statut, abonnement, date d'inscription. Cliquez sur une entreprise pour activer, suspendre ou consulter ses détails.",
-        tips: ["La suspension bloque l'accès au portail Business de l'entreprise concernée"],
+        desc: 'gd.s3d',
+        tips: ['gd.s3k1'],
       },
       {
         num: 4,
-        title: 'Stock plateforme (Module 5)',
+        title: 'gd.s4t',
         icon: <Package size={16} />,
-        desc: "Stock → 6 sous-sections : Fournisseurs, Bons de commande, Réceptions, Inventaire (vue agrégée), Transferts, Mouvements (journal d'audit stock). Filtrez par entreprise sur chaque écran.",
-        tips: [
-          "L'inventaire est en lecture seule — toute modification passe par une réception ou un transfert",
-          'Les mouvements sont générés automatiquement par les triggers',
-        ],
+        desc: 'gd.s4d',
+        tips: ['gd.s4k1', 'gd.s4k2'],
       },
       {
         num: 5,
-        title: 'Gestion des prospecteurs (Module 6)',
+        title: 'gd.s5t',
         icon: <Users size={16} />,
-        desc: "Prospecteurs → liste globale de tous les agents terrain. Fiche détail : identité, performance (ventes/commissions), stock alloué, prospects assignés. Actions : changer le statut, révoquer l'accès de connexion.",
-        tips: [
-          'La révocation de session passe par une route API serveur — jamais directement côté client',
-          'L\'indicateur "compte lié" montre si le prospecteur a un accès Supabase Auth actif',
-        ],
+        desc: 'gd.s5d',
+        tips: ['gd.s5k1', 'gd.s5k2'],
       },
       {
         num: 6,
-        title: 'Commissions en attente',
+        title: 'gd.s6t',
         icon: <Wallet size={16} />,
-        desc: 'Prospecteurs → Commissions : liste des commissions pending. Sélectionnez plusieurs commissions et cliquez "Régler" pour appeler jdvcrm_settle_commission_v1 sur chacune, avec barre de progression.',
-        tips: ['Le règlement groupé affiche un résumé succès/échecs à la fin'],
+        desc: 'gd.s6d',
+        tips: ['gd.s6k1'],
       },
       {
         num: 7,
-        title: 'Conversion prospect → client',
+        title: 'gd.s7t',
         icon: <CheckCircle size={16} />,
-        desc: 'Depuis la fiche d\'un prospect (accessible en drill-down depuis la fiche prospecteur) : bouton "Convertir en client" → confirmation → appel jdvcrm_convert_prospect_to_client_v1 → redirection vers la fiche client créée.',
-        tips: ['Cette action est irréversible — confirmez avant de valider'],
+        desc: 'gd.s7d',
+        tips: ['gd.s7k1'],
       },
       {
         num: 8,
-        title: 'Maintenance plateforme',
+        title: 'gd.s8t',
         icon: <Wrench size={16} />,
-        desc: 'Maintenance → 5 tâches déclenchables manuellement : expiration des abonnements, marquage des échéances en retard, archivage clients/prospects inactifs, génération des relances impayés.',
-        tips: [
-          'Ces tâches remplacent pg_cron — à déclencher régulièrement (quotidien recommandé)',
-          'Chaque tâche affiche son résultat (lignes traitées, erreurs éventuelles)',
-        ],
+        desc: 'gd.s8d',
+        tips: ['gd.s8k1', 'gd.s8k2'],
       },
       {
         num: 9,
-        title: 'Journal d&apos;audit plateforme',
+        title: 'gd.s9t',
         icon: <ClipboardList size={16} />,
-        desc: "Audit → vue transverse de toutes les organisations. Sélecteur d'entreprise pour filtrer. Utile pour le support et l'investigation en cas de litige.",
-        tips: [
-          'Filtrez par entity_type (sale, payment, prospect, stock_movement, organization_member) pour cibler votre recherche',
-        ],
+        desc: 'gd.s9d',
+        tips: ['gd.s9k1'],
       },
       {
         num: 10,
-        title: 'Paramètres plateforme',
+        title: 'gd.s10t',
         icon: <Settings size={16} />,
-        desc: "Paramètres → gestion des plans d'abonnement (CRUD sur subscription_plans), gestion des comptes Super Admin autorisés (activation/désactivation), configuration FedaPay plateforme.",
-        tips: [
-          'Ne supprimez jamais une ligne super_admins — désactivez via status/actif',
-          "Les clés FedaPay plateforme sont stockées en variables d'environnement serveur, jamais en base",
-        ],
+        desc: 'gd.s10d',
+        tips: ['gd.s10k1', 'gd.s10k2'],
       },
       {
         num: 11,
-        title: 'Notifications',
+        title: 'gd.s11t',
         icon: <Bell size={16} />,
-        desc: "L'icône cloche affiche les notifications de la plateforme. Les notifications sont filtrées sur votre user_id.",
+        desc: 'gd.s11d',
         tips: [],
       },
     ],
@@ -359,6 +306,7 @@ const sections: Section[] = [
 ];
 
 export default function GuideOnboardingPage() {
+  const { t } = useLanguage();
   const [openSection, setOpenSection] = useState<string>('business');
   const [openSteps, setOpenSteps] = useState<Record<string, boolean>>({});
 
@@ -375,16 +323,13 @@ export default function GuideOnboardingPage() {
           <div className="inline-flex items-center gap-2 bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] rounded-full px-4 py-1.5 mb-5">
             <BookOpen size={14} className="text-[#D4AF37]" />
             <span className="text-xs font-semibold text-[#D4AF37] uppercase tracking-wider">
-              Guide d&apos;utilisation
+              {t('gd.badge')}
             </span>
           </div>
           <h1 className="text-3xl font-bold text-white mb-3">
-            Guide d&apos;onboarding <span className="gold-gradient-text">JDV CRM</span>
+            {t('gd.h1')} <span className="gold-gradient-text">JDV CRM</span>
           </h1>
-          <p className="text-[#A0AEC0] text-sm max-w-xl mx-auto">
-            Retrouvez ici toutes les instructions pour chaque portail. Sélectionnez votre rôle pour
-            accéder aux étapes qui vous concernent.
-          </p>
+          <p className="text-[#A0AEC0] text-sm max-w-xl mx-auto">{t('gd.intro')}</p>
         </div>
 
         {/* Role tabs */}
@@ -402,7 +347,7 @@ export default function GuideOnboardingPage() {
               <span style={{ color: openSection === s.id ? s.roleColor : undefined }}>
                 {s.icon}
               </span>
-              {s.role}
+              {t(s.role)}
             </button>
           ))}
         </div>
@@ -421,9 +366,9 @@ export default function GuideOnboardingPage() {
                   >
                     {section.icon}
                   </div>
-                  <h2 className="text-lg font-bold text-white">{section.role}</h2>
+                  <h2 className="text-lg font-bold text-white">{t(section.role)}</h2>
                 </div>
-                <p className="text-sm text-[#A0AEC0]">{section.description}</p>
+                <p className="text-sm text-[#A0AEC0]">{t(section.description)}</p>
               </div>
 
               {/* Steps */}
@@ -454,7 +399,7 @@ export default function GuideOnboardingPage() {
                             {step.icon}
                           </span>
                           <span className="text-sm font-semibold text-white truncate">
-                            {step.title}
+                            {t(step.title)}
                           </span>
                         </div>
                         {isOpen ? (
@@ -466,7 +411,9 @@ export default function GuideOnboardingPage() {
 
                       {isOpen && (
                         <div className="px-5 pb-5 border-t border-[rgba(212,175,55,0.08)]">
-                          <p className="text-sm text-[#A0AEC0] mt-4 leading-relaxed">{step.desc}</p>
+                          <p className="text-sm text-[#A0AEC0] mt-4 leading-relaxed">
+                            {t(step.desc)}
+                          </p>
                           {step.tips && step.tips.length > 0 && (
                             <div className="mt-4 space-y-2">
                               {step.tips.map((tip, i) => (
@@ -475,7 +422,7 @@ export default function GuideOnboardingPage() {
                                   className="flex items-start gap-2 bg-[rgba(99,179,237,0.06)] border border-[rgba(99,179,237,0.15)] rounded-xl px-3 py-2"
                                 >
                                   <Info size={13} className="text-[#63B3ED] flex-shrink-0 mt-0.5" />
-                                  <p className="text-xs text-[#A0AEC0]">{tip}</p>
+                                  <p className="text-xs text-[#A0AEC0]">{t(tip)}</p>
                                 </div>
                               ))}
                             </div>
@@ -491,7 +438,7 @@ export default function GuideOnboardingPage() {
               <div className="mt-6 bg-[rgba(212,175,55,0.05)] border border-[rgba(212,175,55,0.15)] rounded-2xl p-5">
                 <h3 className="text-sm font-semibold text-[#D4AF37] mb-3 flex items-center gap-2">
                   <AlertCircle size={14} />
-                  Liens rapides — {section.role}
+                  {t('gd.quick').replace('{r}', t(section.role))}
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {section.id === 'terrain' && (
@@ -500,31 +447,31 @@ export default function GuideOnboardingPage() {
                         href="/terrain/login"
                         className="text-xs text-[#63B3ED] hover:text-white bg-[rgba(99,179,237,0.1)] border border-[rgba(99,179,237,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Connexion Terrain
+                        {t('gd.lTLogin')}
                       </Link>
                       <Link
                         href="/terrain/dashboard"
                         className="text-xs text-[#63B3ED] hover:text-white bg-[rgba(99,179,237,0.1)] border border-[rgba(99,179,237,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Mon tableau de bord
+                        {t('gd.lTDash')}
                       </Link>
                       <Link
                         href="/terrain/dashboard/prospects"
                         className="text-xs text-[#63B3ED] hover:text-white bg-[rgba(99,179,237,0.1)] border border-[rgba(99,179,237,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Mes prospects
+                        {t('gd.lTPros')}
                       </Link>
                       <Link
                         href="/terrain/dashboard/ventes"
                         className="text-xs text-[#63B3ED] hover:text-white bg-[rgba(99,179,237,0.1)] border border-[rgba(99,179,237,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Mes ventes
+                        {t('gd.lTSales')}
                       </Link>
                       <Link
                         href="/terrain/dashboard/commission"
                         className="text-xs text-[#63B3ED] hover:text-white bg-[rgba(99,179,237,0.1)] border border-[rgba(99,179,237,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Ma commission
+                        {t('gd.lTComm')}
                       </Link>
                     </>
                   )}
@@ -534,43 +481,43 @@ export default function GuideOnboardingPage() {
                         href="/business/login"
                         className="text-xs text-[#D4AF37] hover:text-white bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Connexion Entreprise
+                        {t('gd.lBLogin')}
                       </Link>
                       <Link
                         href="/business/dashboard"
                         className="text-xs text-[#D4AF37] hover:text-white bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Tableau de bord
+                        {t('gd.lBDash')}
                       </Link>
                       <Link
                         href="/business/dashboard/catalogue"
                         className="text-xs text-[#D4AF37] hover:text-white bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Catalogue
+                        {t('gd.lBCat')}
                       </Link>
                       <Link
                         href="/business/dashboard/ventes"
                         className="text-xs text-[#D4AF37] hover:text-white bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Ventes
+                        {t('gd.lBSales')}
                       </Link>
                       <Link
                         href="/business/dashboard/clients"
                         className="text-xs text-[#D4AF37] hover:text-white bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Clients
+                        {t('gd.lBCli')}
                       </Link>
                       <Link
                         href="/business/dashboard/reports"
                         className="text-xs text-[#D4AF37] hover:text-white bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Rapports
+                        {t('gd.lBRep')}
                       </Link>
                       <Link
                         href="/payment-wall"
                         className="text-xs text-[#D4AF37] hover:text-white bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Abonnement
+                        {t('gd.lBSub')}
                       </Link>
                     </>
                   )}
@@ -580,25 +527,25 @@ export default function GuideOnboardingPage() {
                         href="/hidden-concepteur-gate/dashboard"
                         className="text-xs text-[#FC8181] hover:text-white bg-[rgba(252,129,129,0.1)] border border-[rgba(252,129,129,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Dashboard Super Admin
+                        {t('gd.lSDash')}
                       </Link>
                       <Link
                         href="/hidden-concepteur-gate/dashboard/maintenance"
                         className="text-xs text-[#FC8181] hover:text-white bg-[rgba(252,129,129,0.1)] border border-[rgba(252,129,129,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Maintenance
+                        {t('gd.lSMaint')}
                       </Link>
                       <Link
                         href="/hidden-concepteur-gate/dashboard/audit"
                         className="text-xs text-[#FC8181] hover:text-white bg-[rgba(252,129,129,0.1)] border border-[rgba(252,129,129,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Journal d&apos;audit
+                        {t('gd.lSAudit')}
                       </Link>
                       <Link
                         href="/hidden-concepteur-gate/dashboard/settings"
                         className="text-xs text-[#FC8181] hover:text-white bg-[rgba(252,129,129,0.1)] border border-[rgba(252,129,129,0.2)] rounded-lg px-3 py-1.5 transition-colors"
                       >
-                        Paramètres
+                        {t('gd.lSSet')}
                       </Link>
                     </>
                   )}

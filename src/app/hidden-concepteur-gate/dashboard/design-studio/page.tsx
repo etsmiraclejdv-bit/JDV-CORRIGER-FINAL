@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Palette, Save, Send, RotateCcw, History } from 'lucide-react';
 import { toast } from 'sonner';
 import { checkCurrentSuperAdmin } from '@/lib/auth/super-admin';
@@ -8,8 +8,12 @@ import { createDesignVersion, listDesignVersions } from '@/features/design-studi
 import type { DesignConfig, DesignVersion } from '@/features/design-studio/types';
 import VisualDesignEditor from '@/features/design-studio/VisualDesignEditor';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function DesignStudioPage() {
+  const { t, locale } = useLanguage();
+  const tRef = useRef(t);
+  tRef.current = t;
   const [allowed, setAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,11 +34,11 @@ export default function DesignStudioPage() {
       'video/webm',
     ];
     if (!allowed.includes(file.type)) {
-      toast.error('Format refusé. Utilisez JPG, PNG, WebP, GIF, AVIF, MP4 ou WebM.');
+      toast.error(t('cg.dsFmt'));
       return;
     }
     if (file.size > 50 * 1024 * 1024) {
-      toast.error('Le fichier dépasse la limite de 50 Mo.');
+      toast.error(t('cg.dsSize'));
       return;
     }
     setUploading(target);
@@ -62,12 +66,12 @@ export default function DesignStudioPage() {
               updateMediaType: file.type.startsWith('video/') ? 'video' : 'image',
             }
       );
-      toast.success('Média téléversé. Enregistrez un brouillon avant de publier.');
+      toast.success(t('cg.dsUpOk'));
     } catch (cause) {
       toast.error(
         cause instanceof Error
           ? cause.message
-          : 'Téléversement impossible. Vérifiez la migration du studio et vos droits concepteur.'
+          : t('cg.dsUpErr')
       );
     } finally {
       setUploading(null);
@@ -78,7 +82,7 @@ export default function DesignStudioPage() {
   const reload = useCallback(async () => {
     const result = await listDesignVersions('platform');
     if (result.error) {
-      toast.error('Historique indisponible : vérifiez que la migration du studio a été appliquée.');
+      toast.error(tRef.current('cg.dsHist'));
       return;
     }
     setVersions(result.data);
@@ -108,26 +112,34 @@ export default function DesignStudioPage() {
     if (result.error) {
       toast.error(
         result.error.message ||
-          'Échec. La migration SQL du studio est nécessaire avant l’enregistrement.'
+          t('cg.dsSaveErr')
       );
       return;
     }
-    toast.success(status === 'published' ? 'Version publiée.' : 'Brouillon enregistré.');
+    toast.success(status === 'published' ? t('cg.dsPubOk') : t('cg.dsDraftOk'));
     await reload();
   }
 
+ fix/traduction-pages-diverses
+  if (loading) return <div className="p-8 text-sm text-[#A0AEC0]">{t('cg.dsCheck')}</div>;
+  if (!allowed)
+    return (
+      <div className="m-6 rounded-xl border border-red-500/30 bg-red-500/10 p-5 text-sm text-red-200">
+        {t('cg.dsDenied')}
+=======
   if (loading) return <div className="p-8 text-sm text-[#AFC0D8]">Vérification des droits…</div>;
   if (!allowed)
     return (
       <div className="m-6 rounded-xl border border-red-400/30 bg-red-950/40 p-5 text-sm text-red-300">
         Accès réservé au concepteur JDV CRM.
+ main
       </div>
     );
 
   const fields: { key: 'primaryColor' | 'secondaryColor' | 'accentColor'; label: string }[] = [
-    { key: 'primaryColor', label: 'Couleur principale' },
-    { key: 'secondaryColor', label: 'Couleur secondaire' },
-    { key: 'accentColor', label: 'Couleur d’accentuation' },
+    { key: 'primaryColor', label: t('cg.dsPrimary') },
+    { key: 'secondaryColor', label: t('cg.dsSecondary') },
+    { key: 'accentColor', label: t('cg.dsAccent') },
   ];
 
   /* eslint-disable prettier/prettier */
@@ -135,6 +147,14 @@ export default function DesignStudioPage() {
     <div className="space-y-6 p-5 sm:p-8">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
+ fix/traduction-pages-diverses
+          <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#D4AF37]">
+            <Palette size={15} /> {t('cg.dsStudio')}
+          </p>
+          <h1 className="text-2xl font-bold text-white">{t('cg.dsGlobal')}</h1>
+          <p className="mt-2 max-w-2xl text-sm text-[#A0AEC0]">
+            {t('cg.dsGlobalSub')}
+=======
           <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#34D399]">
             <Palette size={15} /> Studio de design
           </p>
@@ -142,6 +162,7 @@ export default function DesignStudioPage() {
           <p className="mt-2 max-w-2xl text-sm text-[#AFC0D8]">
             Configurez la charte, prévisualisez le résultat et gérez les versions sans déployer
             l’application.
+ main
           </p>
         </div>
         <div className="flex gap-2">
@@ -150,14 +171,14 @@ export default function DesignStudioPage() {
             onClick={() => save('draft')}
             className="flex items-center gap-2 rounded-xl border border-[#1E355B] px-4 py-2.5 text-sm text-[#6EE7B7] disabled:opacity-50"
           >
-            <Save size={15} /> Brouillon
+            <Save size={15} /> {t('cg.dsDraftBtn')}
           </button>
           <button
             disabled={saving}
             onClick={() => save('published')}
             className="flex items-center gap-2 rounded-xl bg-[#147866] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-50"
           >
-            <Send size={15} /> Publier
+            <Send size={15} /> {t('cg.dsPublish')}
           </button>
         </div>
       </header>
@@ -166,13 +187,13 @@ export default function DesignStudioPage() {
           onClick={() => setHistory(false)}
           className={`border-b-2 px-3 py-3 text-sm ${!history ? 'border-[#34D399] text-[#6EE7B7]' : 'border-transparent text-[#AFC0D8]'}`}
         >
-          Éditeur
+          {t('cg.dsEditor')}
         </button>
         <button
           onClick={() => setHistory(true)}
           className={`flex items-center gap-2 border-b-2 px-3 py-3 text-sm ${history ? 'border-[#34D399] text-[#6EE7B7]' : 'border-transparent text-[#AFC0D8]'}`}
         >
-          <History size={14} /> Versions ({versions.length})
+          <History size={14} /> {t('cg.dsVersions').replace('{n}', String(versions.length))}
         </button>
       </div>
       {!history ? (
@@ -181,7 +202,11 @@ export default function DesignStudioPage() {
           <div className="grid gap-5 xl:grid-cols-2">
             <section className="space-y-5 rounded-2xl border border-[#1E355B] bg-[#08152F] p-5">
               <label className="block space-y-2">
+ fix/traduction-pages-diverses
+                <span className="text-sm text-white">{t('cg.dsBrand')}</span>
+=======
                 <span className="text-sm text-[#F4F7FC]">Nom affiché</span>
+ main
                 <input
                   value={config.brandName}
                   onChange={(e) => setConfig((v) => ({ ...v, brandName: e.target.value }))}
@@ -209,8 +234,13 @@ export default function DesignStudioPage() {
                 ))}
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
+ fix/traduction-pages-diverses
+                <label className="space-y-2 text-sm text-white">
+                  {t('cg.dsTheme')}
+=======
                 <label className="space-y-2 text-sm text-[#F4F7FC]">
                   Thème
+ main
                   <select
                     value={config.mode}
                     onChange={(e) =>
@@ -218,13 +248,18 @@ export default function DesignStudioPage() {
                     }
                     className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] p-2.5"
                   >
-                    <option value="light">Clair</option>
-                    <option value="dark">Sombre</option>
-                    <option value="system">Système</option>
+                    <option value="light">{t('cg.dsLight')}</option>
+                    <option value="dark">{t('cg.dsDark')}</option>
+                    <option value="system">{t('cg.dsSystem')}</option>
                   </select>
                 </label>
+ fix/traduction-pages-diverses
+                <label className="space-y-2 text-sm text-white">
+                  {t('cg.dsDensity')}
+=======
                 <label className="space-y-2 text-sm text-[#F4F7FC]">
                   Densité
+ main
                   <select
                     value={config.density}
                     onChange={(e) =>
@@ -235,12 +270,17 @@ export default function DesignStudioPage() {
                     }
                     className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] p-2.5"
                   >
-                    <option value="comfortable">Confortable</option>
-                    <option value="compact">Compacte</option>
+                    <option value="comfortable">{t('cg.dsComfort')}</option>
+                    <option value="compact">{t('cg.dsCompact')}</option>
                   </select>
                 </label>
+ fix/traduction-pages-diverses
+                <label className="space-y-2 text-sm text-white">
+                  {t('cg.dsRadius')}
+=======
                 <label className="space-y-2 text-sm text-[#F4F7FC]">
                   Arrondis
+ main
                   <select
                     value={config.radius}
                     onChange={(e) =>
@@ -248,13 +288,18 @@ export default function DesignStudioPage() {
                     }
                     className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] p-2.5"
                   >
-                    <option value="small">Discrets</option>
-                    <option value="medium">Moyens</option>
-                    <option value="large">Arrondis</option>
+                    <option value="small">{t('cg.dsRSmall')}</option>
+                    <option value="medium">{t('cg.dsRMed')}</option>
+                    <option value="large">{t('cg.dsRLarge')}</option>
                   </select>
                 </label>
+ fix/traduction-pages-diverses
+                <label className="space-y-2 text-sm text-white">
+                  {t('cg.dsFont')}
+=======
                 <label className="space-y-2 text-sm text-[#F4F7FC]">
                   Taille du texte
+ main
                   <select
                     value={config.fontScale}
                     onChange={(e) =>
@@ -265,9 +310,9 @@ export default function DesignStudioPage() {
                     }
                     className="mt-2 w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] p-2.5"
                   >
-                    <option value="small">Petite</option>
-                    <option value="normal">Normale</option>
-                    <option value="large">Grande</option>
+                    <option value="small">{t('cg.dsFSmall')}</option>
+                    <option value="normal">{t('cg.dsFNormal')}</option>
+                    <option value="large">{t('cg.dsFLarge')}</option>
                   </select>
                 </label>
               </div>
@@ -275,11 +320,15 @@ export default function DesignStudioPage() {
                 onClick={() => setConfig(DEFAULT_DESIGN_CONFIG)}
                 className="flex items-center gap-2 text-sm text-[#AFC0D8]"
               >
-                <RotateCcw size={14} /> Réinitialiser l’éditeur
+                <RotateCcw size={14} /> {t('cg.dsReset')}
               </button>
             </section>
             <section className="space-y-3">
+ fix/traduction-pages-diverses
+              <h2 className="text-sm font-semibold text-white">{t('cg.dsLive')}</h2>
+=======
               <h2 className="text-sm font-semibold text-[#F4F7FC]">Aperçu en direct</h2>
+ main
               <div
                 className="overflow-hidden border p-5 shadow-xl"
                 style={{
@@ -302,15 +351,15 @@ export default function DesignStudioPage() {
                   </span>
                   <div>
                     <p className="font-bold">{config.brandName || 'JDV CRM'}</p>
-                    <p className="text-xs opacity-70">Espace de travail</p>
+                    <p className="text-xs opacity-70">{t('cg.dsWork')}</p>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   {[
-                    ['Prospects', '128'],
-                    ['Clients', '86'],
-                    ['Ventes', '2 450 000'],
-                    ['Suivi', '78 %'],
+                    [t('cg.dsProspects'), '128'],
+                    [t('cg.dsClients'), '86'],
+                    [t('cg.dsSales'), '2 450 000'],
+                    [t('cg.dsFollow'), '78 %'],
                   ].map(([a, b]) => (
                     <div
                       key={a}
@@ -344,18 +393,26 @@ export default function DesignStudioPage() {
                   className="mt-4 w-full rounded-xl px-4 py-3 text-sm font-bold"
                   style={{ background: config.primaryColor, color: '#0B1B3D' }}
                 >
-                  Action principale
+                  {t('cg.dsAction')}
                 </button>
               </div>
               <p className="text-xs leading-5 text-[#718096]">
-                Aperçu indicatif. La propagation du design à toutes les pages sera vérifiée pendant
-                les tests d’intégration.
+                {t('cg.dsIndic')}
               </p>
             </section>
           </div>
           <section className="grid gap-5 xl:grid-cols-2">
             <div className="space-y-4 rounded-2xl border border-[#1E355B] bg-[#08152F] p-5">
               <div>
+ fix/traduction-pages-diverses
+                <h2 className="text-base font-bold text-white">{t('cg.dsBgH')}</h2>
+                <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">
+                  {t('cg.dsBgSub')}
+                </p>
+              </div>
+              <label className="block space-y-2 text-sm text-white">
+                {t('cg.dsBgUrl')}
+=======
                 <h2 className="text-base font-bold text-[#F4F7FC]">Arrière-plan et animations</h2>
                 <p className="mt-1 text-xs leading-5 text-[#AFC0D8]">
                   Ajoutez une image ou une courte vidéo de fond pour les pages qui prennent en
@@ -365,6 +422,7 @@ export default function DesignStudioPage() {
               </div>
               <label className="block space-y-2 text-sm text-[#F4F7FC]">
                 URL du média de fond
+ main
                 <input
                   value={config.backgroundMediaUrl ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, backgroundMediaUrl: e.target.value }))}
@@ -372,8 +430,13 @@ export default function DesignStudioPage() {
                   className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm"
                 />
               </label>
+ fix/traduction-pages-diverses
+              <label className="block space-y-2 text-sm text-white">
+                {t('cg.dsImport50')}
+=======
               <label className="block space-y-2 text-sm text-[#F4F7FC]">
                 Importer une image ou vidéo (50 Mo maximum)
+ main
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm"
@@ -386,12 +449,21 @@ export default function DesignStudioPage() {
                   className="block w-full text-xs text-[#AFC0D8] file:mr-3 file:rounded-lg file:border-0 file:bg-[#147866] file:px-3 file:py-2 file:font-bold file:text-white"
                 />
                 {uploading === 'background' && (
+ fix/traduction-pages-diverses
+                  <span className="text-xs text-[#F5E17A]">{t('cg.dsUploading')}</span>
+                )}
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block space-y-2 text-sm text-white">
+                  {t('cg.dsAnim')}
+=======
                   <span className="text-xs text-[#6EE7B7]">Téléversement…</span>
                 )}
               </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block space-y-2 text-sm text-[#F4F7FC]">
                   Animation
+ main
                   <select
                     value={config.backgroundAnimation ?? 'none'}
                     onChange={(e) =>
@@ -404,14 +476,22 @@ export default function DesignStudioPage() {
                     }
                     className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] p-2.5"
                   >
-                    <option value="none">Aucune</option>
-                    <option value="slow-pan">Déplacement lent</option>
-                    <option value="float">Flottement doux</option>
-                    <option value="gradient">Dégradé animé</option>
+                    <option value="none">{t('cg.dsAnNone')}</option>
+                    <option value="slow-pan">{t('cg.dsAnPan')}</option>
+                    <option value="float">{t('cg.dsAnFloat')}</option>
+                    <option value="gradient">{t('cg.dsAnGrad')}</option>
                   </select>
                 </label>
+ fix/traduction-pages-diverses
+                <label className="block space-y-2 text-sm text-white">
+                  {t('cg.dsIntensity').replace(
+                    '{n}',
+                    String(Math.round((config.backgroundOpacity ?? 0.12) * 100))
+                  )}
+=======
                 <label className="block space-y-2 text-sm text-[#F4F7FC]">
                   Intensité visuelle ({Math.round((config.backgroundOpacity ?? 0.12) * 100)} %)
+ main
                   <input
                     type="range"
                     min="0.02"
@@ -428,6 +508,15 @@ export default function DesignStudioPage() {
             </div>
             <div className="space-y-4 rounded-2xl border border-[#1E355B] bg-[#08152F] p-5">
               <div>
+ fix/traduction-pages-diverses
+                <h2 className="text-base font-bold text-white">{t('cg.dsNewsH')}</h2>
+                <p className="mt-1 text-xs leading-5 text-[#A0AEC0]">
+                  {t('cg.dsNewsSub')}
+                </p>
+              </div>
+              <label className="block space-y-2 text-sm text-white">
+                {t('cg.dsAnnTitle')}
+=======
                 <h2 className="text-base font-bold text-[#F4F7FC]">Actualités du concepteur</h2>
                 <p className="mt-1 text-xs leading-5 text-[#AFC0D8]">
                   Publiez une annonce de mise à jour, un visuel ou une courte vidéo de
@@ -437,27 +526,46 @@ export default function DesignStudioPage() {
               </div>
               <label className="block space-y-2 text-sm text-[#F4F7FC]">
                 Titre de l’annonce
+ main
                 <input
                   maxLength={120}
                   value={config.updateTitle ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, updateTitle: e.target.value }))}
+ fix/traduction-pages-diverses
+                  placeholder={t('cg.dsAnnPh')}
+                  className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm"
+                />
+              </label>
+              <label className="block space-y-2 text-sm text-white">
+                {t('cg.dsInfo')}
+=======
                   placeholder="Nouvelle fonctionnalité disponible"
                   className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm"
                 />
               </label>
               <label className="block space-y-2 text-sm text-[#F4F7FC]">
                 Information à communiquer
+ main
                 <textarea
                   maxLength={2000}
                   rows={4}
                   value={config.updateBody ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, updateBody: e.target.value }))}
+ fix/traduction-pages-diverses
+                  placeholder={t('cg.dsInfoPh')}
+                  className="w-full rounded-xl border border-white/10 bg-[#08152F] px-3 py-2.5 text-sm"
+                />
+              </label>
+              <label className="block space-y-2 text-sm text-white">
+                {t('cg.dsDemoUrl')}
+=======
                   placeholder="Expliquez ce qui change et comment l’utiliser…"
                   className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm"
                 />
               </label>
               <label className="block space-y-2 text-sm text-[#F4F7FC]">
                 URL du média de démonstration (facultatif)
+ main
                 <input
                   value={config.updateMediaUrl ?? ''}
                   onChange={(e) => setConfig((v) => ({ ...v, updateMediaUrl: e.target.value }))}
@@ -465,8 +573,13 @@ export default function DesignStudioPage() {
                   className="w-full rounded-xl border border-[#1E355B] bg-[#0B1B3D] px-3 py-2.5 text-sm"
                 />
               </label>
+ fix/traduction-pages-diverses
+              <label className="block space-y-2 text-sm text-white">
+                {t('cg.dsImportShort')}
+=======
               <label className="block space-y-2 text-sm text-[#F4F7FC]">
                 Importer image ou courte vidéo
+ main
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm"
@@ -479,7 +592,11 @@ export default function DesignStudioPage() {
                   className="block w-full text-xs text-[#AFC0D8] file:mr-3 file:rounded-lg file:border-0 file:bg-[#147866] file:px-3 file:py-2 file:font-bold file:text-white"
                 />
                 {uploading === 'update' && (
+ fix/traduction-pages-diverses
+                  <span className="text-xs text-[#F5E17A]">{t('cg.dsUploading')}</span>
+=======
                   <span className="text-xs text-[#6EE7B7]">Téléversement…</span>
+ main
                 )}
               </label>
               <label className="flex items-center gap-3 text-sm text-[#F4F7FC]">
@@ -489,7 +606,7 @@ export default function DesignStudioPage() {
                   onChange={(e) => setConfig((v) => ({ ...v, updatePublished: e.target.checked }))}
                   className="h-4 w-4 accent-[#34D399]"
                 />
-                Afficher cette annonce sur la page d’accueil après publication du design
+                {t('cg.dsShowHome')}
               </label>
             </div>
           </section>
@@ -497,7 +614,11 @@ export default function DesignStudioPage() {
       ) : (
         <section className="divide-y divide-white/5 rounded-2xl border border-[#1E355B] bg-[#08152F]">
           {versions.length === 0 ? (
+ fix/traduction-pages-diverses
+            <p className="p-5 text-sm text-[#A0AEC0]">{t('cg.dsNoVer')}</p>
+=======
             <p className="p-5 text-sm text-[#AFC0D8]">Aucune version enregistrée.</p>
+ main
           ) : (
             versions.map((v) => (
               <div
@@ -505,24 +626,36 @@ export default function DesignStudioPage() {
                 className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
+ fix/traduction-pages-diverses
+                  <p className="text-sm font-semibold text-white">
+                    {t('cg.dsVer')
+                      .replace('{n}', String(v.version_no))
+                      .replace(
+                        '{s}',
+                        v.status === 'draft'
+                          ? t('cg.dsStDraft')
+                          : v.status === 'published'
+                            ? t('cg.dsStPub')
+                            : v.status
+                      )}
+=======
                   <p className="text-sm font-semibold text-[#F4F7FC]">
                     Version {v.version_no} · {v.status}
+ main
                   </p>
                   <p className="mt-1 text-xs text-[#718096]">
-                    {new Date(v.created_at).toLocaleString('fr-FR')}
+                    {new Date(v.created_at).toLocaleString(locale)}
                   </p>
                 </div>
                 <button
                   onClick={() => {
                     setConfig({ ...DEFAULT_DESIGN_CONFIG, ...v.config });
                     setHistory(false);
-                    toast.success(
-                      'Configuration chargée. Enregistrez-la comme nouveau brouillon pour conserver la restauration.'
-                    );
+                    toast.success(t('cg.dsLoaded'));
                   }}
                   className="flex items-center justify-center gap-2 rounded-lg border border-[#1E355B] px-3 py-2 text-xs text-[#F4F7FC]"
                 >
-                  <RotateCcw size={13} /> Restaurer dans l’éditeur
+                  <RotateCcw size={13} /> {t('cg.dsRestore')}
                 </button>
               </div>
             ))

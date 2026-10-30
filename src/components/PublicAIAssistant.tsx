@@ -3,15 +3,20 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Bot, ChevronRight, Loader2, Send, Sparkles, X } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Message = { role: 'user' | 'assistant'; content: string };
-const starters = [
-  'Explique-moi comment utiliser JDV CRM de A à Z.',
-  'Comment créer une entreprise et ses sous-branches ?',
-  'Comment créer un article et bien le gérer selon mon secteur ?',
-  'Comment passer de la prospection à la vente ?',
-];
+const starters: TerrainKey[] = ['ai.s1', 'ai.s2', 'ai.s3', 'ai.s4'];
 
+function pageSection(pathname: string): TerrainKey {
+  if (pathname.includes('/entrepot/dashboard')) return 'ai.secEnt';
+  if (pathname.includes('/business/dashboard')) return 'ai.secBiz';
+  if (pathname.includes('/a-propos')) return 'ai.secAbout';
+  return 'ai.secOff';
+}
+
+// Libellé français envoyé au serveur (contexte de l'IA) — non affiché.
 function pageLabel(pathname: string) {
   if (pathname.includes('/entrepot/dashboard')) return 'espace Entrepôt';
   if (pathname.includes('/business/dashboard')) return 'espace Business / Administration';
@@ -20,6 +25,8 @@ function pageLabel(pathname: string) {
 }
 
 export default function PublicAIAssistant() {
+  const { t, locale } = useLanguage();
+  const tr = (s: string) => (s.startsWith('ai.') ? t(s as TerrainKey) : s);
   const pathname = usePathname() || '/';
   const [open, setOpen] = useState(false),
     [input, setInput] = useState(''),
@@ -29,8 +36,7 @@ export default function PublicAIAssistant() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content:
-        'Bonjour 👋 Je suis l’assistant JDV CRM. Je peux vous accompagner pas à pas dans chaque espace du CRM, depuis la création de l’entreprise et de ses sous-branches jusqu’à la prospection, la vente, le stock et les retours. Dites-moi ce que vous souhaitez apprendre, et nous avancerons étape par étape.',
+      content: 'ai.hello',
     },
   ]);
 
@@ -87,13 +93,13 @@ export default function PublicAIAssistant() {
           ...(session?.access_token ? { Authorization: 'Bearer ' + session.access_token } : {}),
         },
         body: JSON.stringify({
-          messages: next.slice(-12),
-          page_context: { pathname, section: pageLabel(pathname) },
+          messages: next.slice(-12).map((m) => ({ ...m, content: tr(m.content) })),
+          page_context: { pathname, section: pageLabel(pathname), locale },
           client_synced_at: syncAt.toISOString(),
         }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || 'L’assistant est momentanément indisponible.');
+      if (!res.ok) throw new Error(json.error || 'ai.unavail');
       setSyncAt(new Date(json.synchronized_at || Date.now()));
       setMessages((v) => [...v, { role: 'assistant', content: json.content }]);
     } catch (e) {
@@ -101,7 +107,7 @@ export default function PublicAIAssistant() {
         ...v,
         {
           role: 'assistant',
-          content: e instanceof Error ? e.message : 'Une erreur est survenue. Veuillez réessayer.',
+          content: e instanceof Error ? e.message : 'ai.err',
         },
       ]);
     } finally {
@@ -115,7 +121,7 @@ export default function PublicAIAssistant() {
   return (
     <>
       <button
-        aria-label="Ouvrir l'assistant JDV CRM"
+        aria-label={t('ai.open')}
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-full border border-[#D4AF37]/50 bg-[#08152f] px-5 py-4 text-white shadow-2xl transition hover:scale-[1.03]"
       >
@@ -124,7 +130,7 @@ export default function PublicAIAssistant() {
         </span>
         <span className="hidden sm:block text-left">
           <span className="block text-xs text-[#D4AF37]">JDV CRM</span>
-          <span className="font-semibold">Assistant IA</span>
+          <span className="font-semibold">{t('ai.chip')}</span>
         </span>
       </button>
       {open && (
@@ -142,13 +148,13 @@ export default function PublicAIAssistant() {
                   <Sparkles size={21} />
                 </span>
                 <div>
-                  <div className="font-semibold text-white">Assistant JDV CRM</div>
+                  <div className="font-semibold text-white">{t('ai.title')}</div>
                   <div className="flex items-center gap-2 text-xs text-emerald-300">
                     <span className="relative grid h-2 w-2">
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
                     </span>
-                    {live ? 'Contexte CRM en direct' : 'Synchronisation en attente'}
+                    {live ? t('ai.live') : t('ai.wait')}
                   </div>
                 </div>
               </div>
@@ -160,12 +166,16 @@ export default function PublicAIAssistant() {
               </button>
             </header>
             <div className="border-b border-white/5 px-4 py-2 text-[10px] text-slate-500">
-              Section détectée : {pageLabel(pathname)} • Synchronisé à{' '}
-              {syncAt.toLocaleTimeString('fr-FR', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-              })}
+              {t('ai.detected')
+                .replace('{s}', t(pageSection(pathname)))
+                .replace(
+                  '{h}',
+                  syncAt.toLocaleTimeString(locale, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })
+                )}
             </div>
             <div className="flex-1 space-y-4 overflow-y-auto p-4">
               {messages.map((m, i) => (
@@ -177,14 +187,14 @@ export default function PublicAIAssistant() {
                         : 'rounded-2xl rounded-bl-md border border-white/10 bg-white/[.04] px-4 py-3 text-sm leading-6 text-slate-200'
                     }
                   >
-                    {m.content}
+                    {tr(m.content)}
                   </div>
                 </div>
               ))}
               {loading && (
                 <div className="mr-6 rounded-2xl rounded-bl-md border border-white/10 bg-white/[.04] px-4 py-3 text-slate-400">
                   <Loader2 className="mr-2 inline animate-spin" size={16} />
-                  Je consulte le contexte JDV CRM…
+                  {t('ai.loading')}
                 </div>
               )}
             </div>
@@ -193,10 +203,10 @@ export default function PublicAIAssistant() {
                 {starters.map((s) => (
                   <button
                     key={s}
-                    onClick={() => void send(s)}
+                    onClick={() => void send(t(s))}
                     className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[.03] px-3 py-2 text-left text-xs text-slate-300 hover:border-[#D4AF37]/40 hover:text-white"
                   >
-                    {s}
+                    {t(s)}
                     <ChevronRight size={14} />
                   </button>
                 ))}
@@ -214,7 +224,7 @@ export default function PublicAIAssistant() {
                     }
                   }}
                   rows={1}
-                  placeholder="Posez votre question sur JDV CRM…"
+                  placeholder={t('ai.ph')}
                   className="max-h-28 min-h-10 flex-1 resize-none border-0 bg-transparent px-2 py-2 text-sm text-white outline-none placeholder:text-slate-500"
                 />
                 <button
@@ -224,9 +234,7 @@ export default function PublicAIAssistant() {
                   <Send size={17} />
                 </button>
               </div>
-              <div className="mt-2 text-center text-[10px] text-slate-500">
-                Assistant IA • Contexte page + données CRM protégées.
-              </div>
+              <div className="mt-2 text-center text-[10px] text-slate-500">{t('ai.foot')}</div>
             </form>
           </div>
         </div>

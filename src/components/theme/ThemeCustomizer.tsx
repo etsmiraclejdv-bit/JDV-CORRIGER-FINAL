@@ -5,6 +5,8 @@ import { Check, Contrast, Moon, Monitor, Palette, RotateCcw, Sun, X } from 'luci
 import { supabase } from '@/lib/supabase/client';
 import { fetchOrgProfile } from '@/lib/auth/context';
 import type { DesignConfig, DesignElementStyle } from '@/features/design-studio/types';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 export type ThemeChoice = 'designer' | 'light' | 'dark';
 export type Accent = 'gold' | 'blue' | 'green' | 'violet' | 'orange';
@@ -26,6 +28,20 @@ export const DEFAULT_PREFS: Prefs = {
 };
 export const THEME_STORAGE_KEY = 'jdv_theme_v1';
 
+ fix/traduction-pages-diverses
+const THEMES: { id: ThemeChoice; label: TerrainKey; hint: TerrainKey; icon: typeof Sun }[] = [
+  { id: 'light', label: 'th.light', hint: 'th.lightH', icon: Sun },
+  { id: 'dark', label: 'th.dark', hint: 'th.darkH', icon: Moon },
+  { id: 'contrast', label: 'th.contrast', hint: 'th.contrastH', icon: Contrast },
+  { id: 'system', label: 'th.system', hint: 'th.systemH', icon: Monitor },
+];
+const ACCENTS: { id: Accent; label: TerrainKey; color: string }[] = [
+  { id: 'gold', label: 'th.aGold', color: '#D4AF37' },
+  { id: 'blue', label: 'th.aBlue', color: '#2563EB' },
+  { id: 'green', label: 'th.aGreen', color: '#059669' },
+  { id: 'violet', label: 'th.aViolet', color: '#7C3AED' },
+  { id: 'orange', label: 'th.aOrange', color: '#EA580C' },
+=======
 const THEMES: { id: ThemeChoice; label: string; hint: string; icon: typeof Sun }[] = [
   { id: 'designer', label: 'Thème JDV', hint: 'Thème officiel choisi par le Concepteur', icon: Palette },
   { id: 'light', label: 'Clair', hint: 'Fond clair pour une lecture lumineuse', icon: Sun },
@@ -37,12 +53,13 @@ const ACCENTS: { id: Accent; label: string; color: string }[] = [
   { id: 'green', label: 'Vert', color: '#059669' },
   { id: 'violet', label: 'Violet', color: '#7C3AED' },
   { id: 'orange', label: 'Orange', color: '#EA580C' },
+ main
 ];
-const FONTS: { id: FontSize; label: string; sample: string }[] = [
-  { id: 'sm', label: 'Petit', sample: 'text-xs' },
-  { id: 'md', label: 'Normal', sample: 'text-sm' },
-  { id: 'lg', label: 'Grand', sample: 'text-base' },
-  { id: 'xl', label: 'Très grand', sample: 'text-lg' },
+const FONTS: { id: FontSize; label: TerrainKey; sample: string }[] = [
+  { id: 'sm', label: 'th.fSm', sample: 'text-xs' },
+  { id: 'md', label: 'th.fMd', sample: 'text-sm' },
+  { id: 'lg', label: 'th.fLg', sample: 'text-base' },
+  { id: 'xl', label: 'th.fXl', sample: 'text-lg' },
 ];
 
 function clean(raw: unknown): Prefs | null {
@@ -122,6 +139,7 @@ function apply(p: Prefs, design: Partial<DesignConfig> | null = null) {
 }
 
 export default function ThemeCustomizer() {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -373,7 +391,7 @@ export default function ThemeCustomizer() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label="Personnaliser l’apparence"
+        aria-label={t('th.custom')}
         aria-expanded={open}
         className="fixed right-4 top-20 z-50 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-card transition-all hover:scale-105 hover:shadow-card-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 print:hidden"
       >
@@ -383,47 +401,47 @@ export default function ThemeCustomizer() {
       {open && (
         <div
           role="dialog"
-          aria-label="Personnalisation de l’apparence"
+          aria-label={t('th.customDlg')}
           className="fixed right-4 top-[8.25rem] z-50 max-h-[calc(100dvh-9.5rem)] w-[min(92vw,22rem)] overflow-y-auto rounded-2xl border border-border bg-card p-5 text-foreground shadow-card-hover print:hidden"
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-base font-bold">Mon apparence</h2>
+            <h2 className="text-base font-bold">{t('th.title')}</h2>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="Fermer"
+              aria-label={t('cv.close')}
               className="rounded-lg p-1 hover:bg-muted"
             >
               <X size={18} />
             </button>
           </div>
 
-          <p className={section}>Thème</p>
+          <p className={section}>{t('th.theme')}</p>
           <div className="mb-4 grid grid-cols-2 gap-2">
             {THEMES.map(({ id, label, hint, icon: Icon }) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => set('theme', id)}
-                title={hint}
+                title={t(hint)}
                 aria-pressed={prefs.theme === id}
                 className={`${chip(prefs.theme === id)} flex items-center gap-2 text-left`}
               >
-                <Icon size={16} /> <span className="leading-tight">{label}</span>
+                <Icon size={16} /> <span className="leading-tight">{t(label)}</span>
               </button>
             ))}
           </div>
 
-          <p className={section}>Couleur principale</p>
+          <p className={section}>{t('th.accent')}</p>
           <div className="mb-4 flex flex-wrap gap-2">
             {ACCENTS.map(({ id, label, color }) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => set('accent', id)}
-                aria-label={label}
+                aria-label={t(label)}
                 aria-pressed={prefs.accent === id}
-                title={label}
+                title={t(label)}
                 className={`flex h-9 w-9 items-center justify-center rounded-full border-2 ${prefs.accent === id ? 'border-foreground' : 'border-transparent'}`}
                 style={{ backgroundColor: color }}
               >
@@ -432,7 +450,7 @@ export default function ThemeCustomizer() {
             ))}
           </div>
 
-          <p className={section}>Taille du texte</p>
+          <p className={section}>{t('th.font')}</p>
           <div className="mb-4 grid grid-cols-4 gap-2">
             {FONTS.map(({ id, label, sample }) => (
               <button
@@ -443,13 +461,13 @@ export default function ThemeCustomizer() {
                 className={`${chip(prefs.font === id)} px-1 text-center`}
               >
                 <span className={`block font-semibold ${sample}`}>Aa</span>
-                <span className="block text-[10px] text-muted-foreground">{label}</span>
+                <span className="block text-[10px] text-muted-foreground">{t(label)}</span>
               </button>
             ))}
           </div>
 
           <label className="mb-4 flex cursor-pointer items-center justify-between gap-3 text-sm">
-            <span>Réduire les animations</span>
+            <span>{t('th.motion')}</span>
             <input
               type="checkbox"
               checked={prefs.reduceMotion}
@@ -463,12 +481,9 @@ export default function ThemeCustomizer() {
             onClick={() => setPrefs(DEFAULT_PREFS)}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-sm hover:bg-muted"
           >
-            <RotateCcw size={14} /> Réinitialiser
+            <RotateCcw size={14} /> {t('th.reset')}
           </button>
-          <p className="mt-3 text-[11px] leading-snug text-muted-foreground">
-            Vos choix sont enregistrés sur cet appareil, et sur votre compte quand vous êtes
-            connecté.
-          </p>
+          <p className="mt-3 text-[11px] leading-snug text-muted-foreground">{t('th.note')}</p>
         </div>
       )}
     </>

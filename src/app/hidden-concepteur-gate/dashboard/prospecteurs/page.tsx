@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, RefreshCw } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import { personName } from '@/lib/services/compat';
 
 interface ProspecteurRow {
@@ -16,6 +17,7 @@ interface ProspecteurRow {
 }
 
 export default function SuperAdminProspecteursPage() {
+  const { t, locale } = useLanguage();
   const [prospecteurs, setProspecteurs] = useState<ProspecteurRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -29,7 +31,7 @@ export default function SuperAdminProspecteursPage() {
       .order('created_at', { ascending: false });
     const profiles = ((rows ?? []) as Record<string, unknown>[]).map((r) => ({
       id: r.id as string,
-      full_name: personName(r as never) || 'Sans nom',
+      full_name: personName(r as never) || '',
       phone: (r.phone as string) ?? null,
       city: (r.city as string) ?? null,
       role: 'prospecteur',
@@ -77,15 +79,12 @@ export default function SuperAdminProspecteursPage() {
     return matchSearch && matchRole;
   });
 
-  const formatDate = (iso: string) => {
-    const d = new Date(iso);
-    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
-  };
+  const formatDate = (iso: string) => new Date(iso).toLocaleDateString(locale);
 
   const roleLabel: Record<string, string> = {
-    prospecteur: 'Prospecteur',
-    admin: 'Admin',
-    super_admin: 'Super Admin',
+    prospecteur: t('cg.prRolePros'),
+    admin: t('cg.prRoleAdmin'),
+    super_admin: t('cg.prRoleSuper'),
   };
   const roleColor: Record<string, string> = {
     prospecteur: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
@@ -97,10 +96,9 @@ export default function SuperAdminProspecteursPage() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Prospecteurs & Utilisateurs</h1>
+          <h1 className="text-2xl font-bold text-white">{t('cg.prTitle')}</h1>
           <p className="text-sm text-[#A0AEC0] mt-1">
-            {prospecteurs.length} utilisateur{prospecteurs.length !== 1 ? 's' : ''} sur la
-            plateforme
+            {t('cg.prCount').replace('{n}', String(prospecteurs.length))}
           </p>
         </div>
         <button
@@ -108,7 +106,7 @@ export default function SuperAdminProspecteursPage() {
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm transition-colors"
         >
           <RefreshCw size={14} />
-          Actualiser
+          {t('cg.refresh')}
         </button>
       </div>
 
@@ -119,7 +117,7 @@ export default function SuperAdminProspecteursPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un utilisateur..."
+            placeholder={t('cg.prSearch')}
             className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-[#718096] text-sm focus:outline-none focus:border-[#D4AF37]/60 transition-colors"
           />
         </div>
@@ -132,7 +130,11 @@ export default function SuperAdminProspecteursPage() {
                 roleFilter === r ? 'bg-[#D4AF37] text-[#0B1B3D]' : 'text-[#A0AEC0] hover:text-white'
               }`}
             >
-              {r === 'all' ? 'Tous' : r === 'prospecteur' ? 'Prospecteurs' : 'Admins'}
+              {r === 'all'
+                ? t('cg.prAll')
+                : r === 'prospecteur'
+                  ? t('cg.prFPros')
+                  : t('cg.prFAdmins')}
             </button>
           ))}
         </div>
@@ -148,7 +150,7 @@ export default function SuperAdminProspecteursPage() {
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center">
             <Users size={32} className="text-[#718096] mx-auto mb-3" />
-            <p className="text-[#A0AEC0] text-sm">Aucun utilisateur trouvé</p>
+            <p className="text-[#A0AEC0] text-sm">{t('cg.prNone')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -156,22 +158,22 @@ export default function SuperAdminProspecteursPage() {
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
-                    Nom
+                    {t('cg.prColName')}
                   </th>
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
-                    Téléphone
+                    {t('cg.prColPhone')}
                   </th>
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
-                    Entreprise
+                    {t('cg.dbColCo')}
                   </th>
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
-                    Ville
+                    {t('cg.prColCity')}
                   </th>
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
-                    Rôle
+                    {t('cg.prColRole')}
                   </th>
                   <th className="text-left text-xs font-semibold text-[#718096] uppercase tracking-wider px-6 py-4">
-                    Inscrit le
+                    {t('cg.prColJoined')}
                   </th>
                 </tr>
               </thead>
@@ -181,9 +183,11 @@ export default function SuperAdminProspecteursPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37] text-xs font-bold">
-                          {p.full_name.charAt(0).toUpperCase()}
+                          {(p.full_name || t('cg.prNoName')).charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-sm font-medium text-white">{p.full_name}</span>
+                        <span className="text-sm font-medium text-white">
+                          {p.full_name || t('cg.prNoName')}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-[#A0AEC0]">{p.phone ?? '—'}</td>

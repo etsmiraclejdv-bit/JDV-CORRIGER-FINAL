@@ -13,6 +13,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type Company = {
   organization_id: string;
@@ -34,6 +35,7 @@ type Company = {
 };
 
 export default function CompaniesPage() {
+  const { t, locale } = useLanguage();
   const [rows, setRows] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
@@ -73,46 +75,44 @@ export default function CompaniesPage() {
   const money = (n: number | null, c: string | null) =>
     n == null
       ? '—'
-      : new Intl.NumberFormat('fr-FR', {
+      : new Intl.NumberFormat(locale, {
           style: 'currency',
           currency: c || 'USD',
           maximumFractionDigits: 0,
         }).format(n);
   const date = (v: string | null) =>
-    v ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(new Date(v)) : '—';
+    v ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(v)) : '—';
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Gestion des entreprises & abonnements</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">
-            État réel des entreprises, paiements, échéances et renouvellement.
-          </p>
+          <h1 className="text-2xl font-bold text-white">{t('cg.coTitle')}</h1>
+          <p className="text-sm text-[#A0AEC0] mt-1">{t('cg.coSub')}</p>
         </div>
         <button
           onClick={load}
           className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0] hover:text-white text-sm"
         >
           <RefreshCw size={14} />
-          Actualiser
+          {t('cg.refresh')}
         </button>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          ['Entreprises', rows.length, 'text-white'],
+          [t('cg.dbCompanies'), rows.length, 'text-white'],
           [
-            'Abonnements actifs',
+            t('cg.dbActive'),
             rows.filter((r) => ['active', 'trial'].includes(r.subscription_status)).length,
             'text-green-400',
           ],
           [
-            'Impayées / expirées',
+            t('cg.dbUnpaid'),
             rows.filter((r) => ['past_due', 'expired', 'cancelled'].includes(r.subscription_status))
               .length,
             'text-red-400',
           ],
-          ['Renouvellement auto', rows.filter((r) => r.auto_renew).length, 'text-[#D4AF37]'],
+          [t('cg.dbAuto'), rows.filter((r) => r.auto_renew).length, 'text-[#D4AF37]'],
         ].map(([l, v, c]) => (
           <div
             key={l as string}
@@ -128,30 +128,28 @@ export default function CompaniesPage() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher une entreprise..."
+          placeholder={t('cg.coSearch')}
           className="w-full bg-[#0F2347] border border-[#D4AF37]/20 rounded-xl pl-10 pr-4 py-2.5 text-white placeholder-[#718096]"
         />
       </div>
       <div className="rounded-2xl bg-[#0F2347] border border-[#D4AF37]/15 overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-[#A0AEC0]">
-            Chargement de l’état des abonnements…
-          </div>
+          <div className="p-8 text-center text-[#A0AEC0]">{t('cg.coLoading')}</div>
         ) : filtered.length === 0 ? (
-          <div className="p-12 text-center text-[#A0AEC0]">Aucune entreprise trouvée.</div>
+          <div className="p-12 text-center text-[#A0AEC0]">{t('cg.coNone')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1100px]">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
                   {[
-                    'Entreprise',
-                    'Abonnement',
-                    'Échéance',
-                    'Dernier paiement',
-                    'Renouvellement',
-                    'État',
-                    'Actions',
+                    t('cg.dbColCo'),
+                    t('cg.dbColSub'),
+                    t('cg.dbColDue'),
+                    t('cg.coColLastPay'),
+                    t('cg.coColRenew'),
+                    t('cg.dbColState'),
+                    t('cg.coColActions'),
                   ].map((h) => (
                     <th
                       key={h}
@@ -187,7 +185,7 @@ export default function CompaniesPage() {
                         </div>
                       </td>
                       <td className="px-5 py-4">
-                        <p className="text-sm text-white">{r.plan_name || 'Sans plan'}</p>
+                        <p className="text-sm text-white">{r.plan_name || t('cg.coNoPlan')}</p>
                         <p className="text-xs text-[#718096]">
                           {r.plan_price != null ? money(r.plan_price, r.plan_currency) : '—'}
                         </p>
@@ -202,18 +200,18 @@ export default function CompaniesPage() {
                         >
                           {r.days_remaining == null
                             ? '—'
-                            : r.days_remaining + ' jour(s) restant(s)'}
+                            : t('cg.coDaysLeft').replace('{n}', String(r.days_remaining))}
                         </p>
                       </td>
                       <td className="px-5 py-4">
                         <p className="text-sm text-white">{date(r.last_payment_at)}</p>
                         <p className="text-xs text-[#718096]">
-                          {r.last_payment_status || 'Aucun paiement'}
+                          {r.last_payment_status || t('cg.coNoPay')}
                         </p>
                       </td>
                       <td className="px-5 py-4">
                         <span className={r.auto_renew ? 'text-green-400' : 'text-[#718096]'}>
-                          {r.auto_renew ? 'Activé' : 'Désactivé'}
+                          {r.auto_renew ? t('cg.coOn') : t('cg.coOff')}
                         </span>
                       </td>
                       <td className="px-5 py-4">
@@ -226,7 +224,11 @@ export default function CompaniesPage() {
                           }
                         >
                           {suspended ? <AlertTriangle size={12} /> : <CheckCircle2 size={12} />}{' '}
-                          {suspended ? 'Suspendue' : unpaid ? 'Impayée' : 'Active'}
+                          {suspended
+                            ? t('cg.coSusp')
+                            : unpaid
+                              ? t('cg.coUnpaid')
+                              : t('cg.coActive')}
                         </span>
                       </td>
                       <td className="px-5 py-4">
@@ -235,7 +237,7 @@ export default function CompaniesPage() {
                             <button
                               onClick={() => action(r.organization_id, 'suspend')}
                               disabled={busy === r.organization_id + 'suspend'}
-                              title="Suspendre"
+                              title={t('cg.coSuspendT')}
                               className="p-2 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10"
                             >
                               <ShieldOff size={14} />
@@ -244,7 +246,7 @@ export default function CompaniesPage() {
                           <button
                             onClick={() => action(r.organization_id, 'remind')}
                             disabled={busy === r.organization_id + 'remind'}
-                            title="Relancer l'abonnement"
+                            title={t('cg.coRemindT')}
                             className="p-2 rounded-lg border border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10"
                           >
                             <Bell size={14} />
@@ -253,7 +255,7 @@ export default function CompaniesPage() {
                             <button
                               onClick={() => action(r.organization_id, 'renew')}
                               disabled={busy === r.organization_id + 'renew'}
-                              title="Activer le renouvellement automatique"
+                              title={t('cg.coRenewT')}
                               className="p-2 rounded-lg border border-green-500/30 text-green-400 hover:bg-green-500/10"
                             >
                               <Repeat2 size={14} />
@@ -263,7 +265,7 @@ export default function CompaniesPage() {
                             <button
                               onClick={() => action(r.organization_id, 'remind')}
                               disabled={busy === r.organization_id + 'remind'}
-                              title="Relancer"
+                              title={t('cg.coRemind2')}
                               className="p-2 rounded-lg border border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
                             >
                               <RotateCcw size={14} />

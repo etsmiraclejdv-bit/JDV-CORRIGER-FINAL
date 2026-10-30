@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ExternalLink, MapPin, MessageSquareQuote, Newspaper, Search, X } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Review = {
   id: string;
@@ -37,14 +39,17 @@ type NewsArticle = {
   summary: string;
 };
 
-const categories = [
-  { id: 'business', label: 'Économie' },
-  { id: 'technology', label: 'Technologie & IA' },
-  { id: 'africa', label: 'Afrique & Bénin' },
-  { id: 'world', label: 'International' },
+const categories: { id: string; label: TerrainKey }[] = [
+  { id: 'business', label: 'cv.catB' },
+  { id: 'technology', label: 'cv.catT' },
+  { id: 'africa', label: 'cv.catA' },
+  { id: 'world', label: 'cv.catW' },
 ];
 
 export default function CompanyVitrine({ organizationId }: { organizationId: string }) {
+  const { t, locale } = useLanguage();
+  // Les messages d’état peuvent être une clé de traduction (affichée via tr) ou un texte du serveur.
+  const tr = (s: string) => (s.startsWith('cv.') ? t(s as TerrainKey) : s);
   const [data, setData] = useState<VitrinePayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -73,15 +78,12 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
         if (!alive) return;
 
         if (!response.ok || !result?.organization) {
-          setLoadError(
-            result.error || 'Cette vitrine est introuvable ou momentanément indisponible.'
-          );
+          setLoadError(result.error || 'cv.notFound');
         } else {
           setData(result as VitrinePayload);
         }
       } catch {
-        if (alive)
-          setLoadError('Impossible de joindre la vitrine pour le moment. Réessayez plus tard.');
+        if (alive) setLoadError('cv.unreach');
       }
       if (alive) setLoading(false);
     })();
@@ -99,13 +101,11 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
       const response = await fetch('/api/jdv-news?category=' + encodeURIComponent(nextCategory), {
         cache: 'no-store',
       });
-      if (!response.ok) throw new Error('Les actualités sont momentanément indisponibles.');
+      if (!response.ok) throw new Error('cv.newsUnavail');
       const result = await response.json();
       setArticles(Array.isArray(result.articles) ? result.articles : []);
     } catch (error) {
-      setNewsError(
-        error instanceof Error ? error.message : 'Impossible de charger les actualités.'
-      );
+      setNewsError(error instanceof Error ? error.message : 'cv.newsErr');
     } finally {
       setNewsLoading(false);
     }
@@ -141,30 +141,28 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
         body: JSON.stringify({ organizationId, customerName, rating, comment }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Impossible d’envoyer cet avis.');
+      if (!response.ok) throw new Error(result.error || 'cv.sendErr');
 
-      setReviewMessage(result.message || 'Merci pour votre avis. Il sera publié après validation.');
+      setReviewMessage(result.message || 'cv.thanks');
       setCustomerName('');
       setComment('');
       setRating(5);
     } catch (error) {
-      setReviewMessage(error instanceof Error ? error.message : 'Impossible d’envoyer cet avis.');
+      setReviewMessage(error instanceof Error ? error.message : 'cv.sendErr');
     } finally {
       setReviewBusy(false);
     }
   }
 
   if (loading) {
-    return (
-      <main className="min-h-screen bg-slate-950 p-8 text-white">Chargement de la vitrine…</main>
-    );
+    return <main className="min-h-screen bg-slate-950 p-8 text-white">{t('pg.vLoading')}</main>;
   }
 
   if (!data) {
     return (
       <main className="min-h-screen bg-slate-950 p-8 text-white">
-        <h1 className="text-2xl font-bold">Vitrine d’entreprise</h1>
-        <p className="mt-3 text-slate-300">{loadError}</p>
+        <h1 className="text-2xl font-bold">{t('cv.title')}</h1>
+        <p className="mt-3 text-slate-300">{tr(loadError)}</p>
       </main>
     );
   }
@@ -179,7 +177,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
           {org.logo_url ? (
             <Image
               src={org.logo_url}
-              alt={'Logo ' + org.name}
+              alt={t('pg.vLogo').replace('{name}', org.name)}
               width={64}
               height={64}
               unoptimized
@@ -198,7 +196,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
               className="text-xs font-semibold uppercase tracking-[.2em]"
               style={{ color: accent }}
             >
-              Vitrine de l’entreprise
+              {t('cv.shop')}
             </p>
             <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{org.name}</h1>
             {org.legal_name && org.legal_name !== org.name && (
@@ -213,7 +211,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
 
       <div className="mx-auto grid max-w-6xl gap-6 px-5 py-8 lg:grid-cols-[1.3fr_.7fr]">
         <section className="space-y-5 rounded-2xl border border-white/10 bg-white/[.03] p-5 sm:p-7">
-          <h2 className="text-xl font-semibold">À propos de l’entreprise</h2>
+          <h2 className="text-xl font-semibold">{t('cv.about')}</h2>
           <div className="space-y-4 text-slate-300">
             {(org.city || org.country) && (
               <p className="flex gap-3">
@@ -229,13 +227,11 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
                 rel="noopener noreferrer"
               >
                 <ExternalLink className="shrink-0" style={{ color: accent }} />
-                Site officiel
+                {t('pg.vSite')}
               </a>
             )}
             {!org.city && !org.country && !org.website && (
-              <p className="text-sm text-slate-400">
-                Les informations publiques de cette entreprise seront bientôt complétées.
-              </p>
+              <p className="text-sm text-slate-400">{t('cv.soon')}</p>
             )}
           </div>
           <div className="flex flex-wrap gap-3 pt-2">
@@ -244,7 +240,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
               className="inline-flex items-center gap-2 rounded-xl px-4 py-3 font-semibold text-slate-950"
               style={{ backgroundColor: accent }}
             >
-              <Newspaper size={18} /> Google & Actualités
+              <Newspaper size={18} /> {t('cv.gn')}
             </button>
           </div>
         </section>
@@ -252,7 +248,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
         <section className="space-y-4 rounded-2xl border border-white/10 bg-white/[.03] p-5">
           <div className="flex items-center gap-2">
             <MessageSquareQuote style={{ color: accent }} />
-            <h2 className="text-xl font-semibold">Avis des clients</h2>
+            <h2 className="text-xl font-semibold">{t('pg.rvTitle')}</h2>
           </div>
 
           {data.reviews.length ? (
@@ -273,19 +269,19 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
                     {review.comment}
                   </p>
                   <p className="mt-2 text-xs text-slate-500">
-                    {new Date(review.created_at).toLocaleDateString('fr-FR')}
+                    {new Date(review.created_at).toLocaleDateString(locale)}
                   </p>
                 </article>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-slate-400">Aucun avis publié pour le moment.</p>
+            <p className="text-sm text-slate-400">{t('pg.rvNone')}</p>
           )}
 
           <form onSubmit={submitReview} className="space-y-3 border-t border-white/10 pt-4">
-            <h3 className="font-semibold">Donner votre avis</h3>
+            <h3 className="font-semibold">{t('cv.give')}</h3>
             <label className="block text-sm text-slate-300">
-              Votre nom
+              {t('cv.yName')}
               <input
                 required
                 minLength={2}
@@ -296,7 +292,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
               />
             </label>
             <label className="block text-sm text-slate-300">
-              Votre note
+              {t('cv.yRate')}
               <select
                 value={rating}
                 onChange={(event) => setRating(Number(event.target.value))}
@@ -310,7 +306,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
               </select>
             </label>
             <label className="block text-sm text-slate-300">
-              Votre commentaire
+              {t('cv.yComm')}
               <textarea
                 required
                 minLength={10}
@@ -323,7 +319,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
             </label>
             {reviewMessage && (
               <p role="status" className="text-sm text-slate-300">
-                {reviewMessage}
+                {tr(reviewMessage)}
               </p>
             )}
             <button
@@ -331,18 +327,15 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
               className="rounded-xl px-4 py-3 font-semibold text-slate-950 disabled:opacity-50"
               style={{ backgroundColor: accent }}
             >
-              {reviewBusy ? 'Envoi…' : 'Envoyer mon avis'}
+              {reviewBusy ? t('cv.sending') : t('cv.send')}
             </button>
-            <p className="text-xs text-slate-500">
-              Les avis sont publiés après validation par l’entreprise. Merci de ne pas inclure de
-              données personnelles sensibles.
-            </p>
+            <p className="text-xs text-slate-500">{t('cv.rnote')}</p>
           </form>
         </section>
       </div>
 
       <footer className="border-t border-white/10 px-5 py-6 text-center text-xs text-slate-500">
-        Vitrine publique proposée par JDV CRM.
+        {t('cv.foot')}
       </footer>
 
       {panelOpen && (
@@ -353,18 +346,18 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
           <section
             role="dialog"
             aria-modal="true"
-            aria-label="Google et Actualités"
+            aria-label={t('cv.gn')}
             className="flex max-h-[78vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl border border-white/15 bg-[#08152f] shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
             <header className="flex items-center gap-3 border-b border-white/10 p-4">
               <div className="min-w-0 flex-1">
-                <h2 className="font-semibold">Google & Actualités</h2>
+                <h2 className="font-semibold">{t('cv.gn')}</h2>
                 <p className="text-xs text-slate-400">{org.name}</p>
               </div>
               <button
                 onClick={() => setPanelOpen(false)}
-                aria-label="Fermer"
+                aria-label={t('cv.close')}
                 className="rounded-lg p-2 hover:bg-white/10"
               >
                 <X size={18} />
@@ -385,7 +378,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
                 }
               >
                 <Newspaper size={15} className="mr-1 inline" />
-                Actualités
+                {t('cv.tabNews')}
               </button>
               <button
                 onClick={() => setPanelTab('google')}
@@ -397,7 +390,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
                 }
               >
                 <Search size={15} className="mr-1 inline" />
-                Recherche Google
+                {t('cv.tabG')}
               </button>
             </div>
 
@@ -408,17 +401,14 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
                     <input
                       value={search}
                       onChange={(event) => setSearch(event.target.value)}
-                      placeholder="Rechercher sur Google…"
+                      placeholder={t('cv.gPh')}
                       className="min-w-0 flex-1 rounded-lg border border-white/10 bg-slate-950 px-3 py-2 text-sm text-white"
                     />
                     <button className="rounded-lg bg-amber-300 px-3 py-2 text-sm font-semibold text-slate-950">
-                      Chercher
+                      {t('cv.gGo')}
                     </button>
                   </form>
-                  <p className="text-xs text-slate-400">
-                    La recherche Google s’ouvre dans un nouvel onglet : Google ne permet pas
-                    l’affichage complet de ses résultats dans un cadre intégré.
-                  </p>
+                  <p className="text-xs text-slate-400">{t('cv.gNote')}</p>
                 </>
               ) : (
                 <>
@@ -437,17 +427,19 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
                             : 'border border-white/10 text-slate-300')
                         }
                       >
-                        {item.label}
+                        {t(item.label)}
                       </button>
                     ))}
                   </div>
 
                   {newsError && (
-                    <p className="rounded-lg bg-red-950/50 p-3 text-sm text-red-200">{newsError}</p>
+                    <p className="rounded-lg bg-red-950/50 p-3 text-sm text-red-200">
+                      {tr(newsError)}
+                    </p>
                   )}
 
                   {newsLoading ? (
-                    <p className="py-8 text-center text-slate-400">Chargement des actualités…</p>
+                    <p className="py-8 text-center text-slate-400">{t('cv.loadingNews')}</p>
                   ) : articles.length ? (
                     articles.map((article, index) => (
                       <article
@@ -455,7 +447,7 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
                         className="rounded-xl border border-white/10 bg-slate-950/60 p-4"
                       >
                         <p className="text-xs text-sky-300">
-                          {article.source || 'Actualité en ligne'}
+                          {article.source || t('cv.onlineNews')}
                           {article.publishedAt ? ' · ' + article.publishedAt : ''}
                         </p>
                         <h3 className="mt-2 font-semibold">{article.title}</h3>
@@ -468,14 +460,12 @@ export default function CompanyVitrine({ organizationId }: { organizationId: str
                           rel="noreferrer"
                           className="mt-3 inline-flex items-center gap-1 text-sm text-amber-300"
                         >
-                          Lire l’article <ExternalLink size={14} />
+                          {t('cv.read')} <ExternalLink size={14} />
                         </a>
                       </article>
                     ))
                   ) : (
-                    <p className="py-8 text-center text-slate-400">
-                      Aucune actualité disponible pour le moment.
-                    </p>
+                    <p className="py-8 text-center text-slate-400">{t('cv.noNews')}</p>
                   )}
                 </>
               )}

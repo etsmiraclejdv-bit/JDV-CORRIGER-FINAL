@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { MessageSquareText, Star } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 type ClientReview = {
   id: string;
@@ -13,6 +14,7 @@ type ClientReview = {
 };
 
 export default function PublicBusinessReviews({ organizationId }: { organizationId: string }) {
+  const { t, locale } = useLanguage();
   const [reviews, setReviews] = useState<ClientReview[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,22 +53,25 @@ export default function PublicBusinessReviews({ organizationId }: { organization
         </span>
         <div>
           <h2 id="business-reviews-title" className="text-xl font-bold text-foreground">
-            Avis des clients
+            {t('pg.rvTitle')}
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">Les avis publiés après validation.</p>
+          <p className="mt-1 text-sm text-muted-foreground">{t('pg.rvSub')}</p>
         </div>
       </div>
       {loading ? (
-        <p className="mt-5 text-sm text-muted-foreground">Chargement des avis…</p>
+        <p className="mt-5 text-sm text-muted-foreground">{t('pg.rvLoading')}</p>
       ) : reviews.length === 0 ? (
         <p className="mt-5 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-          Aucun avis publié pour le moment.
+          {t('pg.rvNone')}
         </p>
       ) : (
         <div className="mt-5 space-y-3">
           {reviews.map((review) => (
             <article key={review.id} className="rounded-xl border border-border p-4">
-              <div className="flex gap-1" aria-label={'Note : ' + review.rating + ' sur 5'}>
+              <div
+                className="flex gap-1"
+                aria-label={t('pg.rvRating').replace('{n}', String(review.rating))}
+              >
                 {Array.from({ length: 5 }, (_, index) => (
                   <Star
                     key={index}
@@ -82,7 +87,7 @@ export default function PublicBusinessReviews({ organizationId }: { organization
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                 <span className="font-semibold text-foreground">{review.customer_name}</span>
                 <time dateTime={review.created_at}>
-                  {new Date(review.created_at).toLocaleDateString('fr-FR')}
+                  {new Date(review.created_at).toLocaleDateString(locale)}
                 </time>
               </div>
             </article>

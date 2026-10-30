@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Clock, FileUp, Loader2, ShieldCheck, XCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type DocStatus =
   | 'missing'
@@ -29,23 +31,23 @@ type Validation = {
   can_validate: boolean;
 };
 
-const DOC_LABELS: Record<string, string> = {
-  identity: 'Pièce d’identité du représentant',
-  rccm: 'RCCM / registre de commerce',
-  ifu: 'IFU / document fiscal',
-  statutes: 'Statuts / acte constitutif',
-  address_proof: 'Justificatif d’adresse',
-  mandate: 'Mandat ou pouvoir',
+const DOC_LABELS: Record<string, TerrainKey> = {
+  identity: 'vp.dIdentity',
+  rccm: 'vp.dRccm',
+  ifu: 'vp.dIfu',
+  statutes: 'vp.dStat',
+  address_proof: 'vp.dAddr',
+  mandate: 'vp.dMand',
 };
-const EDIT_FIELDS: [string, string][] = [
-  ['company_name', 'Nom commercial'],
-  ['legal_name', 'Dénomination sociale'],
-  ['registration_number', 'RCCM'],
-  ['tax_number', 'IFU'],
-  ['representative_first_name', 'Prénoms du représentant'],
-  ['representative_last_name', 'Nom du représentant'],
-  ['city', 'Ville'],
-  ['address', 'Adresse'],
+const EDIT_FIELDS: [string, TerrainKey][] = [
+  ['company_name', 'vp.fCompany'],
+  ['legal_name', 'vp.fLegal'],
+  ['registration_number', 'vp.fReg'],
+  ['tax_number', 'vp.fTax'],
+  ['representative_first_name', 'vp.fFirst'],
+  ['representative_last_name', 'vp.fLast'],
+  ['city', 'vp.fCity'],
+  ['address', 'vp.fAddr'],
 ];
 const MAX_BYTES = 8 * 1024 * 1024;
 const ACCEPTED = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
@@ -58,13 +60,12 @@ async function fnError(error: unknown): Promise<string> {
   } catch {
     /* corps illisible : on garde le message générique */
   }
-  return e?.message || 'Une erreur est survenue.';
+  return e?.message || 'vp.eGen';
 }
 
 function validateMessage(raw: string): string {
-  if (raw.includes('VALIDATION_INCOMPLETE'))
-    return 'Toutes les étapes ne sont pas encore validées.';
-  if (raw.includes('APPLICATION_NOT_FOUND')) return 'Dossier introuvable.';
+  if (raw.includes('VALIDATION_INCOMPLETE')) return 'vp.eIncomplete';
+  if (raw.includes('APPLICATION_NOT_FOUND')) return 'vp.eNotFound';
   return raw;
 }
 
@@ -79,27 +80,30 @@ function DocIcon({ status, busy }: { status: DocStatus; busy: boolean }) {
   return <FileUp size={20} className="text-[#718096]" />;
 }
 
-function docText(d: DocRow): string {
+function docText(d: DocRow, t: (k: TerrainKey) => string): string {
   switch (d.status) {
     case 'verified':
-      return 'Document conforme.';
+      return t('vp.sOk');
     case 'rejected':
-      return d.reason || 'Document non conforme.';
+      return d.reason || t('vp.sBad');
     case 'expired':
-      return 'Document expiré.';
+      return t('vp.sExp');
     case 'needs_review':
-      return 'Reçu : en attente de contrôle par l’équipe JDV.';
+      return t('vp.sRev');
     case 'stale':
-      return d.reason || 'L’identité a changé : renvoyez ce document.';
+      return d.reason || t('vp.sStale');
     case 'analyzing':
     case 'pending':
-      return 'Analyse en cours…';
+      return t('vp.sAn');
     default:
-      return 'Aucun document envoyé.';
+      return t('vp.sNone');
   }
 }
 
 export default function CompanyValidationPanel({ applicationId }: { applicationId: string }) {
+  const { t } = useLanguage();
+  // Les erreurs d’état sont soit une clé de traduction, soit un message brut du serveur.
+  const tr = (s: string) => (s.startsWith('vp.') ? t(s as TerrainKey) : s);
   const router = useRouter();
   const [data, setData] = useState<Validation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -168,7 +172,7 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
   async function saveEdit() {
     setError('');
     if (!form.company_name?.trim()) {
-      setError('Le nom commercial est obligatoire.');
+      setError('vp.eName');
       return;
     }
     setBusy('identity');
@@ -198,18 +202,18 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
   async function upload(type: string, file: File) {
     setError('');
     if (file.size > MAX_BYTES) {
-      setError('Fichier trop volumineux (8 Mo maximum).');
+      setError('vp.eBig');
       return;
     }
     if (!ACCEPTED.includes(file.type)) {
-      setError('Format non pris en charge : envoyez un PDF, JPG, PNG ou WEBP.');
+      setError('vp.eFmt');
       return;
     }
     setBusy(type);
     try {
       const { data: auth } = await supabase.auth.getUser();
       const user = auth.user;
-      if (!user) throw new Error('Session expirée. Reconnectez-vous.');
+      if (!user) throw new Error('vp.eSess');
       const safe = file.name.replace(/[^\w.-]/g, '_');
       const path = `${user.id}/${applicationId}/${Date.now()}-${safe}`;
       const up = await supabase.storage
@@ -239,7 +243,7 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
       });
       if (e) setError(await fnError(e));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Envoi impossible.');
+      setError(err instanceof Error ? err.message : 'vp.eSend');
     }
     await refresh();
     setBusy(null);
@@ -259,11 +263,11 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
     router.replace('/business/dashboard');
   }
 
-  if (loading) return <p className="text-sm text-[#A0AEC0]">Chargement de votre dossier…</p>;
+  if (loading) return <p className="text-sm text-[#A0AEC0]">{t('vp.loading')}</p>;
   if (!data)
     return (
       <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
-        {error || 'Dossier indisponible.'}
+        {tr(error) || t('vp.unavail')}
       </div>
     );
 
@@ -275,22 +279,20 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
     <div className="space-y-5">
       {error && (
         <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">
-          {error}
+          {tr(error)}
         </div>
       )}
 
       {legacy ? (
         <section className={card}>
-          <h2 className="text-lg font-bold text-white">Votre entreprise est approuvée</h2>
-          <p className="mt-2 text-sm text-[#A0AEC0]">
-            Il ne reste qu’à finaliser la création de votre espace.
-          </p>
+          <h2 className="text-lg font-bold text-white">{t('vp.appr')}</h2>
+          <p className="mt-2 text-sm text-[#A0AEC0]">{t('vp.apprSub')}</p>
           <button
             onClick={validate}
             disabled={busy === 'validate'}
             className="btn-gold mt-5 rounded-xl px-6 py-3 text-sm font-bold disabled:opacity-60"
           >
-            {busy === 'validate' ? 'Finalisation…' : 'Finaliser mon entreprise'}
+            {busy === 'validate' ? t('vp.fin') : t('vp.finBtn')}
           </button>
         </section>
       ) : (
@@ -299,9 +301,9 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">
-                  Étape 1
+                  {t('vp.step1')}
                 </p>
-                <h2 className="text-lg font-bold text-white">Identité de l’entreprise</h2>
+                <h2 className="text-lg font-bold text-white">{t('vp.idH')}</h2>
               </div>
               {busy === 'identity' ? (
                 <Loader2 className="animate-spin text-[#63B3ED]" />
@@ -313,17 +315,11 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
                 <Clock className="text-orange-300" />
               )}
             </div>
-            {busy === 'identity' && (
-              <p className="mt-3 text-sm text-[#A0AEC0]">JDV IA analyse votre dossier…</p>
-            )}
-            {!busy && identityOk && (
-              <p className="mt-3 text-sm text-green-300">
-                Identité validée. Vous pouvez envoyer vos documents.
-              </p>
-            )}
+            {busy === 'identity' && <p className="mt-3 text-sm text-[#A0AEC0]">{t('vp.ai')}</p>}
+            {!busy && identityOk && <p className="mt-3 text-sm text-green-300">{t('vp.idOk')}</p>}
             {!busy && data.identity.status === 'refused' && (
               <div className="mt-3 space-y-2">
-                <p className="text-sm text-red-300">Votre dossier n’a pas pu être validé :</p>
+                <p className="text-sm text-red-300">{t('vp.idNo')}</p>
                 <ul className="list-disc space-y-1 pl-5 text-sm text-red-200">
                   {data.identity.reasons.map((r) => (
                     <li key={r}>{r}</li>
@@ -337,13 +333,13 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
                   onClick={openEdit}
                   className="btn-gold rounded-xl px-5 py-2.5 text-sm font-bold"
                 >
-                  Corriger mon dossier
+                  {t('vp.fix')}
                 </button>
                 <button
                   onClick={runIdentity}
                   className="rounded-xl border border-[#D4AF37]/30 px-5 py-2.5 text-sm text-[#D4AF37]"
                 >
-                  Relancer l’analyse
+                  {t('vp.rerun')}
                 </button>
               </div>
             )}
@@ -354,7 +350,7 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
                     key={key}
                     className="text-xs font-semibold uppercase tracking-wide text-[#A0AEC0]"
                   >
-                    {label}
+                    {t(label)}
                     <input
                       value={form[key] ?? ''}
                       onChange={(e) => setForm({ ...form, [key]: e.target.value })}
@@ -367,13 +363,13 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
                     onClick={saveEdit}
                     className="btn-gold rounded-xl px-5 py-2.5 text-sm font-bold"
                   >
-                    Enregistrer et relancer l’analyse
+                    {t('vp.saveRe')}
                   </button>
                   <button
                     onClick={() => setEditing(false)}
                     className="rounded-xl border border-white/10 px-5 py-2.5 text-sm text-[#A0AEC0]"
                   >
-                    Annuler
+                    {t('vp.cancel')}
                   </button>
                 </div>
               </div>
@@ -381,11 +377,11 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
           </section>
 
           <section className={`${card} ${identityOk ? '' : 'opacity-50'}`}>
-            <p className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">Étape 2</p>
-            <h2 className="text-lg font-bold text-white">Documents de vérification</h2>
-            <p className="mt-1 text-sm text-[#A0AEC0]">
-              PDF, JPG, PNG ou WEBP, 8 Mo maximum. Chaque document est analysé dès son envoi.
+            <p className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">
+              {t('vp.step2')}
             </p>
+            <h2 className="text-lg font-bold text-white">{t('vp.docH')}</h2>
+            <p className="mt-1 text-sm text-[#A0AEC0]">{t('vp.docSub')}</p>
             <div className="mt-4 space-y-3">
               {data.documents.map((d) => {
                 const isBusy = busy === d.type;
@@ -399,17 +395,17 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
                     <DocIcon status={d.status} busy={isBusy} />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-white">
-                        {DOC_LABELS[d.type] ?? d.type}
+                        {DOC_LABELS[d.type] ? t(DOC_LABELS[d.type]) : d.type}
                       </p>
                       <p
                         className={`text-xs ${d.status === 'rejected' ? 'text-red-300' : d.status === 'verified' ? 'text-green-300' : 'text-[#A0AEC0]'}`}
                       >
-                        {isBusy ? 'Envoi et analyse en cours…' : docText(d)}
+                        {isBusy ? t('vp.docBusy') : docText(d, t)}
                       </p>
                     </div>
                     {canSend && (
                       <label className="cursor-pointer rounded-lg border border-[#D4AF37]/30 px-3 py-2 text-xs font-semibold text-[#D4AF37] hover:bg-[#D4AF37]/10">
-                        {d.status === 'missing' ? 'Envoyer' : 'Renvoyer'}
+                        {d.status === 'missing' ? t('vp.send') : t('vp.resend')}
                         <input
                           type="file"
                           accept={ACCEPTED.join(',')}
@@ -429,18 +425,17 @@ export default function CompanyValidationPanel({ applicationId }: { applicationI
           </section>
 
           <section className={`${card} ${data.can_validate ? '' : 'opacity-50'}`}>
-            <p className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">Étape 3</p>
-            <h2 className="text-lg font-bold text-white">Valider mon entreprise</h2>
-            <p className="mt-1 text-sm text-[#A0AEC0]">
-              Disponible quand l’identité et tous les documents sont validés.
+            <p className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">
+              {t('vp.step3')}
             </p>
+            <h2 className="text-lg font-bold text-white">{t('vp.valH')}</h2>
+            <p className="mt-1 text-sm text-[#A0AEC0]">{t('vp.valSub')}</p>
             <button
               onClick={validate}
               disabled={!data.can_validate || busy === 'validate'}
               className="btn-gold mt-4 inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <ShieldCheck size={16} />{' '}
-              {busy === 'validate' ? 'Création de votre espace…' : 'Valider mon entreprise'}
+              <ShieldCheck size={16} /> {busy === 'validate' ? t('vp.creating') : t('vp.valH')}
             </button>
           </section>
         </>

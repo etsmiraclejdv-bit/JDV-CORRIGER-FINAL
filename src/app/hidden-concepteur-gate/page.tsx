@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Building2, MapPin, ShieldCheck, Warehouse } from 'lucide-react';
 import { checkCurrentSuperAdmin } from '@/lib/auth/super-admin';
 import { supabase } from '@/lib/supabase/client';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 type Branch = { branch_code: string; branch_label: string; route: string };
 const ICONS = {
@@ -18,18 +20,14 @@ const ICONS = {
 // (un super admin peut gérer toutes les agences) et ne dépend pas de la fonction de base.
 const AGENCE_BRANCH: Branch = {
   branch_code: 'agence',
-  branch_label: 'AGENCE / ENTREPÔTS',
+  branch_label: '',
   route: '/entrepot/dashboard',
 };
-const DESCRIPTIONS: Record<string, string> = {
-  admin:
-    'Gérer l’entreprise, les entrepôts, le stock, les prospecteurs, les ventes, paiements, commissions et retours.',
-  prospecteur:
-    'Suivre le terrain : prospecteurs, prospects, clients, visites, ventes, encaissements et commissions.',
-  agence:
-    'Suivre les agences et entrepôts : stock, expéditions vers les prospecteurs, réceptions, traçabilité et clôtures.',
-  concepteur:
-    'Piloter la plateforme, les entreprises, utilisateurs, abonnements, plans, audit, maintenance et configuration globale.',
+const DESCRIPTIONS: Record<string, TerrainKey> = {
+  admin: 'cg.dAdmin',
+  prospecteur: 'cg.dField',
+  agence: 'cg.dAgency',
+  concepteur: 'cg.dDesigner',
 };
 function Message({ title, text, tone }: { title: string; text: string; tone: 'error' | 'info' }) {
   return (
@@ -44,6 +42,7 @@ function Message({ title, text, tone }: { title: string; text: string; tone: 'er
   );
 }
 export default function ConcepteurGatePage() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [state, setState] = useState<'loading' | 'denied' | 'error' | 'ready'>('loading');
   const [message, setMessage] = useState('');
@@ -66,9 +65,7 @@ export default function ConcepteurGatePage() {
       if (cancelled) return;
       const rows = (data ?? []) as Branch[];
       if (error || rows.length === 0) {
-        setMessage(
-          error?.message ?? 'Aucune branche opérationnelle n’a été retournée par la base.'
-        );
+        setMessage(error?.message ?? 'cg.noBranch');
         setState('error');
         return;
       }
@@ -89,14 +86,13 @@ export default function ConcepteurGatePage() {
       cancelled = true;
     };
   }, [router]);
+  const shownMessage = message.startsWith('cg.') ? t(message as TerrainKey) : message;
   if (state === 'loading')
-    return (
-      <Message title="Chargement…" text="Vérification de votre accès concepteur." tone="info" />
-    );
+    return <Message title={t('cg.loading')} text={t('cg.checking')} tone="info" />;
   if (state === 'denied')
-    return <Message title="Accès concepteur refusé" text={message} tone="error" />;
+    return <Message title={t('cg.denied')} text={shownMessage} tone="error" />;
   if (state === 'error')
-    return <Message title="Espace concepteur indisponible" text={message} tone="error" />;
+    return <Message title={t('cg.unavail')} text={shownMessage} tone="error" />;
   return (
     <main className="min-h-screen bg-[#07142d] text-white p-6 md:p-10">
       <div className="mx-auto max-w-6xl">
@@ -104,12 +100,8 @@ export default function ConcepteurGatePage() {
           <p className="text-[#D4AF37] uppercase tracking-[0.25em] text-xs font-semibold">
             JDV CRM
           </p>
-          <h1 className="mt-3 text-3xl md:text-5xl font-bold">Espace Concepteur</h1>
-          <p className="mt-3 text-slate-300 max-w-3xl">
-            Quatre branches : Admin (gestion d’entreprise), Terrain (gestion des prospecteurs),
-            Agence (entrepôts et expéditions) et Concepteur (gestion de la plateforme). Accès libre,
-            sans abonnement, sans essai ni paywall.
-          </p>
+          <h1 className="mt-3 text-3xl md:text-5xl font-bold">{t('cg.title')}</h1>
+          <p className="mt-3 text-slate-300 max-w-3xl">{t('cg.intro')}</p>
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {branches.map((branch) => {
@@ -121,21 +113,23 @@ export default function ConcepteurGatePage() {
                 className="group rounded-2xl border border-white/10 bg-white/[0.04] p-6 hover:border-[#D4AF37]/50 hover:bg-white/[0.07] transition"
               >
                 <Icon className="mb-5 text-[#D4AF37]" size={30} />
-                <h2 className="text-xl font-semibold">{branch.branch_label}</h2>
+                <h2 className="text-xl font-semibold">
+                  {branch.branch_code === 'agence' && !branch.branch_label
+                    ? t('cg.bAgency')
+                    : branch.branch_label}
+                </h2>
                 <p className="mt-3 text-sm leading-6 text-slate-300">
-                  {DESCRIPTIONS[branch.branch_code]}
+                  {DESCRIPTIONS[branch.branch_code] ? t(DESCRIPTIONS[branch.branch_code]) : ''}
                 </p>
                 <span className="mt-6 inline-block text-sm font-medium text-[#D4AF37]">
-                  Ouvrir →
+                  {t('cg.open')}
                 </span>
               </Link>
             );
           })}
         </div>
         <div className="mt-8 rounded-2xl border border-[#D4AF37]/20 bg-[#D4AF37]/5 p-5 text-sm text-slate-200">
-          <strong className="text-[#D4AF37]">Règle Concepteur :</strong> accès illimité aux quatre
-          branches. Les contrôles d’abonnement concernent uniquement les entreprises clientes de la
-          plateforme.
+          <strong className="text-[#D4AF37]">{t('cg.rule')}</strong> {t('cg.ruleText')}
         </div>
       </div>
     </main>

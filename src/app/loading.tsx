@@ -2,36 +2,39 @@
 
 import { useEffect, useState } from 'react';
 import { ArrowRight, Banknote, Building2, CreditCard, MapPin, Users } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
-const steps = [
-  { icon: Building2, label: 'Entreprise', text: 'Pilotez votre activité' },
-  { icon: MapPin, label: 'Prospection', text: 'Trouvez les bons prospects' },
-  { icon: Users, label: 'Conversion', text: 'Transformez en clients' },
-  { icon: CreditCard, label: 'Vente à crédit', text: 'Suivez chaque échéance' },
-  { icon: Banknote, label: 'Recouvrement', text: 'Sécurisez vos paiements' },
+const steps: { icon: typeof Building2; label: TerrainKey; text: TerrainKey }[] = [
+  { icon: Building2, label: 'ld.s1', text: 'ld.s1t' },
+  { icon: MapPin, label: 'ld.s2', text: 'ld.s2t' },
+  { icon: Users, label: 'ld.s3', text: 'ld.s3t' },
+  { icon: CreditCard, label: 'ld.s4', text: 'ld.s4t' },
+  { icon: Banknote, label: 'ld.s5', text: 'ld.s5t' },
 ];
 
 // Les noms de fichiers contiennent des espaces, des accents et une virgule : encodeURI garantit une adresse valide.
 // Les noms ci-dessous doivent correspondre EXACTEMENT aux fichiers de public/assets/images/.
-const slides = [
+const slides: { image: string; title: TerrainKey; alt: TerrainKey }[] = [
   {
     image: encodeURI('/assets/images/CRM mobile pour commerciaux terrain.png'),
-    title: 'Prospectez partout avec JDV CRM',
-    alt: 'Commercial terrain enregistrant un prospect dans JDV CRM',
+    title: 'ld.t1',
+    alt: 'ld.a1',
   },
   {
     image: encodeURI('/assets/images/Présentation CRM JDV en entreprise.png'),
-    title: 'Transformez vos opportunités en ventes',
-    alt: 'Commercial présentant JDV CRM à son client',
+    title: 'ld.t2',
+    alt: 'ld.a2',
   },
   {
     image: encodeURI('/assets/images/JDV CRM _ Votre succès, notre priorité.png'),
-    title: 'Pilotez votre croissance avec votre équipe',
-    alt: 'Équipe commerciale utilisant le tableau de bord JDV CRM',
+    title: 'ld.t3',
+    alt: 'ld.a3',
   },
 ];
 
 export default function Loading() {
+  const { t } = useLanguage();
   const [slide, setSlide] = useState(0);
   useEffect(() => {
     const timer = window.setInterval(
@@ -42,7 +45,7 @@ export default function Loading() {
   }, []);
 
   return (
-    <main className="jdv-loading jdv-loading--extended" aria-label="Chargement de JDV CRM">
+    <main className="jdv-loading jdv-loading--extended" aria-label={t('ld.aria')}>
       <div className="jdv-loading__glow jdv-loading__glow--one" />
       <div className="jdv-loading__glow jdv-loading__glow--two" />
       <div className="jdv-loading__grid" />
@@ -58,13 +61,13 @@ export default function Loading() {
           <div className="jdv-loading__name">
             JDV <span>CRM</span>
           </div>
-          <p>Gestion • Prospection • Vente à crédit • Recouvrement</p>
+          <p>{t('ld.tag1')}</p>
         </div>
 
         <div className="jdv-loading__headline">
-          <span>Une entreprise mieux gérée.</span>
-          <strong>Des prospects mieux convertis.</strong>
-          <span>Des ventes mieux suivies.</span>
+          <span>{t('ld.h1')}</span>
+          <strong>{t('ld.h2')}</strong>
+          <span>{t('ld.h3')}</span>
         </div>
 
         <div className="jdv-loading__flow" aria-hidden="true">
@@ -79,8 +82,8 @@ export default function Loading() {
                 <div className="jdv-loading__flow-card">
                   <Icon size={22} strokeWidth={1.8} />
                   <div>
-                    <b>{step.label}</b>
-                    <small>{step.text}</small>
+                    <b>{t(step.label)}</b>
+                    <small>{t(step.text)}</small>
                   </div>
                   {index < steps.length - 1 && (
                     <ArrowRight className="jdv-loading__arrow" size={17} />
@@ -97,14 +100,14 @@ export default function Loading() {
               <img
                 key={item.image}
                 src={item.image}
-                alt={item.alt}
+                alt={t(item.alt)}
                 className={`jdv-loading__hero-image ${index === slide ? 'is-active' : ''}`}
               />
             ))}
             <div className="jdv-loading__hero-overlay" />
             <div className="jdv-loading__hero-caption">
               <span>JDV CRM • {slide + 1}/3</span>
-              <strong>{slides[slide].title}</strong>
+              <strong>{t(slides[slide].title)}</strong>
             </div>
           </div>
         </div>
@@ -120,17 +123,15 @@ export default function Loading() {
             <span />
           </div>
           <div className="jdv-loading__status">
-            <span>JDV CRM prépare votre espace</span>
-            <span>30 secondes</span>
+            <span>{t('ld.prep')}</span>
+            <span>{t('ld.30')}</span>
           </div>
         </div>
         <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-white/10 bg-[#08152f]/80 px-4 py-3 text-center">
           <p className="text-[10px] font-bold uppercase tracking-[.2em] text-[#D4AF37]">
-            Besoin d’une plateforme adaptée à votre secteur ?
+            {t('ld.need')}
           </p>
-          <p className="mt-1 text-xs text-slate-300">
-            Contactez directement le concepteur JDV CRM.
-          </p>
+          <p className="mt-1 text-xs text-slate-300">{t('ld.contact')}</p>
           <div className="mt-2 flex flex-wrap justify-center gap-x-3 gap-y-1 text-[11px] text-white">
             <a href="tel:+2290166038221">+229 01 66 03 82 21</a>
             <a href="tel:+2290195325987">+229 01 95 32 59 87</a>
@@ -139,11 +140,11 @@ export default function Loading() {
           </div>
           <div className="mt-1 flex flex-wrap justify-center gap-x-3 text-[11px] text-slate-300">
             <a href="mailto:centre.global.jdv@gmail.com">centre.global.jdv@gmail.com</a>
-            <span>Cotonou, Bénin</span>
+            <span>{t('ld.city')}</span>
           </div>
         </div>
       </section>
-      <p className="jdv-loading__footer">Votre activité. Votre contrôle. Votre croissance.</p>
+      <p className="jdv-loading__footer">{t('ld.foot')}</p>
     </main>
   );
 }

@@ -6,16 +6,13 @@ import {
   type PaymentsOverview,
 } from '@/lib/services/platformPaymentsService';
 import {
-  eventTypeLabel,
-  formatDateTimeFr,
-  formatMoney,
-  paymentStatusLabel,
   shortId,
   summarizePayments,
   summarizeWebhooks,
   webhookHealth,
-  webhookStatusLabel,
 } from '@/lib/platform/paymentsHelpers';
+import { usePaymentLabels } from '@/lib/platform/usePaymentLabels';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 import MetricCard from '@/components/ui/MetricCard';
 import LoadingState from '@/components/ui/LoadingState';
 import ErrorState from '@/components/ui/ErrorState';
@@ -45,6 +42,8 @@ const TH =
   'text-left px-4 py-3 text-xs font-semibold text-[#718096] uppercase tracking-wider whitespace-nowrap';
 
 export default function PlatformPaymentsView() {
+  const { t } = useLanguage();
+  const L = usePaymentLabels();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [data, setData] = useState<PaymentsOverview | null>(null);
@@ -67,10 +66,10 @@ export default function PlatformPaymentsView() {
   const health = useMemo(() => webhookHealth(webhooks), [webhooks]);
   const orgName = (id: string | null) => (id && data?.orgNames[id]) || '—';
 
-  if (loading && !data) return <LoadingState message="Chargement des paiements…" />;
+  if (loading && !data) return <LoadingState message={t('cg.pmLoading')} />;
   if (error && !data)
     return (
-      <ErrorState message={error} action={{ label: 'Réessayer', onClick: () => void load() }} />
+      <ErrorState message={error} action={{ label: t('cg.pmRetry'), onClick: () => void load() }} />
     );
   if (!data) return null;
 
@@ -80,19 +79,17 @@ export default function PlatformPaymentsView() {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-white">Paiements et webhooks</h1>
-          <p className="text-sm text-[#A0AEC0] mt-1">
-            Suivi des abonnements payés et des notifications reçues de FedaPay
-          </p>
+          <h1 className="text-2xl font-bold text-white">{t('cg.pmTitle')}</h1>
+          <p className="text-sm text-[#A0AEC0] mt-1">{t('cg.pmSub')}</p>
         </div>
         <button
           onClick={() => void load()}
           disabled={loading}
-          aria-label="Actualiser"
+          aria-label={t('cg.refresh')}
           className="flex items-center gap-2 btn-outline-gold px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-          Actualiser
+          {t('cg.refresh')}
         </button>
       </div>
 
@@ -109,40 +106,42 @@ export default function PlatformPaymentsView() {
         className={`rounded-xl border px-4 py-3 text-sm ${HEALTH_CLASSES[health.state]}`}
         role="status"
       >
-        <p>{health.message}</p>
+        <p>{L.healthMessage(health.state, webhooks.failed)}</p>
         {webhooks.lastReceivedAt && (
           <p className="text-xs opacity-80 mt-1">
-            Dernier webhook reçu : {formatDateTimeFr(webhooks.lastReceivedAt)}
+            {t('cg.pmLastHook').replace('{d}', L.formatDateTime(webhooks.lastReceivedAt))}
           </p>
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <MetricCard
-          title="Paiements réussis"
+          title={t('cg.pmOk')}
           value={String(payments.successful)}
-          subtitle={`${formatMoney(payments.successfulAmountXof, 'XOF')}${payments.otherCurrencies ? ' (hors autres devises)' : ''}`}
+          subtitle={`${L.formatMoney(payments.successfulAmountXof, 'XOF')}${payments.otherCurrencies ? t('cg.pmOther') : ''}`}
           icon={<CheckCircle size={18} />}
           variant="success"
         />
         <MetricCard
-          title="En attente"
+          title={t('cg.pmPending')}
           value={String(payments.pending)}
-          subtitle="paiements non finalisés"
+          subtitle={t('cg.pmPendingSub')}
           icon={<Clock size={18} />}
           variant={payments.pending > 0 ? 'warning' : 'default'}
         />
         <MetricCard
-          title="Échoués"
+          title={t('cg.pmFailed')}
           value={String(payments.failed)}
-          subtitle="paiements refusés ou en erreur"
+          subtitle={t('cg.pmFailedSub')}
           icon={<AlertTriangle size={18} />}
           variant={payments.failed > 0 ? 'danger' : 'default'}
         />
         <MetricCard
-          title="Webhooks reçus"
+          title={t('cg.pmHooks')}
           value={String(webhooks.total)}
-          subtitle={`${webhooks.processed} traité(s) · ${webhooks.failed} en échec`}
+          subtitle={t('cg.pmHooksSub')
+            .replace('{p}', String(webhooks.processed))
+            .replace('{f}', String(webhooks.failed))}
           icon={<CreditCard size={18} />}
           variant={webhooks.failed > 0 ? 'danger' : 'gold'}
         />
@@ -152,18 +151,18 @@ export default function PlatformPaymentsView() {
         <div className="bg-[#0F2347] border border-red-500/30 rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-red-500/20">
             <h2 className="text-sm font-semibold text-red-300">
-              Webhooks en échec ({failedWebhooks.length})
+              {t('cg.pmFailedH').replace('{n}', String(failedWebhooks.length))}
             </h2>
           </div>
           <ul className="divide-y divide-[#D4AF37]/5">
             {failedWebhooks.slice(0, 10).map((w) => (
               <li key={w.id} className="px-5 py-3">
                 <p className="text-sm text-white">
-                  {eventTypeLabel(w.event_type)} ·{' '}
-                  <span className="text-[#718096]">{formatDateTimeFr(w.created_at)}</span>
+                  {L.eventType(w.event_type)} ·{' '}
+                  <span className="text-[#718096]">{L.formatDateTime(w.created_at)}</span>
                 </p>
                 <p className="text-xs text-red-300 mt-0.5 break-words">
-                  {w.error_message || 'Aucun message d’erreur enregistré.'}
+                  {w.error_message || t('cg.pmNoErr')}
                 </p>
               </li>
             ))}
@@ -174,19 +173,24 @@ export default function PlatformPaymentsView() {
       {/* Paiements */}
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-[#D4AF37]/10">
-          <h2 className="text-sm font-semibold text-white">Paiements d’abonnement</h2>
-          <p className="text-xs text-[#718096] mt-0.5">100 plus récents</p>
+          <h2 className="text-sm font-semibold text-white">{t('cg.pmPayH')}</h2>
+          <p className="text-xs text-[#718096] mt-0.5">{t('cg.pmRecent')}</p>
         </div>
         {data.payments.length === 0 ? (
-          <p className="px-5 py-10 text-sm text-[#A0AEC0] text-center">
-            Aucun paiement enregistré.
-          </p>
+          <p className="px-5 py-10 text-sm text-[#A0AEC0] text-center">{t('cg.pmNoPay')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  {['Date', 'Entreprise', 'Montant', 'Mode', 'Référence', 'Statut'].map((h) => (
+                  {[
+                    t('cg.pmColDate'),
+                    t('cg.dbColCo'),
+                    t('cg.pmColAmount'),
+                    t('cg.pmColMode'),
+                    t('cg.pmColRef'),
+                    t('cg.pmColStatus'),
+                  ].map((h) => (
                     <th key={h} className={TH}>
                       {h}
                     </th>
@@ -197,11 +201,11 @@ export default function PlatformPaymentsView() {
                 {data.payments.map((p) => (
                   <tr key={p.id} className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50">
                     <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
-                      {formatDateTimeFr(p.paid_at ?? p.created_at)}
+                      {L.formatDateTime(p.paid_at ?? p.created_at)}
                     </td>
                     <td className="px-4 py-3 text-sm text-white">{orgName(p.organization_id)}</td>
                     <td className="px-4 py-3 text-sm font-semibold text-white whitespace-nowrap">
-                      {formatMoney(p.amount, p.currency)}
+                      {L.formatMoney(p.amount, p.currency)}
                     </td>
                     <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
                       {p.payment_method || p.provider || '—'}
@@ -216,7 +220,7 @@ export default function PlatformPaymentsView() {
                       <span
                         className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${PAYMENT_CLASSES[p.status] ?? PAYMENT_CLASSES.cancelled}`}
                       >
-                        {paymentStatusLabel(p.status)}
+                        {L.paymentStatus(p.status)}
                       </span>
                     </td>
                   </tr>
@@ -230,35 +234,38 @@ export default function PlatformPaymentsView() {
       {/* Webhooks */}
       <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
         <div className="px-5 py-4 border-b border-[#D4AF37]/10">
-          <h2 className="text-sm font-semibold text-white">Webhooks reçus</h2>
-          <p className="text-xs text-[#718096] mt-0.5">
-            100 plus récents · le contenu brut n’est pas affiché (données personnelles)
-          </p>
+          <h2 className="text-sm font-semibold text-white">{t('cg.pmHooksH')}</h2>
+          <p className="text-xs text-[#718096] mt-0.5">{t('cg.pmHooksNote')}</p>
         </div>
         {data.webhooks.length === 0 ? (
-          <p className="px-5 py-10 text-sm text-[#A0AEC0] text-center">Aucun webhook reçu.</p>
+          <p className="px-5 py-10 text-sm text-[#A0AEC0] text-center">{t('cg.pmNoHook')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#D4AF37]/10">
-                  {['Reçu le', 'Événement', 'Entreprise', 'Identifiant', 'Statut', 'Message'].map(
-                    (h) => (
-                      <th key={h} className={TH}>
-                        {h}
-                      </th>
-                    )
-                  )}
+                  {[
+                    t('cg.pmColRecv'),
+                    t('cg.pmColEvent'),
+                    t('cg.dbColCo'),
+                    t('cg.pmColId'),
+                    t('cg.pmColStatus'),
+                    t('cg.pmColMsg'),
+                  ].map((h) => (
+                    <th key={h} className={TH}>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
                 {data.webhooks.map((w) => (
                   <tr key={w.id} className="border-b border-[#D4AF37]/5 hover:bg-[#0B1B3D]/50">
                     <td className="px-4 py-3 text-sm text-[#A0AEC0] whitespace-nowrap">
-                      {formatDateTimeFr(w.created_at)}
+                      {L.formatDateTime(w.created_at)}
                     </td>
                     <td className="px-4 py-3 text-sm text-white whitespace-nowrap">
-                      {eventTypeLabel(w.event_type)}
+                      {L.eventType(w.event_type)}
                     </td>
                     <td className="px-4 py-3 text-sm text-[#A0AEC0]">
                       {orgName(w.organization_id)}
@@ -273,7 +280,7 @@ export default function PlatformPaymentsView() {
                       <span
                         className={`inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ${WEBHOOK_CLASSES[w.status] ?? WEBHOOK_CLASSES.ignored}`}
                       >
-                        {webhookStatusLabel(w.status)}
+                        {L.webhookStatus(w.status)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-[#A0AEC0] max-w-xs break-words">

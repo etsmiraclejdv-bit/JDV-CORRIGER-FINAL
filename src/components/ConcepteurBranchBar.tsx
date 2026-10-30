@@ -5,20 +5,33 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Building2, MapPin, ShieldCheck, LayoutGrid, Warehouse } from 'lucide-react';
 import { getAuthContext } from '@/lib/auth/context';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import type { TerrainKey } from '@/lib/i18n/terrain';
 
 const BRANCHES = [
-  { code: 'admin', label: 'Admin · Entreprise', href: '/business/dashboard', icon: Building2 },
-  { code: 'terrain', label: 'Terrain · Prospecteurs', href: '/terrain/dashboard', icon: MapPin },
-  { code: 'agence', label: 'Agence · Entrepôts', href: '/entrepot/dashboard', icon: Warehouse },
+  {
+    code: 'admin',
+    label: 'cg.baAdmin' as TerrainKey,
+    href: '/business/dashboard',
+    icon: Building2,
+  },
+  { code: 'terrain', label: 'cg.baField' as TerrainKey, href: '/terrain/dashboard', icon: MapPin },
+  {
+    code: 'agence',
+    label: 'cg.baAgency' as TerrainKey,
+    href: '/entrepot/dashboard',
+    icon: Warehouse,
+  },
   {
     code: 'concepteur',
-    label: 'Concepteur · Plateforme',
+    label: 'cg.baDesigner' as TerrainKey,
     href: '/hidden-concepteur-gate/dashboard',
     icon: ShieldCheck,
   },
 ] as const;
 
 export default function ConcepteurBranchBar() {
+  const { t } = useLanguage();
   const pathname = usePathname() ?? '';
   const [visible, setVisible] = useState(false);
 
@@ -40,14 +53,14 @@ export default function ConcepteurBranchBar() {
 
   return (
     <nav
-      aria-label="Branches du concepteur"
+      aria-label={t('cg.baAria')}
       className="flex flex-wrap items-center gap-2 border-b border-[#D4AF37]/30 bg-[#07142d] px-4 py-2 text-xs text-white"
     >
       <Link
         href="/hidden-concepteur-gate"
         className="flex items-center gap-1 rounded-md px-2 py-1 text-[#D4AF37] hover:bg-white/10"
       >
-        <LayoutGrid size={14} /> Espace concepteur
+        <LayoutGrid size={14} /> {t('cg.baHome')}
       </Link>
       {BRANCHES.map(({ code, label, href, icon: Icon }) => {
         const active = pathname.startsWith(href);
@@ -61,7 +74,7 @@ export default function ConcepteurBranchBar() {
                 : 'flex items-center gap-1 rounded-md px-2 py-1 transition hover:bg-white/10'
             }
           >
-            <Icon size={14} /> {label}
+            <Icon size={14} /> {t(label)}
           </Link>
         );
       })}

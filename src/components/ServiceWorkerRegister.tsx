@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useLanguage } from '@/lib/i18n/LanguageProvider';
 
 export default function ServiceWorkerRegister() {
+  const { t } = useLanguage();
   const [offline, setOffline] = useState(false);
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export default function ServiceWorkerRegister() {
       aria-live="polite"
       className="fixed bottom-3 left-3 z-[100] max-w-[calc(100vw-1.5rem)] rounded-xl border border-amber-300/40 bg-[#08152f] px-4 py-3 text-sm text-amber-100 shadow-xl"
     >
-      Vous êtes hors ligne. Les opérations métier ne sont pas encore synchronisées automatiquement.
+      {t('sh.offline')}
     </div>
   );
 }
