@@ -73,7 +73,7 @@ export default function MobileTabBar({ items, rootHref, primaryCount = 4 }: Prop
           <Link
             key={item.href}
             href={item.href}
-            className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium ${isActive(item.href) ? 'text-[#D4AF37]' : 'text-[#65766F]'}`}
+            className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium ${isActive(item.href) ? 'text-[#147866]' : 'text-[#65766F]'}`}
           >
             {item.icon}
             <span className="w-full truncate text-center">{item.label}</span>
@@ -82,7 +82,7 @@ export default function MobileTabBar({ items, rootHref, primaryCount = 4 }: Prop
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium ${open ? 'text-[#D4AF37]' : 'text-[#65766F]'}`}
+          className={`flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-[10px] font-medium ${open ? 'text-[#147866]' : 'text-[#65766F]'}`}
         >
           <Menu size={20} />
           <span>{t('more')}</span>
