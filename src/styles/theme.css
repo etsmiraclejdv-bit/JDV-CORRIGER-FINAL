@@ -309,8 +309,7 @@ html:not([data-accent="gold"]) [class*="hover:border-[#F5E17A]"]:hover {
   scrollbar-width: thin;
 }
 /* Harmonise legacy module utility classes without changing other workspaces. */
-.jdv-workspace-shell [class~="text-[#D4AF37]"],
-.jdv-workspace-shell [class~="text-[#brand]"] { color: #A78BFA !important; }
+.jdv-workspace-shell [class~="text-[#D4AF37]"] { color: #A78BFA !important; }
 .jdv-workspace-shell [class~="bg-[#0F2347]"],
 .jdv-workspace-shell [class~="bg-[#0B1B3D]"] { background-color: #111827 !important; }
 .jdv-workspace-shell [class~="bg-[#0A1628]"] { background-color: #0D1422 !important; }
