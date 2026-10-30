@@ -103,7 +103,7 @@ function Shell({ children }: { children: React.ReactNode }) {
   const visibleNav = isAdmin
     ? NAV
     : NAV.filter(({ href }) =>
-        [workspaceRoot, `${workspaceRoot}/stock`, `${workspaceRoot}/sous-entrepots`].includes(href)
+        ['/entrepot/dashboard', '/entrepot/dashboard/stock', '/entrepot/dashboard/sous-entrepots'].includes(href)
       );
   return (
     <div className="jdv-workspace-shell flex h-screen bg-[#0B1B3D] text-white overflow-hidden">
