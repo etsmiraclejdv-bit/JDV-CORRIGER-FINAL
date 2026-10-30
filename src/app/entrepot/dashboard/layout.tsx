@@ -84,14 +84,14 @@ function Shell({ children }: { children: React.ReactNode }) {
   const isAdmin = current.access_role === 'admin';
   return (
     <div className="flex h-screen bg-[#0B1B3D] text-white overflow-hidden">
-      <aside className="hidden md:flex w-64 flex-shrink-0 flex-col bg-[#08152f] border-r border-[#D4AF37]/10">
-        <div className="h-16 flex items-center gap-2 px-4 border-b border-[#D4AF37]/10">
+      <aside className="hidden md:flex w-64 flex-shrink-0 flex-col bg-[#08152f] border-r border-[#34D399]/10">
+        <div className="h-16 flex items-center gap-2 px-4 border-b border-[#34D399]/10">
           <AppLogo size={26} />
           <span className="font-bold text-sm">
-            JDV <span className="text-[#D4AF37]">{t('agencyBrand')}</span>
+            JDV <span className="text-[#34D399]">{t('agencyBrand')}</span>
           </span>
         </div>
-        <div className="p-3 border-b border-[#D4AF37]/10">
+        <div className="p-3 border-b border-[#34D399]/10">
           {warehouses.length > 1 ? (
             <select
               value={current.warehouse_id}
@@ -120,7 +120,7 @@ function Shell({ children }: { children: React.ReactNode }) {
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${active ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'}`}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${active ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'}`}
               >
                 <Icon size={18} />
                 {t(labelKey)}
@@ -128,7 +128,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="border-t border-[#D4AF37]/10 p-2 space-y-1">
+        <div className="border-t border-[#34D399]/10 p-2 space-y-1">
           {isAdmin && (
             <Link
               href="/business/dashboard/sous-branches"
@@ -148,7 +148,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="h-16 flex items-center justify-between gap-3 px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#D4AF37]/10 bg-[#08152f]/80 flex-shrink-0">
+        <div className="h-16 flex items-center justify-between gap-3 px-4 md:px-6 pt-[env(safe-area-inset-top)] border-b border-[#34D399]/10 bg-[#08152f]/80 flex-shrink-0">
           <h1 className="min-w-0 truncate text-base font-semibold">
             {current.name}
             {current.city ? (
@@ -167,7 +167,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
         {warehouses.length > 1 && (
-          <div className="md:hidden border-b border-[#D4AF37]/10 bg-[#08152f] p-2">
+          <div className="md:hidden border-b border-[#34D399]/10 bg-[#08152f] p-2">
             <select
               value={current.warehouse_id}
               onChange={(e) => setCurrentId(e.target.value)}

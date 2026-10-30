@@ -27,7 +27,7 @@ type Inventory = {
 };
 
 const input =
-  'w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm';
+  'w-full bg-[#0A1628] border border-[#34D399]/20 rounded-xl px-3 py-2.5 text-white text-sm';
 const label = 'block text-xs text-[#A0AEC0] mb-1.5';
 
 export default function BusinessStockPage() {
@@ -166,7 +166,7 @@ export default function BusinessStockPage() {
         </div>
         <button
           onClick={() => load()}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0]"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#34D399]/20 text-[#A0AEC0]"
         >
           <RefreshCw size={14} />
           {t('bz.fnRefresh')}
@@ -176,10 +176,10 @@ export default function BusinessStockPage() {
       <div className="grid lg:grid-cols-2 gap-5">
         <form
           onSubmit={centralEntry}
-          className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-5 space-y-3"
+          className="bg-[#0F2347] border border-[#34D399]/20 rounded-2xl p-5 space-y-3"
         >
           <div className="flex items-center gap-2">
-            <Plus size={18} className="text-[#D4AF37]" />
+            <Plus size={18} className="text-[#34D399]" />
             <h2 className="font-semibold text-white">{t('bz.skCentralEntry')}</h2>
           </div>
           <p className="text-xs text-[#718096]">{t('bz.skCentralIntro')}</p>
@@ -242,10 +242,10 @@ export default function BusinessStockPage() {
 
         <form
           onSubmit={warehouseSupply}
-          className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-5 space-y-3"
+          className="bg-[#0F2347] border border-[#34D399]/20 rounded-2xl p-5 space-y-3"
         >
           <div className="flex items-center gap-2">
-            <Truck size={18} className="text-[#D4AF37]" />
+            <Truck size={18} className="text-[#34D399]" />
             <h2 className="font-semibold text-white">{t('bz.skSupplyWh')}</h2>
           </div>
           <p className="text-xs text-[#718096]">{t('bz.skSupplyIntro')}</p>
@@ -333,9 +333,9 @@ export default function BusinessStockPage() {
         </form>
       </div>
 
-      <section className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
-        <div className="p-4 border-b border-[#D4AF37]/10 flex items-center gap-2">
-          <Package size={17} className="text-[#D4AF37]" />
+      <section className="bg-[#0F2347] border border-[#34D399]/20 rounded-2xl overflow-hidden">
+        <div className="p-4 border-b border-[#34D399]/10 flex items-center gap-2">
+          <Package size={17} className="text-[#34D399]" />
           <h2 className="font-semibold text-white">{t('bz.skCentral')}</h2>
         </div>
         {loading ? (
@@ -360,7 +360,7 @@ export default function BusinessStockPage() {
                   return (
                     <tr key={a.id} className="border-b border-white/5">
                       <td className="p-3 text-white">{a.name}</td>
-                      <td className="p-3 text-[#D4AF37] font-mono text-xs">{a.code}</td>
+                      <td className="p-3 text-[#34D399] font-mono text-xs">{a.code}</td>
                       <td className="p-3 text-white">{q}</td>
                       <td className="p-3 text-[#A0AEC0]">{r}</td>
                       <td className="p-3 font-semibold text-emerald-300">{q - r}</td>
@@ -373,9 +373,9 @@ export default function BusinessStockPage() {
         )}
       </section>
 
-      <section className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
-        <div className="p-4 border-b border-[#D4AF37]/10 flex items-center gap-2">
-          <Warehouse size={17} className="text-[#D4AF37]" />
+      <section className="bg-[#0F2347] border border-[#34D399]/20 rounded-2xl overflow-hidden">
+        <div className="p-4 border-b border-[#34D399]/10 flex items-center gap-2">
+          <Warehouse size={17} className="text-[#34D399]" />
           <h2 className="font-semibold text-white">{t('bz.skByWh')}</h2>
         </div>
         {inventory.length === 0 ? (

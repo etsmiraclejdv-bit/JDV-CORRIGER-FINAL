@@ -39,7 +39,7 @@ export default function StockPage() {
         <div className="flex gap-2">
           <Link
             href="/entrepot/dashboard/journal-stock"
-            className="rounded-lg border border-[#D4AF37]/30 px-3 py-2 text-sm text-[#D4AF37]"
+            className="rounded-lg border border-[#34D399]/30 px-3 py-2 text-sm text-[#34D399]"
           >
             {t('we.journal')}
           </Link>

@@ -41,7 +41,7 @@ type A = {
 };
 
 const input =
-  'w-full bg-[#0A1628] border border-[#D4AF37]/20 rounded-xl px-3 py-2.5 text-white text-sm';
+  'w-full bg-[#0A1628] border border-[#34D399]/20 rounded-xl px-3 py-2.5 text-white text-sm';
 const label = 'block text-[11px] text-[#A0AEC0] mb-1';
 
 export default function WarehousesPage() {
@@ -197,7 +197,7 @@ export default function WarehousesPage() {
       <div className="flex justify-between items-start">
         <div>
           <div className="flex items-center gap-2">
-            <Warehouse className="text-[#D4AF37]" />
+            <Warehouse className="text-[#34D399]" />
             <h1 className="text-2xl font-bold text-white">{t('bz.enTitle')}</h1>
           </div>
           <p className="text-sm text-[#A0AEC0] mt-1">{t('bz.enIntro')}</p>
@@ -207,7 +207,7 @@ export default function WarehousesPage() {
           <button
             type="button"
             onClick={load}
-            className="p-2.5 rounded-xl border border-[#D4AF37]/20 text-[#A0AEC0]"
+            className="p-2.5 rounded-xl border border-[#34D399]/20 text-[#A0AEC0]"
           >
             <RefreshCw size={16} />
           </button>
@@ -228,7 +228,7 @@ export default function WarehousesPage() {
       {showCreate && (
         <form
           onSubmit={create}
-          className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-5 grid md:grid-cols-5 gap-3"
+          className="bg-[#0F2347] border border-[#34D399]/20 rounded-2xl p-5 grid md:grid-cols-5 gap-3"
         >
           <input
             required
@@ -277,13 +277,13 @@ export default function WarehousesPage() {
                 className={
                   'text-left bg-[#0F2347] border rounded-2xl p-4 transition-all ' +
                   (openedWarehouse === w.id
-                    ? 'border-[#D4AF37]/60 bg-[#D4AF37]/5'
-                    : 'border-[#D4AF37]/15 hover:border-[#D4AF37]/40')
+                    ? 'border-[#34D399]/60 bg-[#34D399]/5'
+                    : 'border-[#34D399]/15 hover:border-[#34D399]/40')
                 }
               >
                 <div className="flex justify-between">
                   <b className="text-white">{w.name}</b>
-                  <span className="text-xs text-[#D4AF37]">{w.code}</span>
+                  <span className="text-xs text-[#34D399]">{w.code}</span>
                 </div>
                 <p className="text-xs text-[#A0AEC0] mt-2">
                   <MapPin size={12} className="inline" /> {w.address || w.city || t('bz.enNoAddr')}
@@ -294,7 +294,7 @@ export default function WarehousesPage() {
           </div>
 
           {openedWarehouse && (
-            <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl p-5 space-y-4">
+            <div className="bg-[#0F2347] border border-[#34D399]/20 rounded-2xl p-5 space-y-4">
               {(() => {
                 const w = warehouses.find((x) => x.id === openedWarehouse);
                 const members = assignments.filter((x) => x.warehouse_id === openedWarehouse);
@@ -305,7 +305,7 @@ export default function WarehousesPage() {
                   <>
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="text-xs uppercase tracking-widest text-[#D4AF37]">
+                        <p className="text-xs uppercase tracking-widest text-[#34D399]">
                           {t('bz.enSystem')}
                         </p>
                         <h2 className="text-lg font-bold text-white">{w.name}</h2>
@@ -335,7 +335,7 @@ export default function WarehousesPage() {
                           {members.map((a) => (
                             <div
                               key={a.id}
-                              className="flex items-center justify-between p-3 rounded-xl bg-[#0A1628] border border-[#D4AF37]/10"
+                              className="flex items-center justify-between p-3 rounded-xl bg-[#0A1628] border border-[#34D399]/10"
                             >
                               <div>
                                 <p className="text-sm font-semibold text-white">
@@ -361,13 +361,13 @@ export default function WarehousesPage() {
             </div>
           )}
 
-          <div className="bg-[#0F2347] border border-[#D4AF37]/20 rounded-2xl overflow-hidden">
-            <div className="p-4 border-b border-[#D4AF37]/10">
+          <div className="bg-[#0F2347] border border-[#34D399]/20 rounded-2xl overflow-hidden">
+            <div className="p-4 border-b border-[#34D399]/10">
               <h2 className="font-semibold text-white">{t('bz.enMoveH')}</h2>
               <p className="text-xs text-[#718096] mt-1">{t('bz.enMoveNote')}</p>
             </div>
 
-            <div className="divide-y divide-[#D4AF37]/10">
+            <div className="divide-y divide-[#34D399]/10">
               {prospecteurs.map((p) => {
                 const a = assignments.find((x) => x.prospecteur_id === p.id);
                 const v = selected[p.id] ?? {

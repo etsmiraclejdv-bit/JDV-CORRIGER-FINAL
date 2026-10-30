@@ -279,16 +279,16 @@ export default function BusinessDashboardLayout({ children }: { children: React.
           <OrganizationAmbience />
           <aside
             data-jdv-design="sidebar"
-            className={`relative z-10 h-full md:h-screen flex flex-col bg-[#08152f] border-r border-[#D4AF37]/10 transition-all duration-300 flex-shrink-0 ${mobilePreview ? (mobileMenuOpen ? 'absolute inset-y-0 left-0 z-30 flex w-72 shadow-2xl' : 'hidden') : mobileMenuOpen ? 'fixed inset-y-0 left-0 z-30 flex w-72 shadow-2xl md:relative md:inset-auto md:shadow-none md:z-10' : 'hidden md:flex'} ${collapsed ? 'md:w-16' : 'md:w-60'}`}
+            className={`relative z-10 h-full md:h-screen flex flex-col bg-[#08152f] border-r border-[#34D399]/10 transition-all duration-300 flex-shrink-0 ${mobilePreview ? (mobileMenuOpen ? 'absolute inset-y-0 left-0 z-30 flex w-72 shadow-2xl' : 'hidden') : mobileMenuOpen ? 'fixed inset-y-0 left-0 z-30 flex w-72 shadow-2xl md:relative md:inset-auto md:shadow-none md:z-10' : 'hidden md:flex'} ${collapsed ? 'md:w-16' : 'md:w-60'}`}
           >
             <div
-              className={`h-16 flex items-center border-b border-[#D4AF37]/10 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
+              className={`h-16 flex items-center border-b border-[#34D399]/10 px-4 flex-shrink-0 ${collapsed ? 'justify-center' : 'justify-between'}`}
             >
               {!collapsed && (
                 <div className="flex items-center gap-2">
                   <AppLogo size={28} />
                   <span className="font-bold text-base text-white">
-                    JDV <span className="text-[#D4AF37]">CRM</span>
+                    JDV <span className="text-[#34D399]">CRM</span>
                   </span>
                 </div>
               )}
@@ -323,7 +323,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                           href={item.href}
                           onClick={() => setMobileMenuOpen(false)}
                           title={collapsed ? t(item.label) : undefined}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
+                          className={`flex items-center gap-3 px-3 py-2.5 rounded-xl mb-0.5 text-sm font-medium transition-all ${isActive ? 'bg-[#34D399]/15 text-[#34D399] border border-[#34D399]/20' : 'text-[#A0AEC0] hover:text-white hover:bg-[#0F2347]'} ${collapsed ? 'justify-center' : ''}`}
                         >
                           <span className="flex-shrink-0">{item.icon}</span>
                           {!collapsed && <span className="flex-1 truncate">{t(item.label)}</span>}
@@ -333,7 +333,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                 </div>
               ))}
             </nav>
-            <div className="border-t border-[#D4AF37]/10 p-2 flex-shrink-0">
+            <div className="border-t border-[#34D399]/10 p-2 flex-shrink-0">
               <div className={`flex ${collapsed ? 'flex-col gap-1 items-center' : 'gap-2'}`}>
                 <button
                   onClick={() => setProfileOpen(true)}
@@ -371,7 +371,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
             />
           )}
           <div className="relative z-10 flex-1 min-w-0 flex flex-col overflow-hidden">
-            <div className="h-16 flex items-center justify-between px-3 sm:px-6 border-b border-[#D4AF37]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
+            <div className="h-16 flex items-center justify-between px-3 sm:px-6 border-b border-[#34D399]/10 bg-[#08152f]/80 backdrop-blur-sm flex-shrink-0">
               <div className="flex min-w-0 items-center gap-2">
                 <button
                   type="button"
@@ -397,7 +397,7 @@ export default function BusinessDashboardLayout({ children }: { children: React.
                     setMobileMenuOpen(false);
                   }}
                   aria-pressed={mobilePreview}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#D4AF37]/30 px-2 py-2 text-xs font-semibold text-[#D4AF37] hover:bg-[#D4AF37]/10"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#34D399]/30 px-2 py-2 text-xs font-semibold text-[#34D399] hover:bg-[#34D399]/10"
                   title={mobilePreview ? t('returnDesktop') : t('activateMobilePreview')}
                 >
                   {mobilePreview ? <Monitor size={16} /> : <Smartphone size={16} />}
@@ -410,7 +410,14 @@ export default function BusinessDashboardLayout({ children }: { children: React.
             </div>
             <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
           </div>
-          <MobileTabBar rootHref="/business/dashboard" items={navItems.map((item) => ({ href: item.href, label: t(item.label), icon: item.icon }))} />
+          <MobileTabBar
+            rootHref="/business/dashboard"
+            items={navItems.map((item) => ({
+              href: item.href,
+              label: t(item.label),
+              icon: item.icon,
+            }))}
+          />
           <Modal open={profileOpen} onClose={() => setProfileOpen(false)} title="" size="sm">
             <UserProfilePanel onClose={() => setProfileOpen(false)} />
           </Modal>
