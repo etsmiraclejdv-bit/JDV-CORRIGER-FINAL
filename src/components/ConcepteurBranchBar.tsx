@@ -19,7 +19,7 @@ const BRANCHES = [
   {
     code: 'agence',
     label: 'cg.baAgency' as TerrainKey,
-    href: '/entrepot/dashboard',
+    href: '/agence/dashboard',
     icon: Warehouse,
   },
   {

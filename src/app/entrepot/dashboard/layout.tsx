@@ -233,7 +233,10 @@ export default function EntrepotDashboardLayout({ children }: { children: React.
   const pathname = usePathname();
   const requiredRole = pathname.startsWith('/agence/dashboard') ? 'manager' : undefined;
   return (
-    <WarehouseProvider requiredRole={requiredRole}>
+    <WarehouseProvider
+      requiredRole={requiredRole}
+      allowSuperAdmin={pathname.startsWith('/agence/dashboard')}
+    >
       <Shell>{children}</Shell>
     </WarehouseProvider>
   );
