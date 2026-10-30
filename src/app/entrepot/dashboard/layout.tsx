@@ -62,6 +62,21 @@ function Shell({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     router.replace('/entrepot/login');
   }
+
+  useEffect(() => {
+    if (!current || current.access_role !== 'manager') return;
+    const managerRoutes = [
+      '/entrepot/dashboard',
+      '/entrepot/dashboard/stock',
+      '/entrepot/dashboard/sous-entrepots',
+    ];
+    const allowed = managerRoutes.some((route) =>
+      route === '/entrepot/dashboard'
+        ? pathname === route
+        : pathname === route || pathname.startsWith(`${route}/`)
+    );
+    if (!allowed) router.replace('/entrepot/dashboard');
+  }, [current, pathname, router]);
   if (!checked || loading)
     return (
       <div className="flex h-screen items-center justify-center bg-[#0B1B3D] text-slate-300 text-sm">
@@ -82,6 +97,13 @@ function Shell({ children }: { children: React.ReactNode }) {
       </div>
     );
   const isAdmin = current.access_role === 'admin';
+  // Un responsable d'agence ne voit et n'ouvre que le tableau de bord,
+  // le stock et les sous-entrepôts. Les opérations avancées restent réservées à l'admin.
+  const visibleNav = isAdmin
+    ? NAV
+    : NAV.filter(({ href }) =>
+        ['/entrepot/dashboard', '/entrepot/dashboard/stock', '/entrepot/dashboard/sous-entrepots'].includes(href)
+      );
   return (
     <div className="jdv-workspace-shell flex h-screen bg-[#0B1B3D] text-white overflow-hidden">
       <aside className="hidden md:flex w-64 flex-shrink-0 flex-col bg-[#08152f] border-r border-[#34D399]/10">
@@ -113,7 +135,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           )}
         </div>
         <nav className="flex-1 overflow-y-auto p-2">
-          {NAV.map(({ href, labelKey, icon: Icon }) => {
+          {visibleNav.map(({ href, labelKey, icon: Icon }) => {
             const active =
               href === '/entrepot/dashboard' ? pathname === href : pathname.startsWith(href);
             return (
@@ -190,7 +212,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       </div>
       <MobileTabBar
         rootHref="/entrepot/dashboard"
-        items={NAV.map(({ href, labelKey, icon: Icon }) => ({
+        items={visibleNav.map(({ href, labelKey, icon: Icon }) => ({
           href,
           label: t(labelKey),
           icon: <Icon size={20} />,
