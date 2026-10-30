@@ -1,4 +1,5 @@
 // CI formatting pass trigger; no runtime behavior change.
+// The full Prettier pass is being verified on this branch.
 'use client';
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
