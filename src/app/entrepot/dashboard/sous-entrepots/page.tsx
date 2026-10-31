@@ -129,73 +129,77 @@ export default function SousEntrepotsChefAgencePage() {
       <Banner state={banner} />
 
       {current.access_role === 'admin' && (
-      <Card title={t('we.sCreateCard')}>
-        <form onSubmit={create} className="grid gap-3 md:grid-cols-2">
-          <label className="text-sm">
-            {t('we.fName')}
-            <input
-              className={`${inputCls} mt-1`}
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="AKASSATO-NORD"
-            />
-          </label>
-          <label className="text-sm">
-            {t('we.fUniqueCode')}
-            <input
-              className={`${inputCls} mt-1`}
-              value={form.code}
-              onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
-              placeholder="AK-NORD"
-            />
-          </label>
-          <label className="text-sm">
-            {t('we.fCity')}
-            <input
-              className={`${inputCls} mt-1`}
-              value={form.city}
-              onChange={(e) => setForm({ ...form, city: e.target.value })}
-            />
-          </label>
-          <label className="text-sm">
-            {t('we.fZone')}
-            <input
-              className={`${inputCls} mt-1`}
-              value={form.zone}
-              onChange={(e) => setForm({ ...form, zone: e.target.value })}
-            />
-          </label>
-          <label className="text-sm md:col-span-2">
-            {t('we.fAddress')}
-            <input
-              className={`${inputCls} mt-1`}
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
-            />
-          </label>
-          <label className="text-sm">
-            {t('we.fManager')}
-            <select
-              className={`${inputCls} mt-1`}
-              value={form.manager}
-              onChange={(e) => setForm({ ...form, manager: e.target.value })}
-            >
-              <option value="">{t('we.fNoManager')}</option>
-              <option value="me">{t('we.fMe')}</option>
-            </select>
-          </label>
-          <div className="flex items-end justify-end">
-            <button className={btnGold} disabled={saving}>
-              {saving ? t('we.creating') : t('we.createBtn')}
-            </button>
-          </div>
-        </form>
-      </Card>
+        <Card title={t('we.sCreateCard')}>
+          <form onSubmit={create} className="grid gap-3 md:grid-cols-2">
+            <label className="text-sm">
+              {t('we.fName')}
+              <input
+                className={`${inputCls} mt-1`}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="AKASSATO-NORD"
+              />
+            </label>
+            <label className="text-sm">
+              {t('we.fUniqueCode')}
+              <input
+                className={`${inputCls} mt-1`}
+                value={form.code}
+                onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
+                placeholder="AK-NORD"
+              />
+            </label>
+            <label className="text-sm">
+              {t('we.fCity')}
+              <input
+                className={`${inputCls} mt-1`}
+                value={form.city}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+              />
+            </label>
+            <label className="text-sm">
+              {t('we.fZone')}
+              <input
+                className={`${inputCls} mt-1`}
+                value={form.zone}
+                onChange={(e) => setForm({ ...form, zone: e.target.value })}
+              />
+            </label>
+            <label className="text-sm md:col-span-2">
+              {t('we.fAddress')}
+              <input
+                className={`${inputCls} mt-1`}
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+              />
+            </label>
+            <label className="text-sm">
+              {t('we.fManager')}
+              <select
+                className={`${inputCls} mt-1`}
+                value={form.manager}
+                onChange={(e) => setForm({ ...form, manager: e.target.value })}
+              >
+                <option value="">{t('we.fNoManager')}</option>
+                <option value="me">{t('we.fMe')}</option>
+              </select>
+            </label>
+            <div className="flex items-end justify-end">
+              <button className={btnGold} disabled={saving}>
+                {saving ? t('we.creating') : t('we.createBtn')}
+              </button>
+            </div>
+          </form>
+        </Card>
       )}
 
       {current.access_role === 'manager' && (
-        <p role="status" className="rounded-xl border border-white/10 bg-[#0F2347] p-3 text-sm text-slate-300">
-          Consultation des sous-entrepôts uniquement. La création et la modification sont réservées à l’administrateur de l’entreprise.
+        <p
+          role="status"
+          className="rounded-xl border border-white/10 bg-[#0F2347] p-3 text-sm text-slate-300"
+        >
+          Consultation des sous-entrepôts uniquement. La création et la modification sont réservées
+          à l’administrateur de l’entreprise.
         </p>
       )}
 
@@ -247,20 +251,32 @@ export default function SousEntrepotsChefAgencePage() {
                   </div>
                 </div>
                 {current.access_role === 'admin' && (
-<div className="mt-4 flex gap-2">
-                  <button type="button" onClick={() => toggle(s)} className={`${btnGhost} flex-1`}>
-                    {s.active ? t('we.deactivate') : t('we.reactivate')}
-                  </button>
-                  {s.manager_user_id === userId ? (
-                    <button type="button" onClick={() => setManager(s, false)} className={btnGhost}>
-                      {t('we.removeMe')}
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggle(s)}
+                      className={`${btnGhost} flex-1`}
+                    >
+                      {s.active ? t('we.deactivate') : t('we.reactivate')}
                     </button>
-                  ) : !s.manager_user_id ? (
-                    <button type="button" onClick={() => setManager(s, true)} className={btnGhost}>
-                      {t('we.takeIt')}
-                    </button>
-                  ) : null}
-                </div>
+                    {s.manager_user_id === userId ? (
+                      <button
+                        type="button"
+                        onClick={() => setManager(s, false)}
+                        className={btnGhost}
+                      >
+                        {t('we.removeMe')}
+                      </button>
+                    ) : !s.manager_user_id ? (
+                      <button
+                        type="button"
+                        onClick={() => setManager(s, true)}
+                        className={btnGhost}
+                      >
+                        {t('we.takeIt')}
+                      </button>
+                    ) : null}
+                  </div>
                 )}
               </article>
             ))}

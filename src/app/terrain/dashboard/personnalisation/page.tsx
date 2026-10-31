@@ -17,9 +17,7 @@ export default function TerrainPersonalisationPage() {
           <Palette size={16} /> {t('tp.kicker')}
         </p>
         <h1 className="text-2xl font-bold sm:text-3xl">{t('tp.title')}</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
-          {t('tp.intro')}
-        </p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">{t('tp.intro')}</p>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -40,10 +38,16 @@ export default function TerrainPersonalisationPage() {
       <section className="rounded-2xl border border-[#D4AF37]/25 bg-[#D4AF37]/5 p-5 sm:p-7">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="flex items-center gap-2 text-lg font-bold"><Sparkles size={18} className="text-[#D4AF37]" /> {t('tp.appearance')}</h2>
+            <h2 className="flex items-center gap-2 text-lg font-bold">
+              <Sparkles size={18} className="text-[#D4AF37]" /> {t('tp.appearance')}
+            </h2>
             <p className="mt-2 text-sm text-slate-300">{t('tp.panel')}</p>
           </div>
-          <button type="button" onClick={openSettings} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#D4AF37] px-5 py-3 text-sm font-bold text-[#0B1B3D]">
+          <button
+            type="button"
+            onClick={openSettings}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#D4AF37] px-5 py-3 text-sm font-bold text-[#0B1B3D]"
+          >
             <Palette size={16} /> {t('tp.open')}
           </button>
         </div>

@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-"use client";
+'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { JDV_LOCALES, messages, type JdvLocale, type TranslationKey } from '@/lib/i18n/messages';
@@ -30,17 +30,22 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         setLocaleState(saved as JdvLocale);
       } else {
         const browserLanguage = navigator.language;
-        const match = JDV_LOCALES.find((item) => item.code.toLowerCase() === browserLanguage.toLowerCase())
-          ?? JDV_LOCALES.find((item) => item.code === browserLanguage.split('-')[0]);
+        const match =
+          JDV_LOCALES.find((item) => item.code.toLowerCase() === browserLanguage.toLowerCase()) ??
+          JDV_LOCALES.find((item) => item.code === browserLanguage.split('-')[0]);
         if (match) setLocaleState(match.code);
       }
-    } catch { /* Storage may be disabled; the in-memory preference still works. */ }
+    } catch {
+      /* Storage may be disabled; the in-memory preference still works. */
+    }
 
     // Restore the account preference on a new device, but never override a local choice.
     if (!hasLocalPreference) {
       void import('@/lib/supabase/client').then(async ({ supabase }) => {
         try {
-          const { data: { user } } = await supabase.auth.getUser();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
           if (!user || cancelled) return;
           const { data } = await supabase
             .from('profiles')
@@ -48,43 +53,64 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
             .eq('id', user.id)
             .maybeSingle();
           const saved = data?.preferred_language;
-          if (cancelled || typeof saved !== 'string' || !JDV_LOCALES.some((item) => item.code === saved)) return;
+          if (
+            cancelled ||
+            typeof saved !== 'string' ||
+            !JDV_LOCALES.some((item) => item.code === saved)
+          )
+            return;
           setLocaleState(saved as JdvLocale);
-          try { window.localStorage.setItem(STORAGE_KEY, saved); } catch { /* Storage may be disabled. */ }
-        } catch { /* Keep the browser/default language when the profile preference is unavailable. */ }
+          try {
+            window.localStorage.setItem(STORAGE_KEY, saved);
+          } catch {
+            /* Storage may be disabled. */
+          }
+        } catch {
+          /* Keep the browser/default language when the profile preference is unavailable. */
+        }
       });
     }
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     document.documentElement.lang = locale;
-    document.documentElement.dir = locale === 'ar' ? "rtl" : "ltr";
+    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
   }, [locale]);
 
   const setLocale = useCallback((next: JdvLocale) => {
     setLocaleState(next);
-    try { window.localStorage.setItem(STORAGE_KEY, next); } catch { /* Private browsing may block storage. */ }
+    try {
+      window.localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      /* Private browsing may block storage. */
+    }
   }, []);
 
-  const value = useMemo<LanguageContextValue>(() => ({
-    locale,
-    setLocale,
-    t: (key) => {
-      if (key in terrainMessages) {
-        const entry = terrainMessages[key as TerrainKey];
-        return entry[locale] ?? entry.fr;
-      }
-      if (key in landingMessages) {
-        const entry = landingMessages[key as LandingKey];
-        return entry[locale] ?? entry.fr;
-      }
-      return messages[locale][key as TranslationKey] ?? messages.fr[key as TranslationKey] ?? key;
-    },
-    formatDate: (value, options) => new Intl.DateTimeFormat(locale, options).format(new Date(value)),
-    formatNumber: (value, options) => new Intl.NumberFormat(locale, options).format(value),
-    locales: JDV_LOCALES,
-  }), [locale, setLocale]);
+  const value = useMemo<LanguageContextValue>(
+    () => ({
+      locale,
+      setLocale,
+      t: (key) => {
+        if (key in terrainMessages) {
+          const entry = terrainMessages[key as TerrainKey];
+          return entry[locale] ?? entry.fr;
+        }
+        if (key in landingMessages) {
+          const entry = landingMessages[key as LandingKey];
+          return entry[locale] ?? entry.fr;
+        }
+        return messages[locale][key as TranslationKey] ?? messages.fr[key as TranslationKey] ?? key;
+      },
+      formatDate: (value, options) =>
+        new Intl.DateTimeFormat(locale, options).format(new Date(value)),
+      formatNumber: (value, options) => new Intl.NumberFormat(locale, options).format(value),
+      locales: JDV_LOCALES,
+    }),
+    [locale, setLocale]
+  );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
 }

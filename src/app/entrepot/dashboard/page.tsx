@@ -34,7 +34,9 @@ type Report = {
 export default function EntrepotOverviewPage() {
   const { current } = useWarehouse();
   const pathname = usePathname();
-  const workspaceRoot = pathname.startsWith('/agence/dashboard') ? '/agence/dashboard' : '/entrepot/dashboard';
+  const workspaceRoot = pathname.startsWith('/agence/dashboard')
+    ? '/agence/dashboard'
+    : '/entrepot/dashboard';
   const { t } = useLanguage();
   const fill = (key: TerrainKey, vars: Record<string, string | number>) =>
     Object.entries(vars).reduce(
@@ -110,24 +112,29 @@ export default function EntrepotOverviewPage() {
             label: t('traceability'),
             icon: Search,
           },
-        ].filter(({ href }) => current?.access_role !== 'manager' || href === '/entrepot/dashboard/sous-entrepots').map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href.replace("/entrepot/dashboard", workspaceRoot)}
-            className="group rounded-2xl border border-[#294365] bg-[#08152f] p-4 transition hover:-translate-y-0.5 hover:border-[#34D399]/50 hover:bg-[#10264a]"
-          >
-            <div className="flex items-center justify-between">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#34D399]/10 text-[#34D399]">
-                <Icon size={19} />
-              </span>
-              <ArrowUpRight
-                size={16}
-                className="text-slate-500 transition group-hover:text-[#34D399]"
-              />
-            </div>
-            <h2 className="mt-3 text-sm font-semibold text-white">{label}</h2>
-          </Link>
-        ))}
+        ]
+          .filter(
+            ({ href }) =>
+              current?.access_role !== 'manager' || href === '/entrepot/dashboard/sous-entrepots'
+          )
+          .map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href.replace('/entrepot/dashboard', workspaceRoot)}
+              className="group rounded-2xl border border-[#294365] bg-[#08152f] p-4 transition hover:-translate-y-0.5 hover:border-[#34D399]/50 hover:bg-[#10264a]"
+            >
+              <div className="flex items-center justify-between">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#34D399]/10 text-[#34D399]">
+                  <Icon size={19} />
+                </span>
+                <ArrowUpRight
+                  size={16}
+                  className="text-slate-500 transition group-hover:text-[#34D399]"
+                />
+              </div>
+              <h2 className="mt-3 text-sm font-semibold text-white">{label}</h2>
+            </Link>
+          ))}
       </section>
       {loading ? (
         <p className="text-slate-400 text-sm">{t('we.loading')}</p>
@@ -135,73 +142,92 @@ export default function EntrepotOverviewPage() {
         <>
           <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             <Stat label={t('we.sInStock')} value={num(inStock)} />
-            <Stat label={t('we.sLowAlerts')} value={num(low.length)} tone={low.length ? 'warn' : 'ok'} />
-            {current?.access_role !== "manager" && <>
-              <Stat label={t('we.sPros')} value={num(prosp.length)} />
-              <Stat label={t('we.sLateLots')} value={num(overdue)} tone={overdue ? 'warn' : 'ok'} />
-              <Stat label={t('we.sEntries')} value={'+' + num(entries)} />
-              <Stat label={t('we.sExits')} value={'−' + num(exits)} />
-              <Stat label={t('we.sSales')} value={money(report?.sales_total?.amount)} />
-              <Stat label={t('we.sCalls')} value={num(report?.tickets?.still_open)} tone={report?.tickets?.still_open ? 'warn' : 'ok'} />
-            </>}
+            <Stat
+              label={t('we.sLowAlerts')}
+              value={num(low.length)}
+              tone={low.length ? 'warn' : 'ok'}
+            />
+            {current?.access_role !== 'manager' && (
+              <>
+                <Stat label={t('we.sPros')} value={num(prosp.length)} />
+                <Stat
+                  label={t('we.sLateLots')}
+                  value={num(overdue)}
+                  tone={overdue ? 'warn' : 'ok'}
+                />
+                <Stat label={t('we.sEntries')} value={'+' + num(entries)} />
+                <Stat label={t('we.sExits')} value={'−' + num(exits)} />
+                <Stat label={t('we.sSales')} value={money(report?.sales_total?.amount)} />
+                <Stat
+                  label={t('we.sCalls')}
+                  value={num(report?.tickets?.still_open)}
+                  tone={report?.tickets?.still_open ? 'warn' : 'ok'}
+                />
+              </>
+            )}
           </div>
-          {current?.access_role !== "manager" && <div className="grid gap-6 lg:grid-cols-2">
-            <Card title={t('we.restock')}>
-              {low.length === 0 ? (
-                <p className="text-sm text-slate-400">{t('we.noneBelow')}</p>
-              ) : (
-                <ul className="space-y-2 text-sm">
-                  {low.map((s) => (
-                    <li
-                      key={s.article_id}
-                      className="flex justify-between rounded-lg bg-[#0F2347] p-3"
-                    >
-                      <span>{s.article_name}</span>
-                      <span className="text-red-400">
-                        {fill('we.thresholdOf', { a: num(s.quantity), b: num(s.minimum_quantity) })}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <Link
-                href={`${workspaceRoot}/approvisionnement`}
-                className="inline-block mt-4 text-sm text-[#34D399] underline"
-              >
-                {t('we.askSupply')}
-              </Link>
-            </Card>
-            <Card title={t('we.watchPros')}>
-              {prosp.filter((p) => Number(p.overdue_count) > 0).length === 0 ? (
-                <p className="text-sm text-slate-400">{t('we.noLateLots')}</p>
-              ) : (
-                <ul className="space-y-2 text-sm">
-                  {prosp
-                    .filter((p) => Number(p.overdue_count) > 0)
-                    .map((p) => (
+          {current?.access_role !== 'manager' && (
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card title={t('we.restock')}>
+                {low.length === 0 ? (
+                  <p className="text-sm text-slate-400">{t('we.noneBelow')}</p>
+                ) : (
+                  <ul className="space-y-2 text-sm">
+                    {low.map((s) => (
                       <li
-                        key={p.prospecteur_id}
+                        key={s.article_id}
                         className="flex justify-between rounded-lg bg-[#0F2347] p-3"
                       >
-                        <span>{p.full_name ?? '—'}</span>
+                        <span>{s.article_name}</span>
                         <span className="text-red-400">
-                          {fill('we.lotsUnits', {
-                            a: num(p.overdue_count),
-                            b: num(p.to_return_units),
+                          {fill('we.thresholdOf', {
+                            a: num(s.quantity),
+                            b: num(s.minimum_quantity),
                           })}
                         </span>
                       </li>
                     ))}
-                </ul>
-              )}
-              <Link
-                href={`${workspaceRoot}/prospecteurs`}
-                className="inline-block mt-4 text-sm text-[#34D399] underline"
-              >
-                {t('we.managePros')}
-              </Link>
-            </Card>
-          </div>}
+                  </ul>
+                )}
+                <Link
+                  href={`${workspaceRoot}/approvisionnement`}
+                  className="inline-block mt-4 text-sm text-[#34D399] underline"
+                >
+                  {t('we.askSupply')}
+                </Link>
+              </Card>
+              <Card title={t('we.watchPros')}>
+                {prosp.filter((p) => Number(p.overdue_count) > 0).length === 0 ? (
+                  <p className="text-sm text-slate-400">{t('we.noLateLots')}</p>
+                ) : (
+                  <ul className="space-y-2 text-sm">
+                    {prosp
+                      .filter((p) => Number(p.overdue_count) > 0)
+                      .map((p) => (
+                        <li
+                          key={p.prospecteur_id}
+                          className="flex justify-between rounded-lg bg-[#0F2347] p-3"
+                        >
+                          <span>{p.full_name ?? '—'}</span>
+                          <span className="text-red-400">
+                            {fill('we.lotsUnits', {
+                              a: num(p.overdue_count),
+                              b: num(p.to_return_units),
+                            })}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                )}
+                <Link
+                  href={`${workspaceRoot}/prospecteurs`}
+                  className="inline-block mt-4 text-sm text-[#34D399] underline"
+                >
+                  {t('we.managePros')}
+                </Link>
+              </Card>
+            </div>
+          )}
         </>
       )}
     </div>

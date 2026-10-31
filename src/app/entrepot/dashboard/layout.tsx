@@ -59,8 +59,7 @@ function Shell({ children }: { children: React.ReactNode }) {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) {
         router.replace(workspaceRoot === '/agence/dashboard' ? '/agence/login' : '/entrepot/login');
-      }
-      else setChecked(true);
+      } else setChecked(true);
     });
   }, [router, workspaceRoot]);
   async function logout() {
@@ -151,7 +150,9 @@ function Shell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 overflow-y-auto p-2">
           {visibleNav.map(({ href, labelKey, icon: Icon }) => {
             const active =
-              href === '/entrepot/dashboard' ? pathname === workspaceRoot : pathname.startsWith(href.replace('/entrepot/dashboard', workspaceRoot));
+              href === '/entrepot/dashboard'
+                ? pathname === workspaceRoot
+                : pathname.startsWith(href.replace('/entrepot/dashboard', workspaceRoot));
             return (
               <Link
                 key={href}

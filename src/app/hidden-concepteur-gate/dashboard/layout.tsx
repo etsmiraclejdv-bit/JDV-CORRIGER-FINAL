@@ -271,7 +271,10 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
           className="flex min-h-16 items-center justify-between gap-4 border-b border-white/[0.07] bg-[#080B12]/95 px-4 backdrop-blur-sm sm:px-6"
         >
           <div className="relative hidden min-w-0 max-w-md flex-1 sm:block">
-            <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <Search
+              size={16}
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+            />
             <input
               value={topSearch}
               onChange={(event) => setTopSearch(event.target.value)}
@@ -282,7 +285,9 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
             {topSearch.trim() && (
               <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-white/10 bg-[#111827] p-1 shadow-2xl">
                 {navItems
-                  .filter((item) => t(item.label).toLocaleLowerCase().includes(topSearch.toLocaleLowerCase()))
+                  .filter((item) =>
+                    t(item.label).toLocaleLowerCase().includes(topSearch.toLocaleLowerCase())
+                  )
                   .slice(0, 6)
                   .map((item) => (
                     <Link
@@ -291,10 +296,13 @@ export default function SuperAdminDashboardLayout({ children }: { children: Reac
                       onClick={() => setTopSearch('')}
                       className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-zinc-300 hover:bg-violet-500/10 hover:text-violet-200"
                     >
-                      {item.icon}<span>{t(item.label)}</span>
+                      {item.icon}
+                      <span>{t(item.label)}</span>
                     </Link>
                   ))}
-                {navItems.filter((item) => t(item.label).toLocaleLowerCase().includes(topSearch.toLocaleLowerCase())).length === 0 && (
+                {navItems.filter((item) =>
+                  t(item.label).toLocaleLowerCase().includes(topSearch.toLocaleLowerCase())
+                ).length === 0 && (
                   <p className="px-3 py-3 text-xs text-zinc-500">Aucun espace correspondant.</p>
                 )}
               </div>
