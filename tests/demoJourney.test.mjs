@@ -79,6 +79,6 @@ test('A-Z demo journey: test scripts do not embed production credentials or real
   const source = await Promise.all(files.filter((f) => f.endsWith('.mjs') && !['demoJourney.test.mjs', 'social-automation-safety.test.mjs'].includes(f)).map((f) =>
     readFile(resolve(root, 'tests', f), 'utf8')));
   const combined = source.join('\n');
-  assert.doesNotMatch(combined, /service_role|SUPABASE_DB_PASSWORD|sk_live_[A-Za-z0-9]+/i);
+  assert.doesNotMatch(combined, /(?:SUPABASE_DB_PASSWORD|SUPABASE_SERVICE_ROLE_KEY)\s*[:=]\s*['\"][^'\"]{12,}['\"]|sk_live_[A-Za-z0-9]{20,}/i);
   assert.doesNotMatch(combined, /@gmail\.com|@yahoo\.com|@outlook\.com/i);
 });

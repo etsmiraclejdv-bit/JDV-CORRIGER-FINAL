@@ -152,7 +152,7 @@ test('full-app demo audit: both designer agency shortcuts open the dedicated age
 
 test('full-app demo audit: warehouse dispatch is guarded by server-side ownership and stock checks', async () => {
   const migration = await readFile(
-    path.join(ROOT, 'supabase', 'migrations', '20261012173000_prospecteur_barcode_shipment_rpcs_v1.sql'),
+    path.join(ROOT, 'supabase', 'migrations', '20261012195023_jdv_prospecteur_barcode_shipment_rpcs_v1.sql'),
     'utf8'
   );
   const dispatchStart = migration.indexOf(
@@ -173,7 +173,7 @@ test('full-app demo audit: warehouse dispatch is guarded by server-side ownershi
 
 test('full-app demo audit: receipt confirmation checks the recipient and records discrepancies', async () => {
   const migration = await readFile(
-    path.join(ROOT, 'supabase', 'migrations', '20261012173000_prospecteur_barcode_shipment_rpcs_v1.sql'),
+    path.join(ROOT, 'supabase', 'migrations', '20261012195023_jdv_prospecteur_barcode_shipment_rpcs_v1.sql'),
     'utf8'
   );
   const receiptStart = migration.indexOf(
