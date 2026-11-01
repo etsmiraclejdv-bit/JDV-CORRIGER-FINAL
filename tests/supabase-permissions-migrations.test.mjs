@@ -38,3 +38,14 @@ test('legacy supply RPC is no longer executable by browser roles', async () => {
   assert.match(sql, /revoke all on function public\.jdvcrm_request_prospecteur_supply_v1\(uuid, jsonb\)\s+from public, anon, authenticated/i);
   assert.match(sql, /grant execute on function public\.jdvcrm_request_prospecteur_supply_v1\(uuid, jsonb\)\s+to service_role/i);
 });
+
+test('remaining operational SECURITY DEFINER RPCs no longer bypass organization membership', async () => {
+  const sql = await migration('20261101185000_scope_operational_rpcs_to_org_v1.sql');
+  assert.match(sql, /CREATE OR REPLACE FUNCTION private\.is_concepteur_owner_org/);
+  assert.match(sql, /CREATE OR REPLACE FUNCTION private\.can_manage_warehouse/);
+  assert.match(sql, /CREATE OR REPLACE FUNCTION public\.jdvcrm_admin_stock_entry_v1/);
+  assert.match(sql, /CREATE OR REPLACE FUNCTION public\.jdvcrm_admin_supply_warehouse_v1/);
+  assert.match(sql, /CREATE OR REPLACE FUNCTION public\.jdvcrm_set_member_status_v1/);
+  assert.match(sql, /CREATE OR REPLACE FUNCTION public\.jdvcrm_warehouse_supply_prospecteur_v1/);
+  assert.doesNotMatch(sql, /private\.is_super_admin\(\)/);
+});
