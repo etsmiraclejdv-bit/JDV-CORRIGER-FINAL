@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const worker = readFileSync(new URL("../supabase/functions/social-automation-worker/index.ts", import.meta.url), "utf8");
-const migration = readFileSync(new URL("../supabase/migrations/20261018190000_jdv_social_automation_organic_v1.sql", import.meta.url), "utf8");
+const migration = readFileSync(new URL("../supabase/pending_migrations/20261018190000_jdv_social_automation_organic_v1.sql", import.meta.url), "utf8");
 
 test("social worker is explicitly dry-run only and never calls a provider", () => {
   assert.match(worker, /mode: "dry_run_only"/);
