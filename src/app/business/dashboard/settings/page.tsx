@@ -11,6 +11,7 @@ import {
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import LanguageSettingsSection from '@/components/settings/LanguageSettingsSection';
 
 type Tab = 'general' | 'personalization' | 'advanced' | 'payment';
 
@@ -135,6 +136,8 @@ export default function BusinessSettingsPage() {
         <h1 className="text-2xl font-bold text-white">{t('bz.sTitle')}</h1>
         <p className="text-sm text-[#A0AEC0] mt-1">{t('bz.sSub')}</p>
       </div>
+
+      <LanguageSettingsSection />
 
       {/* Tabs */}
       <div className="flex gap-1 bg-[#0A1628] rounded-xl p-1 w-fit">
