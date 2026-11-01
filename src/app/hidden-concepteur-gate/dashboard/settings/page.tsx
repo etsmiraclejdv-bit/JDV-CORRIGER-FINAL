@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import Modal from '@/components/ui/Modal';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import LanguageSettingsSection from '@/components/settings/LanguageSettingsSection';
 
 type Tab = 'plans' | 'admins' | 'fedapay';
 
@@ -95,6 +96,7 @@ export default function SuperAdminSettingsPage() {
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
+      <LanguageSettingsSection />
       <div>
         <h1 className="text-2xl font-bold text-white">{t('cg.stTitle')}</h1>
         <p className="text-sm text-[#A1A1AA] mt-1">{t('cg.stSub')}</p>

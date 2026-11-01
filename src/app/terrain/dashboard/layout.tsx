@@ -17,6 +17,7 @@ import {
   PackageCheck,
   MapPin,
   Palette,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -120,6 +121,13 @@ const navItems: Array<{
     labelKey: 'customizeScreen',
     icon: <Palette size={18} />,
     href: '/terrain/dashboard/personnalisation',
+    group: 'Aide',
+  },
+  {
+    id: 'settings',
+    labelKey: 'settings',
+    icon: <Settings size={18} />,
+    href: '/terrain/dashboard/settings',
     group: 'Aide',
   },
   {

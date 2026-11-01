@@ -18,6 +18,7 @@ import {
   Lock,
   BookOpen,
   Tag,
+  Settings,
 } from 'lucide-react';
 import AppLogo from '@/components/ui/AppLogo';
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
@@ -44,6 +45,7 @@ const NAV: Array<{ href: string; labelKey: TranslationKey; icon: ElementType }> 
   { href: '/entrepot/dashboard/fin-de-service', labelKey: 'endOfService', icon: ClipboardCheck },
   { href: '/entrepot/dashboard/cloture-stock', labelKey: 'stockClosing', icon: Lock },
   { href: '/entrepot/dashboard/journal-stock', labelKey: 'stockJournal', icon: BookOpen },
+  { href: '/entrepot/dashboard/settings', labelKey: 'settings', icon: Settings },
 ];
 
 function Shell({ children }: { children: React.ReactNode }) {
@@ -79,6 +81,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       workspaceRoot,
       `${workspaceRoot}/stock`,
       `${workspaceRoot}/sous-entrepots`,
+      `${workspaceRoot}/settings`,
     ];
     const allowed = managerRoutes.some((route) =>
       route === workspaceRoot
@@ -112,6 +115,7 @@ function Shell({ children }: { children: React.ReactNode }) {
           '/entrepot/dashboard',
           '/entrepot/dashboard/stock',
           '/entrepot/dashboard/sous-entrepots',
+          '/entrepot/dashboard/settings',
         ].includes(href)
       );
   return (
