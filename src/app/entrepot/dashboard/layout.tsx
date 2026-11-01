@@ -18,6 +18,7 @@ import {
   Lock,
   BookOpen,
   Tag,
+  Settings,
 } from 'lucide-react';
 import AppLogo from '@/components/ui/AppLogo';
 import ConcepteurBranchBar from '@/components/ConcepteurBranchBar';
@@ -43,7 +44,7 @@ const NAV: Array<{ href: string; labelKey: TranslationKey; icon: ElementType }> 
   { href: '/entrepot/dashboard/tracabilite', labelKey: 'traceability', icon: Search },
   { href: '/entrepot/dashboard/fin-de-service', labelKey: 'endOfService', icon: ClipboardCheck },
   { href: '/entrepot/dashboard/cloture-stock', labelKey: 'stockClosing', icon: Lock },
-  { href: '/entrepot/dashboard/journal-stock', labelKey: 'stockJournal', icon: BookOpen },
+  { href: '/entrepot/dashboard/journal-stock', labelKey: 'stockJournal', icon: BookOpen },\n  { href: '/entrepot/dashboard/settings', labelKey: 'settings', icon: Settings },
 ];
 
 function Shell({ children }: { children: React.ReactNode }) {
