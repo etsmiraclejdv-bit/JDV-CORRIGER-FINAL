@@ -36,7 +36,7 @@
    - `jdv_social_connection_secrets`: jetons chiffrés, accès réservé à `service_role`; aucune politique de lecture utilisateur.
    - `jdv_social_posts`: calendrier, état, idempotence et résultat; lecture isolée par propriétaire.
    - Colonnes d’approbation, de fenêtre de 14 jours, de pause et de fuseau horaire sur `jdv_marketing_campaigns`.
-   - Migration proposée : `supabase/migrations/20261018190000_jdv_social_automation_organic_v1.sql`.
+   - Migration proposée : `supabase/pending_migrations/20261018190000_jdv_social_automation_organic_v1.sql`.
 
 ## Compatibilité des plateformes (à confirmer au moment de l’activation)
 - **Facebook Pages / Instagram professionnel** : APIs Meta, compte/page admissible, permissions et jetons approuvés.
