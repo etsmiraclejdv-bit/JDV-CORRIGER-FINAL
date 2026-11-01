@@ -88,8 +88,8 @@ Voir : https://supabase.com/docs/guides/database/postgres/row-level-security
 
 ## Fichiers concernés
 
-- `supabase/migrations/20261012170000_prospecteur_barcode_shipments_schema_v1.sql` : colonnes code-barres, bons, lignes et événements de scan.
-- `supabase/migrations/20261012173000_prospecteur_barcode_shipment_rpcs_v1.sql` : RPC atomiques d’expédition et de réception.
+- `supabase/migrations/20261012195019_jdv_prospecteur_barcode_shipments_schema_v1.sql` : colonnes code-barres, bons, lignes et événements de scan.
+- `supabase/migrations/20261012195023_jdv_prospecteur_barcode_shipment_rpcs_v1.sql` : RPC atomiques d’expédition et de réception.
 - `src/app/entrepot/dashboard/expeditions-prospecteurs/page.tsx` : préparation et expédition.
 - `src/app/terrain/dashboard/reception-marchandises/page.tsx` : réception et contrôle.
 - `src/app/business/dashboard/catalogue/page.tsx` et `src/lib/services/catalogueService.ts` : métadonnées code-barres de l’article.
