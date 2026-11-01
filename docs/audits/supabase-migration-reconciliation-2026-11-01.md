@@ -30,3 +30,7 @@ The social automation migration is deliberately outside `supabase/migrations/` s
 - The plan-limit trigger bypass is scoped to `service_role` or the super-admin's **own organization**, not every customer organization.
 
 No company rows, stock rows, payment rows, or organization rows were deleted or rewritten by these changes.
+
+## Additional RPC isolation migration under review
+
+The migration `20261101185000_scope_operational_rpcs_to_org_v1.sql` is present on the review branch but has **not** been applied to production. It closes remaining super-admin bypasses in operational SECURITY DEFINER functions (stock, warehouse, purchasing, sales, prospectors, teams, commissions, portfolios, and personalization). It must pass CI and receive a SQL review before being applied. Until then, the production RLS policies are scoped, but some legacy SECURITY DEFINER RPCs still contain explicit super-admin alternatives; the security audit is therefore not complete.
