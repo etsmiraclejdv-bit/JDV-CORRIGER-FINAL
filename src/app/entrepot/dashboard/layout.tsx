@@ -81,6 +81,7 @@ function Shell({ children }: { children: React.ReactNode }) {
       workspaceRoot,
       `${workspaceRoot}/stock`,
       `${workspaceRoot}/sous-entrepots`,
+      `${workspaceRoot}/settings`,
     ];
     const allowed = managerRoutes.some((route) =>
       route === workspaceRoot
