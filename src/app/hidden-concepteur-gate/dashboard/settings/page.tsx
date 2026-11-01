@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
 import Modal from '@/components/ui/Modal';
 import { useLanguage } from '@/lib/i18n/LanguageProvider';
+import LanguageSettingsSection from '@/components/settings/LanguageSettingsSection';
 
 type Tab = 'plans' | 'admins' | 'fedapay';
 
@@ -215,6 +216,8 @@ export default function SuperAdminSettingsPage() {
           </div>
         </div>
       )}
+
+      <LanguageSettingsSection />
 
       <Modal
         open={!!editPlan}
