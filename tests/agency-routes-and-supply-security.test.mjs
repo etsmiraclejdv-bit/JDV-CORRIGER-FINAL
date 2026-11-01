@@ -31,7 +31,7 @@ test('le parcours d’approvisionnement appelle le RPC actuel, pas le RPC histor
 
 test('la migration de verrouillage retire l’exécution directe du RPC historique', async () => {
   const migration = await readFile(
-    new URL('../supabase/migrations/20261013190000_lockdown_legacy_prospecteur_supply_rpc_v1.sql', import.meta.url),
+    new URL('../supabase/migrations/20261101183945_lockdown_legacy_prospecteur_supply_rpc_v1.sql', import.meta.url),
     'utf8',
   );
   assert.match(migration, /revoke\s+all\s+on\s+function\s+public\.jdvcrm_request_prospecteur_supply_v1\(uuid,\s*jsonb\)/i);
