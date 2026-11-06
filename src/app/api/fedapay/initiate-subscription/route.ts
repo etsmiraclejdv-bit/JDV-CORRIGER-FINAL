@@ -5,7 +5,7 @@ import { fedapayBaseUrl, unwrapFedapay } from '@/lib/fedapay';
 
 /**
  * POST /api/fedapay/initiate-subscription
- * Corps : { planCode }   En-tête : Authorization: Bearer <jeton de session>
+ * Corps : { planCode, organizationId }   En-tête : Authorization: Bearer <jeton de session>
  *
  * Le navigateur n'envoie que le plan choisi. Le montant, la devise et l'entreprise
  * viennent de la base de données et de la session : rien n'est modifiable côté client.
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   const token = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
   if (!token) return NextResponse.json({ error: 'Authentification requise' }, { status: 401 });
 
-  let body: { planCode?: unknown };
+  let body: { planCode?: unknown; organizationId?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -38,7 +38,12 @@ export async function POST(req: NextRequest) {
   }
   const planCode =
     typeof body.planCode === 'string' ? body.planCode.trim().toUpperCase().slice(0, 40) : '';
+  const organizationId =
+    typeof body.organizationId === 'string' ? body.organizationId.trim() : '';
   if (!planCode) return NextResponse.json({ error: 'Plan requis' }, { status: 400 });
+  if (!organizationId || organizationId.length > 64) {
+    return NextResponse.json({ error: 'Entreprise à facturer requise.' }, { status: 400 });
+  }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const opts = { auth: { autoRefreshToken: false, persistSession: false } };
@@ -54,10 +59,9 @@ export async function POST(req: NextRequest) {
     .from('organization_members')
     .select('organization_id, role, organizations(name)')
     .eq('user_id', caller.user.id)
+    .eq('organization_id', organizationId)
     .eq('status', 'active')
     .in('role', ['business_admin', 'admin'])
-    .order('created_at', { ascending: true })
-    .limit(1)
     .maybeSingle();
   if (!member) {
     return NextResponse.json(
@@ -65,7 +69,7 @@ export async function POST(req: NextRequest) {
       { status: 403 }
     );
   }
-  const organizationId = (member as { organization_id: string }).organization_id;
+  const verifiedOrganizationId = (member as { organization_id: string }).organization_id;
   const organizationName =
     (member as unknown as { organizations?: { name?: string } | null }).organizations?.name ??
     'Entreprise';
@@ -74,7 +78,7 @@ export async function POST(req: NextRequest) {
   const { data: prepared, error: prepError } = await admin.rpc(
     'jdvcrm_prepare_subscription_payment_v1',
     {
-      p_organization_id: organizationId,
+      p_organization_id: verifiedOrganizationId,
       p_plan_code: planCode,
     }
   );
@@ -113,7 +117,7 @@ export async function POST(req: NextRequest) {
         merchant_reference: paymentId,
         custom_metadata: {
           payment_id: paymentId,
-          organization_id: organizationId,
+          organization_id: verifiedOrganizationId,
           plan_code: pay.plan_code,
         },
         customer: caller.user.email ? { email: caller.user.email } : undefined,
