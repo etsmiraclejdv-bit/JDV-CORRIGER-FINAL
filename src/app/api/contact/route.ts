@@ -16,18 +16,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Requête invalide.' }, { status: 400 });
+    }
 
     // Champ piège : un humain ne le voit pas. S'il est rempli, on répond « succès » sans rien enregistrer.
     if (typeof body?.website === 'string' && body.website.trim() !== '') {
       return NextResponse.json({ ok: true });
     }
 
-    const fullName = sanitizeString(body?.fullName).slice(0, 120);
+    const fullName = sanitizeString(body?.fullName, 120);
     const email = sanitizeEmail(body?.email);
-    const phone = sanitizeString(body?.phone).slice(0, 40);
-    const subject = sanitizeString(body?.subject).slice(0, 160);
-    const message = sanitizeString(body?.message).slice(0, 2000);
+    const phone = sanitizeString(body?.phone, 40);
+    const subject = sanitizeString(body?.subject, 160);
+    const message = sanitizeString(body?.message, 2000);
 
     if (fullName.length < 2)
       return NextResponse.json({ error: 'Indiquez votre nom.' }, { status: 400 });
