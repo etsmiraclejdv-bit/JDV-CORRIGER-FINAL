@@ -7,8 +7,8 @@ import { fedapayBaseUrl, unwrapFedapay } from '@/lib/fedapay';
  * POST /api/fedapay/initiate-subscription
  * Corps : { planCode, organizationId }   En-tête : Authorization: Bearer <jeton de session>
  *
- * Le navigateur n'envoie que le plan choisi. Le montant, la devise et l'entreprise
- * viennent de la base de données et de la session : rien n'est modifiable côté client.
+ * Le navigateur envoie le plan et l'identifiant de l'entreprise active dans son espace.
+ * Le serveur vérifie l'appartenance et le rôle ; montant et devise viennent de la base.
  */
 export async function POST(req: NextRequest) {
   const rl = await checkRateLimitShared(`fedapay-initiate:${getClientIp(req)}`, {
