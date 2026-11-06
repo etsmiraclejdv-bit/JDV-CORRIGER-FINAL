@@ -2,14 +2,21 @@
  * Fonctions d'assainissement des entrées utilisateur (sans dépendance : testables isolément).
  */
 
-/** Retire les balises HTML et quelques caractères dangereux, puis tronque. L'apostrophe est conservée (N'Diaye). */
-export function sanitizeString(value: unknown): string {
+/**
+ * Retire les balises HTML et quelques caractères dangereux, puis tronque.
+ * L'apostrophe est conservée (N'Diaye).
+ * `maxLength` vaut 500 par défaut (comportement historique) ; les champs longs
+ * (message de contact, question à l'assistant) doivent passer leur propre limite,
+ * sinon ils sont coupés à 500 caractères avant toute autre vérification.
+ */
+export function sanitizeString(value: unknown, maxLength = 500): string {
   if (typeof value !== 'string') return '';
+  const limit = Number.isFinite(maxLength) && maxLength > 0 ? Math.floor(maxLength) : 500;
   return value
     .replace(/<[^>]*>/g, '')
     .replace(/["`;\\]/g, '')
     .trim()
-    .slice(0, 500);
+    .slice(0, limit);
 }
 
 export function sanitizeEmail(value: unknown): string {
