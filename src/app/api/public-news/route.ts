@@ -2,15 +2,33 @@ import { NextResponse } from 'next/server';
 
 export const revalidate = 900;
 
+function codePointToString(code: number): string {
+  // Une entité numérique hors plage (ex. &#99999999;) faisait lever une exception et
+  // rendait tout le flux indisponible : on l'ignore simplement.
+  if (!Number.isInteger(code) || code < 0 || code > 0x10ffff) return '';
+  try {
+    return String.fromCodePoint(code);
+  } catch {
+    return '';
+  }
+}
+
 function decodeXml(value: string) {
-  return value
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&apos;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)));
+  return (
+    value
+      .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;|&apos;/g, "'")
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => codePointToString(parseInt(hex, 16)))
+      .replace(/&#(\d+);/g, (_, code: string) => codePointToString(Number(code)))
+      .replace(/&amp;/g, '&')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/[<>]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 function tag(item: string, name: string) {
@@ -42,13 +60,10 @@ export async function GET() {
       .filter((item) => item.title && item.link.startsWith('https://'));
     return NextResponse.json(
       { items },
-      {
-        headers: {
-          'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600',
-        },
-      }
+      { headers: { 'Cache-Control': 'public, s-maxage=900, stale-while-revalidate=3600' } }
     );
-  } catch {
+  } catch (err) {
+    console.error('[public-news]', err instanceof Error ? err.message : err);
     return NextResponse.json({ error: 'Flux d’actualités indisponible' }, { status: 502 });
   }
 }
