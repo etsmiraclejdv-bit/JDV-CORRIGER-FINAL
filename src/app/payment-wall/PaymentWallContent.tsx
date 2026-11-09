@@ -256,7 +256,7 @@ export default function PaymentWallContent() {
       const response = await fetch('/api/fedapay/initiate-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({ planCode: plan.code }),
+        body: JSON.stringify({ planCode: plan.code, organizationId: trialStatus.organizationId }),
       });
 
       const result = await response.json();
